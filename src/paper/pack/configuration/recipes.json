@@ -1,0 +1,1908 @@
+{
+  "recipes": {
+    "kaleidoscope_tavern:allium_sandwich_board_from_allium": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:allium"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:allium_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:azure_bluet_sandwich_board_from_azure_bluet": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:azure_bluet"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:azure_bluet_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:azure_bluet_sandwich_board_from_lily_of_the_valley": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:lily_of_the_valley"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:azure_bluet_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:azure_bluet_sandwich_board_from_oxeye_daisy": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:oxeye_daisy"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:azure_bluet_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:bar_cabinet": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "GGG",
+        "G G",
+        "GGG"
+      ],
+      "ingredients": {
+        "G": "kaleidoscope_tavern:grapevine"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:bar_cabinet",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:bar_counter": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "NNN",
+        "WWW",
+        "WWW"
+      ],
+      "ingredients": {
+        "N": "minecraft:gold_nugget",
+        "W": "#minecraft:planks"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:bar_counter",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:barrel": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "BBB",
+        "BBB",
+        "BBB"
+      ],
+      "ingredients": {
+        "B": "minecraft:barrel"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:barrel",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:base_sandwich_board": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "I",
+        "S"
+      ],
+      "ingredients": {
+        "I": "minecraft:ink_sac",
+        "S": "#minecraft:wooden_slabs"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:base_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:bell_pendant_lamp": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "C",
+        "C",
+        "B"
+      ],
+      "ingredients": {
+        "B": "minecraft:bell",
+        "C": "minecraft:chain"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:bell_pendant_lamp",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:black_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:black_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:black_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:black_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:black_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:black_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:blue_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:blue_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:blue_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:blue_pendant_lamp": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "C",
+        "C",
+        "B"
+      ],
+      "ingredients": {
+        "B": "minecraft:soul_lantern",
+        "C": "minecraft:chain"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:blue_pendant_lamp",
+        "count": 4
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:blue_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:blue_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:blue_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:brown_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:brown_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:brown_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:brown_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:brown_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:brown_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:butterfly_incense": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "F",
+        "C",
+        "B"
+      ],
+      "ingredients": {
+        "B": "minecraft:glass_bottle",
+        "C": "minecraft:pitcher_plant",
+        "F": "minecraft:feather"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:butterfly_incense",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:catnip_incense": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "F",
+        "C",
+        "B"
+      ],
+      "ingredients": {
+        "B": "minecraft:glass_bottle",
+        "C": "minecraft:allium",
+        "F": "minecraft:feather"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:catnip_incense",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:cellar_cabinet": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "GGG",
+        "GTG",
+        "GGG"
+      ],
+      "ingredients": {
+        "G": "kaleidoscope_tavern:grapevine",
+        "T": "#minecraft:trapdoors"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:cellar_cabinet",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:chalkboard": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "III",
+        "ISI",
+        "III"
+      ],
+      "ingredients": {
+        "I": "minecraft:ink_sac",
+        "S": "#minecraft:signs"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:chalkboard",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:circular_rack": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "IRI",
+        "IRI",
+        "IRI"
+      ],
+      "ingredients": {
+        "I": "minecraft:iron_ingot",
+        "R": "minecraft:end_rod"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:circular_rack",
+        "count": 2
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:cornflower_sandwich_board_from_cornflower": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:cornflower"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:cornflower_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:cr019_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:red_dye"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:cr019_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:cyan_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:cyan_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:cyan_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:cyan_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:cyan_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:cyan_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:david_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:white_dye"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:david_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:empty_bottle": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:glass_bottle"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:empty_bottle",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:empty_glassware": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "G G",
+        " G "
+      ],
+      "ingredients": {
+        "G": "minecraft:glass_pane"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:empty_glassware",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:father_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:iron_hoe"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:father_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:firefly_incense": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "F",
+        "C",
+        "B"
+      ],
+      "ingredients": {
+        "B": "minecraft:glass_bottle",
+        "C": "minecraft:glowstone_dust",
+        "F": "minecraft:feather"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:firefly_incense",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:ginkgo_incense": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "F",
+        "C",
+        "B"
+      ],
+      "ingredients": {
+        "B": "minecraft:glass_bottle",
+        "C": "minecraft:yellow_dye",
+        "F": "minecraft:feather"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:ginkgo_incense",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:girl_with_pearl_earring_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:ender_pearl"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:girl_with_pearl_earring_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:glass_bar_cabinet": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "GGG",
+        "GPG",
+        "GGG"
+      ],
+      "ingredients": {
+        "G": "kaleidoscope_tavern:grapevine",
+        "P": "minecraft:glass_pane"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:glass_bar_cabinet",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:glassware_holder": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "NNN",
+        "CCC",
+        "NNN"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "N": "minecraft:iron_nugget"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:glassware_holder",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:grass_sandwich_board_from_grass": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:grass"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:grass_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:gray_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:gray_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:gray_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:gray_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:gray_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:gray_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:great_wave_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:bamboo_raft"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:great_wave_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:green_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:green_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:green_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:green_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:green_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:green_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:holder": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        " C ",
+        " C ",
+        "I I"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "I": "minecraft:iron_ingot"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:holder",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:light_blue_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:light_blue_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:light_blue_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:light_blue_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:light_blue_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:light_blue_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:light_gray_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:light_gray_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:light_gray_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:light_gray_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:light_gray_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:light_gray_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:lime_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:lime_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:lime_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:lime_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:lime_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:lime_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:magenta_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:magenta_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:magenta_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:magenta_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:magenta_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:magenta_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:master_marisa_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:purple_dye"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:master_marisa_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:mona_lisa_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:diamond"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:mona_lisa_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:mondrian_painting": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        " B ",
+        "WFY",
+        " R "
+      ],
+      "ingredients": {
+        "B": "minecraft:blue_dye",
+        "F": "minecraft:item_frame",
+        "R": "minecraft:red_dye",
+        "W": "minecraft:white_dye",
+        "Y": "minecraft:yellow_dye"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:mondrian_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:orange_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:orange_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:orange_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:orange_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:orange_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:orange_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:orchid_sandwich_board_from_blue_orchid": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:blue_orchid"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:orchid_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:peony_sandwich_board_from_lilac": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:lilac"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:peony_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:peony_sandwich_board_from_peony": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:peony"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:peony_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:pine_incense": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "F",
+        "C",
+        "B"
+      ],
+      "ingredients": {
+        "B": "minecraft:glass_bottle",
+        "C": "minecraft:spruce_sapling",
+        "F": "minecraft:feather"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:pine_incense",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:pink_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:pink_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:pink_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:pink_petals_sandwich_board_from_pink_petals": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:pink_petals"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:pink_petals_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:pink_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:pink_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:pink_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:pitcher_plant_sandwich_board_from_pitcher_plant": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:pitcher_plant"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:pitcher_plant_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:poppy_sandwich_board_from_poppy": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:poppy"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:poppy_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:poppy_sandwich_board_from_rose_bush": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:rose_bush"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:poppy_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:pressing_tub": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:barrel"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:pressing_tub",
+        "count": 2
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:purple_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:purple_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:purple_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:purple_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:purple_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:purple_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:red_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:red_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:red_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:red_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:red_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:red_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:sakura_incense": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "F",
+        "C",
+        "B"
+      ],
+      "ingredients": {
+        "B": "minecraft:glass_bottle",
+        "C": "minecraft:cherry_sapling",
+        "F": "minecraft:feather"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:sakura_incense",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:shaker": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "I",
+        "B"
+      ],
+      "ingredients": {
+        "B": "minecraft:bucket",
+        "I": "minecraft:iron_ingot"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:shaker",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:snow_incense": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "F",
+        "C",
+        "B"
+      ],
+      "ingredients": {
+        "B": "minecraft:glass_bottle",
+        "C": "minecraft:snowball",
+        "F": "minecraft:feather"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:snow_incense",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:son_of_man_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:apple"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:son_of_man_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:spore_incense": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "F",
+        "C",
+        "B"
+      ],
+      "ingredients": {
+        "B": "minecraft:glass_bottle",
+        "C": "minecraft:spore_blossom",
+        "F": "minecraft:feather"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:spore_incense",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:starry_night_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:echo_shard"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:starry_night_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:stepladder": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "L  ",
+        "LL ",
+        "LLL"
+      ],
+      "ingredients": {
+        "L": "minecraft:ladder"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:stepladder",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_black": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:black_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_black",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_blue": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:blue_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_blue",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_brown": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:brown_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_brown",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_colorless": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_colorless",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_cyan": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:cyan_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_cyan",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_gray": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:gray_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_gray",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_green": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:green_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_green",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_light_blue": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:light_blue_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_light_blue",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_light_gray": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:light_gray_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_light_gray",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_lime": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:lime_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_lime",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_magenta": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:magenta_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_magenta",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_orange": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:orange_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_orange",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_pink": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:pink_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_pink",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_purple": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:purple_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_purple",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_red": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:red_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_red",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_white": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:white_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_white",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:string_lights_yellow": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "CCC",
+        "LLL",
+        "DDD"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "D": "minecraft:yellow_dye",
+        "L": "minecraft:lantern"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:string_lights_yellow",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:sunflower_sandwich_board_from_dandelion": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:dandelion"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:sunflower_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:sunflower_sandwich_board_from_sunflower": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:sunflower"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:sunflower_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:table": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "WWW",
+        " F ",
+        " I "
+      ],
+      "ingredients": {
+        "F": "#minecraft:fences",
+        "I": "minecraft:iron_ingot",
+        "W": "#minecraft:planks"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:table",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:tap": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "L",
+        "H"
+      ],
+      "ingredients": {
+        "H": "minecraft:hopper",
+        "L": "minecraft:lever"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:tap",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:tartaric_acid_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:light_blue_dye"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:tartaric_acid_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:tilted_rack": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "I  ",
+        "CI ",
+        "C I"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "I": "minecraft:iron_ingot"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:tilted_rack",
+        "count": 3
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:torchflower_sandwich_board_from_torchflower": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:torchflower"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:torchflower_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:trellis": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "G",
+        "G",
+        "G"
+      ],
+      "ingredients": {
+        "G": "kaleidoscope_tavern:grapevine"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:trellis",
+        "count": 8
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:tulip_sandwich_board_from_orange_tulip": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:orange_tulip"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:tulip_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:tulip_sandwich_board_from_pink_tulip": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:pink_tulip"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:tulip_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:tulip_sandwich_board_from_red_tulip": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:red_tulip"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:tulip_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:tulip_sandwich_board_from_white_tulip": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:white_tulip"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:tulip_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:unknown_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:yellow_dye"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:unknown_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:van_gogh_self_portrait_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:painting"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:van_gogh_self_portrait_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:white_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:white_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:white_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:white_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:white_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:white_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:wither_rose_sandwich_board_from_wither_rose": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "kaleidoscope_tavern:base_sandwich_board",
+        "minecraft:wither_rose"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:wither_rose_sandwich_board",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:yellow_bar_stool": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W",
+        "C",
+        "L"
+      ],
+      "ingredients": {
+        "C": "minecraft:chain",
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:yellow_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:yellow_bar_stool",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:yellow_pendant_lamp": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "C",
+        "C",
+        "B"
+      ],
+      "ingredients": {
+        "B": "minecraft:lantern",
+        "C": "minecraft:chain"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:yellow_pendant_lamp",
+        "count": 4
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:yellow_sofa": {
+      "type": "shaped",
+      "category": "building",
+      "pattern": [
+        "W W",
+        "WWW",
+        "L L"
+      ],
+      "ingredients": {
+        "L": "minecraft:iron_ingot",
+        "W": "minecraft:yellow_wool"
+      },
+      "result": {
+        "id": "kaleidoscope_tavern:yellow_sofa",
+        "count": 1
+      },
+      "unlock_on_join": true
+    },
+    "kaleidoscope_tavern:ysbb_painting": {
+      "type": "shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:item_frame",
+        "minecraft:lime_dye"
+      ],
+      "result": {
+        "id": "kaleidoscope_tavern:ysbb_painting",
+        "count": 1
+      },
+      "unlock_on_join": true
+    }
+  }
+}

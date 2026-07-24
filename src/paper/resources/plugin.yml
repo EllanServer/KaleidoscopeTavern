@@ -1,0 +1,18 @@
+name: KaleidoscopeTavern
+version: '${version}'
+main: com.github.ysbbbbbb.kaleidoscopetavern.paper.KaleidoscopeTavernPlugin
+description: Kaleidoscope Tavern rewritten for Paper 26.2 and CraftEngine.
+api-version: '26.2'
+authors: [ysbbbbbb, tartaric_acid]
+website: https://github.com/EllanServer/KaleidoscopeTavern
+depend: [CraftEngine, CustomCrops]
+commands:
+  kaleidoscopetavern:
+    description: Kaleidoscope Tavern administration command
+    usage: /<command> <status|give|reload>
+    aliases: [kt]
+    permission: kaleidoscopetavern.admin
+permissions:
+  kaleidoscopetavern.admin:
+    description: Allows administration of Kaleidoscope Tavern
+    default: op

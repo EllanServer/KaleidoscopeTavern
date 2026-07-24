@@ -1,0 +1,49 @@
+pack:
+  install-on-startup: true
+  overwrite-managed-files: true
+
+custom-crops:
+  install-managed-config: true
+
+stations:
+  autosave-ticks: 600
+  barrel-level-ticks: 2400
+  shaker-ticks: 80
+  incense-period-ticks: 120
+  press-eject-invalid: true
+
+gameplay:
+  molotov-radius: 3
+  infinite-lava-from-tap: true
+  ardent-heat-break-limit: 9
+  effect-tick-period: 5
+
+bottle-placement:
+  drinks: true
+  water: true
+  honey: true
+  potion: true
+  dragon-breath: true
+  experience: true
+
+worldgen:
+  wild-grapevines: true
+  chunk-chance: 0.08
+  max-chains-per-chunk: 5
+  max-chain-length: 7
+
+messages:
+  prefix: '<dark_aqua>[森罗酒馆]</dark_aqua> '
+  no-recipe: '<red>当前材料无法完成配方。</red>'
+  station-busy: '<yellow>这个设备正在工作。</yellow>'
+  pack-missing: '<red>CraftEngine 内容包尚未加载，请执行 /ce reload all。</red>'
+  press-filled: '<green>压榨完成：<amount>/1000 mB。</green>'
+  barrel-started: '<green>酒桶已开始酿造。</green>'
+  barrel-progress: '<gray>当前陈酿等级：<level>/6。</gray>'
+  shaker-started: '<green>开始摇制，再次点击调酒器即可完成。</green>'
+  shaker-needs-three: '<yellow>调酒器需要恰好三份原料。</yellow>'
+  shaker-low-quality: '<red>酒类原料至少需要达到优质（陈酿等级 4）。</red>'
+  shaker-too-short: '<yellow>摇制时间太短，鸡尾酒尚未成形。</yellow>'
+  shaker-ready: '<green>调制完成，请用空酒杯取出成品。</green>'
+  incense-on: '<green>香炉已点燃。</green>'
+  incense-off: '<gray>香炉已熄灭。</gray>'

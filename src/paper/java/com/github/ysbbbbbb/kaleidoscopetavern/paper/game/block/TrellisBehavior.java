@@ -1,0 +1,273 @@
+package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
+
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
+import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
+import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
+import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.core.block.BlockDefinition;
+import net.momirealms.craftengine.core.block.BlockStateWrapper;
+import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
+import net.momirealms.craftengine.core.block.behavior.BlockBehaviors;
+import net.momirealms.craftengine.core.block.behavior.RandomTickBlock;
+import net.momirealms.craftengine.core.block.property.IntegerProperty;
+import net.momirealms.craftengine.core.block.property.Property;
+import net.momirealms.craftengine.core.plugin.config.ConfigSection;
+import net.momirealms.craftengine.core.util.Direction;
+import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.context.BlockPlaceContext;
+import net.momirealms.craftengine.proxy.minecraft.core.Vec3iProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+/**
+ * Adds the connection and mature-vine propagation rules that are specific to
+ * Kaleidoscope Tavern's trellis. Fruit lifecycle is delegated to CustomCrops;
+ * this behavior only models the supporting vine structure.
+ */
+public final class TrellisBehavior extends BukkitBlockBehavior implements RandomTickBlock {
+    public static final Key TYPE = Key.of("kaleidoscope_tavern", "trellis");
+    private static final String PREFIX = "kaleidoscope_tavern:";
+    private static final String PLAIN_TRELLIS = PREFIX + "trellis";
+    private static final Set<String> TRELLISES = Set.of(
+            PLAIN_TRELLIS,
+            PREFIX + "grapevine_trellis",
+            PREFIX + "ice_grapevine_trellis",
+            PREFIX + "gold_grapevine_trellis");
+    private static final List<BlockFace> GROW_DIRECTIONS = List.of(
+            BlockFace.UP, BlockFace.EAST, BlockFace.WEST, BlockFace.SOUTH, BlockFace.NORTH);
+    private static final AtomicBoolean REGISTERED = new AtomicBoolean();
+
+    private final Property<String> typeProperty;
+    private final IntegerProperty ageProperty;
+    private final float spreadChance;
+
+    private TrellisBehavior(BlockDefinition block, ConfigSection section) {
+        super(block);
+        this.typeProperty = BlockBehaviorFactory.getProperty(
+                section.path(), block, "type", String.class);
+        Property<?> age = block.getProperty("age");
+        this.ageProperty = age instanceof IntegerProperty integer ? integer : null;
+        this.spreadChance = section.getFloat("spread_chance", 0.25F);
+    }
+
+    /** Must run from the plugin's onLoad, before CraftEngine parses projects. */
+    public static void register() {
+        if (REGISTERED.compareAndSet(false, true)) {
+            BlockBehaviors.register(TYPE, TrellisBehavior::new);
+        }
+    }
+
+    @Override
+    public ImmutableBlockState updateStateForPlacement(BlockPlaceContext context, ImmutableBlockState state) {
+        BlockPos position = context.getClickedPos();
+        boolean x = axisHasTrellis(context, position, Direction.Axis.X);
+        boolean y = axisHasTrellis(context, position, Direction.Axis.Y);
+        boolean z = axisHasTrellis(context, position, Direction.Axis.Z);
+        String type = typeForPlacement(x, y, z, context.getClickedFace().axis());
+        return state.with(typeProperty, type);
+    }
+
+    @Override
+    public Object updateShape(Object thisBlock, Object[] args) {
+        Optional<ImmutableBlockState> optional = BlockStateUtils.getOptionalCustomBlockState(args[0]);
+        if (optional.isEmpty()) {
+            return args[0];
+        }
+        World world = LevelProxy.INSTANCE.getWorld(args[updateShape$level]);
+        if (world == null) {
+            return args[0];
+        }
+        Object position = args[updateShape$blockPos];
+        int x = Vec3iProxy.INSTANCE.getX(position);
+        int y = Vec3iProxy.INSTANCE.getY(position);
+        int z = Vec3iProxy.INSTANCE.getZ(position);
+        ImmutableBlockState state = optional.get();
+        String current = state.get(typeProperty);
+        String updated = updateType(current,
+                axisHasTrellis(world, x, y, z, Direction.Axis.X),
+                axisHasTrellis(world, x, y, z, Direction.Axis.Y),
+                axisHasTrellis(world, x, y, z, Direction.Axis.Z));
+        return state.with(typeProperty, updated).customBlockState().minecraftState();
+    }
+
+    @Override
+    public boolean canRandomlyTick(ImmutableBlockState state) {
+        return ageProperty != null && state.get(ageProperty) >= ageProperty.max;
+    }
+
+    @Override
+    public void randomTick(Object thisBlock, Object[] args) {
+        Optional<ImmutableBlockState> optional = BlockStateUtils.getOptionalCustomBlockState(args[0]);
+        if (optional.isEmpty() || ageProperty == null) {
+            return;
+        }
+        ImmutableBlockState state = optional.get();
+        if (state.get(ageProperty) < ageProperty.max) {
+            return;
+        }
+        World world = LevelProxy.INSTANCE.getWorld(args[1]);
+        if (world == null) {
+            return;
+        }
+        Object position = args[2];
+        int x = Vec3iProxy.INSTANCE.getX(position);
+        int y = Vec3iProxy.INSTANCE.getY(position);
+        int z = Vec3iProxy.INSTANCE.getZ(position);
+        float chance = adjustedChance(world, x, y, z, state.owner().value().id().toString());
+        if (ThreadLocalRandom.current().nextFloat() < chance) {
+            growMature(new Location(world, x, y, z), state);
+        }
+    }
+
+    /** Used by both random ticks and bone-meal interaction. */
+    public static boolean growMature(Location location, ImmutableBlockState source) {
+        Property<?> rawAge = source.getProperty("age");
+        if (!(rawAge instanceof IntegerProperty age) || source.get(age) < age.max) {
+            return false;
+        }
+
+        for (BlockFace direction : GROW_DIRECTIONS) {
+            Block target = location.getBlock().getRelative(direction);
+            ImmutableBlockState targetState = CraftEngineBlocks.getCustomBlockState(target);
+            if (targetState == null || !PLAIN_TRELLIS.equals(id(targetState)) || bool(targetState, "waxed")) {
+                continue;
+            }
+            ImmutableBlockState grown = source.owner().value().defaultState();
+            grown = copyNamed(targetState, grown, "type");
+            grown = copyNamed(targetState, grown, "waterlogged");
+            grown = withNamed(grown, "age", direction == BlockFace.UP ? "0" : Integer.toString(age.max));
+            return CraftEngineBlocks.place(target.getLocation(), grown, false);
+        }
+
+        Block below = location.getBlock().getRelative(BlockFace.DOWN);
+        if (!below.getType().isAir() || below.getY() < location.getWorld().getMinHeight()) {
+            return false;
+        }
+        return CustomCropsBridge.placeHangingGrapes(below.getLocation(), id(source));
+    }
+
+    private float adjustedChance(World world, int x, int y, int z, String id) {
+        double temperature = world.getTemperature(x, y, z);
+        if (id.equals(PREFIX + "ice_grapevine_trellis") && temperature < 0.15D) {
+            return Math.max(spreadChance, 0.8F);
+        }
+        if (id.equals(PREFIX + "gold_grapevine_trellis") && temperature > 1.0D) {
+            return Math.max(spreadChance, 0.8F);
+        }
+        return spreadChance;
+    }
+
+    private static boolean axisHasTrellis(BlockPlaceContext context, BlockPos position, Direction.Axis axis) {
+        return isTrellis(context.getLevel().getBlockState(position.relative(axis.getPositive())))
+                || isTrellis(context.getLevel().getBlockState(position.relative(axis.getNegative())));
+    }
+
+    private static boolean axisHasTrellis(World world, int x, int y, int z, Direction.Axis axis) {
+        Direction positive = axis.getPositive();
+        Direction negative = axis.getNegative();
+        return isTrellis(world.getBlockAt(x + positive.stepX(), y + positive.stepY(), z + positive.stepZ()))
+                || isTrellis(world.getBlockAt(x + negative.stepX(), y + negative.stepY(), z + negative.stepZ()));
+    }
+
+    private static boolean isTrellis(BlockStateWrapper state) {
+        return state != null && TRELLISES.contains(state.ownerId().toString());
+    }
+
+    private static boolean isTrellis(Block block) {
+        ImmutableBlockState state = CraftEngineBlocks.getCustomBlockState(block);
+        return state != null && TRELLISES.contains(id(state));
+    }
+
+    private static String typeForPlacement(boolean x, boolean y, boolean z, Direction.Axis clickAxis) {
+        if (x && y && z) return "six_direction";
+        if (x && y) return "cross_east_west";
+        if (y && z) return "cross_north_south";
+        if (x && z) return "cross_up_down";
+        if (x) {
+            return switch (clickAxis) {
+                case X -> "east_west";
+                case Y -> "cross_east_west";
+                case Z -> "cross_up_down";
+            };
+        }
+        if (y) {
+            return switch (clickAxis) {
+                case X -> "cross_east_west";
+                case Y -> "single";
+                case Z -> "cross_north_south";
+            };
+        }
+        if (z) {
+            return switch (clickAxis) {
+                case X -> "cross_up_down";
+                case Y -> "cross_north_south";
+                case Z -> "north_south";
+            };
+        }
+        return switch (clickAxis) {
+            case X -> "east_west";
+            case Y -> "single";
+            case Z -> "north_south";
+        };
+    }
+
+    private static String updateType(String current, boolean x, boolean y, boolean z) {
+        return switch (current) {
+            case "single" -> x && z ? "six_direction" : x ? "cross_east_west"
+                    : z ? "cross_north_south" : "single";
+            case "north_south" -> x && y ? "six_direction" : x ? "cross_up_down"
+                    : y ? "cross_north_south" : "north_south";
+            case "east_west" -> y && z ? "six_direction" : y ? "cross_east_west"
+                    : z ? "cross_up_down" : "east_west";
+            case "cross_north_south" -> x ? "six_direction" : z && y ? "cross_north_south"
+                    : z ? "north_south" : "single";
+            case "cross_east_west" -> z ? "six_direction" : x && y ? "cross_east_west"
+                    : x ? "east_west" : "single";
+            case "cross_up_down" -> y ? "six_direction" : x && z ? "cross_up_down"
+                    : x ? "east_west" : "north_south";
+            case "six_direction" -> x && y && z ? "six_direction" : x && y ? "cross_east_west"
+                    : y && z ? "cross_north_south" : x && z ? "cross_up_down"
+                    : x ? "east_west" : z ? "north_south" : "single";
+            default -> "single";
+        };
+    }
+
+    private static String id(ImmutableBlockState state) {
+        return state.owner().value().id().toString();
+    }
+
+    private static boolean bool(ImmutableBlockState state, String propertyName) {
+        Property<?> property = state.getProperty(propertyName);
+        return property != null && Boolean.TRUE.equals(state.propertyEntries().get(property));
+    }
+
+    private static ImmutableBlockState copyNamed(ImmutableBlockState from, ImmutableBlockState to, String name) {
+        Property<?> sourceProperty = from.getProperty(name);
+        if (sourceProperty == null || to.getProperty(name) == null) {
+            return to;
+        }
+        Comparable<?> value = from.propertyEntries().get(sourceProperty);
+        return withNamed(to, name, Property.formatValue(sourceProperty, value));
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static ImmutableBlockState withNamed(ImmutableBlockState state, String name, String valueName) {
+        Property property = state.getProperty(name);
+        if (property == null) {
+            return state;
+        }
+        Comparable value = property.valueByName(valueName);
+        return value == null ? state : state.with(property, value);
+    }
+}

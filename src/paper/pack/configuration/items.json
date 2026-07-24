@@ -1,0 +1,3191 @@
+{
+  "items": {
+    "kaleidoscope_tavern:white_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.white_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/white_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:white_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:light_gray_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.light_gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/light_gray_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:light_gray_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:gray_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/gray_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:gray_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:black_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.black_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/black_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:black_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:brown_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.brown_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/brown_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:brown_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:red_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.red_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/red_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:red_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:orange_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.orange_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/orange_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:orange_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:yellow_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.yellow_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/yellow_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:yellow_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:lime_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.lime_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/lime_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:lime_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:green_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.green_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/green_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:green_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:cyan_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.cyan_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/cyan_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:cyan_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:light_blue_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.light_blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/light_blue_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:light_blue_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:blue_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/blue_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:blue_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:purple_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.purple_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/purple_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:purple_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:magenta_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.magenta_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/magenta_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:magenta_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:pink_sofa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.pink_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/pink_sofa"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:pink_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:white_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.white_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/white_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:white_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:light_gray_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.light_gray_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/light_gray_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:light_gray_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:gray_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.gray_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/gray_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:gray_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:black_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.black_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/black_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:black_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:brown_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.brown_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/brown_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:brown_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:red_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.red_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/red_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:red_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:orange_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.orange_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/orange_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:orange_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:yellow_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.yellow_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/yellow_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:yellow_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:lime_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.lime_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/lime_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:lime_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:green_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.green_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/green_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:green_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:cyan_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.cyan_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/cyan_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:cyan_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:light_blue_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.light_blue_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/light_blue_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:light_blue_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:blue_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.blue_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/blue_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:blue_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:purple_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.purple_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/purple_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:purple_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:magenta_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.magenta_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/magenta_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:magenta_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:pink_bar_stool": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.pink_bar_stool>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/pink_bar_stool"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:pink_bar_stool",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:chalkboard": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.chalkboard>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/chalkboard"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:chalkboard",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:table": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.table>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/table"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:table",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:base_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.base_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/base_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:base_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:grass_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.grass_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/grass_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:grass_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:allium_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.allium_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/allium_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:allium_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:azure_bluet_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.azure_bluet_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/azure_bluet_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:azure_bluet_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:cornflower_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.cornflower_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/cornflower_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:cornflower_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:orchid_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.orchid_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/orchid_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:orchid_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:peony_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.peony_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/peony_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:peony_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:pink_petals_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.pink_petals_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/pink_petals_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:pink_petals_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:pitcher_plant_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.pitcher_plant_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/pitcher_plant_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:pitcher_plant_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:poppy_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.poppy_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/poppy_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:poppy_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:sunflower_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.sunflower_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/sunflower_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:sunflower_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:torchflower_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.torchflower_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/torchflower_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:torchflower_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:tulip_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.tulip_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/tulip_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:tulip_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:wither_rose_sandwich_board": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.wither_rose_sandwich_board>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/wither_rose_sandwich_board"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:wither_rose_sandwich_board",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:string_lights_colorless": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_colorless>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_colorless"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_colorless"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_white": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_white>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_white"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_white"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_light_gray": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_light_gray>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_light_gray"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_light_gray"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_gray": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_gray>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_gray"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_gray"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_black": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_black>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_black"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_black"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_brown": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_brown>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_brown"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_brown"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_red": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_red>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_red"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_red"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_orange": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_orange>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_orange"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_orange"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_yellow": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_yellow>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_yellow"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_yellow"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_lime": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_lime>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_lime"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_lime"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_green": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_green>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_green"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_green"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_cyan": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_cyan>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_cyan"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_cyan"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_light_blue": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_light_blue>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_light_blue"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_light_blue"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_blue": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_blue>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_blue"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_blue"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_purple": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_purple>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_purple"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_purple"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_magenta": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_magenta>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_magenta"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_magenta"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:string_lights_pink": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_pink>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/string_lights_pink"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:string_lights_pink"
+      },
+      "settings": {
+        "tags": [
+          "curios:charm"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:ysbb_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.ysbb_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/ysbb_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:ysbb_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:tartaric_acid_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.tartaric_acid_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/tartaric_acid_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:tartaric_acid_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:cr019_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.cr019_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/cr019_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:cr019_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:unknown_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.unknown_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/unknown_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:unknown_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:master_marisa_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.master_marisa_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/master_marisa_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:master_marisa_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:son_of_man_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.son_of_man_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/son_of_man_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:son_of_man_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:david_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.david_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/david_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:david_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:girl_with_pearl_earring_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.girl_with_pearl_earring_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/girl_with_pearl_earring_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:girl_with_pearl_earring_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:starry_night_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.starry_night_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/starry_night_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:starry_night_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:van_gogh_self_portrait_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.van_gogh_self_portrait_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/van_gogh_self_portrait_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:van_gogh_self_portrait_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:father_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.father_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/father_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:father_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:great_wave_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.great_wave_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/great_wave_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:great_wave_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:mona_lisa_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.mona_lisa_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/mona_lisa_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:mona_lisa_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:mondrian_painting": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.mondrian_painting>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/mondrian_painting"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:mondrian_painting",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          },
+          "ceiling": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:bell_pendant_lamp": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.bell_pendant_lamp>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/bell_pendant_lamp"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:bell_pendant_lamp",
+        "rules": {
+          "ceiling": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:yellow_pendant_lamp": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.yellow_pendant_lamp>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/yellow_pendant_lamp"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:yellow_pendant_lamp",
+        "rules": {
+          "ceiling": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:blue_pendant_lamp": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.blue_pendant_lamp>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/blue_pendant_lamp"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:blue_pendant_lamp",
+        "rules": {
+          "ceiling": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:bar_counter": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.bar_counter>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/bar_counter"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:bar_counter",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:stepladder": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.stepladder>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/stepladder"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:stepladder",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:grapevine": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.grapevine>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.grapevine.1>",
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.grapevine.2>",
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.grapevine.3>"
+        ]
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/grapevine"
+      },
+      "behaviors": [
+        {
+          "type": "block_item",
+          "block": "kaleidoscope_tavern:wild_grapevine"
+        },
+        {
+          "type": "compostable_item",
+          "chance": 0.25
+        }
+      ],
+      "settings": {
+        "compost_probability": 0.25,
+        "fuel_time": 200
+      }
+    },
+    "kaleidoscope_tavern:trellis": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.trellis>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.trellis.1>",
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.trellis.2>"
+        ]
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/trellis"
+      },
+      "behavior": {
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:trellis"
+      }
+    },
+    "kaleidoscope_tavern:grape": {
+      "material": "sweet_berries",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.grape>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.grape>"
+        ],
+        "food": {
+          "nutrition": 2,
+          "saturation": 2.0,
+          "can_always_eat": true
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/grape"
+      },
+      "behavior": {
+        "type": "compostable_item",
+        "chance": 0.5
+      },
+      "settings": {
+        "tags": [
+          "diet:fruits",
+          "forge:fruits/grapes"
+        ],
+        "compost_probability": 0.5
+      }
+    },
+    "kaleidoscope_tavern:ice_grape": {
+      "material": "sweet_berries",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.ice_grape>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.ice_grape>"
+        ],
+        "food": {
+          "nutrition": 2,
+          "saturation": 2.0,
+          "can_always_eat": true
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/ice_grape"
+      },
+      "behavior": {
+        "type": "compostable_item",
+        "chance": 0.5
+      },
+      "settings": {
+        "tags": [
+          "diet:fruits"
+        ],
+        "compost_probability": 0.5
+      }
+    },
+    "kaleidoscope_tavern:gold_grape": {
+      "material": "sweet_berries",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.gold_grape>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.gold_grape>"
+        ],
+        "food": {
+          "nutrition": 2,
+          "saturation": 2.0,
+          "can_always_eat": true
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/gold_grape"
+      },
+      "behavior": {
+        "type": "compostable_item",
+        "chance": 0.5
+      },
+      "settings": {
+        "tags": [
+          "diet:fruits"
+        ],
+        "compost_probability": 0.5
+      }
+    },
+    "kaleidoscope_tavern:green_grape": {
+      "material": "sweet_berries",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.green_grape>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.green_grape>"
+        ],
+        "food": {
+          "nutrition": 2,
+          "saturation": 2.0,
+          "can_always_eat": true
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/green_grape"
+      },
+      "behavior": {
+        "type": "compostable_item",
+        "chance": 0.5
+      },
+      "settings": {
+        "tags": [
+          "diet:fruits"
+        ],
+        "compost_probability": 0.5
+      }
+    },
+    "kaleidoscope_tavern:pressing_tub": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.pressing_tub>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/pressing_tub"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:pressing_tub",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          },
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:grape_bucket": {
+      "material": "milk_bucket",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.grape_bucket>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        },
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.grape_bucket>"
+        ]
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/grape_bucket"
+      },
+      "settings": {
+        "consume_replacement": "minecraft:bucket",
+        "craft_remainder": "minecraft:bucket"
+      }
+    },
+    "kaleidoscope_tavern:ice_grape_bucket": {
+      "material": "milk_bucket",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.ice_grape_bucket>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        },
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.ice_grape_bucket>"
+        ]
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/ice_grape_bucket"
+      },
+      "settings": {
+        "consume_replacement": "minecraft:bucket",
+        "craft_remainder": "minecraft:bucket"
+      }
+    },
+    "kaleidoscope_tavern:gold_grape_bucket": {
+      "material": "milk_bucket",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.gold_grape_bucket>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        },
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.gold_grape_bucket>"
+        ]
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/gold_grape_bucket"
+      },
+      "settings": {
+        "consume_replacement": "minecraft:bucket",
+        "craft_remainder": "minecraft:bucket"
+      }
+    },
+    "kaleidoscope_tavern:green_grape_bucket": {
+      "material": "milk_bucket",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.green_grape_bucket>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        },
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.green_grape_bucket>"
+        ]
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/green_grape_bucket"
+      },
+      "settings": {
+        "consume_replacement": "minecraft:bucket",
+        "craft_remainder": "minecraft:bucket"
+      }
+    },
+    "kaleidoscope_tavern:sweet_berries_bucket": {
+      "material": "milk_bucket",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.sweet_berries_bucket>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        },
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.sweet_berries_bucket>"
+        ]
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/sweet_berries_bucket"
+      },
+      "settings": {
+        "consume_replacement": "minecraft:bucket",
+        "craft_remainder": "minecraft:bucket"
+      }
+    },
+    "kaleidoscope_tavern:glow_berries_bucket": {
+      "material": "milk_bucket",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.glow_berries_bucket>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        },
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.glow_berries_bucket>"
+        ]
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/glow_berries_bucket"
+      },
+      "settings": {
+        "consume_replacement": "minecraft:bucket",
+        "craft_remainder": "minecraft:bucket"
+      }
+    },
+    "kaleidoscope_tavern:tap": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.tap>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/tap"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:tap",
+        "rules": {
+          "wall": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:barrel": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.barrel>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/barrel"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:barrel",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:bar_cabinet": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.bar_cabinet>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/bar_cabinet"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:bar_cabinet",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:glass_bar_cabinet": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.glass_bar_cabinet>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/glass_bar_cabinet"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:glass_bar_cabinet",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:cellar_cabinet": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.cellar_cabinet>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/cellar_cabinet"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:cellar_cabinet",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:tilted_rack": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.tilted_rack>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/tilted_rack"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:tilted_rack",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:circular_rack": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.circular_rack>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/circular_rack"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:circular_rack",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:holder": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.holder>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/holder"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:holder",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:empty_bottle": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.empty_bottle>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/empty_bottle"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:empty_bottle",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:empty_glassware": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.empty_glassware>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/empty_glassware"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:empty_glassware",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:signature_cocktail": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.signature_cocktail>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/signature_cocktail"
+      }
+    },
+    "kaleidoscope_tavern:mystery_cocktail": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.mystery_cocktail>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/mystery_cocktail"
+      }
+    },
+    "kaleidoscope_tavern:white_lady": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.white_lady>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/white_lady"
+      }
+    },
+    "kaleidoscope_tavern:emerald": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.emerald>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/emerald"
+      }
+    },
+    "kaleidoscope_tavern:brass_heart": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.brass_heart>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/brass_heart"
+      }
+    },
+    "kaleidoscope_tavern:godfather": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.godfather>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/godfather"
+      }
+    },
+    "kaleidoscope_tavern:grasshopper": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.grasshopper>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/grasshopper"
+      }
+    },
+    "kaleidoscope_tavern:screwdriver": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.screwdriver>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/screwdriver"
+      }
+    },
+    "kaleidoscope_tavern:mojito": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.mojito>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/mojito"
+      }
+    },
+    "kaleidoscope_tavern:allium_garden": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.allium_garden>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/allium_garden"
+      }
+    },
+    "kaleidoscope_tavern:depth_charge": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.depth_charge>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/depth_charge"
+      }
+    },
+    "kaleidoscope_tavern:nether_special": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.nether_special>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/nether_special"
+      }
+    },
+    "kaleidoscope_tavern:bloody_mary": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.bloody_mary>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/bloody_mary"
+      }
+    },
+    "kaleidoscope_tavern:sculk_special": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.sculk_special>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/sculk_special"
+      }
+    },
+    "kaleidoscope_tavern:shaker": {
+      "material": "brush",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.shaker>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/shaker"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:shaker",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:glassware_holder": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.glassware_holder>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/glassware_holder"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:glassware_holder",
+        "rules": {
+          "ceiling": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:molotov": {
+      "material": "splash_potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.molotov>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/molotov"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:molotov",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:wine": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.wine>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/wine"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_light_purple"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:champagne": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.champagne>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/champagne"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_light_purple"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:vodka": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.vodka>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/vodka"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cellar_cabinet_blocklist",
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_white",
+          "kaleidoscope_tavern:holder_blocklist"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:brandy": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.brandy>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/brandy"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:bar_cabinet_irregular",
+          "kaleidoscope_tavern:cellar_cabinet_blocklist",
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_light_purple",
+          "kaleidoscope_tavern:holder_blocklist",
+          "kaleidoscope_tavern:tilted_rack_blocklist"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:carignan": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.carignan>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/carignan"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:bar_cabinet_irregular",
+          "kaleidoscope_tavern:cellar_cabinet_blocklist",
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_light_purple",
+          "kaleidoscope_tavern:holder_blocklist",
+          "kaleidoscope_tavern:tilted_rack_blocklist"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:sakura_wine": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.sakura_wine>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/sakura_wine"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_light_purple"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:plum_wine": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.plum_wine>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/plum_wine"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_red"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:whiskey": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.whiskey>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/whiskey"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_white"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:ice_wine": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.ice_wine>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/ice_wine"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_blue"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:polaris_sweet_white": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.polaris_sweet_white>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/polaris_sweet_white"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_blue"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:honey_wine": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.honey_wine>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/honey_wine"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_gold"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:red_queen": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.red_queen>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/red_queen"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_red"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:miners_star": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.miners_star>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/miners_star"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cellar_cabinet_blocklist",
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_gold",
+          "kaleidoscope_tavern:holder_blocklist"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:rum": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.rum>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/rum"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cellar_cabinet_blocklist",
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_white",
+          "kaleidoscope_tavern:holder_blocklist"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:riesling_dry_white": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.riesling_dry_white>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/riesling_dry_white"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cellar_cabinet_blocklist",
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_green",
+          "kaleidoscope_tavern:holder_blocklist"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:sunset_glow": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.sunset_glow>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/sunset_glow"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cellar_cabinet_blocklist",
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_gold",
+          "kaleidoscope_tavern:holder_blocklist"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:madame_shexiang": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.madame_shexiang>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/madame_shexiang"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cellar_cabinet_blocklist",
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_gold",
+          "kaleidoscope_tavern:holder_blocklist"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:sweet_berry_wine": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.sweet_berry_wine>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/sweet_berry_wine"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cellar_cabinet_blocklist",
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_red",
+          "kaleidoscope_tavern:holder_blocklist"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:sherry": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.sherry>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/sherry"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_blue"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:mother_snow": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.mother_snow>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/mother_snow"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cellar_cabinet_blocklist",
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_blue",
+          "kaleidoscope_tavern:holder_blocklist"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:luminous_bride": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.luminous_bride>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/luminous_bride"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_yellow"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:glowflower_brew": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.glowflower_brew>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/glowflower_brew"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_yellow"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:sauvignon_blanc_dry_white": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.sauvignon_blanc_dry_white>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/sauvignon_blanc_dry_white"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:cocktail_ingredient",
+          "kaleidoscope_tavern:cocktail_ingredient_green"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:vinegar": {
+      "material": "potion",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.vinegar>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/vinegar"
+      }
+    },
+    "kaleidoscope_tavern:watermelon_juice": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.watermelon_juice>",
+        "components": {
+          "minecraft:max_stack_size": 16
+        }
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/watermelon_juice"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:watermelon_juice",
+        "rules": {
+          "ground": {
+            "rotation": "sixteen",
+            "alignment": "any"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:sakura_incense": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.sakura_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/sakura_incense"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:sakura_incense",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:pine_incense": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.pine_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/pine_incense"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:pine_incense",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:ginkgo_incense": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.ginkgo_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/ginkgo_incense"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:ginkgo_incense",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:spore_incense": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.spore_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/spore_incense"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:spore_incense",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:catnip_incense": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.catnip_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/catnip_incense"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:catnip_incense",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:snow_incense": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.snow_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/snow_incense"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:snow_incense",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:butterfly_incense": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.butterfly_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/butterfly_incense"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:butterfly_incense",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    },
+    "kaleidoscope_tavern:firefly_incense": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:item.kaleidoscope_tavern.firefly_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:item/firefly_incense"
+      },
+      "behavior": {
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:firefly_incense",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      }
+    }
+  }
+}

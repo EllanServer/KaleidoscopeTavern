@@ -1,0 +1,41 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "board": "kaleidoscope_tavern:entity/deco/large_chalkboard",
+    "particle": "kaleidoscope_tavern:block/deco/chalkboard_particle"
+  },
+  "elements": [
+    {
+      "from": [
+        -16,
+        0,
+        7.5
+      ],
+      "to": [
+        32,
+        28,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            7
+          ],
+          "texture": "#board"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            7
+          ],
+          "texture": "#board"
+        }
+      }
+    }
+  ]
+}

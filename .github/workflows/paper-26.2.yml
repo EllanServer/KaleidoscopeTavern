@@ -1,0 +1,49 @@
+name: Paper 26.2 build
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compile, test and validate CraftEngine pack
+        run: ./gradlew clean build --stacktrace
+
+      - name: Audit deployable artifact
+        shell: bash
+        run: |
+          mapfile -t jars < <(find build/libs -maxdepth 1 -type f -name 'KaleidoscopeTavern-Paper-*.jar' ! -name '*-sources.jar')
+          test "${#jars[@]}" -eq 1
+          sha256sum "${jars[0]}"
+
+      - name: Upload plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: KaleidoscopeTavern-Paper-26.2
+          path: |
+            build/libs/KaleidoscopeTavern-Paper-*.jar
+            !build/libs/*-sources.jar
+          if-no-files-found: error
+          retention-days: 14

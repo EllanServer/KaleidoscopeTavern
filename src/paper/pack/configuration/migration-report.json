@@ -1,0 +1,22 @@
+{
+  "kaleidoscope_tavern_migration": {
+    "source": "KaleidoscopeTavern Forge 1.20.1 data generators",
+    "target": "Paper 26.2 + CraftEngine 26.7.4",
+    "items": 157,
+    "blocks": 41,
+    "furniture": 133,
+    "legacy_placeables": 159,
+    "render_items": 484,
+    "standard_recipes": 114,
+    "appearances": 125,
+    "weighted_variants_reduced": 0,
+    "furniture_variants": 341,
+    "pressing": 6,
+    "barrel": 24,
+    "shaker": 12,
+    "drink_effect_items": 37,
+    "drink_effect_entries": 270,
+    "tag_memberships": 120,
+    "registry_tag_memberships": 154
+  }
+}

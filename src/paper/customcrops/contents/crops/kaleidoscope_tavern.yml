@@ -1,0 +1,331 @@
+# Managed by KaleidoscopeTavern. The plugin refreshes this file before
+# CustomCrops loads so growth, bone meal, persistence and harvesting have one
+# authoritative implementation. These crops are placed by API beneath mature
+# trellises and intentionally do not use a pot whitelist.
+
+kaleidoscope_tavern_grape:
+  type: BLOCK
+  pot-whitelist: []
+  seed: kaleidoscope_tavern:_customcrops/grape_seed
+  ignore-random-tick: false
+  ignore-scheduled-tick: true
+  random-rotation: false
+  max-points: 5
+  points:
+    0:
+      model: kaleidoscope_tavern:grape_crop
+    1:
+      model: kaleidoscope_tavern:_crop/grape_crop/stage_1
+    2:
+      model: kaleidoscope_tavern:_crop/grape_crop/stage_2
+    3:
+      model: kaleidoscope_tavern:_crop/grape_crop/stage_3
+    4:
+      model: kaleidoscope_tavern:_crop/grape_crop/stage_4
+    5:
+      model: kaleidoscope_tavern:_crop/grape_crop/stage_5
+      events:
+        interact:
+          harvest_with_shears:
+            type: conditional
+            value:
+              conditions:
+                shears:
+                  type: item-in-hand
+                  value:
+                    item: SHEARS
+                    amount: 1
+              actions:
+                break_crop:
+                  type: break
+                  value: true
+                swing_hand:
+                  type: swing-hand
+                  value: true
+        break:
+          harvest_with_shears:
+            type: conditional
+            value:
+              conditions:
+                shears:
+                  type: item-in-hand
+                  value:
+                    item: SHEARS
+                    amount: 1
+              actions:
+                ripe_grapes:
+                  type: drop-item
+                  value:
+                    ignore-fertilizer: true
+                    item: kaleidoscope_tavern:grape
+                    min: 3
+                    max: 3
+                green_grapes:
+                  type: drop-item
+                  value:
+                    ignore-fertilizer: true
+                    item: kaleidoscope_tavern:green_grape
+                    min: 1
+                    max: 2
+                  chance: 0.3
+                damage_shears:
+                  type: durability
+                  value: -1
+                harvest_sound:
+                  type: sound
+                  value:
+                    source: player
+                    key: minecraft:block.beehive.shear
+                    volume: 1
+                    pitch: 1
+  grow-conditions:
+    enough_light:
+      point: 1
+      conditions:
+        light:
+          type: light-more-than
+          value: 8
+  custom-bone-meal:
+    bone_meal:
+      item: BONE_MEAL
+      dispenser: true
+      chance:
+        1: 0.5
+        2: 0.5
+      actions:
+        particles:
+          type: particle
+          value:
+            particle: VILLAGER_HAPPY
+            x: 0.5
+            y: 0.5
+            z: 0.5
+            count: 10
+            offset-x: 0.25
+            offset-y: 0.25
+            offset-z: 0.25
+        sound:
+          type: sound
+          value:
+            source: player
+            key: minecraft:item.bone_meal.use
+            volume: 1
+            pitch: 1
+
+kaleidoscope_tavern_ice_grape:
+  type: BLOCK
+  pot-whitelist: []
+  seed: kaleidoscope_tavern:_customcrops/ice_grape_seed
+  ignore-random-tick: false
+  ignore-scheduled-tick: true
+  random-rotation: false
+  max-points: 5
+  points:
+    0:
+      model: kaleidoscope_tavern:ice_grape_crop
+    1:
+      model: kaleidoscope_tavern:_crop/ice_grape_crop/stage_1
+    2:
+      model: kaleidoscope_tavern:_crop/ice_grape_crop/stage_2
+    3:
+      model: kaleidoscope_tavern:_crop/ice_grape_crop/stage_3
+    4:
+      model: kaleidoscope_tavern:_crop/ice_grape_crop/stage_4
+    5:
+      model: kaleidoscope_tavern:_crop/ice_grape_crop/stage_5
+      events:
+        interact:
+          harvest_with_shears:
+            type: conditional
+            value:
+              conditions:
+                shears:
+                  type: item-in-hand
+                  value:
+                    item: SHEARS
+                    amount: 1
+              actions:
+                break_crop:
+                  type: break
+                  value: true
+                swing_hand:
+                  type: swing-hand
+                  value: true
+        break:
+          harvest_with_shears:
+            type: conditional
+            value:
+              conditions:
+                shears:
+                  type: item-in-hand
+                  value:
+                    item: SHEARS
+                    amount: 1
+              actions:
+                ripe_grapes:
+                  type: drop-item
+                  value:
+                    ignore-fertilizer: true
+                    item: kaleidoscope_tavern:ice_grape
+                    min: 3
+                    max: 3
+                green_grapes:
+                  type: drop-item
+                  value:
+                    ignore-fertilizer: true
+                    item: kaleidoscope_tavern:green_grape
+                    min: 1
+                    max: 2
+                  chance: 0.3
+                damage_shears:
+                  type: durability
+                  value: -1
+                harvest_sound:
+                  type: sound
+                  value:
+                    source: player
+                    key: minecraft:block.beehive.shear
+                    volume: 1
+                    pitch: 1
+  grow-conditions:
+    enough_light:
+      point: 1
+      conditions:
+        light:
+          type: light-more-than
+          value: 8
+  custom-bone-meal:
+    bone_meal:
+      item: BONE_MEAL
+      dispenser: true
+      chance:
+        1: 0.5
+        2: 0.5
+      actions:
+        particles:
+          type: particle
+          value:
+            particle: VILLAGER_HAPPY
+            x: 0.5
+            y: 0.5
+            z: 0.5
+            count: 10
+            offset-x: 0.25
+            offset-y: 0.25
+            offset-z: 0.25
+        sound:
+          type: sound
+          value:
+            source: player
+            key: minecraft:item.bone_meal.use
+            volume: 1
+            pitch: 1
+
+kaleidoscope_tavern_gold_grape:
+  type: BLOCK
+  pot-whitelist: []
+  seed: kaleidoscope_tavern:_customcrops/gold_grape_seed
+  ignore-random-tick: false
+  ignore-scheduled-tick: true
+  random-rotation: false
+  max-points: 5
+  points:
+    0:
+      model: kaleidoscope_tavern:gold_grape_crop
+    1:
+      model: kaleidoscope_tavern:_crop/gold_grape_crop/stage_1
+    2:
+      model: kaleidoscope_tavern:_crop/gold_grape_crop/stage_2
+    3:
+      model: kaleidoscope_tavern:_crop/gold_grape_crop/stage_3
+    4:
+      model: kaleidoscope_tavern:_crop/gold_grape_crop/stage_4
+    5:
+      model: kaleidoscope_tavern:_crop/gold_grape_crop/stage_5
+      events:
+        interact:
+          harvest_with_shears:
+            type: conditional
+            value:
+              conditions:
+                shears:
+                  type: item-in-hand
+                  value:
+                    item: SHEARS
+                    amount: 1
+              actions:
+                break_crop:
+                  type: break
+                  value: true
+                swing_hand:
+                  type: swing-hand
+                  value: true
+        break:
+          harvest_with_shears:
+            type: conditional
+            value:
+              conditions:
+                shears:
+                  type: item-in-hand
+                  value:
+                    item: SHEARS
+                    amount: 1
+              actions:
+                ripe_grapes:
+                  type: drop-item
+                  value:
+                    ignore-fertilizer: true
+                    item: kaleidoscope_tavern:gold_grape
+                    min: 3
+                    max: 3
+                green_grapes:
+                  type: drop-item
+                  value:
+                    ignore-fertilizer: true
+                    item: kaleidoscope_tavern:green_grape
+                    min: 1
+                    max: 2
+                  chance: 0.3
+                damage_shears:
+                  type: durability
+                  value: -1
+                harvest_sound:
+                  type: sound
+                  value:
+                    source: player
+                    key: minecraft:block.beehive.shear
+                    volume: 1
+                    pitch: 1
+  grow-conditions:
+    enough_light:
+      point: 1
+      conditions:
+        light:
+          type: light-more-than
+          value: 8
+  custom-bone-meal:
+    bone_meal:
+      item: BONE_MEAL
+      dispenser: true
+      chance:
+        1: 0.5
+        2: 0.5
+      actions:
+        particles:
+          type: particle
+          value:
+            particle: VILLAGER_HAPPY
+            x: 0.5
+            y: 0.5
+            z: 0.5
+            count: 10
+            offset-x: 0.25
+            offset-y: 0.25
+            offset-z: 0.25
+        sound:
+          type: sound
+          value:
+            source: player
+            key: minecraft:item.bone_meal.use
+            volume: 1
+            pitch: 1
