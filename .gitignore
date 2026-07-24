@@ -111,6 +111,10 @@ gradle-app.setting
 
 **/build/
 
+# Python migration/validation bytecode
+__pycache__/
+*.py[cod]
+
 # Common working directory
 run/
 runs/

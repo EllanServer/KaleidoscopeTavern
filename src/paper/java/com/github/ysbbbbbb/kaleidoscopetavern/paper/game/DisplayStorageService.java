@@ -310,6 +310,20 @@ public final class DisplayStorageService implements Listener {
         return direction.lengthSquared() < 1.0E-6 ? new Vector(0, 0, 1) : direction.normalize();
     }
 
+    boolean hasAnyStoredItem(BukkitFurniture furniture) {
+        StorageSpec spec = STORAGE.get(furniture.id().toString());
+        if (spec == null) {
+            return false;
+        }
+        for (int slot = 0; slot < spec.slots(); slot++) {
+            Item stored = controllerItem(furniture, slot);
+            if (stored != null && !stored.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private List<Item> controllerItems(BukkitFurniture furniture, int slots) {
         List<Item> result = new ArrayList<>(slots);
         for (int slot = 0; slot < slots; slot++) {

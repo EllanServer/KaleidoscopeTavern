@@ -14,6 +14,7 @@ CONFIG = ROOT / "src/paper/pack/configuration"
 CATALOG = ROOT / "src/paper/resources/catalog"
 CUSTOM_CROPS = ROOT / "src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml"
 NAMESPACE = "kaleidoscope_tavern"
+EN_US = ROOT / f"src/main/resources/assets/{NAMESPACE}/lang/en_us.json"
 ASSET_ROOTS = (
     ROOT / "src/paper/pack/resourcepack/assets",
     ROOT / "src/generated/resources/assets",
@@ -108,6 +109,34 @@ def validate() -> dict[str, int]:
         raise AssertionError(f"Grid/furniture classification drift: unexpected={unexpected}, missing={missing}")
     if set(blocks) & set(furniture):
         raise AssertionError("A placeable definition cannot be both a CE block and CE furniture")
+
+    with EN_US.open("r", encoding="utf-8-sig") as stream:
+        language_keys = set(json.load(stream))
+    for full_item_id, item in items.items():
+        item_id = full_item_id.split(":", 1)[1]
+        raw_name = item.get("data", {}).get("item_name", "")
+        matches = re.fullmatch(r"<!i><lang:([^>]+)>", raw_name)
+        if matches is None:
+            raise AssertionError(f"{full_item_id}: malformed translatable item_name {raw_name!r}")
+        actual_key = matches.group(1)
+        if actual_key not in language_keys:
+            raise AssertionError(f"{full_item_id}: missing item-name translation {actual_key}")
+
+        if item_id.endswith("_sandwich_board"):
+            expected_key = f"block.{NAMESPACE}.sandwich_board"
+        elif item_id.endswith("_painting"):
+            expected_key = f"block.{NAMESPACE}.painting"
+            lore = item.get("data", {}).get("lore", [])
+            if f"<!i><gray><lang:tooltip.{NAMESPACE}.{item_id}>" not in lore:
+                raise AssertionError(f"{full_item_id}: painting variant tooltip is missing")
+        else:
+            block_key = f"block.{NAMESPACE}.{item_id}"
+            item_key = f"item.{NAMESPACE}.{item_id}"
+            expected_key = block_key if block_key in language_keys else item_key
+        if actual_key != expected_key:
+            raise AssertionError(
+                f"{full_item_id}: expected source description id {expected_key}, found {actual_key}"
+            )
 
     crop_models: dict[str, list[str]] = {
         "kaleidoscope_tavern_grape": [
@@ -236,6 +265,38 @@ def validate() -> dict[str, int]:
     barrel = furniture[f"{NAMESPACE}:barrel"]["variants"]["ground"]
     if len(barrel.get("hitboxes", [])) != 27 or barrel.get("elements", [{}])[0].get("scale") != "3,3,3":
         raise AssertionError("The legacy barrel must retain its 3x3x3 furniture footprint")
+    if barrel["elements"][0].get("translation") != "0,1.5,0" or any(
+            hitbox.get("peek") != 0 for hitbox in barrel["hitboxes"]):
+        raise AssertionError("The 3x3x3 barrel model/collision must span y=0..3 exactly")
+
+    sofa = furniture[f"{NAMESPACE}:white_sofa"]["variants"]["ground"]
+    stool = furniture[f"{NAMESPACE}:white_bar_stool"]["variants"]["ground"]
+    bottle = furniture[f"{NAMESPACE}:empty_bottle"]["variants"]["ground"]
+    if sofa["elements"][0].get("translation") != "0,0.5,0":
+        raise AssertionError("Ground block models must be lifted to the authored target block")
+    if sofa["hitboxes"][0].get("height") != 1.125 or stool["hitboxes"][0].get("height") != 1.3125:
+        raise AssertionError("Seat hitboxes must retain the Forge VoxelShape height")
+    if bottle["hitboxes"][0].get("width") != 0.375 or bottle["hitboxes"][0].get("height") != 0.875:
+        raise AssertionError("Bottle hitboxes must retain the 6x14x6 source VoxelShape")
+
+    board = furniture[f"{NAMESPACE}:base_sandwich_board"]["variants"]["ground"]
+    if [element.get("translation") for element in board["elements"]] != ["0,0.5,0", "0,1.5,0"]:
+        raise AssertionError("Two-block sandwich-board model halves are vertically misaligned")
+    pendant = furniture[f"{NAMESPACE}:bell_pendant_lamp"]["variants"]["ceiling"]
+    if [element.get("translation") for element in pendant["elements"]] != ["0,-0.49,0", "0,-1.49,0"]:
+        raise AssertionError("Ceiling pendant model halves are vertically misaligned")
+    tap = furniture[f"{NAMESPACE}:tap"]["variants"]["wall"]["elements"][0]
+    if tap.get("position") != "0,0,0.01" or tap.get("translation") != "0,0,0.49":
+        raise AssertionError("Wall model must retain its target-block offset after anti-blackening compensation")
+
+    expected_rules = {
+        f"{NAMESPACE}:empty_bottle": {"rotation": "four", "alignment": "center"},
+        f"{NAMESPACE}:base_sandwich_board": {"rotation": "sixteen", "alignment": "center"},
+    }
+    for item_id, expected_rule in expected_rules.items():
+        actual = items[item_id]["behavior"]["rules"]["ground"]
+        if actual != expected_rule:
+            raise AssertionError(f"{item_id}: placement rule drifted from Forge BlockItem semantics")
 
     return {
         "items": len(items),

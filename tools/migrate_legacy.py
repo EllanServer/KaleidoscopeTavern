@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import shutil
 from collections import defaultdict
@@ -40,6 +41,7 @@ ITEM_MODELS = (
 )
 RECIPES = GENERATED / f"data/{NAMESPACE}/recipes"
 DRINK_EFFECTS = GENERATED / f"data/{NAMESPACE}/datamap/drink_effect"
+EN_US = MAIN_RESOURCES / f"assets/{NAMESPACE}/lang/en_us.json"
 
 
 # Vanilla renamed these resource ids after the archived Forge data was generated.
@@ -179,6 +181,50 @@ SMALL_FURNITURE = {
 }
 BOTTLE_AND_GLASS_ITEMS = SMALL_FURNITURE - {"tap", "shaker"}
 GRAPE_ITEMS = {"grape", "ice_grape", "gold_grape", "green_grape"}
+
+# These families mirror the VoxelShape groups passed to DrinkBlock.create() in
+# ModBlocks.java.  Keeping the source-space boxes here lets the Paper migration
+# preserve the authored selection/collision volume for every count variant.
+TALL_DRINKS = {
+    "wine", "champagne", "sakura_wine", "whiskey", "ice_wine",
+    "polaris_sweet_white", "honey_wine", "red_queen", "miners_star", "rum",
+    "sherry", "luminous_bride", "glowflower_brew",
+    "sauvignon_blanc_dry_white", "vinegar", "watermelon_juice",
+}
+WIDE_DRINKS = {
+    "vodka", "riesling_dry_white", "madame_shexiang",
+    "sweet_berry_wine", "mother_snow",
+}
+BRANDY_DRINKS = {"brandy", "sunset_glow"}
+COCKTAILS = {
+    "empty_glassware", "signature_cocktail", "mystery_cocktail", "white_lady",
+    "emerald", "brass_heart", "godfather", "grasshopper", "screwdriver",
+    "mojito", "allium_garden", "depth_charge", "nether_special", "bloody_mary",
+    "sculk_special",
+}
+SIMPLE_BOTTLES = {
+    "water_bottle", "honey_bottle", "dragon_breath_bottle",
+    "potion_bottle", "xp_bottle",
+}
+
+# The Forge blocks below intentionally shared a generic description id.  Their
+# concrete variant was shown as lore where applicable, so using the registry id
+# as an item translation key makes CraftEngine display a missing-language key.
+GENERIC_ITEM_NAME_KEYS = {
+    **{item_id: f"block.{NAMESPACE}.painting" for item_id in PAINTINGS},
+    **{
+        item_id: f"block.{NAMESPACE}.sandwich_board"
+        for item_id in {
+            "base_sandwich_board", "grass_sandwich_board", "allium_sandwich_board",
+            "azure_bluet_sandwich_board", "cornflower_sandwich_board",
+            "orchid_sandwich_board", "peony_sandwich_board",
+            "pink_petals_sandwich_board", "pitcher_plant_sandwich_board",
+            "poppy_sandwich_board", "sunflower_sandwich_board",
+            "torchflower_sandwich_board", "tulip_sandwich_board",
+            "wither_rose_sandwich_board",
+        }
+    },
+}
 
 
 def read_json(path: Path) -> Any:
@@ -745,6 +791,35 @@ def ensure_render_item(
     return render_id
 
 
+Box = tuple[float, float, float, float, float, float]
+
+
+def number(value: float) -> str:
+    if abs(value) < 1.0e-8:
+        return "0"
+    return f"{value:.6f}".rstrip("0").rstrip(".")
+
+
+def vector(values: tuple[float, float, float]) -> str:
+    return ",".join(number(value) for value in values)
+
+
+def parse_vector(raw: str | None) -> tuple[float, float, float]:
+    if raw is None:
+        return 0.0, 0.0, 0.0
+    values = tuple(float(value) for value in raw.split(","))
+    if len(values) != 3:
+        raise ValueError(f"Expected three vector components, got {raw!r}")
+    return values
+
+
+def add_vector(
+    first: tuple[float, float, float],
+    second: tuple[float, float, float],
+) -> tuple[float, float, float]:
+    return tuple(a + b for a, b in zip(first, second, strict=True))
+
+
 def furniture_element(
     render_items: dict[str, Any],
     block_id: str,
@@ -765,10 +840,30 @@ def furniture_element(
         "shadow_radius": 0,
         "view_range": 1.25,
     }
+
+    # A block model is centred around the item-display origin.  Forge placed
+    # these models in a target block, while CE anchors furniture on a surface,
+    # so every model needs the corresponding half-block translation.  The
+    # 0.01 entity offsets keep wall/ceiling displays lit; their translation is
+    # compensated so the final visual location remains exact.
+    base_translation = {
+        "ground": (0.0, 0.5, 0.0),
+        "wall": (0.0, 0.0, 0.49),
+        "ceiling": (0.0, -0.49, 0.0),
+    }[anchor]
+    if anchor == "wall":
+        element["position"] = "0,0,0.01"
+    elif anchor == "ceiling":
+        element["position"] = "0,-0.01,0"
+
     if block_id == "barrel":
-        element["position"] = "0,1,0"
+        # Scaling a one-block model by three also scales around its centre.
+        # Lift that centre by 1.5 blocks to keep the authored base at y=0.
+        base_translation = (0.0, 1.5, 0.0)
         element["scale"] = "3,3,3"
         element["view_range"] = 2.5
+    element["translation"] = vector(add_vector(base_translation, parse_vector(translation)))
+
     # Potion bottles are placed from a vanilla potion, while signature
     # cocktails store a dynamically mixed color. Both take their furniture
     # tint from the exact source item's potion_contents component.
@@ -776,116 +871,287 @@ def furniture_element(
         element["tint_source"] = ["potion_contents"]
     if any(model[1:4]):
         element["rotation"] = f"{model[1]},{model[2]},{model[3]}"
-    if anchor == "wall":
-        element["position"] = "0,0,0.01"
-        element["translation"] = "0,0,-0.01"
-    elif anchor == "ceiling":
-        element["position"] = "0,-0.01,0"
-        element["translation"] = "0,0.01,0"
-    if translation is not None:
-        element["translation"] = translation
     return element
 
 
-def furniture_hitboxes(block_id: str, anchor: str) -> list[dict[str, Any]]:
+def drink_boxes(block_id: str, count: int) -> list[Box]:
+    if block_id in TALL_DRINKS:
+        return {
+            1: [(6, 0, 6, 10, 16, 10)],
+            2: [(2, 0, 6, 14, 16, 10)],
+            3: [(2, 0, 10, 14, 16, 14), (6, 0, 2, 10, 16, 14)],
+            4: [(2, 0, 2, 14, 16, 14)],
+        }[count]
+    if block_id in WIDE_DRINKS:
+        return {
+            1: [(4, 0, 4, 12, 15, 12)],
+            2: [(0, 0, 4, 16, 15, 12)],
+            3: [(0, 0, 8, 16, 15, 16), (4, 0, 0, 12, 15, 16)],
+            4: [(0, 0, 0, 16, 16, 16)],
+        }[count]
+    if block_id in BRANDY_DRINKS:
+        return {
+            1: [(3, 0, 6, 13, 13, 10)],
+            2: [(1, 0, 3, 15, 12, 12)],
+            3: [(1, 0, 1, 16, 12, 13)],
+        }[count]
+    if block_id == "carignan":
+        return {
+            1: [(3, 0, 6, 13, 12, 10)],
+            2: [(1, 0, 3, 15, 12, 12)],
+            3: [(0, 0, 1, 16, 12, 13)],
+        }[count]
+    if block_id == "plum_wine":
+        return {
+            1: [(6, 0, 6, 10, 12, 10)],
+            2: [(3, 0, 6, 13, 12, 10)],
+            3: [(3, 0, 9, 13, 12, 13), (6, 0, 3, 10, 12, 13)],
+            4: [(3, 0, 3, 13, 12, 13)],
+        }[count]
+    return []
+
+
+def source_boxes(block_id: str, anchor: str, properties: dict[str, str]) -> list[Box]:
+    count = int(properties.get("count", "1"))
+    drinks = drink_boxes(block_id, count)
+    if drinks:
+        return drinks
+    if block_id.endswith("_sofa"):
+        return [(0, 0, 0, 16, 18, 16)]
+    if block_id.endswith("_bar_stool"):
+        return [(2, 0, 2, 14, 21, 14)]
+    if block_id == "chalkboard":
+        return [(0, 2, 15, 16, 30, 16)]
+    if block_id.endswith("_sandwich_board"):
+        return [(2, 0, 2, 14, 22, 14)]
+    if block_id in PENDANT_LAMPS:
+        # Coordinates are relative to the upper target block; the lower half
+        # occupies the block below it.
+        return [(1, -15, 5, 15, 16, 11)]
+    if block_id == "stepladder":
+        return [(0, 0, 0, 16, 32, 16)]
+    if block_id in PAINTINGS:
+        return {
+            "ground": [(1, 0, 1, 15, 1, 15)],
+            "wall": [(1, 1, 0, 15, 15, 1)],
+            "ceiling": [(1, 15, 1, 15, 16, 15)],
+        }[anchor]
+    if block_id.endswith("_incense"):
+        return [(5, 0, 5, 11, 7, 11)]
+    if block_id == "pressing_tub":
+        if anchor == "ground":
+            # SHAPE is a half-block tub with a four-pixel floor and walls.
+            return [
+                (0, 0, 0, 16, 4, 16),
+                (0, 4, 0, 16, 8, 2),
+                (0, 4, 14, 16, 8, 16),
+                (0, 4, 2, 2, 8, 14),
+                (14, 4, 2, 16, 8, 14),
+            ]
+        # The wall rule selects Forge's facing=south tilted state.
+        return [
+            (0, 0, 8, 16, 8, 16),
+            (0, 4, 4, 16, 12, 12),
+            (0, 8, 0, 16, 16, 8),
+        ]
+    if block_id == "tap":
+        # Wall variants use the south-authored state so z=0 is adjacent to
+        # the clicked support surface and +z extends outwards.
+        return [(5, 5, 0, 11, 13, 10)]
+    if block_id == "glassware_holder":
+        return [(0, 11, 1, 16, 16, 15)]
+    if block_id in COCKTAILS:
+        return [(4, 0, 4, 12, 10, 12)]
+    if block_id == "shaker":
+        return [(4, 0, 4, 12, 16, 12)]
+    if block_id in SIMPLE_BOTTLES:
+        return [(5, 0, 5, 11, 10, 11)]
+    if block_id in {"empty_bottle", "molotov"}:
+        return [(5, 0, 5, 11, 14, 11)]
+    if block_id == "table":
+        return [(0, 13, 0, 16, 16, 16)]
+    if block_id == "tilted_rack":
+        return [(0, 0, 5, 16, 14, 15)]
+    if block_id == "circular_rack":
+        return [(0, 0, 0, 16, 2, 16)]
+    if block_id == "holder":
+        return [(5, 0, 2, 11, 16, 14)]
+    return [(0, 0, 0, 16, 16, 16)]
+
+
+def hitbox_position(anchor: str, x: float, y: float, z: float) -> tuple[float, float, float]:
+    if anchor == "ground":
+        return x / 16 - 0.5, y / 16, z / 16 - 0.5
+    if anchor == "ceiling":
+        return x / 16 - 0.5, -1 + y / 16, z / 16 - 0.5
+    if anchor == "wall":
+        return x / 16 - 0.5, y / 16 - 0.5, z / 16
+    raise ValueError(f"Unknown furniture anchor {anchor!r}")
+
+
+def aggregate_box(boxes: list[Box]) -> Box:
+    return (
+        min(box[0] for box in boxes), min(box[1] for box in boxes), min(box[2] for box in boxes),
+        max(box[3] for box in boxes), max(box[4] for box in boxes), max(box[5] for box in boxes),
+    )
+
+
+def interaction_box(box: Box, anchor: str, seats: list[str] | None = None) -> dict[str, Any]:
+    min_x, min_y, min_z, max_x, max_y, max_z = box
+    position = hitbox_position(anchor, (min_x + max_x) / 2, min_y, (min_z + max_z) / 2)
+    result: dict[str, Any] = {
+        "type": "interaction",
+        "position": vector(position),
+        "width": round(max(max_x - min_x, max_z - min_z) / 16, 6),
+        "height": round((max_y - min_y) / 16, 6),
+        "can_use_item_on": True,
+        "can_be_hit_by_projectile": True,
+        "interactive": True,
+        "blocks_building": True,
+    }
+    if seats:
+        result["seats"] = seats
+    return result
+
+
+def shulker_box(
+    position: tuple[float, float, float],
+    scale: float = 1.0,
+    peek: int = 0,
+) -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "type": "shulker",
+        "position": vector(position),
+        "peek": peek,
+        "interaction_entity": False,
+        "can_use_item_on": True,
+        "can_be_hit_by_projectile": True,
+        "interactive": False,
+        "blocks_building": True,
+    }
+    if abs(scale - 1.0) > 1.0e-8:
+        result["scale"] = round(scale, 6)
+    return result
+
+
+def peek_for(scale: float, height: float) -> int:
+    if height <= scale:
+        return 0
+    physical_peek = max(0.0, min(1.0, height / scale - 1.0))
+    raw = 0.5 - math.asin(1.0 - 2.0 * physical_peek) / math.pi
+    return max(0, min(100, round(raw * 100)))
+
+
+def physical_box(box: Box, anchor: str, tile_limit: int = 4) -> list[dict[str, Any]]:
+    min_x, min_y, min_z, max_x, max_y, max_z = box
+    width_x = (max_x - min_x) / 16
+    width_z = (max_z - min_z) / 16
+    height = (max_y - min_y) / 16
+    cell = min(width_x, width_z)
+    tiles_x = round(width_x / cell)
+    tiles_z = round(width_z / cell)
+    can_tile = (
+        abs(tiles_x * cell - width_x) < 1.0e-6
+        and abs(tiles_z * cell - width_z) < 1.0e-6
+        and tiles_x * tiles_z <= tile_limit
+    )
+    if not can_tile:
+        cell = max(width_x, width_z)
+        tiles_x = tiles_z = 1
+
+    result: list[dict[str, Any]] = []
+    for tile_x in range(tiles_x):
+        x = ((min_x + max_x) / 32 if not can_tile
+             else min_x / 16 + cell * (tile_x + 0.5))
+        for tile_z in range(tiles_z):
+            z = ((min_z + max_z) / 32 if not can_tile
+                 else min_z / 16 + cell * (tile_z + 0.5))
+            remaining = height
+            y = min_y / 16
+            while remaining > 1.0e-8:
+                segment_scale = cell
+                segment_height = min(remaining, 2 * cell)
+                if segment_height < cell:
+                    # A narrow final segment also resembles the neck of the
+                    # authored bottle shapes better than an over-tall cube.
+                    segment_scale = segment_height
+                source_y = y * 16
+                position = hitbox_position(anchor, x * 16, source_y, z * 16)
+                result.append(shulker_box(position, segment_scale, peek_for(segment_scale, segment_height)))
+                y += segment_height
+                remaining -= segment_height
+    return result
+
+
+def furniture_hitboxes(
+    block_id: str,
+    anchor: str,
+    properties: dict[str, str] | None = None,
+) -> list[dict[str, Any]]:
+    properties = properties or {}
+    boxes = source_boxes(block_id, anchor, properties)
+    aggregate = aggregate_box(boxes)
+
     if block_id == "barrel":
         return [
-            {
-                "type": "shulker",
-                "position": f"{x},{y},{z}",
-                "peek": 100,
-                "interaction_entity": True,
-                "interactive": True,
-                "blocks_building": True,
-            }
+            shulker_box((x, y, z))
             for y in range(3)
             for x in (-1, 0, 1)
             for z in (-1, 0, 1)
         ]
     if block_id == "stepladder":
-        return [
-            {
-                "type": "shulker",
-                "position": "0,0,0",
-                "peek": 100,
-                "interaction_entity": True,
-                "interactive": True,
-                "blocks_building": True,
-            },
-            {
-                "type": "shulker",
-                "position": "0,1,0",
-                "peek": 100,
-                "interaction_entity": True,
-                "interactive": True,
-                "blocks_building": True,
-            },
-        ]
+        return [shulker_box((0, 0, 0)), shulker_box((0, 1, 0))]
     if block_id.endswith("_sofa"):
-        return [{
-            "type": "shulker",
-            "position": "0,0,0",
-            "peek": 100,
-            "interaction_entity": True,
-            "interactive": True,
-            "blocks_building": True,
-            "seats": ["0,0.45,0"],
-        }]
+        # Four half-block cubes reproduce the solid seat/base without filling
+        # the open space in front of the authored 18-pixel-high backrest.
+        return [
+            interaction_box(aggregate, anchor, ["0,0.5125,0 0"]),
+            *(shulker_box((x, 0, z), 0.5) for x in (-0.25, 0.25) for z in (-0.25, 0.25)),
+        ]
     if block_id.endswith("_bar_stool"):
-        return [{
-            "type": "shulker",
-            "position": "0,0,0",
-            "scale": 0.75,
-            "peek": 100,
-            "interaction_entity": True,
-            "interactive": True,
-            "blocks_building": True,
-            "seats": ["0,0.85,0 0"],
-        }]
-    if block_id == "chalkboard" or block_id.endswith("_sandwich_board"):
-        return [{
-            "type": "interaction",
-            "position": "0,1,0",
-            "width": 1,
-            "height": 2,
-            "interactive": True,
-            "blocks_building": True,
-        }]
+        return [
+            interaction_box(aggregate, anchor, ["0,0.875,0 0"]),
+            # The broad seat ends at 15/16; the taller back remains an
+            # interaction volume rather than blocking the player's torso.
+            shulker_box((0, 3 / 16, 0), 0.75),
+        ]
+    if block_id.endswith("_sandwich_board"):
+        return [
+            interaction_box(aggregate, anchor),
+            shulker_box((0, 0, 0), 0.75, peek_for(0.75, 1.375)),
+        ]
+    if block_id == "pressing_tub" and anchor == "ground":
+        edge = (-0.375, -0.125, 0.125, 0.375)
+        walls = [shulker_box((x, 0, z), 0.25, 100) for x in edge for z in (-0.375, 0.375)]
+        walls.extend(shulker_box((x, 0, z), 0.25, 100)
+                     for x in (-0.375, 0.375) for z in (-0.125, 0.125))
+        floor = [
+            shulker_box((x, 0, z), 0.25)
+            for x in (-0.125, 0.125)
+            for z in (-0.125, 0.125)
+        ]
+        return [interaction_box(aggregate, anchor), *walls, *floor]
     if block_id in PENDANT_LAMPS:
-        return [{
-            "type": "interaction",
-            "position": "0,-1,0",
-            "width": 1,
-            "height": 2,
-            "interactive": True,
-            "blocks_building": True,
-        }]
-    if block_id in PAINTINGS or anchor == "wall":
-        return [{
-            "type": "interaction",
-            "position": "0,0.5,0",
-            "width": 0.9,
-            "height": 1,
-            "interactive": True,
-            "blocks_building": True,
-        }]
+        # Forge explicitly used noCollission() for pendant lamps.
+        return [interaction_box(aggregate, anchor)]
+    if block_id == "chalkboard" or block_id in PAINTINGS or block_id == "glassware_holder":
+        return [interaction_box(aggregate, anchor)]
+    if block_id in {"table", "bar_counter", "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet"}:
+        # A full shulker with peek=0 is exactly one block high.  The previous
+        # peek=100 doubled these colliders to two blocks.
+        return [shulker_box(hitbox_position(anchor, 8, 0, 8))]
+    if block_id == "circular_rack":
+        return [interaction_box(aggregate, anchor)]
+    if block_id in {"tilted_rack", "holder", "tap"}:
+        return [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
     if block_id in SMALL_FURNITURE or block_id.endswith("_incense"):
-        return [{
-            "type": "interaction",
-            "position": "0,0.35,0",
-            "width": 0.55,
-            "height": 0.7,
-            "interactive": True,
-            "blocks_building": True,
-        }]
-    return [{
-        "type": "shulker",
-        "position": "0,0,0",
-        "peek": 100,
-        "interaction_entity": True,
-        "interactive": True,
-        "blocks_building": True,
-    }]
+        return [interaction_box(aggregate, anchor), *(hitbox for box in boxes for hitbox in physical_box(box, anchor))]
+    if block_id == "pressing_tub":
+        return [
+            interaction_box(aggregate, anchor),
+            *(hitbox for box in boxes for hitbox in physical_box(box, anchor, tile_limit=8)),
+        ]
+    return [shulker_box(hitbox_position(anchor, 8, 0, 8))]
 
 
 def create_chalkboard_models() -> None:
@@ -895,8 +1161,10 @@ def create_chalkboard_models() -> None:
         "ambientocclusion": False,
         "textures": {"board": f"{texture_root}/small_chalkboard", "particle": f"{NAMESPACE}:block/deco/chalkboard_particle"},
         "elements": [{
-            "from": [0, 0, 7.5],
-            "to": [16, 28, 8.5],
+            # SmallChalkboardModel is one pixel thick at the facing edge and
+            # spans source y=2..30 across the original two-block structure.
+            "from": [0, 2, 15],
+            "to": [16, 30, 16],
             "faces": {
                 "north": {"uv": [0, 0, 4, 7], "texture": "#board"},
                 "south": {"uv": [0, 0, 4, 7], "texture": "#board"},
@@ -907,8 +1175,8 @@ def create_chalkboard_models() -> None:
         "ambientocclusion": False,
         "textures": {"board": f"{texture_root}/large_chalkboard", "particle": f"{NAMESPACE}:block/deco/chalkboard_particle"},
         "elements": [{
-            "from": [-16, 0, 7.5],
-            "to": [32, 28, 8.5],
+            "from": [-16, 2, 15],
+            "to": [32, 30, 16],
             "faces": {
                 "north": {"uv": [0, 0, 6, 7], "texture": "#board"},
                 "south": {"uv": [0, 0, 6, 7], "texture": "#board"},
@@ -1004,11 +1272,12 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
 def furniture_rules(block_id: str, variant_names: list[str]) -> dict[str, Any]:
     anchors = [name for name in ("ground", "wall", "ceiling") if name in variant_names]
     rules: dict[str, Any] = {}
-    free_place = block_id in SMALL_FURNITURE or block_id.endswith("_sandwich_board") or block_id in PAINTINGS
-    rotation = "sixteen" if free_place else "four"
-    alignment = "any" if free_place else "center"
+    # Forge BlockItem placement always occupied the target block centre.  Only
+    # sandwich boards used ROTATION_16; bottles, paintings and other small
+    # furniture retained horizontal cardinal facing.
+    rotation = "sixteen" if block_id.endswith("_sandwich_board") else "four"
     for anchor in anchors:
-        rules[anchor] = {"rotation": rotation, "alignment": alignment}
+        rules[anchor] = {"rotation": rotation, "alignment": "center"}
     return rules
 
 
@@ -1036,10 +1305,7 @@ def build_furniture(
             }
             variants["ground_large"] = {
                 "elements": [furniture_element(render_items, block_id, "large", large_model, "ground")],
-                "hitboxes": [{
-                    "type": "interaction", "position": "0,1,0", "width": 3, "height": 2,
-                    "interactive": True, "blocks_building": True,
-                }],
+                "hitboxes": [interaction_box((-16, 2, 15, 32, 30, 16), "ground")],
             }
         elif block_id.endswith("_sandwich_board"):
             bottom = select_record(records, {"half": "bottom", "rotation": "0", "waterlogged": "false"})[1]
@@ -1066,7 +1332,7 @@ def build_furniture(
                 "facing": "north", "tilt": "false", "waterlogged": "false",
             })[1]
             tilted = select_record(records, {
-                "facing": "north", "tilt": "true", "waterlogged": "false",
+                "facing": "south", "tilt": "true", "waterlogged": "false",
             })[1]
             variants["ground"] = {
                 "elements": [furniture_element(render_items, block_id, "ground", normal, "ground")],
@@ -1092,7 +1358,8 @@ def build_furniture(
             }
         elif block_id in PAINTINGS:
             for anchor, face in (("ground", "floor"), ("wall", "wall"), ("ceiling", "ceiling")):
-                selected = select_record(records, {"face": face, "facing": "north", "waterlogged": "false"})[1]
+                facing = "south" if anchor == "wall" else "north"
+                selected = select_record(records, {"face": face, "facing": facing, "waterlogged": "false"})[1]
                 variants[anchor] = {
                     "elements": [furniture_element(render_items, block_id, anchor, selected, anchor)],
                     "hitboxes": furniture_hitboxes(block_id, anchor),
@@ -1109,14 +1376,17 @@ def build_furniture(
             ordered = sorted(grouped.items(), key=lambda entry: (record_score(min(entry[1], key=record_score)), entry[0]))
             used_names: set[str] = set()
             for index, (semantic, candidates) in enumerate(ordered):
-                selected = min(candidates, key=record_score)[1]
+                preferred_facing = "south" if anchor == "wall" else "north"
+                preferred = [candidate for candidate in candidates
+                             if candidate[0].get("facing") == preferred_facing]
+                selected = min(preferred or candidates, key=record_score)[1]
                 name = semantic_variant_name(anchor, semantic, index)
                 if name in used_names:
                     name = f"{name}_{index}"
                 used_names.add(name)
                 variants[name] = {
                     "elements": [furniture_element(render_items, block_id, name, selected, anchor)],
-                    "hitboxes": furniture_hitboxes(block_id, anchor),
+                    "hitboxes": furniture_hitboxes(block_id, anchor, dict(semantic)),
                 }
 
         config: dict[str, Any] = {
@@ -1188,6 +1458,25 @@ def material_for(item_id: str, drink_ids: set[str], block_ids: set[str]) -> str:
     return "paper"
 
 
+def item_name_key(
+    item_id: str,
+    placeable_ids: set[str],
+    language_keys: set[str],
+) -> str:
+    generic = GENERIC_ITEM_NAME_KEYS.get(item_id)
+    if generic is not None:
+        if generic not in language_keys:
+            raise KeyError(f"Missing generic item-name translation {generic}")
+        return generic
+
+    prefixes = ("block", "item") if item_id in placeable_ids else ("item", "block")
+    for prefix in prefixes:
+        candidate = f"{prefix}.{NAMESPACE}.{item_id}"
+        if candidate in language_keys:
+            return candidate
+    raise KeyError(f"No item-name translation for {NAMESPACE}:{item_id}")
+
+
 def build_items(
     item_ids: list[str],
     block_ids: set[str],
@@ -1195,6 +1484,7 @@ def build_items(
     furniture_placement: dict[str, dict[str, Any]],
     drink_ids: set[str],
     tags: dict[str, list[str]],
+    language_keys: set[str],
 ) -> dict[str, Any]:
     memberships: dict[str, list[str]] = defaultdict(list)
     custom_prefix = f"{NAMESPACE}:"
@@ -1204,13 +1494,16 @@ def build_items(
                 memberships[member.split(":", 1)[1]].append(tag)
 
     items: dict[str, Any] = {}
+    placeable_ids = block_ids | furniture_ids
     for item_id in item_ids:
         model = find_file(ITEM_MODELS, Path(f"{item_id}.json"))
         if model is None:
             raise FileNotFoundError(f"No item model for {item_id}")
         config: dict[str, Any] = {
             "material": material_for(item_id, drink_ids, block_ids),
-            "data": {"item_name": f"<!i><lang:item.{NAMESPACE}.{item_id}>"},
+            "data": {
+                "item_name": f"<!i><lang:{item_name_key(item_id, placeable_ids, language_keys)}>"
+            },
             "model": {"type": "minecraft:model", "path": f"{NAMESPACE}:item/{item_id}"},
         }
         behaviors: list[dict[str, Any]] = []
@@ -1231,6 +1524,10 @@ def build_items(
         elif item_id == "trellis":
             lore_keys = [f"tooltip.{NAMESPACE}.trellis.{index}" for index in range(1, 3)]
         elif item_id in GRAPE_ITEMS or item_id.endswith("_bucket"):
+            lore_keys = [f"tooltip.{NAMESPACE}.{item_id}"]
+        elif item_id in PAINTINGS:
+            # PaintingBlock shared the generic item name and exposed the
+            # concrete artwork through its per-registry-id tooltip.
             lore_keys = [f"tooltip.{NAMESPACE}.{item_id}"]
         if lore_keys:
             config["data"]["lore"] = [f"<!i><gray><lang:{key}>" for key in lore_keys]
@@ -1366,6 +1663,7 @@ def main() -> None:
     block_tags = load_raw_registry_tags(("blocks", "block"))
     entity_tags = load_raw_registry_tags(("entity_types", "entity_type"))
     drink_ids, effect_rows = load_drink_effects()
+    language_keys = set(read_json(EN_US))
 
     if CONFIGURATION.exists():
         shutil.rmtree(CONFIGURATION)
@@ -1390,6 +1688,7 @@ def main() -> None:
         furniture_placement,
         drink_ids,
         tags,
+        language_keys,
     )
     recipes = convert_standard_recipes(tags)
     runtime_metrics = build_runtime_catalogs(tags, effect_rows, block_tags, entity_tags)

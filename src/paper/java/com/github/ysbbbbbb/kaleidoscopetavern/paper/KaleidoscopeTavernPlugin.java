@@ -1,6 +1,7 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.AmbientFurnitureService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.EffectService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BoardTextService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BottlePlacementService;
@@ -62,6 +63,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     private BoardTextService boards;
     private TapService taps;
     private DisplayStorageService displayStorage;
+    private AmbientFurnitureService ambientFurniture;
 
     @Override
     public void onLoad() {
@@ -111,6 +113,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         boards = new BoardTextService(this, items);
         taps = new TapService(this, stations, items);
         displayStorage = new DisplayStorageService(this, catalog, items);
+        ambientFurniture = new AmbientFurnitureService(this, displayStorage);
 
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new BlockService(this, catalog, items), this);
@@ -119,6 +122,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         getServer().getPluginManager().registerEvents(new BottlePlacementService(this, catalog, items), this);
         getServer().getPluginManager().registerEvents(new BottleFurnitureService(this, catalog, items, effects), this);
         getServer().getPluginManager().registerEvents(displayStorage, this);
+        getServer().getPluginManager().registerEvents(ambientFurniture, this);
         getServer().getPluginManager().registerEvents(boards, this);
         getServer().getPluginManager().registerEvents(taps, this);
         getServer().getPluginManager().registerEvents(new WorldgenService(this), this);
@@ -129,6 +133,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         boards.start();
         taps.start();
         displayStorage.start();
+        ambientFurniture.start();
 
         PluginCommand command = Objects.requireNonNull(getCommand("kaleidoscopetavern"),
                 "plugin.yml command kaleidoscopetavern");
@@ -163,6 +168,9 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         }
         if (displayStorage != null) {
             displayStorage.stop();
+        }
+        if (ambientFurniture != null) {
+            ambientFurniture.stop();
         }
     }
 

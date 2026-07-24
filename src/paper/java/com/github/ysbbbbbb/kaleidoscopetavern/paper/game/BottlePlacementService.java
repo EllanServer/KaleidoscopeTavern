@@ -69,11 +69,10 @@ public final class BottlePlacementService implements Listener {
         if (!canPlaceAt(target)) {
             return;
         }
-        Location point = event.getInteractionPoint();
-        Location location = target.getLocation().add(
-                point == null ? 0.5 : clampInside(point.getX() - target.getX()),
-                0,
-                point == null ? 0.5 : clampInside(point.getZ() - target.getZ()));
+        // Forge's BottleBlockItem was still a normal BlockItem: the clicked
+        // point selected the target block, but never offset the bottle inside
+        // that block. Preserve the target-centred, cardinal placement.
+        Location location = target.getLocation().add(0.5, 0, 0.5);
         location.setYaw(snapRotation(180F + event.getPlayer().getYaw()));
         BukkitFurniture furniture = CraftEngineFurniture.place(location, Key.of(placement.furniture()), "ground", true);
         if (furniture == null) {
@@ -195,12 +194,8 @@ public final class BottlePlacementService implements Listener {
         return false;
     }
 
-    private static double clampInside(double coordinate) {
-        return Math.max(0.05, Math.min(0.95, coordinate));
-    }
-
     private static float snapRotation(float yaw) {
-        return Math.round(yaw / 22.5F) * 22.5F;
+        return Math.round(yaw / 90F) * 90F;
     }
 
     private static float facingYaw(org.bukkit.block.BlockFace face) {

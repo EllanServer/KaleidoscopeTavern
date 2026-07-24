@@ -3,7 +3,7 @@
     "kaleidoscope_tavern:white_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.white_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -23,7 +23,7 @@
     "kaleidoscope_tavern:light_gray_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.light_gray_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -43,7 +43,7 @@
     "kaleidoscope_tavern:gray_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.gray_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -63,7 +63,7 @@
     "kaleidoscope_tavern:black_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.black_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -83,7 +83,7 @@
     "kaleidoscope_tavern:brown_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.brown_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -103,7 +103,7 @@
     "kaleidoscope_tavern:red_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.red_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -123,7 +123,7 @@
     "kaleidoscope_tavern:orange_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.orange_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -143,7 +143,7 @@
     "kaleidoscope_tavern:yellow_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.yellow_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -163,7 +163,7 @@
     "kaleidoscope_tavern:lime_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.lime_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -183,7 +183,7 @@
     "kaleidoscope_tavern:green_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.green_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -203,7 +203,7 @@
     "kaleidoscope_tavern:cyan_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.cyan_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -223,7 +223,7 @@
     "kaleidoscope_tavern:light_blue_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.light_blue_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -243,7 +243,7 @@
     "kaleidoscope_tavern:blue_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.blue_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -263,7 +263,7 @@
     "kaleidoscope_tavern:purple_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.purple_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -283,7 +283,7 @@
     "kaleidoscope_tavern:magenta_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.magenta_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -303,7 +303,7 @@
     "kaleidoscope_tavern:pink_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.pink_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>"
       },
       "model": {
         "type": "minecraft:model",
@@ -323,7 +323,7 @@
     "kaleidoscope_tavern:white_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.white_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -343,7 +343,7 @@
     "kaleidoscope_tavern:light_gray_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.light_gray_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -363,7 +363,7 @@
     "kaleidoscope_tavern:gray_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.gray_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -383,7 +383,7 @@
     "kaleidoscope_tavern:black_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.black_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -403,7 +403,7 @@
     "kaleidoscope_tavern:brown_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.brown_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -423,7 +423,7 @@
     "kaleidoscope_tavern:red_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.red_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -443,7 +443,7 @@
     "kaleidoscope_tavern:orange_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.orange_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -463,7 +463,7 @@
     "kaleidoscope_tavern:yellow_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.yellow_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -483,7 +483,7 @@
     "kaleidoscope_tavern:lime_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.lime_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -503,7 +503,7 @@
     "kaleidoscope_tavern:green_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.green_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -523,7 +523,7 @@
     "kaleidoscope_tavern:cyan_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.cyan_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -543,7 +543,7 @@
     "kaleidoscope_tavern:light_blue_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.light_blue_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -563,7 +563,7 @@
     "kaleidoscope_tavern:blue_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.blue_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -583,7 +583,7 @@
     "kaleidoscope_tavern:purple_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.purple_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -603,7 +603,7 @@
     "kaleidoscope_tavern:magenta_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.magenta_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -623,7 +623,7 @@
     "kaleidoscope_tavern:pink_bar_stool": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.pink_bar_stool>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_bar_stool>"
       },
       "model": {
         "type": "minecraft:model",
@@ -643,7 +643,7 @@
     "kaleidoscope_tavern:chalkboard": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.chalkboard>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.chalkboard>"
       },
       "model": {
         "type": "minecraft:model",
@@ -663,7 +663,7 @@
     "kaleidoscope_tavern:table": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.table>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.table>"
       },
       "model": {
         "type": "minecraft:model",
@@ -683,7 +683,7 @@
     "kaleidoscope_tavern:base_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.base_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -695,7 +695,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -703,7 +703,7 @@
     "kaleidoscope_tavern:grass_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.grass_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -715,7 +715,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -723,7 +723,7 @@
     "kaleidoscope_tavern:allium_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.allium_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -735,7 +735,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -743,7 +743,7 @@
     "kaleidoscope_tavern:azure_bluet_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.azure_bluet_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -755,7 +755,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -763,7 +763,7 @@
     "kaleidoscope_tavern:cornflower_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.cornflower_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -775,7 +775,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -783,7 +783,7 @@
     "kaleidoscope_tavern:orchid_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.orchid_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -795,7 +795,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -803,7 +803,7 @@
     "kaleidoscope_tavern:peony_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.peony_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -815,7 +815,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -823,7 +823,7 @@
     "kaleidoscope_tavern:pink_petals_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.pink_petals_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -835,7 +835,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -843,7 +843,7 @@
     "kaleidoscope_tavern:pitcher_plant_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.pitcher_plant_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -855,7 +855,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -863,7 +863,7 @@
     "kaleidoscope_tavern:poppy_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.poppy_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -875,7 +875,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -883,7 +883,7 @@
     "kaleidoscope_tavern:sunflower_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.sunflower_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -895,7 +895,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -903,7 +903,7 @@
     "kaleidoscope_tavern:torchflower_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.torchflower_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -915,7 +915,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -923,7 +923,7 @@
     "kaleidoscope_tavern:tulip_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.tulip_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -935,7 +935,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -943,7 +943,7 @@
     "kaleidoscope_tavern:wither_rose_sandwich_board": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.wither_rose_sandwich_board>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sandwich_board>"
       },
       "model": {
         "type": "minecraft:model",
@@ -955,7 +955,7 @@
         "rules": {
           "ground": {
             "rotation": "sixteen",
-            "alignment": "any"
+            "alignment": "center"
           }
         }
       }
@@ -963,7 +963,7 @@
     "kaleidoscope_tavern:string_lights_colorless": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_colorless>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_colorless>"
       },
       "model": {
         "type": "minecraft:model",
@@ -982,7 +982,7 @@
     "kaleidoscope_tavern:string_lights_white": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_white>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_white>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1001,7 +1001,7 @@
     "kaleidoscope_tavern:string_lights_light_gray": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_light_gray>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_light_gray>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1020,7 +1020,7 @@
     "kaleidoscope_tavern:string_lights_gray": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_gray>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_gray>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1039,7 +1039,7 @@
     "kaleidoscope_tavern:string_lights_black": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_black>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_black>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1058,7 +1058,7 @@
     "kaleidoscope_tavern:string_lights_brown": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_brown>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_brown>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1077,7 +1077,7 @@
     "kaleidoscope_tavern:string_lights_red": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_red>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_red>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1096,7 +1096,7 @@
     "kaleidoscope_tavern:string_lights_orange": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_orange>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_orange>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1115,7 +1115,7 @@
     "kaleidoscope_tavern:string_lights_yellow": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_yellow>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_yellow>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1134,7 +1134,7 @@
     "kaleidoscope_tavern:string_lights_lime": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_lime>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_lime>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1153,7 +1153,7 @@
     "kaleidoscope_tavern:string_lights_green": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_green>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_green>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1172,7 +1172,7 @@
     "kaleidoscope_tavern:string_lights_cyan": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_cyan>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_cyan>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1191,7 +1191,7 @@
     "kaleidoscope_tavern:string_lights_light_blue": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_light_blue>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_light_blue>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1210,7 +1210,7 @@
     "kaleidoscope_tavern:string_lights_blue": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_blue>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_blue>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1229,7 +1229,7 @@
     "kaleidoscope_tavern:string_lights_purple": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_purple>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_purple>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1248,7 +1248,7 @@
     "kaleidoscope_tavern:string_lights_magenta": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_magenta>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_magenta>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1267,7 +1267,7 @@
     "kaleidoscope_tavern:string_lights_pink": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.string_lights_pink>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.string_lights_pink>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1286,7 +1286,10 @@
     "kaleidoscope_tavern:ysbb_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.ysbb_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.ysbb_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1297,16 +1300,16 @@
         "furniture": "kaleidoscope_tavern:ysbb_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1314,7 +1317,10 @@
     "kaleidoscope_tavern:tartaric_acid_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.tartaric_acid_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.tartaric_acid_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1325,16 +1331,16 @@
         "furniture": "kaleidoscope_tavern:tartaric_acid_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1342,7 +1348,10 @@
     "kaleidoscope_tavern:cr019_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.cr019_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.cr019_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1353,16 +1362,16 @@
         "furniture": "kaleidoscope_tavern:cr019_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1370,7 +1379,10 @@
     "kaleidoscope_tavern:unknown_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.unknown_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.unknown_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1381,16 +1393,16 @@
         "furniture": "kaleidoscope_tavern:unknown_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1398,7 +1410,10 @@
     "kaleidoscope_tavern:master_marisa_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.master_marisa_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.master_marisa_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1409,16 +1424,16 @@
         "furniture": "kaleidoscope_tavern:master_marisa_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1426,7 +1441,10 @@
     "kaleidoscope_tavern:son_of_man_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.son_of_man_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.son_of_man_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1437,16 +1455,16 @@
         "furniture": "kaleidoscope_tavern:son_of_man_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1454,7 +1472,10 @@
     "kaleidoscope_tavern:david_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.david_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.david_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1465,16 +1486,16 @@
         "furniture": "kaleidoscope_tavern:david_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1482,7 +1503,10 @@
     "kaleidoscope_tavern:girl_with_pearl_earring_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.girl_with_pearl_earring_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.girl_with_pearl_earring_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1493,16 +1517,16 @@
         "furniture": "kaleidoscope_tavern:girl_with_pearl_earring_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1510,7 +1534,10 @@
     "kaleidoscope_tavern:starry_night_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.starry_night_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.starry_night_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1521,16 +1548,16 @@
         "furniture": "kaleidoscope_tavern:starry_night_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1538,7 +1565,10 @@
     "kaleidoscope_tavern:van_gogh_self_portrait_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.van_gogh_self_portrait_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.van_gogh_self_portrait_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1549,16 +1579,16 @@
         "furniture": "kaleidoscope_tavern:van_gogh_self_portrait_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1566,7 +1596,10 @@
     "kaleidoscope_tavern:father_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.father_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.father_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1577,16 +1610,16 @@
         "furniture": "kaleidoscope_tavern:father_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1594,7 +1627,10 @@
     "kaleidoscope_tavern:great_wave_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.great_wave_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.great_wave_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1605,16 +1641,16 @@
         "furniture": "kaleidoscope_tavern:great_wave_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1622,7 +1658,10 @@
     "kaleidoscope_tavern:mona_lisa_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.mona_lisa_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.mona_lisa_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1633,16 +1672,16 @@
         "furniture": "kaleidoscope_tavern:mona_lisa_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1650,7 +1689,10 @@
     "kaleidoscope_tavern:mondrian_painting": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.mondrian_painting>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.painting>",
+        "lore": [
+          "<!i><gray><lang:tooltip.kaleidoscope_tavern.mondrian_painting>"
+        ]
       },
       "model": {
         "type": "minecraft:model",
@@ -1661,16 +1703,16 @@
         "furniture": "kaleidoscope_tavern:mondrian_painting",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           },
           "ceiling": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -1678,7 +1720,7 @@
     "kaleidoscope_tavern:bell_pendant_lamp": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.bell_pendant_lamp>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.bell_pendant_lamp>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1698,7 +1740,7 @@
     "kaleidoscope_tavern:yellow_pendant_lamp": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.yellow_pendant_lamp>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_pendant_lamp>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1718,7 +1760,7 @@
     "kaleidoscope_tavern:blue_pendant_lamp": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.blue_pendant_lamp>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_pendant_lamp>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1738,7 +1780,7 @@
     "kaleidoscope_tavern:bar_counter": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.bar_counter>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.bar_counter>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1758,7 +1800,7 @@
     "kaleidoscope_tavern:stepladder": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.stepladder>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.stepladder>"
       },
       "model": {
         "type": "minecraft:model",
@@ -1807,7 +1849,7 @@
     "kaleidoscope_tavern:trellis": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.trellis>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.trellis>",
         "lore": [
           "<!i><gray><lang:tooltip.kaleidoscope_tavern.trellis.1>",
           "<!i><gray><lang:tooltip.kaleidoscope_tavern.trellis.2>"
@@ -1938,7 +1980,7 @@
     "kaleidoscope_tavern:pressing_tub": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.pressing_tub>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pressing_tub>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2082,7 +2124,7 @@
     "kaleidoscope_tavern:tap": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.tap>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.tap>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2093,8 +2135,8 @@
         "furniture": "kaleidoscope_tavern:tap",
         "rules": {
           "wall": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -2102,7 +2144,7 @@
     "kaleidoscope_tavern:barrel": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.barrel>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.barrel>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2122,7 +2164,7 @@
     "kaleidoscope_tavern:bar_cabinet": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.bar_cabinet>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.bar_cabinet>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2142,7 +2184,7 @@
     "kaleidoscope_tavern:glass_bar_cabinet": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.glass_bar_cabinet>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.glass_bar_cabinet>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2162,7 +2204,7 @@
     "kaleidoscope_tavern:cellar_cabinet": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.cellar_cabinet>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cellar_cabinet>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2182,7 +2224,7 @@
     "kaleidoscope_tavern:tilted_rack": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.tilted_rack>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.tilted_rack>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2202,7 +2244,7 @@
     "kaleidoscope_tavern:circular_rack": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.circular_rack>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.circular_rack>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2222,7 +2264,7 @@
     "kaleidoscope_tavern:holder": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.holder>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.holder>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2242,7 +2284,7 @@
     "kaleidoscope_tavern:empty_bottle": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.empty_bottle>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.empty_bottle>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2256,8 +2298,8 @@
         "furniture": "kaleidoscope_tavern:empty_bottle",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -2265,7 +2307,7 @@
     "kaleidoscope_tavern:empty_glassware": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.empty_glassware>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.empty_glassware>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2279,8 +2321,8 @@
         "furniture": "kaleidoscope_tavern:empty_glassware",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -2288,7 +2330,7 @@
     "kaleidoscope_tavern:signature_cocktail": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.signature_cocktail>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.signature_cocktail>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2301,7 +2343,7 @@
     "kaleidoscope_tavern:mystery_cocktail": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.mystery_cocktail>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.mystery_cocktail>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2314,7 +2356,7 @@
     "kaleidoscope_tavern:white_lady": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.white_lady>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_lady>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2327,7 +2369,7 @@
     "kaleidoscope_tavern:emerald": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.emerald>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.emerald>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2340,7 +2382,7 @@
     "kaleidoscope_tavern:brass_heart": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.brass_heart>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.brass_heart>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2353,7 +2395,7 @@
     "kaleidoscope_tavern:godfather": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.godfather>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.godfather>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2366,7 +2408,7 @@
     "kaleidoscope_tavern:grasshopper": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.grasshopper>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.grasshopper>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2379,7 +2421,7 @@
     "kaleidoscope_tavern:screwdriver": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.screwdriver>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.screwdriver>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2392,7 +2434,7 @@
     "kaleidoscope_tavern:mojito": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.mojito>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.mojito>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2405,7 +2447,7 @@
     "kaleidoscope_tavern:allium_garden": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.allium_garden>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.allium_garden>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2418,7 +2460,7 @@
     "kaleidoscope_tavern:depth_charge": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.depth_charge>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.depth_charge>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2431,7 +2473,7 @@
     "kaleidoscope_tavern:nether_special": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.nether_special>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.nether_special>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2444,7 +2486,7 @@
     "kaleidoscope_tavern:bloody_mary": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.bloody_mary>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.bloody_mary>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2457,7 +2499,7 @@
     "kaleidoscope_tavern:sculk_special": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.sculk_special>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sculk_special>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2470,7 +2512,7 @@
     "kaleidoscope_tavern:shaker": {
       "material": "brush",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.shaker>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.shaker>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2481,8 +2523,8 @@
         "furniture": "kaleidoscope_tavern:shaker",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -2490,7 +2532,7 @@
     "kaleidoscope_tavern:glassware_holder": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.glassware_holder>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.glassware_holder>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2510,7 +2552,7 @@
     "kaleidoscope_tavern:molotov": {
       "material": "splash_potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.molotov>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.molotov>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2524,8 +2566,8 @@
         "furniture": "kaleidoscope_tavern:molotov",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -2533,7 +2575,7 @@
     "kaleidoscope_tavern:wine": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.wine>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.wine>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2552,7 +2594,7 @@
     "kaleidoscope_tavern:champagne": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.champagne>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.champagne>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2571,7 +2613,7 @@
     "kaleidoscope_tavern:vodka": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.vodka>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.vodka>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2592,7 +2634,7 @@
     "kaleidoscope_tavern:brandy": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.brandy>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.brandy>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2615,7 +2657,7 @@
     "kaleidoscope_tavern:carignan": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.carignan>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.carignan>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2638,7 +2680,7 @@
     "kaleidoscope_tavern:sakura_wine": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.sakura_wine>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sakura_wine>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2657,7 +2699,7 @@
     "kaleidoscope_tavern:plum_wine": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.plum_wine>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.plum_wine>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2676,7 +2718,7 @@
     "kaleidoscope_tavern:whiskey": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.whiskey>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.whiskey>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2695,7 +2737,7 @@
     "kaleidoscope_tavern:ice_wine": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.ice_wine>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.ice_wine>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2714,7 +2756,7 @@
     "kaleidoscope_tavern:polaris_sweet_white": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.polaris_sweet_white>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.polaris_sweet_white>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2733,7 +2775,7 @@
     "kaleidoscope_tavern:honey_wine": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.honey_wine>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.honey_wine>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2752,7 +2794,7 @@
     "kaleidoscope_tavern:red_queen": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.red_queen>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_queen>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2771,7 +2813,7 @@
     "kaleidoscope_tavern:miners_star": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.miners_star>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.miners_star>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2792,7 +2834,7 @@
     "kaleidoscope_tavern:rum": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.rum>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.rum>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2813,7 +2855,7 @@
     "kaleidoscope_tavern:riesling_dry_white": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.riesling_dry_white>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.riesling_dry_white>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2834,7 +2876,7 @@
     "kaleidoscope_tavern:sunset_glow": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.sunset_glow>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sunset_glow>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2855,7 +2897,7 @@
     "kaleidoscope_tavern:madame_shexiang": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.madame_shexiang>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.madame_shexiang>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2876,7 +2918,7 @@
     "kaleidoscope_tavern:sweet_berry_wine": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.sweet_berry_wine>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sweet_berry_wine>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2897,7 +2939,7 @@
     "kaleidoscope_tavern:sherry": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.sherry>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sherry>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2916,7 +2958,7 @@
     "kaleidoscope_tavern:mother_snow": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.mother_snow>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.mother_snow>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2937,7 +2979,7 @@
     "kaleidoscope_tavern:luminous_bride": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.luminous_bride>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.luminous_bride>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2956,7 +2998,7 @@
     "kaleidoscope_tavern:glowflower_brew": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.glowflower_brew>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.glowflower_brew>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2975,7 +3017,7 @@
     "kaleidoscope_tavern:sauvignon_blanc_dry_white": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.sauvignon_blanc_dry_white>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sauvignon_blanc_dry_white>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -2994,7 +3036,7 @@
     "kaleidoscope_tavern:vinegar": {
       "material": "potion",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.vinegar>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.vinegar>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -3007,7 +3049,7 @@
     "kaleidoscope_tavern:watermelon_juice": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.watermelon_juice>",
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.watermelon_juice>",
         "components": {
           "minecraft:max_stack_size": 16
         }
@@ -3021,8 +3063,8 @@
         "furniture": "kaleidoscope_tavern:watermelon_juice",
         "rules": {
           "ground": {
-            "rotation": "sixteen",
-            "alignment": "any"
+            "rotation": "four",
+            "alignment": "center"
           }
         }
       }
@@ -3030,7 +3072,7 @@
     "kaleidoscope_tavern:sakura_incense": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.sakura_incense>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sakura_incense>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3050,7 +3092,7 @@
     "kaleidoscope_tavern:pine_incense": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.pine_incense>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pine_incense>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3070,7 +3112,7 @@
     "kaleidoscope_tavern:ginkgo_incense": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.ginkgo_incense>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.ginkgo_incense>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3090,7 +3132,7 @@
     "kaleidoscope_tavern:spore_incense": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.spore_incense>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.spore_incense>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3110,7 +3152,7 @@
     "kaleidoscope_tavern:catnip_incense": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.catnip_incense>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.catnip_incense>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3130,7 +3172,7 @@
     "kaleidoscope_tavern:snow_incense": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.snow_incense>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.snow_incense>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3150,7 +3192,7 @@
     "kaleidoscope_tavern:butterfly_incense": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.butterfly_incense>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.butterfly_incense>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3170,7 +3212,7 @@
     "kaleidoscope_tavern:firefly_incense": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:item.kaleidoscope_tavern.firefly_incense>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.firefly_incense>"
       },
       "model": {
         "type": "minecraft:model",

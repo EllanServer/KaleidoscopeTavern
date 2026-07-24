@@ -24,6 +24,8 @@ import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.LivingEntity;
@@ -89,7 +91,7 @@ public final class StationService implements Listener {
     public void start() {
         int period = Math.max(20, plugin.getConfig().getInt("stations.incense-period-ticks", 120));
         incenseTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pulseIncense, period, period);
-        incenseRedstoneTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pollIncenseRedstone, 4L, 4L);
+        incenseRedstoneTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pollIncenseRedstone, 1L, 1L);
         Bukkit.getScheduler().runTask(plugin, this::bootstrapIncense);
     }
 
@@ -841,9 +843,12 @@ public final class StationService implements Listener {
         String current = furniture.currentVariant().name();
         String base = current.endsWith("_open") ? current.substring(0, current.length() - 5) : current;
         furniture.setVariant(active ? base + "_open" : base, true);
+        furniture.setUnsaved();
         if (playSound) {
             furniture.location().getWorld().playSound(furniture.location(),
-                    active ? "minecraft:item.firecharge.use" : "minecraft:block.fire.extinguish", 0.65F, 1.2F);
+                    active ? "minecraft:block.stone_button.click_on"
+                            : "minecraft:block.stone_button.click_off",
+                    1.0F, 1.0F);
         }
     }
 
@@ -861,16 +866,17 @@ public final class StationService implements Listener {
                 continue;
             }
             Location center = furniture.location();
-            center.getWorld().spawnParticle(Particle.SMOKE, center.clone().add(0, 0.8, 0),
-                    8, 0.15, 0.3, 0.15, 0.005);
+            DamageSource source = DamageSource.builder(DamageType.MAGIC)
+                    .withDamageLocation(center)
+                    .build();
             for (Entity nearby : center.getWorld().getNearbyEntities(center, 32, 32, 32,
                     candidate -> candidate instanceof LivingEntity)) {
                 LivingEntity living = (LivingEntity) nearby;
                 if (living.isValid() && !living.isDead()
                         && Tag.ENTITY_TYPES_UNDEAD.isTagged(living.getType())) {
-                    living.damage(1.0);
-                    living.playHurtAnimation(0F);
+                    living.damage(1.0, source);
                     if (living instanceof ZombieVillager zombie && zombie.getHealth() <= 1.0) {
+                        zombie.setConversionPlayer(null);
                         zombie.setConversionTime(60);
                     }
                 }
