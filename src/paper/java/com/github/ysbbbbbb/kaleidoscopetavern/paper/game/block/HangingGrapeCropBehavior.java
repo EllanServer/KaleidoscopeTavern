@@ -1,10 +1,14 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.GrapeGrowthSemantics.Variety;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
+import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.core.block.BlockDefinition;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviors;
+import net.momirealms.craftengine.core.block.behavior.RandomTickBlock;
 import net.momirealms.craftengine.core.block.property.IntegerProperty;
 import net.momirealms.craftengine.core.block.property.Property;
 import net.momirealms.craftengine.core.util.Key;
@@ -15,11 +19,13 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Enforces the original rule that grape clusters hang below a mature vine trellis. */
-public final class HangingGrapeCropBehavior extends BukkitBlockBehavior {
+public final class HangingGrapeCropBehavior extends BukkitBlockBehavior implements RandomTickBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "hanging_grape_crop");
     private static final Set<String> VINES = Set.of(
             "kaleidoscope_tavern:grapevine_trellis",
@@ -27,8 +33,15 @@ public final class HangingGrapeCropBehavior extends BukkitBlockBehavior {
             "kaleidoscope_tavern:gold_grapevine_trellis");
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
 
+    private final Variety variety;
+    private final boolean matureStage;
+
     private HangingGrapeCropBehavior(BlockDefinition block) {
         super(block);
+        String id = block.id().toString();
+        this.variety = id.contains("ice_grape_crop") ? Variety.ICE
+                : id.contains("gold_grape_crop") ? Variety.GOLD : Variety.NORMAL;
+        this.matureStage = id.endsWith("/stage_5");
     }
 
     public static void register() {
@@ -61,6 +74,35 @@ public final class HangingGrapeCropBehavior extends BukkitBlockBehavior {
                 Vec3iProxy.INSTANCE.getX(position),
                 Vec3iProxy.INSTANCE.getY(position),
                 Vec3iProxy.INSTANCE.getZ(position)) ? args[0] : BlocksProxy.AIR$defaultState;
+    }
+
+    @Override
+    public boolean canRandomlyTick(ImmutableBlockState state) {
+        return !matureStage;
+    }
+
+    @Override
+    public void randomTick(Object thisBlock, Object[] args) {
+        Optional<ImmutableBlockState> optional = BlockStateUtils.getOptionalCustomBlockState(args[0]);
+        if (optional.isEmpty() || matureStage) {
+            return;
+        }
+        Object level = args[1];
+        World world = LevelProxy.INSTANCE.getWorld(level);
+        if (world == null) {
+            return;
+        }
+        Object position = args[2];
+        int x = Vec3iProxy.INSTANCE.getX(position);
+        int y = Vec3iProxy.INSTANCE.getY(position);
+        int z = Vec3iProxy.INSTANCE.getZ(position);
+        double temperature = BiomeTemperature.at(level, x, y, z);
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        if (random.nextDouble() >= GrapeGrowthSemantics.overallChance(variety, temperature)) {
+            return;
+        }
+        CustomCropsBridge.addGrowthPoints(
+                world.getBlockAt(x, y, z).getLocation(), random.nextInt(1, 3));
     }
 
     private static boolean hasMatureVineAbove(World world, int x, int y, int z) {

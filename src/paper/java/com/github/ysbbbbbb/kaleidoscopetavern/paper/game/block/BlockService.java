@@ -7,10 +7,10 @@ import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.api.event.CustomBlockBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.CustomBlockInteractEvent;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
-import net.momirealms.craftengine.core.block.property.IntegerProperty;
 import net.momirealms.craftengine.core.block.property.Property;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -49,12 +49,13 @@ public final class BlockService implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onCustomBlockInteract(CustomBlockInteractEvent event) {
-        if (event.hand() != InteractionHand.MAIN_HAND
-                || event.action() != CustomBlockInteractEvent.Action.RIGHT_CLICK) {
+        if (event.action() != CustomBlockInteractEvent.Action.RIGHT_CLICK) {
             return;
         }
         Player player = event.player();
-        ItemStack hand = player.getInventory().getItemInMainHand();
+        ItemStack hand = event.hand() == InteractionHand.MAIN_HAND
+                ? player.getInventory().getItemInMainHand()
+                : player.getInventory().getItemInOffHand();
         String handId = items.id(hand);
         ImmutableBlockState state = event.blockState();
         String blockId = event.customBlock().id().toString();
@@ -62,11 +63,13 @@ public final class BlockService implements Listener {
         boolean handled = blockId.startsWith(PREFIX + "string_lights_")
                 ? interactStringLights(player, event.bukkitBlock(), state, hand)
                 : switch (blockId) {
-            case TRELLIS -> interactPlainTrellis(player, event.bukkitBlock(), state, hand, handId);
+            case TRELLIS -> interactPlainTrellis(
+                    player, event.bukkitBlock(), state, hand, handId);
             case PREFIX + "grapevine_trellis", PREFIX + "ice_grapevine_trellis",
                     PREFIX + "gold_grapevine_trellis" -> interactVineTrellis(
-                            player, event.bukkitBlock(), state, hand);
-            case PREFIX + "wild_grapevine" -> interactWildHead(player, event.bukkitBlock(), state, hand);
+                            player, event.bukkitBlock(), state, hand, event.hand());
+            case PREFIX + "wild_grapevine" -> interactWildHead(
+                    player, event.bukkitBlock(), state, hand, event.hand());
             case PREFIX + "wild_grapevine_plant" -> interactWildBody(player, event.bukkitBlock(), hand);
             default -> false;
         };
@@ -118,19 +121,20 @@ public final class BlockService implements Listener {
         return true;
     }
 
-    private boolean interactWildHead(Player player, Block block, ImmutableBlockState state, ItemStack hand) {
+    private boolean interactWildHead(Player player, Block block, ImmutableBlockState state,
+                                     ItemStack hand, InteractionHand usedHand) {
         if (hand.getType() == Material.SHEARS) {
             if (!booleanProperty(state, "sheared")) {
                 ImmutableBlockState changed = TrellisBehavior.withNamed(state, "sheared", "true");
                 if (CraftEngineBlocks.place(block.getLocation(), changed, false)) {
-                    damageTool(player, hand);
+                    damageTool(player, hand, usedHand);
                     block.getWorld().playSound(block.getLocation(), "minecraft:entity.sheep.shear", 1F, 1F);
                 }
             }
             return true;
         }
         if (hand.getType() == Material.BONE_MEAL && !booleanProperty(state, "sheared")) {
-            if (WildGrapevineBehavior.extend(block, state, 16)) {
+            if (WildGrapevineBehavior.extend(block, state)) {
                 consumeUnlessCreative(player, hand);
                 block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER,
                         block.getLocation().add(0.5, 0.5, 0.5), 10, 0.25, 0.25, 0.25, 0);
@@ -150,7 +154,7 @@ public final class BlockService implements Listener {
         }
         ImmutableBlockState state = CraftEngineBlocks.getCustomBlockState(head);
         if (state != null && !booleanProperty(state, "sheared")
-                && WildGrapevineBehavior.extend(head, state, 16)) {
+                && WildGrapevineBehavior.extend(head, state)) {
             consumeUnlessCreative(player, hand);
             head.getWorld().spawnParticle(Particle.HAPPY_VILLAGER,
                     head.getLocation().add(0.5, 0.5, 0.5), 10, 0.25, 0.25, 0.25, 0);
@@ -164,7 +168,6 @@ public final class BlockService implements Listener {
         if (hand.getType() == Material.HONEYCOMB && !waxed) {
             ImmutableBlockState changed = TrellisBehavior.withNamed(state, "waxed", "true");
             if (CraftEngineBlocks.place(block.getLocation(), changed, false)) {
-                consumeUnlessCreative(player, hand);
                 block.getWorld().playSound(block.getLocation(), "minecraft:item.honeycomb.wax_on", 1F, 1F);
                 block.getWorld().spawnParticle(Particle.WAX_ON, block.getLocation().add(0.5, 0.5, 0.5),
                         8, 0.35, 0.35, 0.35, 0);
@@ -174,7 +177,6 @@ public final class BlockService implements Listener {
         if (waxed && hand.getType().name().endsWith("_AXE")) {
             ImmutableBlockState changed = TrellisBehavior.withNamed(state, "waxed", "false");
             if (CraftEngineBlocks.place(block.getLocation(), changed, false)) {
-                damageTool(player, hand);
                 block.getWorld().playSound(block.getLocation(), "minecraft:item.axe.wax_off", 1F, 1F);
                 block.getWorld().spawnParticle(Particle.WAX_OFF, block.getLocation().add(0.5, 0.5, 0.5),
                         8, 0.35, 0.35, 0.35, 0);
@@ -206,7 +208,7 @@ public final class BlockService implements Listener {
     }
 
     private boolean interactVineTrellis(Player player, Block block, ImmutableBlockState state,
-                                        ItemStack hand) {
+                                        ItemStack hand, InteractionHand usedHand) {
         if (hand.getType() == Material.SHEARS) {
             net.momirealms.craftengine.core.block.BlockDefinition definition =
                     CraftEngineBlocks.byId(net.momirealms.craftengine.core.util.Key.of(TRELLIS));
@@ -221,18 +223,19 @@ public final class BlockService implements Listener {
             if (CraftEngineBlocks.place(block.getLocation(), replacement, false)) {
                 items.build(GRAPEVINE, player)
                         .ifPresent(drop -> block.getWorld().dropItemNaturally(block.getLocation(), drop));
-                damageTool(player, hand);
+                damageTool(player, hand, usedHand);
                 block.getWorld().playSound(block.getLocation(), "minecraft:block.beehive.shear", 1F, 1F);
             }
             return true;
         }
-        if (hand.getType() == Material.BONE_MEAL && isMature(state)) {
-            if (TrellisBehavior.growMature(block.getLocation(), state)) {
+        if (hand.getType() == Material.BONE_MEAL) {
+            if (TrellisBehavior.grow(block.getLocation(), state)) {
                 consumeUnlessCreative(player, hand);
                 block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER,
                         block.getLocation().add(0.5, 0.5, 0.5), 15, 0.25, 0.25, 0.25, 0);
+                return true;
             }
-            return true;
+            return false;
         }
         return false;
     }
@@ -269,20 +272,20 @@ public final class BlockService implements Listener {
     }
 
     private static void consumeUnlessCreative(Player player, ItemStack hand) {
-        if (!player.getGameMode().isInvulnerable()) {
+        if (player.getGameMode() != GameMode.CREATIVE) {
             hand.subtract(1);
         }
     }
 
-    private static void damageTool(Player player, ItemStack hand) {
-        if (!player.getGameMode().isInvulnerable()) {
-            player.getInventory().setItemInMainHand(hand.damage(1, player));
+    private static void damageTool(Player player, ItemStack hand, InteractionHand usedHand) {
+        if (player.getGameMode() != GameMode.CREATIVE) {
+            ItemStack damaged = hand.damage(1, player);
+            if (usedHand == InteractionHand.MAIN_HAND) {
+                player.getInventory().setItemInMainHand(damaged);
+            } else {
+                player.getInventory().setItemInOffHand(damaged);
+            }
         }
-    }
-
-    private static boolean isMature(ImmutableBlockState state) {
-        Property<?> property = state.getProperty("age");
-        return property instanceof IntegerProperty age && state.get(age) >= age.max;
     }
 
     private static boolean booleanProperty(ImmutableBlockState state, String name) {

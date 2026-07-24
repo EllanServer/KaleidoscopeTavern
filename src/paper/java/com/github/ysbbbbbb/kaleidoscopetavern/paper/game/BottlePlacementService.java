@@ -8,6 +8,7 @@ import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Location;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -61,7 +62,8 @@ public final class BottlePlacementService implements Listener {
             return;
         }
         Placement placement = placementFor(event.getItem());
-        if (placement == null || !plugin.getConfig().getBoolean(placement.configPath(), true)) {
+        if (placement == null || placement.configPath() != null
+                && !plugin.getConfig().getBoolean(placement.configPath(), true)) {
             return;
         }
         Block clicked = event.getClickedBlock();
@@ -117,6 +119,10 @@ public final class BottlePlacementService implements Listener {
         if (!isDispensableBottle(id) || CraftEngineFurniture.byId(Key.of(id)) == null) {
             return;
         }
+        // BottleBlockDispenseBehavior is optional: if placement is blocked it
+        // leaves the stack in the dispenser instead of falling back to the
+        // base item's drop/projectile behavior.
+        event.setCancelled(true);
         Block target = event.getBlock().getRelative(directional.getFacing());
         if (!canPlaceAt(target)) {
             return;
@@ -137,14 +143,15 @@ public final class BottlePlacementService implements Listener {
             CraftEngineFurniture.remove(furniture, false, false);
             return;
         }
-        event.setCancelled(true);
         target.getWorld().playSound(location, Sound.BLOCK_GLASS_PLACE, 1F, 1F);
     }
 
     private Placement placementFor(ItemStack stack) {
         String customId = items.id(stack);
         if (catalog.hasDrinkEffects(customId) || catalog.isCocktail(customId)) {
-            return new Placement(customId, "bottle-placement.drinks", false);
+            // DrinkBlockItem/CocktailBlockItem placement is unconditional;
+            // only the five vanilla bottle families had Forge config gates.
+            return new Placement(customId, null, false);
         }
         return switch (stack.getType()) {
             case POTION -> {
@@ -208,7 +215,7 @@ public final class BottlePlacementService implements Listener {
     }
 
     private static void consumeUnlessCreative(Player player, ItemStack stack) {
-        if (!player.getGameMode().isInvulnerable()) {
+        if (player.getGameMode() != GameMode.CREATIVE) {
             stack.subtract(1);
         }
     }

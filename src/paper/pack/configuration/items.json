@@ -1311,7 +1311,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:tartaric_acid_painting": {
@@ -1342,7 +1343,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:cr019_painting": {
@@ -1373,7 +1375,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:unknown_painting": {
@@ -1404,7 +1407,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:master_marisa_painting": {
@@ -1435,7 +1439,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:son_of_man_painting": {
@@ -1466,7 +1471,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:david_painting": {
@@ -1497,7 +1503,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:girl_with_pearl_earring_painting": {
@@ -1528,7 +1535,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:starry_night_painting": {
@@ -1559,7 +1567,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:van_gogh_self_portrait_painting": {
@@ -1590,7 +1599,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:father_painting": {
@@ -1621,7 +1631,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:great_wave_painting": {
@@ -1652,7 +1663,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:mona_lisa_painting": {
@@ -1683,7 +1695,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:mondrian_painting": {
@@ -1714,7 +1727,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:bell_pendant_lamp": {
@@ -2550,11 +2564,16 @@
       }
     },
     "kaleidoscope_tavern:molotov": {
-      "material": "splash_potion",
+      "material": "paper",
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.molotov>",
         "components": {
-          "minecraft:max_stack_size": 16
+          "minecraft:max_stack_size": 16,
+          "minecraft:consumable": {
+            "consume_seconds": 3600.0,
+            "animation": "spear",
+            "has_consume_particles": false
+          }
         }
       },
       "model": {

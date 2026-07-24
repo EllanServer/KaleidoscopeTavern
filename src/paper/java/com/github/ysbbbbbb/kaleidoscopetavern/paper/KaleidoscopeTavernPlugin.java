@@ -2,6 +2,7 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.AmbientFurnitureService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BarStoolVisualService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.EffectService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BoardTextService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BottlePlacementService;
@@ -9,12 +10,14 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BottleFurnitureService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.DisplayStorageService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.FurnitureConnectionService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.MolotovService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.ShakerVisualService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.StationService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.TapService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.WorldgenService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.BlockService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBlockShape;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.WildGrapevineBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
@@ -49,7 +52,7 @@ import java.util.logging.Level;
 /** Paper 26.2 entry point for the CraftEngine rewrite. */
 public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listener, TabExecutor {
     private static final String NAMESPACE = "kaleidoscope_tavern";
-    private static final int EXPECTED_ITEMS = 641; // 157 public items + 484 private render helpers
+    private static final int EXPECTED_ITEMS = 711; // 157 public items + 554 private render helpers
     private static final int EXPECTED_BLOCKS = 41;
     private static final int EXPECTED_FURNITURE = 133;
 
@@ -64,6 +67,8 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     private TapService taps;
     private DisplayStorageService displayStorage;
     private AmbientFurnitureService ambientFurniture;
+    private BarStoolVisualService barStoolVisuals;
+    private ShakerVisualService shakerVisuals;
 
     @Override
     public void onLoad() {
@@ -108,21 +113,26 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
 
         items = new ItemService(this);
         Messages messages = new Messages(this);
-        stations = new StationService(this, catalog, items, messages);
+        shakerVisuals = new ShakerVisualService(this, items);
+        stations = new StationService(this, catalog, items, messages, shakerVisuals);
         effects = new EffectService(this, catalog, items);
         boards = new BoardTextService(this, items);
         taps = new TapService(this, stations, items);
         displayStorage = new DisplayStorageService(this, catalog, items);
         ambientFurniture = new AmbientFurnitureService(this, displayStorage);
+        barStoolVisuals = new BarStoolVisualService(this, items);
+        FurnitureConnectionService furnitureConnections = new FurnitureConnectionService(this);
 
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new BlockService(this, catalog, items), this);
-        getServer().getPluginManager().registerEvents(new FurnitureConnectionService(this), this);
+        getServer().getPluginManager().registerEvents(furnitureConnections, this);
         getServer().getPluginManager().registerEvents(new MolotovService(this, items), this);
         getServer().getPluginManager().registerEvents(new BottlePlacementService(this, catalog, items), this);
         getServer().getPluginManager().registerEvents(new BottleFurnitureService(this, catalog, items, effects), this);
         getServer().getPluginManager().registerEvents(displayStorage, this);
         getServer().getPluginManager().registerEvents(ambientFurniture, this);
+        getServer().getPluginManager().registerEvents(barStoolVisuals, this);
+        getServer().getPluginManager().registerEvents(shakerVisuals, this);
         getServer().getPluginManager().registerEvents(boards, this);
         getServer().getPluginManager().registerEvents(taps, this);
         getServer().getPluginManager().registerEvents(new WorldgenService(this), this);
@@ -134,13 +144,16 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         taps.start();
         displayStorage.start();
         ambientFurniture.start();
+        barStoolVisuals.start();
+        shakerVisuals.start();
+        furnitureConnections.start();
 
         PluginCommand command = Objects.requireNonNull(getCommand("kaleidoscopetavern"),
                 "plugin.yml command kaleidoscopetavern");
         command.setExecutor(this);
         command.setTabCompleter(this);
 
-        Bukkit.getScheduler().runTask(this, () -> verifyContent(true));
+        Bukkit.getScheduler().runTask(this, () -> refreshRuntimeContent(true));
         if (packResult != null) {
             getLogger().info("CraftEngine 内容包已同步到 " + packResult.target()
                     + "（写入 " + packResult.written() + "，未变 " + packResult.unchanged()
@@ -172,11 +185,25 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (ambientFurniture != null) {
             ambientFurniture.stop();
         }
+        if (barStoolVisuals != null) {
+            barStoolVisuals.stop();
+        }
+        if (shakerVisuals != null) {
+            shakerVisuals.stop();
+        }
     }
 
     @EventHandler
     public void onCraftEngineReload(CraftEngineReloadEvent event) {
-        Bukkit.getScheduler().runTask(this, () -> verifyContent(false));
+        Bukkit.getScheduler().runTask(this, () -> refreshRuntimeContent(false));
+    }
+
+    private void refreshRuntimeContent(boolean startup) {
+        int trellisShapes = TrellisBlockShape.install();
+        if (trellisShapes == 0) {
+            getLogger().warning("No trellis carrier shapes were available after CraftEngine loading");
+        }
+        verifyContent(startup);
     }
 
     @Override

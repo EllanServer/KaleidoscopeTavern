@@ -4,9 +4,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:white_sofa"
       },
@@ -33,7 +33,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -104,7 +104,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -175,7 +175,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -246,7 +246,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -317,7 +317,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -388,7 +388,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -456,9 +456,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:light_gray_sofa"
       },
@@ -485,7 +485,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -556,7 +556,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -627,7 +627,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -698,7 +698,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -769,7 +769,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -840,7 +840,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -908,9 +908,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:gray_sofa"
       },
@@ -937,7 +937,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1008,7 +1008,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1079,7 +1079,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1150,7 +1150,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1221,7 +1221,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1292,7 +1292,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1360,9 +1360,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:black_sofa"
       },
@@ -1389,7 +1389,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1460,7 +1460,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1531,7 +1531,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1602,7 +1602,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1673,7 +1673,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1744,7 +1744,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1812,9 +1812,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:brown_sofa"
       },
@@ -1841,7 +1841,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1912,7 +1912,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -1983,7 +1983,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2054,7 +2054,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2125,7 +2125,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2196,7 +2196,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2264,9 +2264,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:red_sofa"
       },
@@ -2293,7 +2293,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2364,7 +2364,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2435,7 +2435,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2506,7 +2506,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2577,7 +2577,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2648,7 +2648,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2716,9 +2716,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:orange_sofa"
       },
@@ -2745,7 +2745,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2816,7 +2816,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2887,7 +2887,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -2958,7 +2958,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3029,7 +3029,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3100,7 +3100,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3168,9 +3168,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:yellow_sofa"
       },
@@ -3197,7 +3197,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3268,7 +3268,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3339,7 +3339,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3410,7 +3410,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3481,7 +3481,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3552,7 +3552,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3620,9 +3620,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:lime_sofa"
       },
@@ -3649,7 +3649,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3720,7 +3720,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3791,7 +3791,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3862,7 +3862,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -3933,7 +3933,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4004,7 +4004,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4072,9 +4072,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:green_sofa"
       },
@@ -4101,7 +4101,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4172,7 +4172,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4243,7 +4243,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4314,7 +4314,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4385,7 +4385,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4456,7 +4456,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4524,9 +4524,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:cyan_sofa"
       },
@@ -4553,7 +4553,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4624,7 +4624,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4695,7 +4695,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4766,7 +4766,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4837,7 +4837,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4908,7 +4908,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -4976,9 +4976,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:light_blue_sofa"
       },
@@ -5005,7 +5005,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5076,7 +5076,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5147,7 +5147,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5218,7 +5218,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5289,7 +5289,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5360,7 +5360,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5428,9 +5428,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:blue_sofa"
       },
@@ -5457,7 +5457,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5528,7 +5528,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5599,7 +5599,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5670,7 +5670,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5741,7 +5741,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5812,7 +5812,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5880,9 +5880,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:purple_sofa"
       },
@@ -5909,7 +5909,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -5980,7 +5980,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6051,7 +6051,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6122,7 +6122,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6193,7 +6193,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6264,7 +6264,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6332,9 +6332,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:magenta_sofa"
       },
@@ -6361,7 +6361,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6432,7 +6432,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6503,7 +6503,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6574,7 +6574,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6645,7 +6645,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6716,7 +6716,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6784,9 +6784,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.wool.break",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit"
         },
         "item": "kaleidoscope_tavern:pink_sofa"
       },
@@ -6813,7 +6813,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6884,7 +6884,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -6955,7 +6955,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -7026,7 +7026,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -7097,7 +7097,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -7168,7 +7168,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.5125,0 0"
+                "0,0.2625,0 0"
               ]
             },
             {
@@ -7265,7 +7265,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -7329,7 +7329,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -7393,7 +7393,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -7457,7 +7457,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -7521,7 +7521,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -7585,7 +7585,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -7649,7 +7649,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -7713,7 +7713,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -7777,7 +7777,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -7841,7 +7841,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -7905,7 +7905,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -7969,7 +7969,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -8033,7 +8033,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -8097,7 +8097,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -8161,7 +8161,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -8225,7 +8225,7 @@
               "interactive": true,
               "blocks_building": true,
               "seats": [
-                "0,0.875,0 0"
+                "0,0.625,0 0"
               ]
             },
             {
@@ -8354,66 +8354,194 @@
           ],
           "hitboxes": [
             {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
               "type": "shulker",
-              "position": "0,0,0",
+              "position": "-0.375,0.75,-0.375",
               "peek": 0,
               "interaction_entity": false,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": false,
-              "blocks_building": true
-            }
-          ]
-        },
-        "ground_position_3": {
-          "elements": [
-            {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/0711d6f122",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "translation": "0,0.5,0"
-            }
-          ],
-          "hitboxes": [
+              "blocks_building": true,
+              "scale": 0.25
+            },
             {
               "type": "shulker",
-              "position": "0,0,0",
+              "position": "-0.375,0.75,-0.125",
               "peek": 0,
               "interaction_entity": false,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": false,
-              "blocks_building": true
-            }
-          ]
-        },
-        "ground_position_2": {
-          "elements": [
-            {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/af86474a16",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "translation": "0,0.5,0"
-            }
-          ],
-          "hitboxes": [
+              "blocks_building": true,
+              "scale": 0.25
+            },
             {
               "type": "shulker",
-              "position": "0,0,0",
+              "position": "-0.375,0.75,0.125",
               "peek": 0,
               "interaction_entity": false,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": false,
-              "blocks_building": true
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
             }
           ]
         },
-        "ground_position_1": {
+        "ground_axis_x_position_1": {
           "elements": [
             {
               "type": "item_display",
@@ -8426,14 +8554,1190 @@
           ],
           "hitboxes": [
             {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
               "type": "shulker",
-              "position": "0,0,0",
+              "position": "-0.375,0.75,-0.375",
               "peek": 0,
               "interaction_entity": false,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_x_position_2": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/af86474a16",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0"
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
               "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_x_position_3": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/0711d6f122",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0"
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_z_position_1": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/2f4d4646ae",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0"
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_z_position_2": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/3074b35dfb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0"
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_z_position_3": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/3174c95b3a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0"
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
             }
           ]
         }
@@ -9449,7 +10753,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -9475,7 +10779,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -9501,7 +10805,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -9551,7 +10855,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -9577,7 +10881,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -9603,7 +10907,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -9653,7 +10957,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -9679,7 +10983,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -9705,7 +11009,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -9755,7 +11059,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -9781,7 +11085,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -9807,7 +11111,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -9857,7 +11161,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -9883,7 +11187,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -9909,7 +11213,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -9959,7 +11263,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -9985,7 +11289,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10011,7 +11315,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -10061,7 +11365,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10087,7 +11391,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10113,7 +11417,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -10163,7 +11467,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10189,7 +11493,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10215,7 +11519,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -10265,7 +11569,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10291,7 +11595,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10317,7 +11621,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -10367,7 +11671,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10393,7 +11697,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10419,7 +11723,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -10469,7 +11773,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10495,7 +11799,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10521,7 +11825,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -10571,7 +11875,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10597,7 +11901,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10623,7 +11927,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -10673,7 +11977,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10699,7 +12003,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10725,7 +12029,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -10775,7 +12079,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10801,7 +12105,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         },
@@ -10827,7 +12131,7 @@
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": true
+              "blocks_building": false
             }
           ]
         }
@@ -10850,9 +12154,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.chain.break",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit"
         },
         "item": "kaleidoscope_tavern:bell_pendant_lamp"
       },
@@ -10916,9 +12220,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.chain.break",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit"
         },
         "item": "kaleidoscope_tavern:yellow_pendant_lamp"
       },
@@ -10982,9 +12286,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.chain.break",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit"
         },
         "item": "kaleidoscope_tavern:blue_pendant_lamp"
       },
@@ -11046,11 +12350,11 @@
     },
     "kaleidoscope_tavern:sakura_incense": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.decorated_pot.break",
+          "place": "minecraft:block.decorated_pot.place",
+          "hit": "minecraft:block.decorated_pot.hit"
         },
         "item": "kaleidoscope_tavern:sakura_incense"
       },
@@ -11142,11 +12446,11 @@
     },
     "kaleidoscope_tavern:pine_incense": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.decorated_pot.break",
+          "place": "minecraft:block.decorated_pot.place",
+          "hit": "minecraft:block.decorated_pot.hit"
         },
         "item": "kaleidoscope_tavern:pine_incense"
       },
@@ -11238,11 +12542,11 @@
     },
     "kaleidoscope_tavern:ginkgo_incense": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.decorated_pot.break",
+          "place": "minecraft:block.decorated_pot.place",
+          "hit": "minecraft:block.decorated_pot.hit"
         },
         "item": "kaleidoscope_tavern:ginkgo_incense"
       },
@@ -11334,11 +12638,11 @@
     },
     "kaleidoscope_tavern:spore_incense": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.decorated_pot.break",
+          "place": "minecraft:block.decorated_pot.place",
+          "hit": "minecraft:block.decorated_pot.hit"
         },
         "item": "kaleidoscope_tavern:spore_incense"
       },
@@ -11430,11 +12734,11 @@
     },
     "kaleidoscope_tavern:catnip_incense": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.decorated_pot.break",
+          "place": "minecraft:block.decorated_pot.place",
+          "hit": "minecraft:block.decorated_pot.hit"
         },
         "item": "kaleidoscope_tavern:catnip_incense"
       },
@@ -11526,11 +12830,11 @@
     },
     "kaleidoscope_tavern:snow_incense": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.decorated_pot.break",
+          "place": "minecraft:block.decorated_pot.place",
+          "hit": "minecraft:block.decorated_pot.hit"
         },
         "item": "kaleidoscope_tavern:snow_incense"
       },
@@ -11622,11 +12926,11 @@
     },
     "kaleidoscope_tavern:butterfly_incense": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.decorated_pot.break",
+          "place": "minecraft:block.decorated_pot.place",
+          "hit": "minecraft:block.decorated_pot.hit"
         },
         "item": "kaleidoscope_tavern:butterfly_incense"
       },
@@ -11718,11 +13022,11 @@
     },
     "kaleidoscope_tavern:firefly_incense": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.decorated_pot.break",
+          "place": "minecraft:block.decorated_pot.place",
+          "hit": "minecraft:block.decorated_pot.hit"
         },
         "item": "kaleidoscope_tavern:firefly_incense"
       },
@@ -12372,9 +13676,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.metal.break",
+          "place": "minecraft:block.metal.place",
+          "hit": "minecraft:block.metal.hit"
         },
         "item": "kaleidoscope_tavern:tap"
       },
@@ -12383,19 +13687,18 @@
           "elements": [
             {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/tap/7c9bddcff9",
+              "item": "kaleidoscope_tavern:_render/tap/8ef74bd5d4",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49",
-              "rotation": "0,180,0"
+              "translation": "0,0,0.49"
             }
           ],
           "hitboxes": [
             {
               "type": "interaction",
-              "position": "0,-0.1875,0.3125",
+              "position": "0,-0.1875,0.6875",
               "width": 0.625,
               "height": 0.5,
               "can_use_item_on": true,
@@ -12405,7 +13708,7 @@
             },
             {
               "type": "shulker",
-              "position": "0,-0.1875,0.3125",
+              "position": "0,-0.1875,0.6875",
               "peek": 0,
               "interaction_entity": false,
               "can_use_item_on": true,
@@ -12420,19 +13723,18 @@
           "elements": [
             {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/tap/64a3ccd9c4",
+              "item": "kaleidoscope_tavern:_render/tap/ba6a38e250",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49",
-              "rotation": "0,180,0"
+              "translation": "0,0,0.49"
             }
           ],
           "hitboxes": [
             {
               "type": "interaction",
-              "position": "0,-0.1875,0.3125",
+              "position": "0,-0.1875,0.6875",
               "width": 0.625,
               "height": 0.5,
               "can_use_item_on": true,
@@ -12442,7 +13744,7 @@
             },
             {
               "type": "shulker",
-              "position": "0,-0.1875,0.3125",
+              "position": "0,-0.1875,0.6875",
               "peek": 0,
               "interaction_entity": false,
               "can_use_item_on": true,
@@ -12472,9 +13774,9 @@
       "settings": {
         "hit_times": 3,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.metal.break",
+          "place": "minecraft:block.metal.place",
+          "hit": "minecraft:block.metal.hit"
         },
         "item": "kaleidoscope_tavern:glassware_holder"
       },
@@ -12528,17 +13830,7 @@
           },
           "variants": {
             "ceiling": {
-              "item_position": "-0.25,-0.24,-0.25",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.25,-0.24,-0.25",
-                  "width": 0.35,
-                  "height": 0.35,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -12551,17 +13843,7 @@
           },
           "variants": {
             "ceiling": {
-              "item_position": "0.25,-0.24,-0.25",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.25,-0.24,-0.25",
-                  "width": 0.35,
-                  "height": 0.35,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -12574,17 +13856,7 @@
           },
           "variants": {
             "ceiling": {
-              "item_position": "-0.25,-0.24,0.25",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.25,-0.24,0.25",
-                  "width": 0.35,
-                  "height": 0.35,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -12597,17 +13869,7 @@
           },
           "variants": {
             "ceiling": {
-              "item_position": "0.25,-0.24,0.25",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.25,-0.24,0.25",
-                  "width": 0.35,
-                  "height": 0.35,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -12621,11 +13883,11 @@
     },
     "kaleidoscope_tavern:empty_bottle": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:empty_bottle"
       },
@@ -12693,11 +13955,11 @@
     },
     "kaleidoscope_tavern:empty_glassware": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:empty_glassware"
       },
@@ -12754,11 +14016,11 @@
     },
     "kaleidoscope_tavern:signature_cocktail": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:signature_cocktail"
       },
@@ -12818,11 +14080,11 @@
     },
     "kaleidoscope_tavern:mystery_cocktail": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:mystery_cocktail"
       },
@@ -12879,11 +14141,11 @@
     },
     "kaleidoscope_tavern:white_lady": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:white_lady"
       },
@@ -12940,11 +14202,11 @@
     },
     "kaleidoscope_tavern:emerald": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:emerald"
       },
@@ -13001,11 +14263,11 @@
     },
     "kaleidoscope_tavern:brass_heart": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:brass_heart"
       },
@@ -13062,11 +14324,11 @@
     },
     "kaleidoscope_tavern:godfather": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:godfather"
       },
@@ -13123,11 +14385,11 @@
     },
     "kaleidoscope_tavern:grasshopper": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:grasshopper"
       },
@@ -13184,11 +14446,11 @@
     },
     "kaleidoscope_tavern:screwdriver": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:screwdriver"
       },
@@ -13245,11 +14507,11 @@
     },
     "kaleidoscope_tavern:mojito": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:mojito"
       },
@@ -13306,11 +14568,11 @@
     },
     "kaleidoscope_tavern:allium_garden": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:allium_garden"
       },
@@ -13367,11 +14629,11 @@
     },
     "kaleidoscope_tavern:depth_charge": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:depth_charge"
       },
@@ -13428,11 +14690,11 @@
     },
     "kaleidoscope_tavern:nether_special": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:nether_special"
       },
@@ -13489,11 +14751,11 @@
     },
     "kaleidoscope_tavern:bloody_mary": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:bloody_mary"
       },
@@ -13550,11 +14812,11 @@
     },
     "kaleidoscope_tavern:sculk_special": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sculk_special"
       },
@@ -13611,11 +14873,11 @@
     },
     "kaleidoscope_tavern:shaker": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.lantern.break",
+          "place": "minecraft:block.lantern.place",
+          "hit": "minecraft:block.lantern.hit"
         },
         "item": "kaleidoscope_tavern:shaker"
       },
@@ -13672,11 +14934,11 @@
     },
     "kaleidoscope_tavern:molotov": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:molotov"
       },
@@ -13763,12 +15025,304 @@
           "elements": [
             {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/barrel/9e73b794b7",
+              "item": "kaleidoscope_tavern:_render/barrel/96ec1c35a2",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 2.5,
-              "scale": "3,3,3",
               "translation": "0,1.5,0"
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "shulker",
+              "position": "-1,0,-1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-1,0,0",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-1,0,1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "0,0,-1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "0,0,0",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "0,0,1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "1,0,-1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "1,0,0",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "1,0,1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-1,1,-1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-1,1,0",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-1,1,1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "0,1,-1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "0,1,0",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "0,1,1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "1,1,-1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "1,1,0",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "1,1,1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-1,2,-1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-1,2,0",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-1,2,1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "0,2,-1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "0,2,0",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "0,2,1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "1,2,-1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "1,2,0",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "1,2,1",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true
+            }
+          ]
+        },
+        "ground_open": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/barrel/8480edecc1",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 2.5,
+              "translation": "0,1.5,0"
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/barrel/e8bc22e99b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 2.5,
+              "translation": "0,3,0.5",
+              "rotation": "72.5,0,0"
             }
           ],
           "hitboxes": [
@@ -14190,56 +15744,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "-0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "-0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "-0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "-0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -14252,56 +15766,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         }
@@ -14438,56 +15912,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "-0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "-0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "-0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "-0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -14500,56 +15934,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "0.24,0.62,0.18",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.24,0.62,0.18",
-                  "width": 0.42,
-                  "height": 0.8,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         }
@@ -14686,56 +16080,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0.325,0.78,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.325,0.78,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "0.325,0.78,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.325,0.78,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "0.325,0.78,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.325,0.78,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "0.325,0.78,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.325,0.78,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -14748,56 +16102,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0,0.78,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.78,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "0,0.78,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.78,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "0,0.78,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.78,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "0,0.78,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.78,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -14810,56 +16124,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "-0.325,0.78,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.325,0.78,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "-0.325,0.78,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.325,0.78,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "-0.325,0.78,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.325,0.78,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "-0.325,0.78,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.325,0.78,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -14872,56 +16146,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0.325,0.49,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.325,0.49,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "0.325,0.49,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.325,0.49,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "0.325,0.49,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.325,0.49,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "0.325,0.49,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.325,0.49,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -14934,56 +16168,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0,0.49,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.49,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "0,0.49,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.49,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "0,0.49,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.49,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "0,0.49,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.49,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -14996,56 +16190,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "-0.325,0.49,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.325,0.49,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "-0.325,0.49,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.325,0.49,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "-0.325,0.49,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.325,0.49,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "-0.325,0.49,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.325,0.49,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -15058,56 +16212,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0.325,0.20,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.325,0.20,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "0.325,0.20,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.325,0.20,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "0.325,0.20,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.325,0.20,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "0.325,0.20,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.325,0.20,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -15120,56 +16234,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0,0.20,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.20,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "0,0.20,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.20,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "0,0.20,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.20,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "0,0.20,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.20,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -15182,56 +16256,16 @@
           },
           "variants": {
             "ground": {
-              "item_position": "-0.325,0.20,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.325,0.20,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_left": {
-              "item_position": "-0.325,0.20,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.325,0.20,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_middle": {
-              "item_position": "-0.325,0.20,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.325,0.20,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             },
             "ground_position_right": {
-              "item_position": "-0.325,0.20,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.325,0.20,0.375",
-                  "width": 0.25,
-                  "height": 0.27,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         }
@@ -15307,17 +16341,7 @@
           },
           "variants": {
             "ground": {
-              "item_position": "-0.375,0.32,0",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.375,0.32,0",
-                  "width": 0.3,
-                  "height": 0.62,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -15330,17 +16354,7 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0,0.32,0",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.32,0",
-                  "width": 0.3,
-                  "height": 0.62,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -15353,17 +16367,7 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0.375,0.32,0",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.375,0.32,0",
-                  "width": 0.3,
-                  "height": 0.62,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         }
@@ -15428,17 +16432,7 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0,0.13,-0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.13,-0.375",
-                  "width": 0.26,
-                  "height": 0.46,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -15451,17 +16445,7 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0.375,0.13,-0.19",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.375,0.13,-0.19",
-                  "width": 0.26,
-                  "height": 0.46,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -15474,17 +16458,7 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0.375,0.13,0.19",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0.375,0.13,0.19",
-                  "width": 0.26,
-                  "height": 0.46,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -15497,17 +16471,7 @@
           },
           "variants": {
             "ground": {
-              "item_position": "0,0.13,0.375",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "0,0.13,0.375",
-                  "width": 0.26,
-                  "height": 0.46,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -15520,17 +16484,7 @@
           },
           "variants": {
             "ground": {
-              "item_position": "-0.375,0.13,0.19",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.375,0.13,0.19",
-                  "width": 0.26,
-                  "height": 0.46,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -15543,17 +16497,7 @@
           },
           "variants": {
             "ground": {
-              "item_position": "-0.375,0.13,-0.19",
-              "hitboxes": [
-                {
-                  "type": "interaction",
-                  "position": "-0.375,0.13,-0.19",
-                  "width": 0.26,
-                  "height": 0.46,
-                  "interactive": true,
-                  "blocks_building": false
-                }
-              ]
+              "item_position": "0,-4096,0"
             }
           }
         },
@@ -15667,28 +16611,18 @@
         },
         "variants": {
           "ground": {
-            "item_position": "0,0.13,0.25",
-            "hitboxes": [
-              {
-                "type": "interaction",
-                "position": "0,0.13,0.25",
-                "width": 0.4,
-                "height": 0.8,
-                "interactive": true,
-                "blocks_building": false
-              }
-            ]
+            "item_position": "0,-4096,0"
           }
         }
       }
     },
     "kaleidoscope_tavern:water_bottle": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         }
       },
       "variants": {
@@ -15731,11 +16665,11 @@
     },
     "kaleidoscope_tavern:honey_bottle": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         }
       },
       "variants": {
@@ -15778,11 +16712,11 @@
     },
     "kaleidoscope_tavern:dragon_breath_bottle": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         }
       },
       "variants": {
@@ -15825,11 +16759,11 @@
     },
     "kaleidoscope_tavern:potion_bottle": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         }
       },
       "variants": {
@@ -15875,11 +16809,11 @@
     },
     "kaleidoscope_tavern:xp_bottle": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         }
       },
       "variants": {
@@ -15922,11 +16856,11 @@
     },
     "kaleidoscope_tavern:wine": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:wine"
       },
@@ -16275,11 +17209,11 @@
     },
     "kaleidoscope_tavern:champagne": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:champagne"
       },
@@ -16628,11 +17562,11 @@
     },
     "kaleidoscope_tavern:vodka": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:vodka"
       },
@@ -16837,11 +17771,11 @@
     },
     "kaleidoscope_tavern:brandy": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:brandy"
       },
@@ -16968,11 +17902,11 @@
     },
     "kaleidoscope_tavern:carignan": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:carignan"
       },
@@ -17099,11 +18033,11 @@
     },
     "kaleidoscope_tavern:sakura_wine": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sakura_wine"
       },
@@ -17452,11 +18386,11 @@
     },
     "kaleidoscope_tavern:plum_wine": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:plum_wine"
       },
@@ -17640,11 +18574,11 @@
     },
     "kaleidoscope_tavern:whiskey": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:whiskey"
       },
@@ -17993,11 +18927,11 @@
     },
     "kaleidoscope_tavern:ice_wine": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:ice_wine"
       },
@@ -18346,11 +19280,11 @@
     },
     "kaleidoscope_tavern:polaris_sweet_white": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:polaris_sweet_white"
       },
@@ -18699,11 +19633,11 @@
     },
     "kaleidoscope_tavern:honey_wine": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:honey_wine"
       },
@@ -19052,11 +19986,11 @@
     },
     "kaleidoscope_tavern:red_queen": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:red_queen"
       },
@@ -19405,11 +20339,11 @@
     },
     "kaleidoscope_tavern:miners_star": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:miners_star"
       },
@@ -19758,11 +20692,11 @@
     },
     "kaleidoscope_tavern:rum": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:rum"
       },
@@ -20111,11 +21045,11 @@
     },
     "kaleidoscope_tavern:riesling_dry_white": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:riesling_dry_white"
       },
@@ -20320,11 +21254,11 @@
     },
     "kaleidoscope_tavern:sunset_glow": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sunset_glow"
       },
@@ -20451,11 +21385,11 @@
     },
     "kaleidoscope_tavern:madame_shexiang": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:madame_shexiang"
       },
@@ -20660,11 +21594,11 @@
     },
     "kaleidoscope_tavern:sweet_berry_wine": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sweet_berry_wine"
       },
@@ -20869,11 +21803,11 @@
     },
     "kaleidoscope_tavern:sherry": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sherry"
       },
@@ -21222,11 +22156,11 @@
     },
     "kaleidoscope_tavern:mother_snow": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:mother_snow"
       },
@@ -21431,11 +22365,11 @@
     },
     "kaleidoscope_tavern:luminous_bride": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:luminous_bride"
       },
@@ -21784,11 +22718,11 @@
     },
     "kaleidoscope_tavern:glowflower_brew": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:glowflower_brew"
       },
@@ -22137,11 +23071,11 @@
     },
     "kaleidoscope_tavern:sauvignon_blanc_dry_white": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sauvignon_blanc_dry_white"
       },
@@ -22490,11 +23424,11 @@
     },
     "kaleidoscope_tavern:vinegar": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:vinegar"
       },
@@ -22843,11 +23777,11 @@
     },
     "kaleidoscope_tavern:watermelon_juice": {
       "settings": {
-        "hit_times": 3,
+        "hit_times": 1,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit"
+          "break": "minecraft:block.glass.break",
+          "place": "minecraft:block.glass.place",
+          "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:watermelon_juice"
       },

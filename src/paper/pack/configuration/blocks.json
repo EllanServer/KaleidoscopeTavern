@@ -107,23 +107,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_colorless",
         "luminance": 15
@@ -254,23 +254,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_white",
         "luminance": 15
@@ -401,23 +401,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_light_gray",
         "luminance": 15
@@ -548,23 +548,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_gray",
         "luminance": 15
@@ -695,23 +695,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_black",
         "luminance": 15
@@ -842,23 +842,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_brown",
         "luminance": 15
@@ -989,23 +989,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_red",
         "luminance": 15
@@ -1136,23 +1136,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_orange",
         "luminance": 15
@@ -1283,23 +1283,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_yellow",
         "luminance": 15
@@ -1430,23 +1430,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_lime",
         "luminance": 15
@@ -1577,23 +1577,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_green",
         "luminance": 15
@@ -1724,23 +1724,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_cyan",
         "luminance": 15
@@ -1871,23 +1871,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_light_blue",
         "luminance": 15
@@ -2018,23 +2018,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_blue",
         "luminance": 15
@@ -2165,23 +2165,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_purple",
         "luminance": 15
@@ -2312,23 +2312,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_magenta",
         "luminance": 15
@@ -2459,23 +2459,23 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY",
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.chain.break",
+          "step": "minecraft:block.chain.step",
+          "place": "minecraft:block.chain.place",
+          "hit": "minecraft:block.chain.hit",
+          "fall": "minecraft:block.chain.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "item": "kaleidoscope_tavern:string_lights_pink",
         "luminance": 15
@@ -2688,8 +2688,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -2697,28 +2697,24 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.cave_vines.break",
+          "step": "minecraft:block.cave_vines.step",
+          "place": "minecraft:block.cave_vines.place",
+          "hit": "minecraft:block.cave_vines.hit",
+          "fall": "minecraft:block.cave_vines.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": [
         {
           "type": "vine_crop_head_block",
           "body": "kaleidoscope_tavern:wild_grapevine_plant",
           "direction": "down",
-          "max_height": 16,
           "grow_speed": 0
         },
         {
           "type": "kaleidoscope_tavern:wild_grapevine",
-          "grow_speed": 0.15,
-          "max_height": 16
+          "grow_speed": 0.15
         }
       ]
     },
@@ -2738,8 +2734,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -2747,15 +2743,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.cave_vines.break",
+          "step": "minecraft:block.cave_vines.step",
+          "place": "minecraft:block.cave_vines.place",
+          "hit": "minecraft:block.cave_vines.hit",
+          "fall": "minecraft:block.cave_vines.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "vine_crop_body_block",
@@ -2795,8 +2789,8 @@
         "appearances": {
           "appearance_0": {
             "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-solid-transparent"
+              "type": "higher_tripwire",
+              "id": "kaleidoscope-tavern-decor-transparent"
             },
             "transparent": true,
             "entity_renderer": {
@@ -2809,8 +2803,8 @@
           },
           "appearance_1": {
             "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-solid-transparent"
+              "type": "higher_tripwire",
+              "id": "kaleidoscope-tavern-decor-transparent"
             },
             "transparent": true,
             "entity_renderer": {
@@ -2823,8 +2817,8 @@
           },
           "appearance_2": {
             "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-solid-transparent"
+              "type": "higher_tripwire",
+              "id": "kaleidoscope-tavern-decor-transparent"
             },
             "transparent": true,
             "entity_renderer": {
@@ -2837,8 +2831,8 @@
           },
           "appearance_3": {
             "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-solid-transparent"
+              "type": "higher_tripwire",
+              "id": "kaleidoscope-tavern-decor-transparent"
             },
             "transparent": true,
             "entity_renderer": {
@@ -2851,8 +2845,8 @@
           },
           "appearance_4": {
             "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-solid-transparent"
+              "type": "higher_tripwire",
+              "id": "kaleidoscope-tavern-decor-transparent"
             },
             "transparent": true,
             "entity_renderer": {
@@ -2865,8 +2859,8 @@
           },
           "appearance_5": {
             "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-solid-transparent"
+              "type": "higher_tripwire",
+              "id": "kaleidoscope-tavern-decor-transparent"
             },
             "transparent": true,
             "entity_renderer": {
@@ -2879,8 +2873,8 @@
           },
           "appearance_6": {
             "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-solid-transparent"
+              "type": "higher_tripwire",
+              "id": "kaleidoscope-tavern-decor-transparent"
             },
             "transparent": true,
             "entity_renderer": {
@@ -2981,7 +2975,7 @@
       },
       "settings": {
         "hardness": 0.8,
-        "resistance": 1.0,
+        "resistance": 0.8,
         "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -2998,7 +2992,6 @@
         "tags": [
           "minecraft:mineable/axe"
         ],
-        "support_shape": "minecraft:stone",
         "item": "kaleidoscope_tavern:trellis"
       },
       "behavior": {
@@ -3363,8 +3356,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.8,
+        "resistance": 0.8,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -3382,24 +3375,10 @@
           "minecraft:mineable/axe"
         ]
       },
-      "behavior": [
-        {
-          "type": "crop_block",
-          "grow_speed": 0.25,
-          "light_requirement": 9,
-          "max_light_requirement": 15,
-          "is_bone_meal_target": true,
-          "bone_meal_age_bonus": {
-            "type": "uniform",
-            "min": 1,
-            "max": 2
-          }
-        },
-        {
-          "type": "kaleidoscope_tavern:trellis",
-          "spread_chance": 0.25
-        }
-      ]
+      "behavior": {
+        "type": "kaleidoscope_tavern:trellis",
+        "spread_chance": 0.25
+      }
     },
     "kaleidoscope_tavern:ice_grapevine_trellis": {
       "states": {
@@ -3741,8 +3720,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.8,
+        "resistance": 0.8,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -3760,24 +3739,10 @@
           "minecraft:mineable/axe"
         ]
       },
-      "behavior": [
-        {
-          "type": "crop_block",
-          "grow_speed": 0.25,
-          "light_requirement": 9,
-          "max_light_requirement": 15,
-          "is_bone_meal_target": true,
-          "bone_meal_age_bonus": {
-            "type": "uniform",
-            "min": 1,
-            "max": 2
-          }
-        },
-        {
-          "type": "kaleidoscope_tavern:trellis",
-          "spread_chance": 0.25
-        }
-      ]
+      "behavior": {
+        "type": "kaleidoscope_tavern:trellis",
+        "spread_chance": 0.25
+      }
     },
     "kaleidoscope_tavern:gold_grapevine_trellis": {
       "states": {
@@ -4119,8 +4084,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.8,
+        "resistance": 0.8,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4138,24 +4103,10 @@
           "minecraft:mineable/axe"
         ]
       },
-      "behavior": [
-        {
-          "type": "crop_block",
-          "grow_speed": 0.25,
-          "light_requirement": 9,
-          "max_light_requirement": 15,
-          "is_bone_meal_target": true,
-          "bone_meal_age_bonus": {
-            "type": "uniform",
-            "min": 1,
-            "max": 2
-          }
-        },
-        {
-          "type": "kaleidoscope_tavern:trellis",
-          "spread_chance": 0.25
-        }
-      ]
+      "behavior": {
+        "type": "kaleidoscope_tavern:trellis",
+        "spread_chance": 0.25
+      }
     },
     "kaleidoscope_tavern:grape_crop": {
       "state": {
@@ -4173,8 +4124,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4182,15 +4133,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4212,8 +4161,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4221,15 +4170,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4251,8 +4198,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4260,15 +4207,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4290,8 +4235,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4299,15 +4244,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4329,8 +4272,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4338,15 +4281,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4368,8 +4309,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4377,15 +4318,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4407,8 +4346,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4416,15 +4355,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4446,8 +4383,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4455,15 +4392,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4485,8 +4420,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4494,15 +4429,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4524,8 +4457,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4533,15 +4466,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4563,8 +4494,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4572,15 +4503,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4602,8 +4531,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4611,15 +4540,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4641,8 +4568,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4650,15 +4577,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4680,8 +4605,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4689,15 +4614,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4719,8 +4642,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4728,15 +4651,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4758,8 +4679,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4767,15 +4688,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4797,8 +4716,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4806,15 +4725,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
@@ -4836,8 +4753,8 @@
         }
       },
       "settings": {
-        "hardness": 0.3,
-        "resistance": 1.0,
+        "hardness": 0.0,
+        "resistance": 0.0,
         "push_reaction": "DESTROY",
         "is_redstone_conductor": false,
         "is_suffocating": false,
@@ -4845,15 +4762,13 @@
         "can_occlude": false,
         "propagate_skylight": true,
         "sounds": {
-          "break": "minecraft:block.wood.break",
-          "step": "minecraft:block.wood.step",
-          "place": "minecraft:block.wood.place",
-          "hit": "minecraft:block.wood.hit",
-          "fall": "minecraft:block.wood.fall"
+          "break": "minecraft:block.crop.break",
+          "step": "minecraft:block.grass.step",
+          "place": "minecraft:item.crop.plant",
+          "hit": "minecraft:block.grass.hit",
+          "fall": "minecraft:block.grass.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": []
       },
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"

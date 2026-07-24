@@ -7,7 +7,9 @@ kaleidoscope_tavern_grape:
   type: BLOCK
   pot-whitelist: []
   seed: kaleidoscope_tavern:_customcrops/grape_seed
-  ignore-random-tick: false
+  # CraftEngine's hanging-grape behavior owns vanilla random ticks so growth
+  # cadence does not depend on CustomCrops' global random-tick-speed setting.
+  ignore-random-tick: true
   ignore-scheduled-tick: true
   random-rotation: false
   max-points: 5
@@ -78,13 +80,6 @@ kaleidoscope_tavern_grape:
                     key: minecraft:block.beehive.shear
                     volume: 1
                     pitch: 1
-  grow-conditions:
-    enough_light:
-      point: 1
-      conditions:
-        light:
-          type: light-more-than
-          value: 8
   custom-bone-meal:
     bone_meal:
       item: BONE_MEAL
@@ -116,7 +111,9 @@ kaleidoscope_tavern_ice_grape:
   type: BLOCK
   pot-whitelist: []
   seed: kaleidoscope_tavern:_customcrops/ice_grape_seed
-  ignore-random-tick: false
+  # See the normal grape definition: source-compatible random ticks are
+  # supplied by the CraftEngine block behavior.
+  ignore-random-tick: true
   ignore-scheduled-tick: true
   random-rotation: false
   max-points: 5
@@ -187,13 +184,6 @@ kaleidoscope_tavern_ice_grape:
                     key: minecraft:block.beehive.shear
                     volume: 1
                     pitch: 1
-  grow-conditions:
-    enough_light:
-      point: 1
-      conditions:
-        light:
-          type: light-more-than
-          value: 8
   custom-bone-meal:
     bone_meal:
       item: BONE_MEAL
@@ -225,7 +215,9 @@ kaleidoscope_tavern_gold_grape:
   type: BLOCK
   pot-whitelist: []
   seed: kaleidoscope_tavern:_customcrops/gold_grape_seed
-  ignore-random-tick: false
+  # See the normal grape definition: source-compatible random ticks are
+  # supplied by the CraftEngine block behavior.
+  ignore-random-tick: true
   ignore-scheduled-tick: true
   random-rotation: false
   max-points: 5
@@ -296,13 +288,6 @@ kaleidoscope_tavern_gold_grape:
                     key: minecraft:block.beehive.shear
                     volume: 1
                     pitch: 1
-  grow-conditions:
-    enough_light:
-      point: 1
-      conditions:
-        light:
-          type: light-more-than
-          value: 8
   custom-bone-meal:
     bone_meal:
       item: BONE_MEAL
