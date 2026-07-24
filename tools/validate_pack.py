@@ -19,6 +19,27 @@ ASSET_ROOTS = (
     ROOT / "src/generated/resources/assets",
     ROOT / "src/main/resources/assets",
 )
+OBSOLETE_VANILLA_IDS = {"minecraft:chain", "minecraft:grass"}
+
+
+def nested_strings(value: Any):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for child in value.values():
+            yield from nested_strings(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from nested_strings(child)
+
+
+def obsolete_vanilla_ids(values) -> list[str]:
+    return sorted({
+        resource_id
+        for value in values
+        for resource_id in OBSOLETE_VANILLA_IDS
+        if resource_id in value
+    })
 
 
 def load(name: str, root_key: str) -> dict[str, Any]:
@@ -156,6 +177,9 @@ def validate() -> dict[str, int]:
 
     all_items = set(items) | {item_id for item_id in render_items}
     for recipe_id, recipe in recipes.items():
+        obsolete = obsolete_vanilla_ids(nested_strings(recipe))
+        if obsolete:
+            raise AssertionError(f"{recipe_id}: obsolete vanilla ids {obsolete}")
         result = recipe["result"]["id"]
         if result.startswith(f"{NAMESPACE}:") and result not in all_items:
             raise AssertionError(f"{recipe_id}: unknown result {result}")
@@ -174,7 +198,11 @@ def validate() -> dict[str, int]:
     }
     catalog_counts: dict[str, int] = {}
     for name, expected in expected_catalogs.items():
-        count = len(tsv_rows(name))
+        rows = tsv_rows(name)
+        obsolete = obsolete_vanilla_ids(cell for row in rows for cell in row)
+        if obsolete:
+            raise AssertionError(f"{name}: obsolete vanilla ids {obsolete}")
+        count = len(rows)
         if expected is not None and count != expected:
             raise AssertionError(f"{name}: expected {expected} rows, found {count}")
         catalog_counts[name] = count

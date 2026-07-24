@@ -42,6 +42,20 @@ RECIPES = GENERATED / f"data/{NAMESPACE}/recipes"
 DRINK_EFFECTS = GENERATED / f"data/{NAMESPACE}/datamap/drink_effect"
 
 
+# Vanilla renamed these resource ids after the archived Forge data was generated.
+# Keep the original data auditable and normalize only at the Paper 26.2 migration boundary.
+LEGACY_RESOURCE_RENAMES: dict[str, str] = {
+    "minecraft:chain": "minecraft:iron_chain",
+    "minecraft:grass": "minecraft:short_grass",
+}
+
+
+def normalize_legacy_resource_id(resource_id: str) -> str:
+    tag_prefix = "#" if resource_id.startswith("#") else ""
+    bare_id = resource_id[1:] if tag_prefix else resource_id
+    return tag_prefix + LEGACY_RESOURCE_RENAMES.get(bare_id, bare_id)
+
+
 COMMON_TAG_FALLBACKS: dict[str, list[str]] = {
     "forge:rods/wooden": ["minecraft:stick"],
     "forge:ingots/iron": ["minecraft:iron_ingot"],
@@ -222,9 +236,9 @@ def load_raw_tags() -> dict[str, list[str]]:
                     values: list[str] = [] if data.get("replace", False) else list(tags.get(tag, []))
                     for raw in data.get("values", []):
                         if isinstance(raw, str):
-                            values.append(raw)
+                            values.append(normalize_legacy_resource_id(raw))
                         elif isinstance(raw, dict) and raw.get("id"):
-                            values.append(str(raw["id"]))
+                            values.append(normalize_legacy_resource_id(str(raw["id"])))
                     tags[tag] = values
     for key, values in COMMON_TAG_FALLBACKS.items():
         tags.setdefault(key, values)
@@ -249,9 +263,9 @@ def load_raw_registry_tags(folder_names: tuple[str, ...]) -> dict[str, list[str]
                     values: list[str] = [] if data.get("replace", False) else list(tags.get(tag, []))
                     for raw in data.get("values", []):
                         if isinstance(raw, str):
-                            values.append(raw)
+                            values.append(normalize_legacy_resource_id(raw))
                         elif isinstance(raw, dict) and raw.get("id") and raw.get("required", True):
-                            values.append(str(raw["id"]))
+                            values.append(normalize_legacy_resource_id(str(raw["id"])))
                     tags[tag] = values
     return tags
 
@@ -287,13 +301,13 @@ def ingredient_values(raw: Any, tags: dict[str, list[str]]) -> list[str]:
                     merged.append(value)
         return merged
     if isinstance(raw, str):
-        return [raw]
+        return [normalize_legacy_resource_id(raw)]
     if not isinstance(raw, dict):
         raise ValueError(f"Unsupported ingredient: {raw!r}")
     if "item" in raw:
-        return [str(raw["item"])]
+        return [normalize_legacy_resource_id(str(raw["item"]))]
     if "id" in raw:
-        return [str(raw["id"])]
+        return [normalize_legacy_resource_id(str(raw["id"]))]
     if "tag" in raw:
         tag = str(raw["tag"])
         values = tags.get(tag, [])
@@ -312,11 +326,14 @@ def compact_ingredient(raw: Any, tags: dict[str, list[str]]) -> str | list[str]:
 
 def result_entry(raw: Any) -> dict[str, Any]:
     if isinstance(raw, str):
-        return {"id": raw, "count": 1}
+        return {"id": normalize_legacy_resource_id(raw), "count": 1}
     item_id = raw.get("item", raw.get("id"))
     if not item_id:
         raise ValueError(f"Recipe result has no item id: {raw!r}")
-    return {"id": str(item_id), "count": int(raw.get("count", 1))}
+    return {
+        "id": normalize_legacy_resource_id(str(item_id)),
+        "count": int(raw.get("count", 1)),
+    }
 
 
 def convert_standard_recipes(tags: dict[str, list[str]]) -> dict[str, Any]:
@@ -1260,9 +1277,9 @@ def build_items(
 
 def selector(raw: dict[str, Any]) -> str:
     if "item" in raw:
-        return f"item={raw['item']}"
+        return f"item={normalize_legacy_resource_id(str(raw['item']))}"
     if "tag" in raw:
-        return f"tag={raw['tag']}"
+        return f"tag={normalize_legacy_resource_id(str(raw['tag']))}"
     raise ValueError(f"Unsupported station selector: {raw!r}")
 
 
