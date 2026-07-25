@@ -267,7 +267,13 @@ public final class StationService implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
-        if (fluidFromBucket(items.id(event.getPlayer().getInventory().getItemInMainHand())).isEmpty()) {
+        // Read the bucket from the hand the event reports, so an off-hand pour is
+        // recognised too, and keep using the item id because pressing recipes are
+        // keyed by custom juice buckets rather than vanilla materials.
+        ItemStack bucket = event.getHand() == EquipmentSlot.OFF_HAND
+                ? event.getPlayer().getInventory().getItemInOffHand()
+                : event.getPlayer().getInventory().getItemInMainHand();
+        if (fluidFromBucket(items.id(bucket)).isEmpty()) {
             return;
         }
         if (fluidStationAt(event.getBlock()) || fluidStationAt(event.getBlockClicked())) {
