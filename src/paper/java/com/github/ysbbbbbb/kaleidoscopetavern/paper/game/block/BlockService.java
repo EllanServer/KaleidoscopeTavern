@@ -22,6 +22,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.Event;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -80,6 +84,52 @@ public final class BlockService implements Listener {
         if (handled) {
             event.setCancelled(true);
         }
+    }
+
+    /**
+     * Intercepts grapevine placement when the player right-clicks a vanilla
+     * block (dirt, grass, etc.) that sits directly below a plain trellis.
+     * <p>
+     * Without this, the player's aim can land on the soil instead of the
+     * trellis itself. Because soil is a vanilla block, CraftEngine never fires
+     * {@link CustomBlockInteractEvent}, and the grapevine item's
+     * {@code block_item} behavior places a {@code wild_grapevine} on the soil.
+     * This listener runs at {@code HIGH} priority—before CraftEngine's
+     * {@code HIGHEST}—so cancelling here prevents the unwanted placement.
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onRightClickSoilBelowTrellis(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+        Player player = event.getPlayer();
+        if (player.getGameMode() == GameMode.SPECTATOR) {
+            return;
+        }
+        ItemStack hand = event.getHand() == EquipmentSlot.HAND
+                ? player.getInventory().getItemInMainHand()
+                : player.getInventory().getItemInOffHand();
+        String handId = items.id(hand);
+        if (!GRAPEVINE.equals(handId)) {
+            return;
+        }
+        Block clicked = event.getClickedBlock();
+        if (clicked == null) {
+            return;
+        }
+        // If the clicked block is itself a custom block, CustomBlockInteractEvent handles it.
+        if (CraftEngineBlocks.getCustomBlockState(clicked) != null) {
+            return;
+        }
+        Block above = clicked.getRelative(BlockFace.UP);
+        ImmutableBlockState aboveState = CraftEngineBlocks.getCustomBlockState(above);
+        if (aboveState == null || !TRELLIS.equals(aboveState.owner().value().id().toString())) {
+            return;
+        }
+        // A plain trellis sits directly above the clicked soil — plant on it
+        // and cancel so CraftEngine's block_item behavior cannot fire.
+        plantGrapevineOnTrellis(player, above, aboveState, hand, clicked);
+        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -194,24 +244,35 @@ public final class BlockService implements Listener {
         // trellises carry cross/axis type values, but the replacement definition
         // preserves that value, so they must remain plantable instead of falling
         // through to the grapevine block_item behavior beside the trellis.
-        String planted = grapevineFor(block.getRelative(BlockFace.DOWN));
+        plantGrapevineOnTrellis(player, block, state, hand, block.getRelative(BlockFace.DOWN));
+        return true;
+    }
+
+    /**
+     * Replaces a plain trellis with the appropriate grapevine-trellis variant
+     * based on the soil below it. Used both by direct trellis interaction and
+     * by the soil-below-trellis interceptor.
+     */
+    private void plantGrapevineOnTrellis(Player player, Block trellisBlock,
+                                          ImmutableBlockState trellisState,
+                                          ItemStack hand, Block soil) {
+        String planted = grapevineFor(soil);
         if (planted == null) {
-            return true;
+            return;
         }
         net.momirealms.craftengine.core.block.BlockDefinition definition =
                 CraftEngineBlocks.byId(net.momirealms.craftengine.core.util.Key.of(planted));
         if (definition == null) {
-            return true;
+            return;
         }
         ImmutableBlockState replacement = definition.defaultState();
-        replacement = TrellisBehavior.withNamed(replacement, "type", stringProperty(state, "type"));
+        replacement = TrellisBehavior.withNamed(replacement, "type", stringProperty(trellisState, "type"));
         replacement = TrellisBehavior.withNamed(replacement, "waterlogged",
-                Boolean.toString(booleanProperty(state, "waterlogged")));
-        if (CraftEngineBlocks.place(block.getLocation(), replacement, false)) {
+                Boolean.toString(booleanProperty(trellisState, "waterlogged")));
+        if (CraftEngineBlocks.place(trellisBlock.getLocation(), replacement, false)) {
             consumeUnlessCreative(player, hand);
-            block.getWorld().playSound(block.getLocation(), "minecraft:block.crop.planted", 1F, 1F);
+            trellisBlock.getWorld().playSound(trellisBlock.getLocation(), "minecraft:block.crop.planted", 1F, 1F);
         }
-        return true;
     }
 
     private boolean interactVineTrellis(Player player, Block block, ImmutableBlockState state,
