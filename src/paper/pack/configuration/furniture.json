@@ -15075,7 +15075,11 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 2.5,
-              "translation": "0,1.5,0"
+              "translation": "0,1.5,0",
+              "brightness": {
+                "block_light": 6,
+                "sky_light": 6
+              }
             }
           ],
           "hitboxes": [
@@ -15359,7 +15363,11 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 2.5,
-              "translation": "0,1.5,0"
+              "translation": "0,1.5,0",
+              "brightness": {
+                "block_light": 6,
+                "sky_light": 6
+              }
             },
             {
               "type": "item_display",
@@ -15368,7 +15376,11 @@
               "shadow_radius": 0,
               "view_range": 2.5,
               "translation": "0,3,0.5",
-              "rotation": "72.5,0,0"
+              "rotation": "72.5,0,0",
+              "brightness": {
+                "block_light": 6,
+                "sky_light": 6
+              }
             }
           ],
           "hitboxes": [

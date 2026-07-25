@@ -1816,6 +1816,9 @@ def build_furniture(
             closed = furniture_element(
                 render_items, block_id, "closed", closed_model, "ground", "0,1,0")
             closed["view_range"] = 2.5
+            # Same override as the open variant so opening a barrel does not make
+            # it visibly change shade.
+            closed["brightness"] = {"block_light": 6, "sky_light": 6}
             variants["ground"] = {
                 "elements": [closed],
                 "hitboxes": furniture_hitboxes(block_id, "ground"),
@@ -1826,6 +1829,16 @@ def build_furniture(
                 render_items, block_id, "open lid", lid_model, "ground", "0,2.5,0.5")
             lid["rotation"] = "72.5,0,0"
             body["view_range"] = lid["view_range"] = 2.5
+            # An item display samples the light where its own entity sits, and the
+            # barrel's 3x3x3 collider makes that centre pitch black, so the cavity
+            # walls came out as silhouettes while only the rim caught sky light.
+            # BarrelBlockEntityRender instead received the block position's combined
+            # light. CraftEngine only honours a brightness override when both
+            # channels are given, and it cannot track a neighbour's light level, so
+            # pin one modest level: bright enough to read the staves and the floor,
+            # dim enough that the barrel never looks emissive in a dark cellar.
+            body["brightness"] = {"block_light": 6, "sky_light": 6}
+            lid["brightness"] = {"block_light": 6, "sky_light": 6}
             variants["ground_open"] = {
                 "elements": [body, lid],
                 "hitboxes": furniture_hitboxes(block_id, "ground"),
