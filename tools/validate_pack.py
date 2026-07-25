@@ -544,12 +544,24 @@ def validate() -> dict[str, int]:
         encoding="utf-8-sig")
     for evidence in (
             "ItemStack eventItem = event.item();",
-            "String planted = grapevineFor(block.getRelative(BlockFace.DOWN));",
-            'withNamed(replacement, "type", stringProperty(state, "type"))'):
+            "String planted = grapevineFor(soil);",
+            'withNamed(replacement, "type", stringProperty(trellisState, "type"))',
+            "void plantGrapevineOnTrellis(",
+            "onRightClickSoilBelowTrellis"):
         if evidence not in block_service_source:
             raise AssertionError(f"BlockService grapevine planting evidence is missing: {evidence}")
     if '"single".equals(stringProperty(state, "type"))' in block_service_source:
         raise AssertionError("Grapevine planting must support connected trellis shapes")
+
+    # DisplayStorageService must cancel off-hand furniture interactions to
+    # prevent CraftEngine's built-in display_item_furniture behavior from
+    # duplicating items and desyncing storage visuals.
+    storage_source = (game_package / "DisplayStorageService.java").read_text(
+        encoding="utf-8-sig")
+    if "event.hand() != InteractionHand.MAIN_HAND" not in storage_source \
+            or "event.setCancelled(true)" not in storage_source:
+        raise AssertionError(
+            "DisplayStorageService must cancel off-hand interactions to prevent item duplication")
 
     tap_behavior_files = {
         path.name for path in SOURCE_TAP_BEHAVIORS.glob("*Behavior.java")
@@ -907,6 +919,11 @@ def validate() -> dict[str, int]:
             raise AssertionError(f"{item_id}: drinks must remain consumable items with manual sneak placement")
         if item.get("data", {}).get("components", {}).get("minecraft:max_stack_size") != 16:
             raise AssertionError(f"{item_id}: bottle/glassware stack size must remain 16")
+        potion_contents = item.get("data", {}).get("components", {}).get("minecraft:potion_contents")
+        if not potion_contents or potion_contents.get("potion") != "minecraft:water":
+            raise AssertionError(
+                f"{item_id}: drink items must have potion_contents with water type "
+                "to avoid 'Uncraftable Potion' display name")
 
     for item_id, item in items.items():
         if not item_id.endswith("_bucket"):

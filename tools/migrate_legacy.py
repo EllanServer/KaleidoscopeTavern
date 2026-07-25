@@ -1956,6 +1956,28 @@ def load_drink_effects() -> tuple[set[str], list[list[Any]]]:
     return drink_ids, rows
 
 
+# Maps cocktail_ingredient_<color> tag suffixes to the RGB liquid tint
+# used by ContentCatalog.cocktailColor(). Without a potion_contents component,
+# Minecraft 1.21+ treats potion-material items as "Uncraftable Potion" and the
+# item_name display is overridden by the default uncraftable name.
+DRINK_COLORS: dict[str, int] = {
+    "black": 0x1D1D21, "blue": 0x3C44AA, "brown": 0x835432,
+    "cyan": 0x169C9C, "gray": 0x474F52, "green": 0x5E7C16,
+    "light_blue": 0x3AB3DA, "light_gray": 0x9D9D97,
+    "light_purple": 0xC74EBD, "lime": 0x80C71F, "orange": 0xF9801D,
+    "pink": 0xF38BAA, "purple": 0x8932B8, "red": 0xB02E26,
+    "white": 0xF9FFFE, "yellow": 0xFED83D, "gold": 0xF6C344,
+}
+
+
+def drink_color(item_tags: list[str]) -> int | None:
+    prefix = f"{NAMESPACE}:cocktail_ingredient_"
+    for tag in item_tags:
+        if tag.startswith(prefix):
+            return DRINK_COLORS.get(tag[len(prefix):])
+    return None
+
+
 def material_for(item_id: str, drink_ids: set[str], block_ids: set[str]) -> str:
     if item_id in drink_ids or item_id == "signature_cocktail":
         return "potion"
@@ -2036,6 +2058,17 @@ def build_items(
             # its vanilla stack limit is 1, so preserve the original component
             # explicitly for both drink and place-only bottle items.
             config["data"]["components"] = {"minecraft:max_stack_size": 16}
+        if config["material"] == "potion":
+            # Without potion_contents, Minecraft 1.21+ shows potion-material
+            # items as "Uncraftable Potion" regardless of item_name. A neutral
+            # water type avoids that, and custom_color tints the liquid to
+            # match the drink's cocktail_ingredient color tag.
+            components = config["data"].setdefault("components", {})
+            potion_contents: dict[str, Any] = {"potion": "minecraft:water"}
+            color = drink_color(memberships.get(item_id, []))
+            if color is not None:
+                potion_contents["custom_color"] = color
+            components["minecraft:potion_contents"] = potion_contents
         if item_id == "molotov":
             config["data"].setdefault("components", {})["minecraft:consumable"] = {
                 "consume_seconds": 3_600.0,
