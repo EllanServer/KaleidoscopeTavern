@@ -1108,6 +1108,7 @@ def shulker_box(
     position: tuple[float, float, float],
     scale: float = 1.0,
     peek: int = 0,
+    direction: str | None = None,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "type": "shulker",
@@ -1121,6 +1122,8 @@ def shulker_box(
     }
     if abs(scale - 1.0) > 1.0e-8:
         result["scale"] = round(scale, 6)
+    if direction is not None:
+        result["direction"] = direction
     return result
 
 
@@ -1305,28 +1308,30 @@ def furniture_hitboxes(
             for z in (-1, 0, 1)
         ]
     if block_id == "stepladder":
-        # StepladderBlock is two blocks tall and each half pairs a full-height body
-        # with an 8-pixel tread in front of it. For the authored north facing that
-        # is a body over z=4..16 and a tread over z=0..4 rising to y=8.
+        # StepladderBlock is two blocks tall. Each half's source VoxelShape is:
+        #   body:  x=0..16, y=0..16, z=4..16
+        #   tread: x=0..16, y=0..8,  z=0..4
         #
-        # The previous pair of full cubes filled the tread space as well, turning
-        # each half into a sheer wall with nothing to step onto. Shulkers are
-        # uniform cubes, so the 12/16-deep body is represented by a 3/4-width
-        # shulker and the tread gets its own half-height row along the front edge.
-        # CraftEngine rotates shulker offsets by the furniture yaw, so a north
-        # layout serves every facing.
+        # A shulker is square in the horizontal plane, so one scale=0.75 box
+        # cannot represent the body's full 16-pixel width. Split the body into
+        # four 8x8 columns: two x columns and two overlapping z rows. With
+        # scale=0.5 and peek=100 facing up, each column is exactly 8x16x8
+        # pixels; their union is the exact 16x16x12 body volume.
         #
-        # A shulker's scale controls both width and height. The authored body is
-        # 12/16 deep but a full 16/16 high; use its upward peek to restore that
-        # missing quarter block without widening the collision footprint. This
-        # leaves the body top at y=1.0, so the next tread is only a 0.5-high step.
-        body_peek = peek_for(0.75, 1.0)
+        # The tread is split into four 4x4 columns across x. With scale=0.25
+        # and peek=100 facing up, each is exactly 4x8x4 pixels; their union is
+        # the exact 16x8x4 front step. CraftEngine rotates these offsets with
+        # the furniture yaw, so the north-authored layout serves every facing.
         boxes: list[dict[str, Any]] = []
         for half in (0, 1):
-            boxes.append(shulker_box((0, half, 0.125), 0.75, body_peek))
             boxes.extend(
-                shulker_box((x, half, -0.375), 0.5)
+                shulker_box((x, half, z), 0.5, 100, "up")
                 for x in (-0.25, 0.25)
+                for z in (0, 0.25)
+            )
+            boxes.extend(
+                shulker_box((x, half, -0.375), 0.25, 100, "up")
+                for x in (-0.375, -0.125, 0.125, 0.375)
             )
         return boxes
     if block_id.endswith("_sofa"):

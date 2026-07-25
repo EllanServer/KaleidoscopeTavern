@@ -650,24 +650,31 @@ def validate() -> dict[str, int]:
             element.get("type") != "item_display" for element in stepladder_elements):
         raise AssertionError("Stepladder must keep exactly two ItemDisplay halves")
     stepladder_hitboxes = stepladder_ground.get("hitboxes", [])
-    if len(stepladder_hitboxes) != 6 or any(
+    if len(stepladder_hitboxes) != 16 or any(
             hitbox.get("type") != "shulker" for hitbox in stepladder_hitboxes):
-        raise AssertionError("Stepladder must use six physical shulker hitboxes")
+        raise AssertionError("Stepladder must use sixteen physical shulker hitboxes")
     expected_stepladder_hitboxes = {
-        ("0,0,0.125", 0.75, 39),
-        ("0,1,0.125", 0.75, 39),
-        ("-0.25,0,-0.375", 0.5, 0),
-        ("0.25,0,-0.375", 0.5, 0),
-        ("-0.25,1,-0.375", 0.5, 0),
-        ("0.25,1,-0.375", 0.5, 0),
+        (f"{x},{half},{z}", 0.5, 100, "up")
+        for half in (0, 1)
+        for x in (-0.25, 0.25)
+        for z in (0, 0.25)
+    } | {
+        (f"{x},{half},-0.375", 0.25, 100, "up")
+        for half in (0, 1)
+        for x in (-0.375, -0.125, 0.125, 0.375)
     }
     actual_stepladder_hitboxes = {
-        (hitbox.get("position"), hitbox.get("scale", 1), hitbox.get("peek", 0))
+        (
+            hitbox.get("position"),
+            hitbox.get("scale", 1),
+            hitbox.get("peek", 0),
+            hitbox.get("direction", "up"),
+        )
         for hitbox in stepladder_hitboxes
     }
     if actual_stepladder_hitboxes != expected_stepladder_hitboxes:
         raise AssertionError(
-            "Stepladder hitboxes must retain full-height bodies and half-height treads: "
+            "Stepladder hitboxes must exactly cover the source body and treads: "
             f"found={sorted(actual_stepladder_hitboxes)}")
 
     trellis = blocks[f"{NAMESPACE}:trellis"]
