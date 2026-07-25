@@ -13320,7 +13320,7 @@
             {
               "type": "shulker",
               "position": "0,0,0.125",
-              "peek": 0,
+              "peek": 39,
               "interaction_entity": false,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
@@ -13353,7 +13353,7 @@
             {
               "type": "shulker",
               "position": "0,1,0.125",
-              "peek": 0,
+              "peek": 39,
               "interaction_entity": false,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,

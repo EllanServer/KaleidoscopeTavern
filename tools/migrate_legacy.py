@@ -1292,16 +1292,19 @@ def furniture_hitboxes(
         #
         # The previous pair of full cubes filled the tread space as well, turning
         # each half into a sheer wall with nothing to step onto. Shulkers are
-        # uniform cubes, so the 12/16-deep body is tiled from quarter cubes and the
-        # tread gets its own half-height row along the front edge. CraftEngine
-        # rotates shulker offsets by the furniture yaw, so a north layout serves
-        # every facing.
-        # Keep the entity count sane: the body stays one cube per half (4/16 deeper
-        # than authored, which players cannot feel against a wall), while each tread
-        # is a pair of half cubes so its top lands on the authored y=8/16.
+        # uniform cubes, so the 12/16-deep body is represented by a 3/4-width
+        # shulker and the tread gets its own half-height row along the front edge.
+        # CraftEngine rotates shulker offsets by the furniture yaw, so a north
+        # layout serves every facing.
+        #
+        # A shulker's scale controls both width and height. The authored body is
+        # 12/16 deep but a full 16/16 high; use its upward peek to restore that
+        # missing quarter block without widening the collision footprint. This
+        # leaves the body top at y=1.0, so the next tread is only a 0.5-high step.
+        body_peek = peek_for(0.75, 1.0)
         boxes: list[dict[str, Any]] = []
         for half in (0, 1):
-            boxes.append(shulker_box((0, half, 0.125), 0.75))
+            boxes.append(shulker_box((0, half, 0.125), 0.75, body_peek))
             boxes.extend(
                 shulker_box((x, half, -0.375), 0.5)
                 for x in (-0.25, 0.25)

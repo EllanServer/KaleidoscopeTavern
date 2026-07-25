@@ -540,6 +540,17 @@ def validate() -> dict[str, int]:
     for source_name, owners in RUNTIME_BEHAVIOR_COVERAGE.items():
         assert_owner_evidence(source_name, owners, game_package)
 
+    block_service_source = (game_package / "block/BlockService.java").read_text(
+        encoding="utf-8-sig")
+    for evidence in (
+            "ItemStack eventItem = event.item();",
+            "String planted = grapevineFor(block.getRelative(BlockFace.DOWN));",
+            'withNamed(replacement, "type", stringProperty(state, "type"))'):
+        if evidence not in block_service_source:
+            raise AssertionError(f"BlockService grapevine planting evidence is missing: {evidence}")
+    if '"single".equals(stringProperty(state, "type"))' in block_service_source:
+        raise AssertionError("Grapevine planting must support connected trellis shapes")
+
     tap_behavior_files = {
         path.name for path in SOURCE_TAP_BEHAVIORS.glob("*Behavior.java")
     }
@@ -627,6 +638,37 @@ def validate() -> dict[str, int]:
             if not model or not model_has_geometry(model):
                 raise AssertionError(
                     f"{block_id}/{variant_name}: particle-only source still maps to invisible model {model}")
+
+    stepladder = furniture[f"{NAMESPACE}:stepladder"]
+    stepladder_variants = stepladder.get("variants", {})
+    if set(stepladder_variants) != {"ground"}:
+        raise AssertionError(
+            f"Stepladder must expose only its ground variant, found {sorted(stepladder_variants)}")
+    stepladder_ground = stepladder_variants["ground"]
+    stepladder_elements = stepladder_ground.get("elements", [])
+    if len(stepladder_elements) != 2 or any(
+            element.get("type") != "item_display" for element in stepladder_elements):
+        raise AssertionError("Stepladder must keep exactly two ItemDisplay halves")
+    stepladder_hitboxes = stepladder_ground.get("hitboxes", [])
+    if len(stepladder_hitboxes) != 6 or any(
+            hitbox.get("type") != "shulker" for hitbox in stepladder_hitboxes):
+        raise AssertionError("Stepladder must use six physical shulker hitboxes")
+    expected_stepladder_hitboxes = {
+        ("0,0,0.125", 0.75, 39),
+        ("0,1,0.125", 0.75, 39),
+        ("-0.25,0,-0.375", 0.5, 0),
+        ("0.25,0,-0.375", 0.5, 0),
+        ("-0.25,1,-0.375", 0.5, 0),
+        ("0.25,1,-0.375", 0.5, 0),
+    }
+    actual_stepladder_hitboxes = {
+        (hitbox.get("position"), hitbox.get("scale", 1), hitbox.get("peek", 0))
+        for hitbox in stepladder_hitboxes
+    }
+    if actual_stepladder_hitboxes != expected_stepladder_hitboxes:
+        raise AssertionError(
+            "Stepladder hitboxes must retain full-height bodies and half-height treads: "
+            f"found={sorted(actual_stepladder_hitboxes)}")
 
     trellis = blocks[f"{NAMESPACE}:trellis"]
     if "support_shape" in trellis.get("settings", {}):

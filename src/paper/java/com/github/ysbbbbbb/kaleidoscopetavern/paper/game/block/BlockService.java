@@ -56,7 +56,11 @@ public final class BlockService implements Listener {
         ItemStack hand = event.hand() == InteractionHand.MAIN_HAND
                 ? player.getInventory().getItemInMainHand()
                 : player.getInventory().getItemInOffHand();
-        String handId = items.id(hand);
+        // CE supplies the exact stack that triggered this interaction. Prefer it
+        // over the inventory snapshot because simulated/off-hand interactions can
+        // otherwise make a custom grapevine look like paper or air.
+        ItemStack eventItem = event.item();
+        String handId = items.id(eventItem == null ? hand : eventItem);
         ImmutableBlockState state = event.blockState();
         String blockId = event.customBlock().id().toString();
 
@@ -186,15 +190,10 @@ public final class BlockService implements Listener {
         if (!GRAPEVINE.equals(handId)) {
             return false;
         }
-        // TrellisBlock.use consumes the interaction for any grapevine held against
-        // a trellis, planting only when the shape is SINGLE over suitable soil but
-        // never letting the item place itself. Reporting the interaction as handled
-        // reproduces that: otherwise CraftEngine falls through to the grapevine's
-        // own block_item behavior and drops a wild vine beside the trellis.
-        if (!"single".equals(stringProperty(state, "type"))) {
-            return true;
-        }
-
+        // Consume the interaction for every ordinary trellis shape. Connected
+        // trellises carry cross/axis type values, but the replacement definition
+        // preserves that value, so they must remain plantable instead of falling
+        // through to the grapevine block_item behavior beside the trellis.
         String planted = grapevineFor(block.getRelative(BlockFace.DOWN));
         if (planted == null) {
             return true;
