@@ -1230,7 +1230,21 @@ def entity_barrel_box(
 # disappear when viewed from above through an open lid and left the cavity black.
 # Giving each plane a hair of thickness makes it a solid that reads correctly from
 # either side, without the z-fighting a coincident mirrored copy would cause.
+#
+# The entity UV layout (entity_uv_faces) only paints the "front" face of a flat
+# panel; the "back" face UV lands on an empty/transparent region of the texture
+# that was never rendered under entityCutoutNoCull.  After thickening, that back
+# face becomes visible, so its UV must be copied from the front face to avoid
+# being culled by FaceBakery.computeMaterialTransparency in 26.2+.
 INTERIOR_PANEL_THICKNESS = 0.01
+
+# axis → (front_face, back_face): the back face UV is overwritten with the
+# front face UV so both sides show the same texture.
+_FLAT_AXIS_FACE_PAIRS = {
+    0: ("east", "west"),   # flat in X
+    1: ("up", "down"),     # flat in Y
+    2: ("north", "south"), # flat in Z
+}
 
 
 def solidify_planes(element: dict[str, Any]) -> dict[str, Any]:
@@ -1244,7 +1258,13 @@ def solidify_planes(element: dict[str, Any]) -> dict[str, Any]:
     # Grow symmetrically so the panel keeps sitting exactly where it was authored.
     start[axis] -= INTERIOR_PANEL_THICKNESS
     end[axis] += INTERIOR_PANEL_THICKNESS
-    return {**element, "from": start, "to": end}
+    # Copy the front face UV onto the back face so the newly-visible side maps
+    # to opaque texels instead of the empty region the entity layout reserved.
+    faces = {k: dict(v) for k, v in element.get("faces", {}).items()}
+    front, back = _FLAT_AXIS_FACE_PAIRS[axis]
+    if front in faces and back in faces:
+        faces[back]["uv"] = list(faces[front]["uv"])
+    return {**element, "from": start, "to": end, "faces": faces}
 
 
 def create_barrel_models() -> None:
