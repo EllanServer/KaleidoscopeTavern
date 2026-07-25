@@ -631,14 +631,39 @@ def validate() -> dict[str, int]:
     trellis = blocks[f"{NAMESPACE}:trellis"]
     if "support_shape" in trellis.get("settings", {}):
         raise AssertionError("Trellis must not expose a full-cube support/occlusion shape")
-    trellis_appearances = trellis["states"]["appearances"].values()
-    if any(appearance.get("auto_state", {}).get("type") != "higher_tripwire"
-           or appearance.get("entity_renderer", {}).get("type") != "item_display"
-           for appearance in trellis_appearances):
-        raise AssertionError("Trellis must use a non-occluding carrier plus entity renderer")
-
     vine_trellis_ids = (
         "grapevine_trellis", "ice_grapevine_trellis", "gold_grapevine_trellis")
+
+    # A carrier is all the client ever sees, so it decides both what the player
+    # collides with and what can be aimed at. Tripwire does not collide, which
+    # let players walk through posts and blocked grapevine planting outright,
+    # since no RIGHT_CLICK_BLOCK means no CustomBlockInteractEvent. Shapes with
+    # a full-height post therefore ride a vertical copper chain (a 3/16 post,
+    # one pixel under the authored 4/16 shape); beam-only shapes sit overhead
+    # and stay on the shared tripwire carrier.
+    post_carriers = 0
+    for block_id in ("trellis", *vine_trellis_ids):
+        definition = blocks[f"{NAMESPACE}:{block_id}"]
+        states = definition["states"]
+        post_appearances = {
+            variant["appearance"]
+            for key, variant in states["variants"].items()
+            if dict(pair.split("=") for pair in key.split(","))["type"] == "single"
+        }
+        for name, appearance in states["appearances"].items():
+            if appearance.get("entity_renderer", {}).get("type") != "item_display":
+                raise AssertionError(f"{block_id}/{name} must keep its authored item-display model")
+            if name in post_appearances:
+                if appearance.get("state") != "minecraft:copper_chain[axis=y,waterlogged=false]":
+                    raise AssertionError(
+                        f"{block_id}/{name}: upright trellis posts need the colliding chain carrier")
+                post_carriers += 1
+            elif appearance.get("auto_state", {}).get("type") != "higher_tripwire":
+                raise AssertionError(
+                    f"{block_id}/{name}: beam-only trellis shapes must stay on the shared carrier")
+    if post_carriers != 13:
+        raise AssertionError(
+            f"Expected 13 colliding trellis post appearances, found {post_carriers}")
     for block_id in ("trellis", *vine_trellis_ids):
         definition = blocks[f"{NAMESPACE}:{block_id}"]
         settings = definition.get("settings", {})
@@ -896,10 +921,14 @@ def validate() -> dict[str, int]:
         raise AssertionError("Ground block models must be lifted to the authored target block")
     if sofa["hitboxes"][0].get("height") != 1.125 or stool["hitboxes"][0].get("height") != 1.3125:
         raise AssertionError("Seat hitboxes must retain the Forge VoxelShape height")
-    if sofa["hitboxes"][0].get("seats") != ["0,0.2625,0 0"]:
-        raise AssertionError("Sofa seat must include SitEntity's -0.25 passenger offset")
-    if stool["hitboxes"][0].get("seats") != ["0,0.625,0 0"]:
-        raise AssertionError("Bar-stool seat must include SitEntity's -0.25 passenger offset")
+    # BukkitSeat cancels the player's vehicle attachment against the seat
+    # entity's passenger attachment, so a CE seat y places the player's feet at
+    # `furniture origin + seat.y`. Both seats therefore sit one riding offset
+    # (-0.35) below their cushion, matching how Forge mounted the SitEntity.
+    if sofa["hitboxes"][0].get("seats") != ["0,0.15,0 0"]:
+        raise AssertionError("Sofa seat must rest on the 8/16 cushion, not float above it")
+    if stool["hitboxes"][0].get("seats") != ["0,0.5875,0 0"]:
+        raise AssertionError("Bar-stool seat must rest on the 15/16 cushion, not float above it")
     stool_render_id = stool["elements"][0].get("item")
     if render_items.get(stool_render_id, {}).get("model", {}).get("path") != (
             f"{NAMESPACE}:block/deco/bar_stool/white"):

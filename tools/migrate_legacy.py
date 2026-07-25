@@ -493,6 +493,35 @@ def carrier_type(block_id: str) -> tuple[str, str]:
     return "higher_tripwire", "kaleidoscope-tavern-decor-transparent"
 
 
+# A CraftEngine carrier decides what the *client* collides with and can aim at,
+# because the client only ever sees the vanilla state behind the custom block.
+# `higher_tripwire` is non-colliding, which let players walk through trellis
+# posts and made them nearly impossible to right-click: no RIGHT_CLICK_BLOCK
+# packet means CustomBlockInteractEvent never fires, so grapevine planting
+# silently did nothing.
+#
+# Vanilla chains collide as a 3/16 post centred on their axis, one pixel
+# narrower than the 4/16 post authored by ITrellis, so client prediction stays
+# in step with the server shape. Unlike cactus (15/16, needlessly wide) they
+# carry no contact damage, and unlike pointed dripstone CraftEngine actually
+# ships state mappings for them.
+#
+# Only the shapes that contain a full-height vertical post need this. Beam-only
+# shapes sit at y=6..10 overhead, where the source trellis does not obstruct
+# walking either, so they stay on the cheaper shared tripwire carrier.
+TRELLIS_POST_TYPES = {"single"}
+
+# A vertical chain is exactly the upright post these shapes draw, and staying on
+# waterlogged=false keeps dry trellises from rendering water: the appearance is
+# shared across both waterlogged values, so the carrier cannot encode it.
+#
+# Every post appearance shares this one state. That is safe because the carrier
+# only supplies collision and the aim target; the visible geometry always comes
+# from the appearance's own ItemDisplay, exactly as it already does for the
+# beam shapes sharing one tripwire carrier.
+COPPER_CHAIN_CARRIER = "minecraft:copper_chain[axis=y,waterlogged=false]"
+
+
 def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
     if isinstance(raw, list):
         if not raw:
@@ -644,7 +673,7 @@ def split_hanging_crop_stages(block_id: str, config: dict[str, Any]) -> dict[str
 def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, Any], dict[str, Any], dict[str, int]]:
     blocks: dict[str, Any] = {}
     render_items: dict[str, Any] = {}
-    metrics = {"appearances": 0, "weighted_variants_reduced": 0}
+    metrics = {"appearances": 0, "weighted_variants_reduced": 0, "collidable_posts": 0}
 
     for block_id in block_ids:
         state_path = find_file(BLOCKSTATES, Path(f"{block_id}.json"))
@@ -680,6 +709,10 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             if isinstance(raw_model, list) and len(raw_model) > 1:
                 metrics["weighted_variants_reduced"] += 1
             model = normalize_model_entry(raw_model)
+            needs_post_collision = (
+                block_id in TRELLIS_BLOCKS
+                and parse_variant_key(variant_key).get("type") in TRELLIS_POST_TYPES
+            )
             appearance_name = appearance_names.get(model)
             if appearance_name is None:
                 appearance_name = f"appearance_{len(appearance_names)}"
@@ -702,11 +735,15 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 }
                 if any(model[1:4]):
                     renderer["rotation"] = f"{model[1]},{model[2]},{model[3]}"
-                appearances[appearance_name] = {
-                    "auto_state": {"type": carrier, "id": carrier_id},
-                    "transparent": True,
-                    "entity_renderer": renderer,
-                }
+                appearance: dict[str, Any] = {}
+                if needs_post_collision:
+                    appearance["state"] = COPPER_CHAIN_CARRIER
+                    metrics["collidable_posts"] += 1
+                else:
+                    appearance["auto_state"] = {"type": carrier, "id": carrier_id}
+                appearance["transparent"] = True
+                appearance["entity_renderer"] = renderer
+                appearances[appearance_name] = appearance
             if property_values:
                 mapped_variants[variant_key] = {"appearance": appearance_name}
 
@@ -1021,6 +1058,20 @@ def aggregate_box(boxes: list[Box]) -> Box:
     )
 
 
+# Player#getMyRidingOffset in the source version. BukkitSeat cancels the
+# player's own vehicle attachment against the seat entity's passenger
+# attachment (0.6 - 0.9875 for the small armour stand, and 0.740625 - 0.990625
+# on the legacy branch), so a CE seat coordinate places the player's feet at
+# `furniture origin + seat.y`. Forge instead sat the player one riding offset
+# below the SitEntity, which is what this term reproduces.
+PLAYER_RIDING_OFFSET = -0.35
+
+
+def seat_offset(cushion_top: float) -> float:
+    """Return the CE seat y that seats a player on a cushion of this height."""
+    return round(cushion_top + PLAYER_RIDING_OFFSET, 6)
+
+
 def interaction_box(box: Box, anchor: str, seats: list[str] | None = None) -> dict[str, Any]:
     min_x, min_y, min_z, max_x, max_y, max_z = box
     position = hitbox_position(anchor, (min_x + max_x) / 2, min_y, (min_z + max_z) / 2)
@@ -1157,6 +1208,28 @@ def entity_barrel_box(
     }
 
 
+# BarrelModel renders with entityCutoutNoCull, so its flat interior panels show
+# from both sides. Block models always cull back faces, which made those panels
+# disappear when viewed from above through an open lid and left the cavity black.
+# Giving each plane a hair of thickness makes it a solid that reads correctly from
+# either side, without the z-fighting a coincident mirrored copy would cause.
+INTERIOR_PANEL_THICKNESS = 0.01
+
+
+def solidify_planes(element: dict[str, Any]) -> dict[str, Any]:
+    """Thicken a zero-thickness plane so both of its sides render."""
+    flat = [index for index in range(3) if element["from"][index] == element["to"][index]]
+    if len(flat) != 1:
+        return element
+    axis = flat[0]
+    start = list(element["from"])
+    end = list(element["to"])
+    # Grow symmetrically so the panel keeps sitting exactly where it was authored.
+    start[axis] -= INTERIOR_PANEL_THICKNESS
+    end[axis] += INTERIOR_PANEL_THICKNESS
+    return {**element, "from": start, "to": end}
+
+
 def create_barrel_models() -> None:
     """Recreate BarrelModel's body and articulated lid from the Forge source."""
     model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture"
@@ -1174,7 +1247,7 @@ def create_barrel_models() -> None:
         (-16, -12, 1, 16, 0, 16, 32, 160),
         (-16, -33, 17, 16, 21, 0, 0, 160),
     ]
-    body_elements = [entity_barrel_box(*spec) for spec in body_specs]
+    body_elements = [solidify_planes(entity_barrel_box(*spec)) for spec in body_specs]
     closed_lid = entity_barrel_box(-16, -33, 1, 16, 2, 16, 102, 113)
     base = {
         "ambientocclusion": False,
@@ -1223,17 +1296,15 @@ def furniture_hitboxes(
         # Four half-block cubes reproduce the solid seat/base without filling
         # the open space in front of the authored 18-pixel-high backrest.
         return [
-            # SitEntity was created at y=0.5125 but exposed a -0.25 passenger
-            # riding offset.  CE seat coordinates describe the final mount
-            # point, so preserve the effective y=0.2625 position.
-            interaction_box(aggregate, anchor, ["0,0.2625,0 0"]),
+            # The sofa cushion ends at 8/16.
+            interaction_box(aggregate, anchor, [f"0,{seat_offset(8 / 16)},0 0"]),
             *(shulker_box((x, 0, z), 0.5) for x in (-0.25, 0.25) for z in (-0.25, 0.25)),
         ]
     if block_id.endswith("_bar_stool"):
         return [
-            interaction_box(aggregate, anchor, ["0,0.625,0 0"]),
             # The broad seat ends at 15/16; the taller back remains an
             # interaction volume rather than blocking the player's torso.
+            interaction_box(aggregate, anchor, [f"0,{seat_offset(15 / 16)},0 0"]),
             shulker_box((0, 3 / 16, 0), 0.75),
         ]
     if block_id.endswith("_sandwich_board"):

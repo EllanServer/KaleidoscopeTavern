@@ -2858,10 +2858,7 @@
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3114,10 +3111,7 @@
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3142,10 +3136,7 @@
             }
           },
           "appearance_7": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3156,10 +3147,7 @@
             }
           },
           "appearance_8": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3170,10 +3158,7 @@
             }
           },
           "appearance_9": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3478,10 +3463,7 @@
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3506,10 +3488,7 @@
             }
           },
           "appearance_7": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3520,10 +3499,7 @@
             }
           },
           "appearance_8": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3534,10 +3510,7 @@
             }
           },
           "appearance_9": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3842,10 +3815,7 @@
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3870,10 +3840,7 @@
             }
           },
           "appearance_7": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3884,10 +3851,7 @@
             }
           },
           "appearance_8": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3898,10 +3862,7 @@
             }
           },
           "appearance_9": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",

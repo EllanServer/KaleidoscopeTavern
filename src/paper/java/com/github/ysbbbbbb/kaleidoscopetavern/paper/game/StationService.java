@@ -43,6 +43,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -253,6 +254,59 @@ public final class StationService implements Listener {
         if (fallDistance >= 0.5F && handlePressLanding(living, fallDistance)) {
             event.setCancelled(true);
         }
+    }
+
+    /**
+     * Stops a bucket from also emptying into the world when it feeds a station.
+     *
+     * <p>Filling a barrel or pressing tub is driven by FurnitureInteractEvent,
+     * which only governs CraftEngine's own interaction flow. Vanilla still runs
+     * its bucket placement for the same right-click, so the fluid was recorded on
+     * the furniture *and* spilled as a real block beside it. Interaction hitboxes
+     * are not blocks, so vanilla picks the air the player aimed through.
+     */
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBucketEmpty(PlayerBucketEmptyEvent event) {
+        if (fluidFromBucket(items.id(event.getPlayer().getInventory().getItemInMainHand())).isEmpty()) {
+            return;
+        }
+        if (fluidStationAt(event.getBlock()) || fluidStationAt(event.getBlockClicked())) {
+            event.setCancelled(true);
+        }
+    }
+
+    /** Whether a station that consumes bucket fluids occupies this block. */
+    private boolean fluidStationAt(Block block) {
+        if (block == null) {
+            return false;
+        }
+        Location center = block.getLocation().add(0.5, 0.5, 0.5);
+        // The barrel's hitbox is a 3x3x3 around its origin, so scan far enough to
+        // find a meta entity two blocks away and then test the real footprint.
+        for (Entity entity : center.getWorld().getNearbyEntities(center, 3, 3, 3,
+                candidate -> candidate instanceof ItemDisplay
+                        && CraftEngineFurniture.isFurniture(candidate))) {
+            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
+            if (furniture == null) {
+                continue;
+            }
+            Block origin = furniture.location().getBlock();
+            if (!origin.getWorld().equals(block.getWorld())) {
+                continue;
+            }
+            int dx = block.getX() - origin.getX();
+            int dy = block.getY() - origin.getY();
+            int dz = block.getZ() - origin.getZ();
+            boolean covered = switch (furniture.id().toString()) {
+                case BARREL -> Math.abs(dx) <= 1 && Math.abs(dz) <= 1 && dy >= 0 && dy <= 2;
+                case PRESSING_TUB -> dx == 0 && dz == 0 && dy == 0;
+                default -> false;
+            };
+            if (covered) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @EventHandler
