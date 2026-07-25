@@ -921,13 +921,14 @@ def validate() -> dict[str, int]:
         raise AssertionError("Ground block models must be lifted to the authored target block")
     if sofa["hitboxes"][0].get("height") != 1.125 or stool["hitboxes"][0].get("height") != 1.3125:
         raise AssertionError("Seat hitboxes must retain the Forge VoxelShape height")
-    # BukkitSeat cancels the player's vehicle attachment against the seat
-    # entity's passenger attachment, so a CE seat y places the player's feet at
-    # `furniture origin + seat.y`. Both seats therefore sit one riding offset
-    # (-0.35) below their cushion, matching how Forge mounted the SitEntity.
-    if sofa["hitboxes"][0].get("seats") != ["0,0.15,0 0"]:
+    # BukkitSeat adds a flat 0.6 to the seat position and then sinks the small
+    # armour stand by its own 0.9875 height so the stand's top-mounted passenger
+    # lands back on that point. Those two cancel each other, not the 0.6, so the
+    # player's feet end up at `furniture origin + seat.y + 0.6` and each seat y is
+    # its cushion height minus 0.6.
+    if sofa["hitboxes"][0].get("seats") != ["0,-0.1,0 0"]:
         raise AssertionError("Sofa seat must rest on the 8/16 cushion, not float above it")
-    if stool["hitboxes"][0].get("seats") != ["0,0.5875,0 0"]:
+    if stool["hitboxes"][0].get("seats") != ["0,0.3375,0 0"]:
         raise AssertionError("Bar-stool seat must rest on the 15/16 cushion, not float above it")
     stool_render_id = stool["elements"][0].get("item")
     if render_items.get(stool_render_id, {}).get("model", {}).get("path") != (

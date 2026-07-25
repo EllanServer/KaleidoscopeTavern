@@ -1058,18 +1058,23 @@ def aggregate_box(boxes: list[Box]) -> Box:
     )
 
 
-# Player#getMyRidingOffset in the source version. BukkitSeat cancels the
-# player's own vehicle attachment against the seat entity's passenger
-# attachment (0.6 - 0.9875 for the small armour stand, and 0.740625 - 0.990625
-# on the legacy branch), so a CE seat coordinate places the player's feet at
-# `furniture origin + seat.y`. Forge instead sat the player one riding offset
-# below the SitEntity, which is what this term reproduces.
-PLAYER_RIDING_OFFSET = -0.35
+# BukkitSeat.calculateSeatLocation adds a flat 0.6 to the configured seat
+# position, then drops the small armour stand by 0.9875 so that the stand's
+# passenger mount -- which sits at the top of its 0.9875-tall body -- lands back
+# on the computed point. Those two terms cancel each other, not the 0.6, so the
+# net result is:
+#
+#     player feet = furniture origin + seat.y + 0.6
+#
+# CraftEngine's own chairs corroborate this: wooden_chair seats at y=0 over a
+# 9/16 cushion, putting feet at 0.6 for a 0.5625 surface, i.e. the small sink a
+# seated pose normally shows.
+SEAT_MOUNT_HEIGHT = 0.6
 
 
 def seat_offset(cushion_top: float) -> float:
-    """Return the CE seat y that seats a player on a cushion of this height."""
-    return round(cushion_top + PLAYER_RIDING_OFFSET, 6)
+    """Return the CE seat y that rests a player on a cushion of this height."""
+    return round(cushion_top - SEAT_MOUNT_HEIGHT, 6)
 
 
 def interaction_box(box: Box, anchor: str, seats: list[str] | None = None) -> dict[str, Any]:
@@ -1291,7 +1296,27 @@ def furniture_hitboxes(
             for z in (-1, 0, 1)
         ]
     if block_id == "stepladder":
-        return [shulker_box((0, 0, 0)), shulker_box((0, 1, 0))]
+        # StepladderBlock is two blocks tall and each half pairs a full-height body
+        # with an 8-pixel tread in front of it. For the authored north facing that
+        # is a body over z=4..16 and a tread over z=0..4 rising to y=8.
+        #
+        # The previous pair of full cubes filled the tread space as well, turning
+        # each half into a sheer wall with nothing to step onto. Shulkers are
+        # uniform cubes, so the 12/16-deep body is tiled from quarter cubes and the
+        # tread gets its own half-height row along the front edge. CraftEngine
+        # rotates shulker offsets by the furniture yaw, so a north layout serves
+        # every facing.
+        # Keep the entity count sane: the body stays one cube per half (4/16 deeper
+        # than authored, which players cannot feel against a wall), while each tread
+        # is a pair of half cubes so its top lands on the authored y=8/16.
+        boxes: list[dict[str, Any]] = []
+        for half in (0, 1):
+            boxes.append(shulker_box((0, half, 0.125), 0.75))
+            boxes.extend(
+                shulker_box((x, half, -0.375), 0.5)
+                for x in (-0.25, 0.25)
+            )
+        return boxes
     if block_id.endswith("_sofa"):
         # Four half-block cubes reproduce the solid seat/base without filling
         # the open space in front of the authored 18-pixel-high backrest.
