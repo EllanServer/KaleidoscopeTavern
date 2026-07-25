@@ -10,6 +10,7 @@ import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.Item;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -64,15 +65,14 @@ public final class BottleFurnitureService implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(FurnitureInteractEvent event) {
-        if (event.hand() != InteractionHand.MAIN_HAND) {
-            return;
-        }
         BukkitFurniture furniture = event.furniture();
         String furnitureId = furniture.id().toString();
         if (!isBottleOrGlass(furnitureId)) {
             return;
         }
-        ItemStack hand = event.player().getInventory().getItemInMainHand();
+        ItemStack hand = event.hand() == InteractionHand.MAIN_HAND
+                ? event.player().getInventory().getItemInMainHand()
+                : event.player().getInventory().getItemInOffHand();
         if (hand.isEmpty()) {
             takeBottle(event, furniture);
             return;
@@ -113,10 +113,15 @@ public final class BottleFurnitureService implements Listener {
         }
 
         List<ItemStack> stored = storedItems(furniture);
-        ItemStack strongest = stored.stream()
-                .max(Comparator.comparingInt(stack -> catalog.isCocktail(items.id(stack))
-                        ? 1 : items.brewLevel(stack)))
-                .orElse(null);
+        // Only DrinkBlock overrides onProjectileHit to create a splash. The
+        // cocktail hierarchy extends GlasswareBlock and therefore merely
+        // shatters, even though drinking those items has effects.
+        ItemStack strongest = isDrinkBlock(furniture.id().toString())
+                ? stored.stream()
+                    .max(Comparator.comparingInt(items::brewLevel))
+                    .filter(stack -> items.brewLevel(stack) > 0)
+                    .orElse(null)
+                : null;
         Location origin = furniture.location().clone().add(0, 0.35, 0);
         CraftEngineFurniture.remove(furniture, false, false);
         if (strongest != null) {
@@ -143,7 +148,11 @@ public final class BottleFurnitureService implements Listener {
             furniture.setUnsaved();
         }
         event.setCancelled(true);
-        location.getWorld().playSound(location, Sound.BLOCK_GLASS_PLACE, 0.8F, 1.15F);
+        // DrinkBlock uses GLASS_PLACE; BottleBlock and GlasswareBlock retain
+        // the source's slightly surprising STONE placement sound on pickup.
+        Sound pickupSound = isDrinkBlock(furniture.id().toString())
+                ? Sound.BLOCK_GLASS_PLACE : Sound.BLOCK_STONE_PLACE;
+        location.getWorld().playSound(location, pickupSound, 1.0F, 1.0F);
     }
 
     private void stackBottle(FurnitureInteractEvent event, BukkitFurniture furniture, ItemStack hand) {
@@ -154,7 +163,7 @@ public final class BottleFurnitureService implements Listener {
         }
         ItemStack addition = hand.clone();
         addition.setAmount(1);
-        if (!event.player().getGameMode().isInvulnerable()) {
+        if (event.player().getGameMode() != GameMode.CREATIVE) {
             hand.subtract(1);
         }
         stored.add(addition);
@@ -162,7 +171,7 @@ public final class BottleFurnitureService implements Listener {
         setBottleCount(furniture, stored.size());
         furniture.setUnsaved();
         event.setCancelled(true);
-        event.player().getWorld().playSound(furniture.location(), Sound.BLOCK_GLASS_PLACE, 0.8F, 0.9F);
+        event.player().getWorld().playSound(furniture.location(), Sound.BLOCK_GLASS_PLACE, 1.0F, 1.2F);
     }
 
     private List<ItemStack> storedItems(BukkitFurniture furniture) {
@@ -194,6 +203,10 @@ public final class BottleFurnitureService implements Listener {
     private boolean isBottleOrGlass(String id) {
         return SIMPLE_BOTTLES.contains(id) || id.equals(PREFIX + "empty_glassware")
                 || catalog.hasDrinkEffects(id) || catalog.isCocktail(id);
+    }
+
+    private boolean isDrinkBlock(String id) {
+        return catalog.hasDrinkEffects(id) && !catalog.isCocktail(id);
     }
 
     private static int maxBottleCount(BukkitFurniture furniture) {

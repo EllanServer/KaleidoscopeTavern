@@ -24,6 +24,7 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.14.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("net.momirealms:craft-engine-core:${providers.gradleProperty("craft_engine_version").get()}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -76,6 +77,12 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.test {
     useJUnitPlatform()
+    // Keep local verification viable beside a running game server and make
+    // CI memory use deterministic. These tests are small, pure semantic
+    // checks and do not need Gradle's much larger default worker heap.
+    maxHeapSize = "128m"
+    maxParallelForks = 1
+    jvmArgs("-XX:MaxMetaspaceSize=128m")
 }
 
 tasks.jar {

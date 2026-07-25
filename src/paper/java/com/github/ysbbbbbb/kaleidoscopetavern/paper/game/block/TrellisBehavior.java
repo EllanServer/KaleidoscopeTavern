@@ -103,7 +103,9 @@ public final class TrellisBehavior extends BukkitBlockBehavior implements Random
 
     @Override
     public boolean canRandomlyTick(ImmutableBlockState state) {
-        return ageProperty != null && state.get(ageProperty) >= ageProperty.max;
+        // GrapevineTrellisBlock keeps random ticking at every age. Immature
+        // single vines gain one age; immature horizontal vines jump to max.
+        return ageProperty != null;
     }
 
     @Override
@@ -113,10 +115,8 @@ public final class TrellisBehavior extends BukkitBlockBehavior implements Random
             return;
         }
         ImmutableBlockState state = optional.get();
-        if (state.get(ageProperty) < ageProperty.max) {
-            return;
-        }
-        World world = LevelProxy.INSTANCE.getWorld(args[1]);
+        Object level = args[1];
+        World world = LevelProxy.INSTANCE.getWorld(level);
         if (world == null) {
             return;
         }
@@ -124,17 +124,24 @@ public final class TrellisBehavior extends BukkitBlockBehavior implements Random
         int x = Vec3iProxy.INSTANCE.getX(position);
         int y = Vec3iProxy.INSTANCE.getY(position);
         int z = Vec3iProxy.INSTANCE.getZ(position);
-        float chance = adjustedChance(world, x, y, z, state.owner().value().id().toString());
+        float chance = adjustedChance(level, x, y, z, state.owner().value().id().toString());
         if (ThreadLocalRandom.current().nextFloat() < chance) {
-            growMature(new Location(world, x, y, z), state);
+            grow(new Location(world, x, y, z), state);
         }
     }
 
-    /** Used by both random ticks and bone-meal interaction. */
-    public static boolean growMature(Location location, ImmutableBlockState source) {
+    /** Exact {@code GrapevineTrellisBlock.doGrow} step used by random ticks and bone meal. */
+    public static boolean grow(Location location, ImmutableBlockState source) {
         Property<?> rawAge = source.getProperty("age");
-        if (!(rawAge instanceof IntegerProperty age) || source.get(age) < age.max) {
+        if (!(rawAge instanceof IntegerProperty age)) {
             return false;
+        }
+        int currentAge = source.get(age);
+        if (currentAge < age.max) {
+            Property<?> rawType = source.getProperty("type");
+            String type = rawType == null ? "" : formatted(source, rawType);
+            int nextAge = type.equals("single") ? currentAge + 1 : age.max;
+            return CraftEngineBlocks.place(location, source.with(age, nextAge), false);
         }
 
         for (BlockFace direction : GROW_DIRECTIONS) {
@@ -157,8 +164,16 @@ public final class TrellisBehavior extends BukkitBlockBehavior implements Random
         return CustomCropsBridge.placeHangingGrapes(below.getLocation(), id(source));
     }
 
-    private float adjustedChance(World world, int x, int y, int z, String id) {
-        double temperature = world.getTemperature(x, y, z);
+    /** Kept as an explicit parity marker for the source mature-growth branch. */
+    public static boolean growMature(Location location, ImmutableBlockState source) {
+        Property<?> rawAge = source.getProperty("age");
+        return rawAge instanceof IntegerProperty age
+                && source.get(age) >= age.max
+                && grow(location, source);
+    }
+
+    private float adjustedChance(Object level, int x, int y, int z, String id) {
+        double temperature = BiomeTemperature.at(level, x, y, z);
         if (id.equals(PREFIX + "ice_grapevine_trellis") && temperature < 0.15D) {
             return Math.max(spreadChance, 0.8F);
         }
@@ -250,6 +265,12 @@ public final class TrellisBehavior extends BukkitBlockBehavior implements Random
     private static boolean bool(ImmutableBlockState state, String propertyName) {
         Property<?> property = state.getProperty(propertyName);
         return property != null && Boolean.TRUE.equals(state.propertyEntries().get(property));
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static String formatted(ImmutableBlockState state, Property property) {
+        Comparable value = state.propertyEntries().get(property);
+        return Property.formatValue(property, value);
     }
 
     private static ImmutableBlockState copyNamed(ImmutableBlockState from, ImmutableBlockState to, String name) {

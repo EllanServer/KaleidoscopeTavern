@@ -27,6 +27,13 @@ final class ContentCatalogTest {
     }
 
     @Test
+    void normalizesRenamedVanillaIdsForPaper262() {
+        var grassStealthPlants = catalog.blockTag("kaleidoscope_tavern:grass_stealth_plants");
+        assertTrue(grassStealthPlants.contains("minecraft:short_grass"));
+        assertFalse(grassStealthPlants.contains("minecraft:grass"));
+    }
+
+    @Test
     void resolvesItemAndTagBasedPressingRecipes() {
         assertEquals("kaleidoscope_tavern:glow_berries_juice",
                 catalog.pressing("minecraft:glow_berries").orElseThrow().fluid());

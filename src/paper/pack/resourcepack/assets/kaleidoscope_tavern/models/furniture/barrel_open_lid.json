@@ -1,0 +1,77 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "barrel": "kaleidoscope_tavern:entity/brew/barrel",
+    "particle": "minecraft:block/barrel_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        8,
+        -8
+      ],
+      "to": [
+        16,
+        10,
+        8
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            7.375,
+            7.0625,
+            8.375,
+            8.0625
+          ],
+          "texture": "#barrel"
+        },
+        "down": {
+          "uv": [
+            8.375,
+            8.0625,
+            9.375,
+            7.0625
+          ],
+          "texture": "#barrel"
+        },
+        "east": {
+          "uv": [
+            6.375,
+            8.0625,
+            7.375,
+            8.1875
+          ],
+          "texture": "#barrel"
+        },
+        "west": {
+          "uv": [
+            8.375,
+            8.0625,
+            9.375,
+            8.1875
+          ],
+          "texture": "#barrel"
+        },
+        "north": {
+          "uv": [
+            7.375,
+            8.0625,
+            8.375,
+            8.1875
+          ],
+          "texture": "#barrel"
+        },
+        "south": {
+          "uv": [
+            9.375,
+            8.0625,
+            10.375,
+            8.1875
+          ],
+          "texture": "#barrel"
+        }
+      }
+    }
+  ]
+}

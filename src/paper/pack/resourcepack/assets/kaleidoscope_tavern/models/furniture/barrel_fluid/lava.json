@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "render_type": "translucent",
+  "textures": {
+    "fluid": "minecraft:block/lava_still",
+    "particle": "minecraft:block/lava_still"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        7.99,
+        0
+      ],
+      "to": [
+        16,
+        8.01,
+        16
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fluid"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fluid"
+        }
+      }
+    }
+  ]
+}

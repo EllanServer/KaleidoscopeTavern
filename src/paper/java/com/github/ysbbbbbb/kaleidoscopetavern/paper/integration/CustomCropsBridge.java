@@ -29,6 +29,10 @@ public final class CustomCropsBridge {
         return cropId != null && api().placeCrop(location, cropId, 0);
     }
 
+    public static void addGrowthPoints(Location location, int points) {
+        api().addPointToCrop(location, points);
+    }
+
     public static void removeCrop(Location location) {
         CustomCropsWorld<?> world = api().getCustomCropsWorld(location.getWorld());
         if (world != null) {

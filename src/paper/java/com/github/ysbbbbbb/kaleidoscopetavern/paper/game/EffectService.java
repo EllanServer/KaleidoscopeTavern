@@ -7,6 +7,7 @@ import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,6 +21,8 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
@@ -36,6 +39,9 @@ import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.world.EntitiesLoadEvent;
+import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -50,7 +56,6 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,8 +100,16 @@ public final class EffectService implements Listener {
         for (Player player : Bukkit.getOnlinePlayers()) {
             load(player);
         }
-        long period = Math.max(1L, plugin.getConfig().getLong("gameplay.effect-tick-period", 5L));
-        task = Bukkit.getScheduler().runTaskTimer(plugin, () -> tick(period), period, period);
+        for (org.bukkit.World world : Bukkit.getWorlds()) {
+            for (LivingEntity living : world.getLivingEntities()) {
+                if (!(living instanceof Player)
+                        && living.getPersistentDataContainer().has(activeKey, PersistentDataType.STRING)) {
+                    load(living);
+                }
+            }
+        }
+        // Forge evaluates active effects and EffectEvent once per game tick.
+        task = Bukkit.getScheduler().runTaskTimer(plugin, () -> tick(1L), 1L, 1L);
     }
 
     public void stop() {
@@ -104,8 +117,12 @@ public final class EffectService implements Listener {
             task.cancel();
             task = null;
         }
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            removeAttributeModifiers(player);
+        for (UUID uuid : new ArrayList<>(active.keySet())) {
+            Entity entity = Bukkit.getEntity(uuid);
+            if (entity instanceof LivingEntity living) {
+                save(living);
+                removeAttributeModifiers(living);
+            }
         }
         active.clear();
     }
@@ -124,10 +141,24 @@ public final class EffectService implements Listener {
                 apply(event.getPlayer(), spec);
             }
         }
-        String remainder = catalog.isCocktail(itemId)
+        String remainderId = catalog.isCocktail(itemId)
                 ? PREFIX + "empty_glassware"
                 : PREFIX + "empty_bottle";
-        items.build(remainder, event.getPlayer()).ifPresent(event::setReplacement);
+        items.build(remainderId, event.getPlayer()).ifPresent(container -> {
+            EffectSemantics.ContainerResult result = EffectSemantics.consumedContainer(
+                    consumed.getAmount(), event.getPlayer().getGameMode() == GameMode.CREATIVE);
+            if (result.containerReplacesHand()) {
+                event.setReplacement(container);
+            } else {
+                ItemStack remaining = consumed.clone();
+                remaining.setAmount(result.remainingDrinks());
+                event.setReplacement(remaining);
+            }
+            if (result.returnContainerToInventory()) {
+                container.setAmount(1);
+                items.give(event.getPlayer(), container);
+            }
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -146,21 +177,53 @@ public final class EffectService implements Listener {
         load(event.getPlayer());
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onDeath(EntityDeathEvent event) {
-        Player killer = event.getEntity().getKiller();
-        if (killer == null || killer.equals(event.getEntity()) || !has(killer, PREFIX + "bloody_mary")) {
-            return;
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        save(event.getPlayer());
+        active.remove(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler
+    public void onEntitiesLoad(EntitiesLoadEvent event) {
+        for (Entity entity : event.getEntities()) {
+            if (entity instanceof LivingEntity living
+                    && living.getPersistentDataContainer().has(activeKey, PersistentDataType.STRING)) {
+                load(living);
+            }
         }
-        double heal = Math.floor(event.getEntity().getAttribute(Attribute.MAX_HEALTH).getValue() / 3.0);
-        if (heal > 0) {
-            killer.setHealth(Math.min(killer.getAttribute(Attribute.MAX_HEALTH).getValue(), killer.getHealth() + heal));
+    }
+
+    @EventHandler
+    public void onEntitiesUnload(EntitiesUnloadEvent event) {
+        for (Entity entity : event.getEntities()) {
+            if (entity instanceof LivingEntity living && active.containsKey(living.getUniqueId())) {
+                save(living);
+                active.remove(living.getUniqueId());
+            }
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onDeath(EntityDeathEvent event) {
+        LivingEntity target = event.getEntity();
+        LivingEntity killer = target.getLastDamageCause() instanceof EntityDamageByEntityEvent damage
+                ? attackingLiving(damage.getDamager()) : null;
+        if (killer != null && !killer.equals(target) && has(killer, PREFIX + "bloody_mary")) {
+            AttributeInstance targetHealth = target.getAttribute(Attribute.MAX_HEALTH);
+            AttributeInstance killerHealth = killer.getAttribute(Attribute.MAX_HEALTH);
+            if (targetHealth != null && killerHealth != null) {
+                double heal = Math.floor(targetHealth.getValue() / 3.0);
+                if (heal > 0) {
+                    killer.setHealth(Math.min(killerHealth.getValue(), killer.getHealth() + heal));
+                }
+            }
+        }
+        clearEffects(target);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent event) {
-        Player attacker = attackingPlayer(event.getDamager());
+        LivingEntity attacker = attackingLiving(event.getDamager());
         if (attacker == null || !has(attacker, PREFIX + "tomb_raider")
                 || !(event.getEntity() instanceof LivingEntity target)
                 || !matchesEntityTag(target.getType(), PREFIX + "tomb_raider_disarmable")
@@ -185,16 +248,16 @@ public final class EffectService implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onTarget(EntityTargetLivingEntityEvent event) {
-        if (!(event.getTarget() instanceof Player player) || !has(player, PREFIX + "grass_stealth")
-                || !player.getCurrentInput().isSneak() || !isStealthPlant(player)) {
+        if (!(event.getTarget() instanceof LivingEntity target) || !has(target, PREFIX + "grass_stealth")
+                || !target.isSneaking() || !isStealthPlant(target)) {
             return;
         }
         event.setCancelled(true);
     }
 
-    public boolean has(Player player, String effect) {
-        ActiveEffect value = active.getOrDefault(player.getUniqueId(), Map.of()).get(effect);
-        return value != null && value.expiresAtMillis() > System.currentTimeMillis();
+    public boolean has(LivingEntity living, String effect) {
+        ActiveEffect value = active.getOrDefault(living.getUniqueId(), Map.of()).get(effect);
+        return value != null && value.remainingTicks() > 0;
     }
 
     /** Applies a placed or launched drink as a splash potion around an impact point. */
@@ -241,30 +304,18 @@ public final class EffectService implements Listener {
             applyVanilla(target, spec);
             return;
         }
-        if (spec.effect().equals(PREFIX + "slightly_tipsy")) {
-            PotionEffectType nausea = Registry.EFFECT.get(NamespacedKey.minecraft("nausea"));
-            if (nausea != null) {
-                target.addPotionEffect(new PotionEffect(nausea, spec.durationTicks(), spec.amplifier(), false, true, true));
-            }
-            return;
-        }
-        if (!(target instanceof Player player)) {
-            return;
-        }
         if (INSTANT_EFFECTS.contains(spec.effect())) {
-            applyInstant(player, spec.effect());
+            applyInstant(target, spec.effect());
             return;
         }
-        long expires = System.currentTimeMillis() + spec.durationTicks() * 50L;
-        Map<String, ActiveEffect> effects = active.computeIfAbsent(player.getUniqueId(), ignored -> new LinkedHashMap<>());
+        Map<String, ActiveEffect> effects = active.computeIfAbsent(
+                target.getUniqueId(), ignored -> new LinkedHashMap<>());
         ActiveEffect previous = effects.get(spec.effect());
-        if (previous != null) {
-            expires = Math.max(expires, previous.expiresAtMillis());
-        }
-        effects.put(spec.effect(), new ActiveEffect(spec.effect(), expires,
+        int duration = Math.max(spec.durationTicks(), previous == null ? 0 : previous.remainingTicks());
+        effects.put(spec.effect(), new ActiveEffect(spec.effect(), duration,
                 Math.max(spec.amplifier(), previous == null ? 0 : previous.amplifier())));
-        save(player);
-        reconcileAttributes(player, effects);
+        save(target);
+        reconcileAttributes(target, effects);
     }
 
     private static void applyVanilla(LivingEntity target, EffectSpec spec) {
@@ -278,107 +329,146 @@ public final class EffectService implements Listener {
 
     private void tick(long period) {
         elapsedTicks += period;
-        long now = System.currentTimeMillis();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            Map<String, ActiveEffect> effects = active.computeIfAbsent(player.getUniqueId(), ignored -> read(player));
+        for (UUID uuid : new ArrayList<>(active.keySet())) {
+            Entity entity = Bukkit.getEntity(uuid);
+            if (!(entity instanceof LivingEntity living) || !entity.isValid() || living.isDead()) {
+                continue;
+            }
+            Map<String, ActiveEffect> effects = active.get(uuid);
             boolean changed = false;
-            Iterator<ActiveEffect> iterator = effects.values().iterator();
-            while (iterator.hasNext()) {
-                ActiveEffect effect = iterator.next();
-                if (effect.expiresAtMillis() <= now) {
-                    if (effect.effect().equals(PREFIX + "ardent_heat")) {
-                        applyHunger(player, 600);
-                    }
-                    iterator.remove();
+            for (ActiveEffect effect : new ArrayList<>(effects.values())) {
+                if (!tickEffect(living, effect, effects)) {
                     changed = true;
+                    continue;
+                }
+                int remaining = effect.remainingTicks() - (int) period;
+                if (remaining <= 0) {
+                    if (effect.effect().equals(PREFIX + "ardent_heat")) {
+                        applyHunger(living, 600);
+                    }
+                    effects.remove(effect.effect());
+                    changed = true;
+                } else {
+                    effects.put(effect.effect(), new ActiveEffect(
+                            effect.effect(), remaining, effect.amplifier()));
                 }
             }
-            reconcileAttributes(player, effects);
-            if (changed) {
-                save(player);
+            reconcileAttributes(living, effects);
+            if (changed || elapsedTicks % 20 == 0) {
+                save(living);
             }
-            tickEffects(player, effects);
+            if (effects.isEmpty()) {
+                active.remove(uuid);
+            }
         }
     }
 
-    private void tickEffects(Player player, Map<String, ActiveEffect> effects) {
-        ActiveEffect vision = effects.get(PREFIX + "vision");
-        if (vision != null && elapsedTicks % 50 == 0) {
-            vision(player, vision.amplifier());
+    private boolean tickEffect(LivingEntity living, ActiveEffect effect,
+                               Map<String, ActiveEffect> effects) {
+        switch (effect.effect()) {
+            case PREFIX + "vision" -> {
+                if (EffectSemantics.ticksAt(effect.remainingTicks(), 50)) {
+                    vision(living, effect.amplifier());
+                }
+            }
+            case PREFIX + "xp_drain" -> {
+                if (living instanceof Player player) {
+                    player.setExpCooldown(0);
+                    if (player.getTicksLived() % 5 == 0) {
+                        xpDrain(player);
+                    }
+                }
+            }
+            case PREFIX + "grass_stealth" -> {
+                if (EffectSemantics.ticksAt(effect.remainingTicks(), 10)) {
+                    grassStealth(living);
+                }
+            }
+            case PREFIX + "ardent_heat" -> {
+                if (living instanceof Player player && !ardentHeat(player)) {
+                    effects.remove(effect.effect());
+                    applyHunger(player, 600);
+                    save(player);
+                    return false;
+                }
+            }
+            case PREFIX + "slightly_tipsy", PREFIX + "bloody_mary", PREFIX + "tomb_raider",
+                    PREFIX + "high_heels", PREFIX + "long_reach" -> {
+                // Source BaseEffect markers and attribute-only effects have no tick callback.
+            }
+            default -> {
+                // Unknown retained effects are inert instead of gaining invented behavior.
+            }
         }
-        if (effects.containsKey(PREFIX + "xp_drain") && elapsedTicks % 5 == 0) {
-            xpDrain(player);
-        }
-        if (effects.containsKey(PREFIX + "grass_stealth") && elapsedTicks % 10 == 0) {
-            grassStealth(player);
-        }
-        if (effects.containsKey(PREFIX + "ardent_heat")) {
-            ardentHeat(player, effects);
-        }
+        return true;
     }
 
-    private void vision(Player player, int amplifier) {
+    private void vision(LivingEntity user, int amplifier) {
         double radius = Math.min(amplifier + 1, 3) * 6.0;
         boolean applied = false;
         PotionEffectType glowing = Registry.EFFECT.get(NamespacedKey.minecraft("glowing"));
         if (glowing == null) {
             return;
         }
-        for (Entity entity : player.getNearbyEntities(radius, radius, radius)) {
-            if (entity instanceof LivingEntity living && !living.isDead()) {
+        for (Entity entity : user.getNearbyEntities(radius, radius, radius)) {
+            if (entity instanceof LivingEntity living && !living.equals(user) && !living.isDead()) {
                 if (!living.hasPotionEffect(glowing)) {
                     applied = true;
                 }
-                living.addPotionEffect(new PotionEffect(glowing, 60, 0, false, false, true));
+                living.addPotionEffect(new PotionEffect(glowing, 60, 0, false, true, true));
             }
         }
         if (applied) {
-            player.playSound(player, "kaleidoscope_tavern:effect.vision", 1.0F, 1.0F);
+            user.getWorld().playSound(user.getLocation(),
+                    "kaleidoscope_tavern:effect.vision", 1.0F, 1.0F);
         }
     }
 
     private static void xpDrain(Player player) {
-        player.setExpCooldown(0);
         for (Entity entity : player.getNearbyEntities(8, 8, 8)) {
             if (!(entity instanceof ExperienceOrb orb) || !orb.isValid()) {
                 continue;
             }
             Vector delta = player.getLocation().add(0, 0.5, 0).toVector().subtract(orb.getLocation().toVector());
             double distance = Math.max(0.01, delta.length());
+            if (distance < 1.5) {
+                player.giveExp(orb.getExperience(), true);
+                orb.remove();
+                player.setExpCooldown(0);
+                continue;
+            }
             double speed = Math.min(0.5 + 1.0 / distance, 1.5);
             orb.setVelocity(delta.normalize().multiply(speed));
         }
     }
 
-    private void grassStealth(Player player) {
-        if (!player.getCurrentInput().isSneak() || !isStealthPlant(player)) {
+    private void grassStealth(LivingEntity user) {
+        if (!user.isSneaking() || !isStealthPlant(user)) {
             return;
         }
-        player.setExhaustion(Math.min(40F, player.getExhaustion() + 0.1F));
-        for (Entity entity : player.getNearbyEntities(32, 32, 32)) {
-            if (entity instanceof Mob mob && player.equals(mob.getTarget())) {
+        if (user instanceof Player player) {
+            player.setExhaustion(Math.min(40F, player.getExhaustion() + 0.1F));
+        }
+        for (Entity entity : user.getNearbyEntities(32, 32, 32)) {
+            if (entity instanceof Mob mob && user.equals(mob.getTarget())) {
                 mob.setTarget(null);
             }
         }
     }
 
-    private void ardentHeat(Player player, Map<String, ActiveEffect> effects) {
+    private boolean ardentHeat(Player player) {
         if (player.getFoodLevel() <= 0 && player.getSaturation() <= 0.01F) {
-            effects.remove(PREFIX + "ardent_heat");
-            applyHunger(player, 600);
-            save(player);
-            return;
+            return false;
         }
-        if (!player.getCurrentInput().isSprint()) {
-            return;
+        if (!player.isSprinting()) {
+            return true;
         }
         BlockFace face = player.getFacing();
         boolean alongZ = face == BlockFace.NORTH || face == BlockFace.SOUTH;
         Block origin = player.getLocation().getBlock().getRelative(face);
-        int breakLimit = Math.max(1, plugin.getConfig().getInt("gameplay.ardent-heat-break-limit", 9));
         int broken = 0;
-        for (int y = 0; y < 3 && broken < breakLimit; y++) {
-            for (int lateral = -1; lateral <= 1 && broken < breakLimit; lateral++) {
+        for (int y = 0; y < 3; y++) {
+            for (int lateral = -1; lateral <= 1; lateral++) {
                 Block block = origin.getRelative(alongZ ? lateral : 0, y, alongZ ? 0 : lateral);
                 if (matchesBlockTag(block, PREFIX + "ardent_heat_breakable")) {
                     block.breakNaturally(player.getInventory().getItemInMainHand(), true, true);
@@ -387,7 +477,7 @@ public final class EffectService implements Listener {
             }
         }
         if (broken == 0) {
-            return;
+            return true;
         }
         player.setExhaustion(Math.min(40F, player.getExhaustion() + 1.2F));
         List<EquipmentSlot> armor = new ArrayList<>();
@@ -408,10 +498,11 @@ public final class EffectService implements Listener {
             }
             player.getPersistentDataContainer().set(collisionKey, PersistentDataType.INTEGER, collisions);
         }
+        return true;
     }
 
-    private boolean isStealthPlant(Player player) {
-        Block feet = player.getLocation().getBlock();
+    private boolean isStealthPlant(LivingEntity living) {
+        Block feet = living.getLocation().getBlock();
         return isStealthPlant(feet) || isStealthPlant(feet.getRelative(BlockFace.UP));
     }
 
@@ -461,10 +552,10 @@ public final class EffectService implements Listener {
         return state == null ? "" : state.owner().value().id().toString();
     }
 
-    private void applyInstant(Player player, String effect) {
+    private void applyInstant(LivingEntity user, String effect) {
         switch (effect) {
             case PREFIX + "upside_down" -> {
-                for (Entity entity : player.getNearbyEntities(16, 16, 16)) {
+                for (Entity entity : user.getNearbyEntities(16, 16, 16)) {
                     if (entity instanceof Mob mob && !mob.isDead()) {
                         mob.customName(Component.text("Grumm"));
                         mob.setCustomNameVisible(false);
@@ -472,35 +563,40 @@ public final class EffectService implements Listener {
                 }
             }
             case PREFIX + "zenith" -> {
-                Location current = player.getLocation();
+                Location current = user.getLocation();
                 int surface = current.getWorld().getHighestBlockYAt(current, HeightMap.MOTION_BLOCKING);
                 if (current.getBlockY() < surface) {
                     current.getWorld().playSound(current, "minecraft:item.chorus_fruit.teleport", 1.0F, 1.0F);
                     Location destination = new Location(current.getWorld(), current.getBlockX() + 0.5,
                             surface, current.getBlockZ() + 0.5, current.getYaw(), current.getPitch());
-                    player.teleport(destination);
-                    player.setFallDistance(0F);
+                    user.teleport(destination);
+                    user.setFallDistance(0F);
                     destination.getWorld().playSound(destination, "minecraft:item.chorus_fruit.teleport", 1.0F, 1.0F);
-                    applyHunger(player, 600);
+                    applyHunger(user, 600);
                 }
             }
-            case PREFIX + "shriek_attack" -> shriek(player);
+            case PREFIX + "shriek_attack" -> shriek(user);
             default -> {
                 // The caller only invokes registered instant effects.
             }
         }
     }
 
-    private static void shriek(Player player) {
-        Location eye = player.getEyeLocation();
+    private static void shriek(LivingEntity user) {
+        Location eye = user.getEyeLocation();
         Vector look = eye.getDirection().normalize();
         Vector horizontal = new Vector(look.getX(), 0, look.getZ());
         if (horizontal.lengthSquared() > 0.001) {
             horizontal.normalize();
         }
-        double damage = player.getHealth() * 1.2;
-        for (Entity entity : player.getNearbyEntities(32, 32, 32)) {
-            if (!(entity instanceof LivingEntity target) || target.equals(player) || target.isDead()) {
+        double damage = user.getHealth() * 1.2;
+        DamageSource damageSource = DamageSource.builder(DamageType.SONIC_BOOM)
+                .withCausingEntity(user)
+                .withDirectEntity(user)
+                .withDamageLocation(eye)
+                .build();
+        for (Entity entity : user.getNearbyEntities(32, 32, 32)) {
+            if (!(entity instanceof LivingEntity target) || target.equals(user) || target.isDead()) {
                 continue;
             }
             Vector targetCenter = target.getLocation().add(0, target.getHeight() / 2.0, 0).toVector();
@@ -513,26 +609,26 @@ public final class EffectService implements Listener {
             if (closest.distance(targetCenter) > 1.0 + target.getWidth() / 2.0) {
                 continue;
             }
-            target.damage(damage, player);
+            target.damage(damage, damageSource);
             target.setVelocity(target.getVelocity().add(horizontal.clone().multiply(0.63)).add(new Vector(0, 0.28, 0)));
         }
-        player.getWorld().playSound(player.getLocation(), "minecraft:entity.warden.sonic_boom", 1.0F, 1.0F);
+        user.getWorld().playSound(user.getLocation(), "minecraft:entity.warden.sonic_boom", 1.0F, 1.0F);
         for (int distance = 2; distance <= 32; distance += 2) {
-            player.getWorld().spawnParticle(Particle.SONIC_BOOM,
+            user.getWorld().spawnParticle(Particle.SONIC_BOOM,
                     eye.clone().add(look.clone().multiply(distance)), 1, 0, 0, 0, 0);
         }
     }
 
-    private void reconcileAttributes(Player player, Map<String, ActiveEffect> effects) {
-        reconcileModifier(player, Attribute.STEP_HEIGHT, heelsModifierKey,
+    private void reconcileAttributes(LivingEntity living, Map<String, ActiveEffect> effects) {
+        reconcileModifier(living, Attribute.STEP_HEIGHT, heelsModifierKey,
                 effects.containsKey(PREFIX + "high_heels") ? 0.5 : null);
         boolean longReach = effects.containsKey(PREFIX + "long_reach");
-        reconcileModifier(player, Attribute.BLOCK_INTERACTION_RANGE, blockReachModifierKey, longReach ? 3.0 : null);
-        reconcileModifier(player, Attribute.ENTITY_INTERACTION_RANGE, entityReachModifierKey, longReach ? 3.0 : null);
+        reconcileModifier(living, Attribute.BLOCK_INTERACTION_RANGE, blockReachModifierKey, longReach ? 3.0 : null);
+        reconcileModifier(living, Attribute.ENTITY_INTERACTION_RANGE, entityReachModifierKey, longReach ? 3.0 : null);
     }
 
-    private static void reconcileModifier(Player player, Attribute attribute, NamespacedKey key, Double amount) {
-        AttributeInstance instance = player.getAttribute(attribute);
+    private static void reconcileModifier(LivingEntity living, Attribute attribute, NamespacedKey key, Double amount) {
+        AttributeInstance instance = living.getAttribute(attribute);
         if (instance == null) {
             return;
         }
@@ -546,52 +642,64 @@ public final class EffectService implements Listener {
         }
     }
 
-    private void removeAttributeModifiers(Player player) {
-        reconcileModifier(player, Attribute.STEP_HEIGHT, heelsModifierKey, null);
-        reconcileModifier(player, Attribute.BLOCK_INTERACTION_RANGE, blockReachModifierKey, null);
-        reconcileModifier(player, Attribute.ENTITY_INTERACTION_RANGE, entityReachModifierKey, null);
+    private void removeAttributeModifiers(LivingEntity living) {
+        reconcileModifier(living, Attribute.STEP_HEIGHT, heelsModifierKey, null);
+        reconcileModifier(living, Attribute.BLOCK_INTERACTION_RANGE, blockReachModifierKey, null);
+        reconcileModifier(living, Attribute.ENTITY_INTERACTION_RANGE, entityReachModifierKey, null);
     }
 
-    private static Player attackingPlayer(Entity damager) {
-        if (damager instanceof Player player) {
-            return player;
+    private static LivingEntity attackingLiving(Entity damager) {
+        if (damager instanceof LivingEntity living) {
+            return living;
         }
         if (damager instanceof Projectile projectile) {
             ProjectileSource source = projectile.getShooter();
-            return source instanceof Player player ? player : null;
+            return source instanceof LivingEntity living ? living : null;
         }
         return null;
     }
 
-    private static void applyHunger(Player player, int duration) {
+    private static void applyHunger(LivingEntity living, int duration) {
         PotionEffectType hunger = Registry.EFFECT.get(NamespacedKey.minecraft("hunger"));
         if (hunger != null) {
-            player.addPotionEffect(new PotionEffect(hunger, duration, 0, false, true, true));
+            living.addPotionEffect(new PotionEffect(hunger, duration, 0, false, true, true));
         }
     }
 
-    private void load(Player player) {
-        Map<String, ActiveEffect> effects = read(player);
-        active.put(player.getUniqueId(), effects);
-        reconcileAttributes(player, effects);
+    private void load(LivingEntity living) {
+        Map<String, ActiveEffect> effects = read(living);
+        if (effects.isEmpty()) {
+            active.remove(living.getUniqueId());
+        } else {
+            active.put(living.getUniqueId(), effects);
+        }
+        reconcileAttributes(living, effects);
     }
 
-    private Map<String, ActiveEffect> read(Player player) {
-        String encoded = player.getPersistentDataContainer().get(activeKey, PersistentDataType.STRING);
+    private Map<String, ActiveEffect> read(LivingEntity living) {
+        String encoded = living.getPersistentDataContainer().get(activeKey, PersistentDataType.STRING);
         Map<String, ActiveEffect> result = new LinkedHashMap<>();
         if (encoded == null || encoded.isBlank()) {
             return result;
         }
-        long now = System.currentTimeMillis();
+        boolean legacyEpochMillis = !encoded.startsWith("v2|");
+        if (!legacyEpochMillis) {
+            encoded = encoded.substring(3);
+        }
         for (String entry : encoded.split(";")) {
             String[] fields = entry.split(",", -1);
             if (fields.length != 3) {
                 continue;
             }
             try {
-                ActiveEffect effect = new ActiveEffect(fields[0], Long.parseLong(fields[1]),
+                long storedTime = Long.parseLong(fields[1]);
+                // Releases before this semantic audit persisted an epoch-millis expiry.
+                // Convert it once without allowing offline time to advance thereafter.
+                int remaining = EffectSemantics.decodeRemainingTicks(
+                        storedTime, System.currentTimeMillis(), legacyEpochMillis);
+                ActiveEffect effect = new ActiveEffect(fields[0], remaining,
                         Integer.parseInt(fields[2]));
-                if (effect.expiresAtMillis() > now) {
+                if (effect.remainingTicks() > 0) {
                     result.put(effect.effect(), effect);
                 }
             } catch (NumberFormatException ignored) {
@@ -601,19 +709,25 @@ public final class EffectService implements Listener {
         return result;
     }
 
-    private void save(Player player) {
-        Map<String, ActiveEffect> effects = active.getOrDefault(player.getUniqueId(), Map.of());
+    private void save(LivingEntity living) {
+        Map<String, ActiveEffect> effects = active.getOrDefault(living.getUniqueId(), Map.of());
         if (effects.isEmpty()) {
-            player.getPersistentDataContainer().remove(activeKey);
+            living.getPersistentDataContainer().remove(activeKey);
             return;
         }
         String encoded = effects.values().stream()
-                .map(effect -> effect.effect() + ',' + effect.expiresAtMillis() + ',' + effect.amplifier())
+                .map(effect -> effect.effect() + ',' + effect.remainingTicks() + ',' + effect.amplifier())
                 .reduce((left, right) -> left + ';' + right)
                 .orElse("");
-        player.getPersistentDataContainer().set(activeKey, PersistentDataType.STRING, encoded);
+        living.getPersistentDataContainer().set(activeKey, PersistentDataType.STRING, "v2|" + encoded);
     }
 
-    private record ActiveEffect(String effect, long expiresAtMillis, int amplifier) {
+    private void clearEffects(LivingEntity living) {
+        active.remove(living.getUniqueId());
+        living.getPersistentDataContainer().remove(activeKey);
+        removeAttributeModifiers(living);
+    }
+
+    private record ActiveEffect(String effect, int remainingTicks, int amplifier) {
     }
 }

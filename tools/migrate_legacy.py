@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import shutil
 from collections import defaultdict
@@ -40,6 +41,21 @@ ITEM_MODELS = (
 )
 RECIPES = GENERATED / f"data/{NAMESPACE}/recipes"
 DRINK_EFFECTS = GENERATED / f"data/{NAMESPACE}/datamap/drink_effect"
+EN_US = MAIN_RESOURCES / f"assets/{NAMESPACE}/lang/en_us.json"
+
+
+# Vanilla renamed these resource ids after the archived Forge data was generated.
+# Keep the original data auditable and normalize only at the Paper 26.2 migration boundary.
+LEGACY_RESOURCE_RENAMES: dict[str, str] = {
+    "minecraft:chain": "minecraft:iron_chain",
+    "minecraft:grass": "minecraft:short_grass",
+}
+
+
+def normalize_legacy_resource_id(resource_id: str) -> str:
+    tag_prefix = "#" if resource_id.startswith("#") else ""
+    bare_id = resource_id[1:] if tag_prefix else resource_id
+    return tag_prefix + LEGACY_RESOURCE_RENAMES.get(bare_id, bare_id)
 
 
 COMMON_TAG_FALLBACKS: dict[str, list[str]] = {
@@ -91,7 +107,15 @@ def is_grid_block(block_id: str) -> bool:
     )
 
 
-SOLID_BLOCKS = {"trellis"}
+# Trellises keep their custom block state and gameplay behavior, but their
+# authored model is rendered by an ItemDisplay over a non-occluding carrier.
+# A transparent full-cube carrier culls the neighbouring ground face and makes
+# it look as if the floor has been replaced.
+TRELLIS_BLOCKS = {
+    "trellis", "grapevine_trellis",
+    "ice_grapevine_trellis", "gold_grapevine_trellis",
+}
+STURDY_BLOCKS = {"trellis"}
 
 PAINTINGS = {
     "ysbb_painting",
@@ -166,6 +190,66 @@ SMALL_FURNITURE = {
 BOTTLE_AND_GLASS_ITEMS = SMALL_FURNITURE - {"tap", "shaker"}
 GRAPE_ITEMS = {"grape", "ice_grape", "gold_grape", "green_grape"}
 
+# These families mirror the VoxelShape groups passed to DrinkBlock.create() in
+# ModBlocks.java.  Keeping the source-space boxes here lets the Paper migration
+# preserve the authored selection/collision volume for every count variant.
+TALL_DRINKS = {
+    "wine", "champagne", "sakura_wine", "whiskey", "ice_wine",
+    "polaris_sweet_white", "honey_wine", "red_queen", "miners_star", "rum",
+    "sherry", "luminous_bride", "glowflower_brew",
+    "sauvignon_blanc_dry_white", "vinegar", "watermelon_juice",
+}
+WIDE_DRINKS = {
+    "vodka", "riesling_dry_white", "madame_shexiang",
+    "sweet_berry_wine", "mother_snow",
+}
+BRANDY_DRINKS = {"brandy", "sunset_glow"}
+COCKTAILS = {
+    "empty_glassware", "signature_cocktail", "mystery_cocktail", "white_lady",
+    "emerald", "brass_heart", "godfather", "grasshopper", "screwdriver",
+    "mojito", "allium_garden", "depth_charge", "nether_special", "bloody_mary",
+    "sculk_special",
+}
+CABINET_BOTTLES = BOTTLE_AND_GLASS_ITEMS - COCKTAILS
+STORAGE_RENDER_ITEMS = CABINET_BOTTLES | {"empty_glassware"}
+PRESS_FLUIDS = {
+    "glow_berries_juice",
+    "gold_grape_juice",
+    "grape_juice",
+    "green_grape_juice",
+    "ice_grape_juice",
+    "sweet_berries_juice",
+}
+BARREL_FLUIDS = PRESS_FLUIDS | {"water", "lava"}
+SIMPLE_BOTTLES = {
+    "water_bottle", "honey_bottle", "dragon_breath_bottle",
+    "potion_bottle", "xp_bottle",
+}
+BAR_STOOL_COLORS = (
+    "black", "blue", "brown", "cyan", "gray", "green", "light_blue",
+    "light_gray", "lime", "magenta", "orange", "pink", "purple", "red",
+    "white", "yellow",
+)
+
+# The Forge blocks below intentionally shared a generic description id.  Their
+# concrete variant was shown as lore where applicable, so using the registry id
+# as an item translation key makes CraftEngine display a missing-language key.
+GENERIC_ITEM_NAME_KEYS = {
+    **{item_id: f"block.{NAMESPACE}.painting" for item_id in PAINTINGS},
+    **{
+        item_id: f"block.{NAMESPACE}.sandwich_board"
+        for item_id in {
+            "base_sandwich_board", "grass_sandwich_board", "allium_sandwich_board",
+            "azure_bluet_sandwich_board", "cornflower_sandwich_board",
+            "orchid_sandwich_board", "peony_sandwich_board",
+            "pink_petals_sandwich_board", "pitcher_plant_sandwich_board",
+            "poppy_sandwich_board", "sunflower_sandwich_board",
+            "torchflower_sandwich_board", "tulip_sandwich_board",
+            "wither_rose_sandwich_board",
+        }
+    },
+}
+
 
 def read_json(path: Path) -> Any:
     with path.open("r", encoding="utf-8-sig") as stream:
@@ -222,9 +306,9 @@ def load_raw_tags() -> dict[str, list[str]]:
                     values: list[str] = [] if data.get("replace", False) else list(tags.get(tag, []))
                     for raw in data.get("values", []):
                         if isinstance(raw, str):
-                            values.append(raw)
+                            values.append(normalize_legacy_resource_id(raw))
                         elif isinstance(raw, dict) and raw.get("id"):
-                            values.append(str(raw["id"]))
+                            values.append(normalize_legacy_resource_id(str(raw["id"])))
                     tags[tag] = values
     for key, values in COMMON_TAG_FALLBACKS.items():
         tags.setdefault(key, values)
@@ -249,9 +333,9 @@ def load_raw_registry_tags(folder_names: tuple[str, ...]) -> dict[str, list[str]
                     values: list[str] = [] if data.get("replace", False) else list(tags.get(tag, []))
                     for raw in data.get("values", []):
                         if isinstance(raw, str):
-                            values.append(raw)
+                            values.append(normalize_legacy_resource_id(raw))
                         elif isinstance(raw, dict) and raw.get("id") and raw.get("required", True):
-                            values.append(str(raw["id"]))
+                            values.append(normalize_legacy_resource_id(str(raw["id"])))
                     tags[tag] = values
     return tags
 
@@ -287,13 +371,13 @@ def ingredient_values(raw: Any, tags: dict[str, list[str]]) -> list[str]:
                     merged.append(value)
         return merged
     if isinstance(raw, str):
-        return [raw]
+        return [normalize_legacy_resource_id(raw)]
     if not isinstance(raw, dict):
         raise ValueError(f"Unsupported ingredient: {raw!r}")
     if "item" in raw:
-        return [str(raw["item"])]
+        return [normalize_legacy_resource_id(str(raw["item"]))]
     if "id" in raw:
-        return [str(raw["id"])]
+        return [normalize_legacy_resource_id(str(raw["id"]))]
     if "tag" in raw:
         tag = str(raw["tag"])
         values = tags.get(tag, [])
@@ -312,11 +396,14 @@ def compact_ingredient(raw: Any, tags: dict[str, list[str]]) -> str | list[str]:
 
 def result_entry(raw: Any) -> dict[str, Any]:
     if isinstance(raw, str):
-        return {"id": raw, "count": 1}
+        return {"id": normalize_legacy_resource_id(raw), "count": 1}
     item_id = raw.get("item", raw.get("id"))
     if not item_id:
         raise ValueError(f"Recipe result has no item id: {raw!r}")
-    return {"id": str(item_id), "count": int(raw.get("count", 1))}
+    return {
+        "id": normalize_legacy_resource_id(str(item_id)),
+        "count": int(raw.get("count", 1)),
+    }
 
 
 def convert_standard_recipes(tags: dict[str, list[str]]) -> dict[str, Any]:
@@ -403,8 +490,6 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
 
 
 def carrier_type(block_id: str) -> tuple[str, str]:
-    if block_id in SOLID_BLOCKS:
-        return "solid", "kaleidoscope-tavern-solid-transparent"
     return "higher_tripwire", "kaleidoscope-tavern-decor-transparent"
 
 
@@ -430,14 +515,12 @@ def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | li
             "type": "vine_crop_head_block",
             "body": f"{NAMESPACE}:wild_grapevine_plant",
             "direction": "down",
-            "max_height": 16,
             # Survival/body conversion comes from the native behavior. Growth
             # is delegated so the legacy `sheared` state can suppress it.
             "grow_speed": 0,
         }, {
             "type": f"{NAMESPACE}:wild_grapevine",
             "grow_speed": 0.15,
-            "max_height": 16,
         }]
     if block_id == "wild_grapevine_plant":
         return {
@@ -449,17 +532,15 @@ def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | li
     if block_id == "trellis":
         return {"type": f"{NAMESPACE}:trellis"}
     if block_id.endswith("_grapevine_trellis") or block_id == "grapevine_trellis":
-        return [{
-            "type": "crop_block",
-            "grow_speed": 0.25,
-            "light_requirement": 9,
-            "max_light_requirement": 15,
-            "is_bone_meal_target": True,
-            "bone_meal_age_bonus": {"type": "uniform", "min": 1, "max": 2},
-        }, {
+        # TrellisBehavior owns the complete GrapevineTrellisBlock growth
+        # step, including immature ages, climate probability, propagation and
+        # hanging fruit. A native crop_block here would add a second random
+        # tick roll, impose a source-invented light requirement and intercept
+        # bone meal before the exact Paper implementation.
+        return {
             "type": f"{NAMESPACE}:trellis",
             "spread_chance": 0.25,
-        }]
+        }
     if block_id.endswith("_grape_crop") or block_id == "grape_crop":
         # Growth points, bone meal, persistence, interaction and drops are
         # owned by CustomCrops. CraftEngine only enforces the Tavern-specific
@@ -471,30 +552,47 @@ def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | li
 
 
 def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
-    solid = block_id in SOLID_BLOCKS
+    is_string_lights = block_id.startswith("string_lights_")
+    is_wild_vine = block_id in {"wild_grapevine", "wild_grapevine_plant"}
+    is_crop = block_id.endswith("_grape_crop") or block_id == "grape_crop"
+    sturdy = block_id in STURDY_BLOCKS or is_string_lights
+    if is_wild_vine:
+        sound_type = {
+            action: f"minecraft:block.cave_vines.{action}"
+            for action in ("break", "step", "place", "hit", "fall")
+        }
+    elif is_crop:
+        sound_type = {
+            "break": "minecraft:block.crop.break",
+            "step": "minecraft:block.grass.step",
+            "place": "minecraft:item.crop.plant",
+            "hit": "minecraft:block.grass.hit",
+            "fall": "minecraft:block.grass.fall",
+        }
+    else:
+        family = "chain" if is_string_lights else "wood"
+        sound_type = {
+            action: f"minecraft:block.{family}.{action}"
+            for action in ("break", "step", "place", "hit", "fall")
+        }
+    hardness = 0.0 if is_wild_vine or is_crop else 0.8
     settings: dict[str, Any] = {
-        "hardness": 0.8 if solid else 0.3,
-        "resistance": 1.0,
-        "push_reaction": "DESTROY" if not solid else "NORMAL",
+        "hardness": hardness,
+        "resistance": hardness,
+        "push_reaction": "NORMAL" if sturdy else "DESTROY",
         "is_redstone_conductor": False,
         "is_suffocating": False,
         "is_view_blocking": False,
         "can_occlude": False,
         "propagate_skylight": True,
-        "sounds": {
-            "break": "minecraft:block.wood.break",
-            "step": "minecraft:block.wood.step",
-            "place": "minecraft:block.wood.place",
-            "hit": "minecraft:block.wood.hit",
-            "fall": "minecraft:block.wood.fall",
-        },
-        "tags": ["minecraft:mineable/axe"],
+        "sounds": sound_type,
+        "tags": (["minecraft:mineable/pickaxe"] if is_string_lights
+                 else [] if is_wild_vine or is_crop
+                 else ["minecraft:mineable/axe"]),
     }
-    if solid:
-        settings["support_shape"] = "minecraft:stone"
     if has_item:
         settings["item"] = f"{NAMESPACE}:{block_id}"
-    if "lamp" in block_id or block_id.startswith("string_lights_"):
+    if "lamp" in block_id or is_string_lights:
         settings["luminance"] = 15
     if block_id.endswith("_incense"):
         settings["luminance"] = 7
@@ -728,6 +826,35 @@ def ensure_render_item(
     return render_id
 
 
+Box = tuple[float, float, float, float, float, float]
+
+
+def number(value: float) -> str:
+    if abs(value) < 1.0e-8:
+        return "0"
+    return f"{value:.6f}".rstrip("0").rstrip(".")
+
+
+def vector(values: tuple[float, float, float]) -> str:
+    return ",".join(number(value) for value in values)
+
+
+def parse_vector(raw: str | None) -> tuple[float, float, float]:
+    if raw is None:
+        return 0.0, 0.0, 0.0
+    values = tuple(float(value) for value in raw.split(","))
+    if len(values) != 3:
+        raise ValueError(f"Expected three vector components, got {raw!r}")
+    return values
+
+
+def add_vector(
+    first: tuple[float, float, float],
+    second: tuple[float, float, float],
+) -> tuple[float, float, float]:
+    return tuple(a + b for a, b in zip(first, second, strict=True))
+
+
 def furniture_element(
     render_items: dict[str, Any],
     block_id: str,
@@ -736,11 +863,6 @@ def furniture_element(
     anchor: str,
     translation: str | None = None,
 ) -> dict[str, Any]:
-    if block_id == "barrel":
-        # The placed Forge barrel was rendered by a 3x3x3 block-entity model;
-        # its blockstate model is intentionally empty. Reuse the authored item
-        # model at furniture scale instead of emitting an invisible furniture.
-        model = (f"{NAMESPACE}:item/barrel", 0, 0, 0, False)
     element: dict[str, Any] = {
         "type": "item_display",
         "item": ensure_render_item(render_items, block_id, label, model),
@@ -748,10 +870,24 @@ def furniture_element(
         "shadow_radius": 0,
         "view_range": 1.25,
     }
-    if block_id == "barrel":
-        element["position"] = "0,1,0"
-        element["scale"] = "3,3,3"
-        element["view_range"] = 2.5
+
+    # A block model is centred around the item-display origin.  Forge placed
+    # these models in a target block, while CE anchors furniture on a surface,
+    # so every model needs the corresponding half-block translation.  The
+    # 0.01 entity offsets keep wall/ceiling displays lit; their translation is
+    # compensated so the final visual location remains exact.
+    base_translation = {
+        "ground": (0.0, 0.5, 0.0),
+        "wall": (0.0, 0.0, 0.49),
+        "ceiling": (0.0, -0.49, 0.0),
+    }[anchor]
+    if anchor == "wall":
+        element["position"] = "0,0,0.01"
+    elif anchor == "ceiling":
+        element["position"] = "0,-0.01,0"
+
+    element["translation"] = vector(add_vector(base_translation, parse_vector(translation)))
+
     # Potion bottles are placed from a vanilla potion, while signature
     # cocktails store a dynamically mixed color. Both take their furniture
     # tint from the exact source item's potion_contents component.
@@ -759,116 +895,401 @@ def furniture_element(
         element["tint_source"] = ["potion_contents"]
     if any(model[1:4]):
         element["rotation"] = f"{model[1]},{model[2]},{model[3]}"
-    if anchor == "wall":
-        element["position"] = "0,0,0.01"
-        element["translation"] = "0,0,-0.01"
-    elif anchor == "ceiling":
-        element["position"] = "0,-0.01,0"
-        element["translation"] = "0,0.01,0"
-    if translation is not None:
-        element["translation"] = translation
     return element
 
 
-def furniture_hitboxes(block_id: str, anchor: str) -> list[dict[str, Any]]:
+def drink_boxes(block_id: str, count: int) -> list[Box]:
+    if block_id in TALL_DRINKS:
+        return {
+            1: [(6, 0, 6, 10, 16, 10)],
+            2: [(2, 0, 6, 14, 16, 10)],
+            3: [(2, 0, 10, 14, 16, 14), (6, 0, 2, 10, 16, 14)],
+            4: [(2, 0, 2, 14, 16, 14)],
+        }[count]
+    if block_id in WIDE_DRINKS:
+        return {
+            1: [(4, 0, 4, 12, 15, 12)],
+            2: [(0, 0, 4, 16, 15, 12)],
+            3: [(0, 0, 8, 16, 15, 16), (4, 0, 0, 12, 15, 16)],
+            4: [(0, 0, 0, 16, 16, 16)],
+        }[count]
+    if block_id in BRANDY_DRINKS:
+        return {
+            1: [(3, 0, 6, 13, 13, 10)],
+            2: [(1, 0, 3, 15, 12, 12)],
+            3: [(1, 0, 1, 16, 12, 13)],
+        }[count]
+    if block_id == "carignan":
+        return {
+            1: [(3, 0, 6, 13, 12, 10)],
+            2: [(1, 0, 3, 15, 12, 12)],
+            3: [(0, 0, 1, 16, 12, 13)],
+        }[count]
+    if block_id == "plum_wine":
+        return {
+            1: [(6, 0, 6, 10, 12, 10)],
+            2: [(3, 0, 6, 13, 12, 10)],
+            3: [(3, 0, 9, 13, 12, 13), (6, 0, 3, 10, 12, 13)],
+            4: [(3, 0, 3, 13, 12, 13)],
+        }[count]
+    return []
+
+
+def source_boxes(block_id: str, anchor: str, properties: dict[str, str]) -> list[Box]:
+    count = int(properties.get("count", "1"))
+    drinks = drink_boxes(block_id, count)
+    if drinks:
+        return drinks
+    if block_id.endswith("_sofa"):
+        return [(0, 0, 0, 16, 18, 16)]
+    if block_id.endswith("_bar_stool"):
+        return [(2, 0, 2, 14, 21, 14)]
+    if block_id == "chalkboard":
+        return [(0, 2, 15, 16, 30, 16)]
+    if block_id.endswith("_sandwich_board"):
+        return [(2, 0, 2, 14, 22, 14)]
+    if block_id in PENDANT_LAMPS:
+        # Coordinates are relative to the upper target block; the lower half
+        # occupies the block below it.
+        return [(1, -15, 5, 15, 16, 11)]
+    if block_id == "stepladder":
+        return [(0, 0, 0, 16, 32, 16)]
+    if block_id in PAINTINGS:
+        return {
+            "ground": [(1, 0, 1, 15, 1, 15)],
+            "wall": [(1, 1, 0, 15, 15, 1)],
+            "ceiling": [(1, 15, 1, 15, 16, 15)],
+        }[anchor]
+    if block_id.endswith("_incense"):
+        return [(5, 0, 5, 11, 7, 11)]
+    if block_id == "pressing_tub":
+        if anchor == "ground":
+            # SHAPE is a half-block tub with a four-pixel floor and walls.
+            return [
+                (0, 0, 0, 16, 4, 16),
+                (0, 4, 0, 16, 8, 2),
+                (0, 4, 14, 16, 8, 16),
+                (0, 4, 2, 2, 8, 14),
+                (14, 4, 2, 16, 8, 14),
+            ]
+        # The wall rule selects Forge's facing=south tilted state.
+        return [
+            (0, 0, 8, 16, 8, 16),
+            (0, 4, 4, 16, 12, 12),
+            (0, 8, 0, 16, 16, 8),
+        ]
+    if block_id == "tap":
+        # TapBlock's north-authored shape has its mounting plate at z=16 and
+        # its nozzle extending toward z=6.  The wall furniture direction is
+        # the outward direction, so this is the source orientation verbatim.
+        return [(5, 5, 6, 11, 13, 16)]
+    if block_id == "glassware_holder":
+        return [(0, 11, 1, 16, 16, 15)]
+    if block_id in COCKTAILS:
+        return [(4, 0, 4, 12, 10, 12)]
+    if block_id == "shaker":
+        return [(4, 0, 4, 12, 16, 12)]
+    if block_id in SIMPLE_BOTTLES:
+        return [(5, 0, 5, 11, 10, 11)]
+    if block_id in {"empty_bottle", "molotov"}:
+        return [(5, 0, 5, 11, 14, 11)]
+    if block_id == "table":
+        return [(0, 13, 0, 16, 16, 16)]
+    if block_id == "tilted_rack":
+        return [(0, 0, 5, 16, 14, 15)]
+    if block_id == "circular_rack":
+        return [(0, 0, 0, 16, 2, 16)]
+    if block_id == "holder":
+        return [(5, 0, 2, 11, 16, 14)]
+    return [(0, 0, 0, 16, 16, 16)]
+
+
+def hitbox_position(anchor: str, x: float, y: float, z: float) -> tuple[float, float, float]:
+    if anchor == "ground":
+        return x / 16 - 0.5, y / 16, z / 16 - 0.5
+    if anchor == "ceiling":
+        return x / 16 - 0.5, -1 + y / 16, z / 16 - 0.5
+    if anchor == "wall":
+        return x / 16 - 0.5, y / 16 - 0.5, z / 16
+    raise ValueError(f"Unknown furniture anchor {anchor!r}")
+
+
+def aggregate_box(boxes: list[Box]) -> Box:
+    return (
+        min(box[0] for box in boxes), min(box[1] for box in boxes), min(box[2] for box in boxes),
+        max(box[3] for box in boxes), max(box[4] for box in boxes), max(box[5] for box in boxes),
+    )
+
+
+def interaction_box(box: Box, anchor: str, seats: list[str] | None = None) -> dict[str, Any]:
+    min_x, min_y, min_z, max_x, max_y, max_z = box
+    position = hitbox_position(anchor, (min_x + max_x) / 2, min_y, (min_z + max_z) / 2)
+    result: dict[str, Any] = {
+        "type": "interaction",
+        "position": vector(position),
+        "width": round(max(max_x - min_x, max_z - min_z) / 16, 6),
+        "height": round((max_y - min_y) / 16, 6),
+        "can_use_item_on": True,
+        "can_be_hit_by_projectile": True,
+        "interactive": True,
+        "blocks_building": True,
+    }
+    if seats:
+        result["seats"] = seats
+    return result
+
+
+def shulker_box(
+    position: tuple[float, float, float],
+    scale: float = 1.0,
+    peek: int = 0,
+) -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "type": "shulker",
+        "position": vector(position),
+        "peek": peek,
+        "interaction_entity": False,
+        "can_use_item_on": True,
+        "can_be_hit_by_projectile": True,
+        "interactive": False,
+        "blocks_building": True,
+    }
+    if abs(scale - 1.0) > 1.0e-8:
+        result["scale"] = round(scale, 6)
+    return result
+
+
+def peek_for(scale: float, height: float) -> int:
+    if height <= scale:
+        return 0
+    physical_peek = max(0.0, min(1.0, height / scale - 1.0))
+    raw = 0.5 - math.asin(1.0 - 2.0 * physical_peek) / math.pi
+    return max(0, min(100, round(raw * 100)))
+
+
+def physical_box(box: Box, anchor: str, tile_limit: int = 4) -> list[dict[str, Any]]:
+    min_x, min_y, min_z, max_x, max_y, max_z = box
+    width_x = (max_x - min_x) / 16
+    width_z = (max_z - min_z) / 16
+    height = (max_y - min_y) / 16
+    cell = min(width_x, width_z)
+    tiles_x = round(width_x / cell)
+    tiles_z = round(width_z / cell)
+    can_tile = (
+        abs(tiles_x * cell - width_x) < 1.0e-6
+        and abs(tiles_z * cell - width_z) < 1.0e-6
+        and tiles_x * tiles_z <= tile_limit
+    )
+    if not can_tile:
+        cell = max(width_x, width_z)
+        tiles_x = tiles_z = 1
+
+    result: list[dict[str, Any]] = []
+    for tile_x in range(tiles_x):
+        x = ((min_x + max_x) / 32 if not can_tile
+             else min_x / 16 + cell * (tile_x + 0.5))
+        for tile_z in range(tiles_z):
+            z = ((min_z + max_z) / 32 if not can_tile
+                 else min_z / 16 + cell * (tile_z + 0.5))
+            remaining = height
+            y = min_y / 16
+            while remaining > 1.0e-8:
+                segment_scale = cell
+                segment_height = min(remaining, 2 * cell)
+                if segment_height < cell:
+                    # A narrow final segment also resembles the neck of the
+                    # authored bottle shapes better than an over-tall cube.
+                    segment_scale = segment_height
+                source_y = y * 16
+                position = hitbox_position(anchor, x * 16, source_y, z * 16)
+                result.append(shulker_box(position, segment_scale, peek_for(segment_scale, segment_height)))
+                y += segment_height
+                remaining -= segment_height
+    return result
+
+
+def entity_uv_faces(u: float, v: float, dx: float, dy: float, dz: float) -> dict[str, Any]:
+    """Convert ModelPart.Cube's 256x256 UV layout to block-model UVs."""
+    u0 = u
+    u1 = u + dz
+    u2 = u + dz + dx
+    u3 = u + dz + dx + dx
+    u4 = u + dz + dx + dz
+    u5 = u + dz + dx + dz + dx
+    v0 = v
+    v1 = v + dz
+    v2 = v + dz + dy
+
+    def uv(values: tuple[float, float, float, float]) -> list[float]:
+        return [round(value / 16, 6) for value in values]
+
+    source = {
+        "down": uv((u1, v0, u2, v1)),
+        "up": uv((u2, v1, u3, v0)),
+        "west": uv((u0, v1, u1, v2)),
+        "north": uv((u1, v1, u2, v2)),
+        "east": uv((u2, v1, u4, v2)),
+        "south": uv((u4, v1, u5, v2)),
+    }
+    # BarrelBlockEntityRender applies a 180-degree Z rotation before facing.
+    transformed = {
+        "up": source["down"],
+        "down": source["up"],
+        "east": source["west"],
+        "west": source["east"],
+        "north": source["north"],
+        "south": source["south"],
+    }
+    return {face: {"uv": coords, "texture": "#barrel"}
+            for face, coords in transformed.items()}
+
+
+def entity_barrel_box(
+    x: float, y: float, z: float,
+    dx: float, dy: float, dz: float,
+    u: float, v: float,
+) -> dict[str, Any]:
+    """Map one axis-aligned BarrelModel body cube through its root/Z transform."""
+    return {
+        "from": [-x - dx, -1 - y - dy, z - 1],
+        "to": [-x, -1 - y, z + dz - 1],
+        "faces": entity_uv_faces(u, v, dx, dy, dz),
+    }
+
+
+def create_barrel_models() -> None:
+    """Recreate BarrelModel's body and articulated lid from the Forge source."""
+    model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture"
+    body_specs = [
+        (6, 7, -10, 4, 8, 4, 28, 136),
+        (-26, 7, -10, 4, 8, 4, 28, 136),
+        (-22, 7, -8, 28, 4, 2, 174, 118),
+        (-22, 7, 22, 28, 4, 2, 174, 118),
+        (6, 7, 22, 4, 8, 4, 28, 136),
+        (-26, 7, 22, 4, 8, 4, 28, 136),
+        (-28, -33, -15, 40, 40, 48, 0, 0),
+        (-16, -33, 1, 16, 21, 0, 0, 160),
+        (0, -33, 1, 0, 24, 16, 0, 144),
+        (-16, -33, 1, 0, 21, 16, 0, 144),
+        (-16, -12, 1, 16, 0, 16, 32, 160),
+        (-16, -33, 17, 16, 21, 0, 0, 160),
+    ]
+    body_elements = [entity_barrel_box(*spec) for spec in body_specs]
+    closed_lid = entity_barrel_box(-16, -33, 1, 16, 2, 16, 102, 113)
+    base = {
+        "ambientocclusion": False,
+        "textures": {
+            "barrel": f"{NAMESPACE}:entity/brew/barrel",
+            "particle": "minecraft:block/barrel_side",
+        },
+    }
+    write_json(model_root / "barrel_body.json", {**base, "elements": body_elements})
+    write_json(model_root / "barrel_closed.json", {
+        **base,
+        "elements": [*body_elements, closed_lid],
+    })
+
+    # The open lid pivots about its rear edge. BarrelModel's nested rotations
+    # combine to 107.5 degrees from its original plane, i.e. a 72.5-degree
+    # opening angle. Keeping the pivot at model origin lets the CE item-display
+    # element reproduce that articulation without block-model angle limits.
+    open_lid = {
+        "from": [0, 8, -8],
+        "to": [16, 10, 8],
+        "faces": closed_lid["faces"],
+    }
+    write_json(model_root / "barrel_open_lid.json", {**base, "elements": [open_lid]})
+
+
+def furniture_hitboxes(
+    block_id: str,
+    anchor: str,
+    properties: dict[str, str] | None = None,
+) -> list[dict[str, Any]]:
+    properties = properties or {}
+    boxes = source_boxes(block_id, anchor, properties)
+    aggregate = aggregate_box(boxes)
+
     if block_id == "barrel":
         return [
-            {
-                "type": "shulker",
-                "position": f"{x},{y},{z}",
-                "peek": 100,
-                "interaction_entity": True,
-                "interactive": True,
-                "blocks_building": True,
-            }
+            shulker_box((x, y, z))
             for y in range(3)
             for x in (-1, 0, 1)
             for z in (-1, 0, 1)
         ]
     if block_id == "stepladder":
-        return [
-            {
-                "type": "shulker",
-                "position": "0,0,0",
-                "peek": 100,
-                "interaction_entity": True,
-                "interactive": True,
-                "blocks_building": True,
-            },
-            {
-                "type": "shulker",
-                "position": "0,1,0",
-                "peek": 100,
-                "interaction_entity": True,
-                "interactive": True,
-                "blocks_building": True,
-            },
-        ]
+        return [shulker_box((0, 0, 0)), shulker_box((0, 1, 0))]
     if block_id.endswith("_sofa"):
-        return [{
-            "type": "shulker",
-            "position": "0,0,0",
-            "peek": 100,
-            "interaction_entity": True,
-            "interactive": True,
-            "blocks_building": True,
-            "seats": ["0,0.45,0"],
-        }]
+        # Four half-block cubes reproduce the solid seat/base without filling
+        # the open space in front of the authored 18-pixel-high backrest.
+        return [
+            # SitEntity was created at y=0.5125 but exposed a -0.25 passenger
+            # riding offset.  CE seat coordinates describe the final mount
+            # point, so preserve the effective y=0.2625 position.
+            interaction_box(aggregate, anchor, ["0,0.2625,0 0"]),
+            *(shulker_box((x, 0, z), 0.5) for x in (-0.25, 0.25) for z in (-0.25, 0.25)),
+        ]
     if block_id.endswith("_bar_stool"):
-        return [{
-            "type": "shulker",
-            "position": "0,0,0",
-            "scale": 0.75,
-            "peek": 100,
-            "interaction_entity": True,
-            "interactive": True,
-            "blocks_building": True,
-            "seats": ["0,0.85,0 0"],
-        }]
-    if block_id == "chalkboard" or block_id.endswith("_sandwich_board"):
-        return [{
-            "type": "interaction",
-            "position": "0,1,0",
-            "width": 1,
-            "height": 2,
-            "interactive": True,
-            "blocks_building": True,
-        }]
+        return [
+            interaction_box(aggregate, anchor, ["0,0.625,0 0"]),
+            # The broad seat ends at 15/16; the taller back remains an
+            # interaction volume rather than blocking the player's torso.
+            shulker_box((0, 3 / 16, 0), 0.75),
+        ]
+    if block_id.endswith("_sandwich_board"):
+        return [
+            interaction_box(aggregate, anchor),
+            shulker_box((0, 0, 0), 0.75, peek_for(0.75, 1.375)),
+        ]
+    if block_id == "pressing_tub" and anchor == "ground":
+        edge = (-0.375, -0.125, 0.125, 0.375)
+        walls = [shulker_box((x, 0, z), 0.25, 100) for x in edge for z in (-0.375, 0.375)]
+        walls.extend(shulker_box((x, 0, z), 0.25, 100)
+                     for x in (-0.375, 0.375) for z in (-0.125, 0.125))
+        floor = [
+            shulker_box((x, 0, z), 0.25)
+            for x in (-0.125, 0.125)
+            for z in (-0.125, 0.125)
+        ]
+        return [interaction_box(aggregate, anchor), *walls, *floor]
     if block_id in PENDANT_LAMPS:
-        return [{
-            "type": "interaction",
-            "position": "0,-1,0",
-            "width": 1,
-            "height": 2,
-            "interactive": True,
-            "blocks_building": True,
-        }]
-    if block_id in PAINTINGS or anchor == "wall":
-        return [{
-            "type": "interaction",
-            "position": "0,0.5,0",
-            "width": 0.9,
-            "height": 1,
-            "interactive": True,
-            "blocks_building": True,
-        }]
+        # Forge explicitly used noCollission() for pendant lamps.
+        return [interaction_box(aggregate, anchor)]
+    if block_id in PAINTINGS:
+        # Interaction entities are square in the horizontal plane, so a
+        # 14/16-wide wall painting would otherwise become 14/16 *deep* too
+        # and fail placement against a wall while overlapping the placer.
+        hitbox = interaction_box(aggregate, anchor)
+        hitbox["blocks_building"] = False
+        return [hitbox]
+    if block_id == "chalkboard" or block_id == "glassware_holder":
+        return [interaction_box(aggregate, anchor)]
+    if block_id == "table":
+        # Shulkers cannot be flatter than their horizontal scale. A 4x4 grid
+        # keeps the exact one-block footprint and differs from TableBlock's
+        # 3-pixel-high top slab by only one pixel, instead of blocking the
+        # entire cube as the old single-shulker carrier did.
+        quarters = (-0.375, -0.125, 0.125, 0.375)
+        return [
+            interaction_box(aggregate, anchor),
+            *(shulker_box((x, 0.75, z), 0.25) for x in quarters for z in quarters),
+        ]
+    if block_id in {"bar_counter", "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet"}:
+        # A full shulker with peek=0 is exactly one block high.  The previous
+        # peek=100 doubled these colliders to two blocks.
+        return [shulker_box(hitbox_position(anchor, 8, 0, 8))]
+    if block_id == "circular_rack":
+        return [interaction_box(aggregate, anchor)]
+    if block_id in {"tilted_rack", "holder", "tap"}:
+        return [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
     if block_id in SMALL_FURNITURE or block_id.endswith("_incense"):
-        return [{
-            "type": "interaction",
-            "position": "0,0.35,0",
-            "width": 0.55,
-            "height": 0.7,
-            "interactive": True,
-            "blocks_building": True,
-        }]
-    return [{
-        "type": "shulker",
-        "position": "0,0,0",
-        "peek": 100,
-        "interaction_entity": True,
-        "interactive": True,
-        "blocks_building": True,
-    }]
+        return [interaction_box(aggregate, anchor), *(hitbox for box in boxes for hitbox in physical_box(box, anchor))]
+    if block_id == "pressing_tub":
+        return [
+            interaction_box(aggregate, anchor),
+            *(hitbox for box in boxes for hitbox in physical_box(box, anchor, tile_limit=8)),
+        ]
+    return [shulker_box(hitbox_position(anchor, 8, 0, 8))]
 
 
 def create_chalkboard_models() -> None:
@@ -878,8 +1299,10 @@ def create_chalkboard_models() -> None:
         "ambientocclusion": False,
         "textures": {"board": f"{texture_root}/small_chalkboard", "particle": f"{NAMESPACE}:block/deco/chalkboard_particle"},
         "elements": [{
-            "from": [0, 0, 7.5],
-            "to": [16, 28, 8.5],
+            # SmallChalkboardModel is one pixel thick at the facing edge and
+            # spans source y=2..30 across the original two-block structure.
+            "from": [0, 2, 15],
+            "to": [16, 30, 16],
             "faces": {
                 "north": {"uv": [0, 0, 4, 7], "texture": "#board"},
                 "south": {"uv": [0, 0, 4, 7], "texture": "#board"},
@@ -890,8 +1313,8 @@ def create_chalkboard_models() -> None:
         "ambientocclusion": False,
         "textures": {"board": f"{texture_root}/large_chalkboard", "particle": f"{NAMESPACE}:block/deco/chalkboard_particle"},
         "elements": [{
-            "from": [-16, 0, 7.5],
-            "to": [32, 28, 8.5],
+            "from": [-16, 2, 15],
+            "to": [32, 30, 16],
             "faces": {
                 "north": {"uv": [0, 0, 6, 7], "texture": "#board"},
                 "south": {"uv": [0, 0, 6, 7], "texture": "#board"},
@@ -900,6 +1323,182 @@ def create_chalkboard_models() -> None:
     }
     write_json(model_root / "chalkboard_small.json", small)
     write_json(model_root / "chalkboard_large.json", large)
+
+
+def create_pressing_fluid_models() -> None:
+    """Create the six horizontal fluid surfaces rendered inside the tub."""
+    model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture/pressing_fluid"
+    for fluid in sorted(PRESS_FLUIDS):
+        texture = f"{NAMESPACE}:block/{fluid}_still"
+        model = {
+            "ambientocclusion": False,
+            "render_type": "translucent",
+            "textures": {"fluid": texture, "particle": texture},
+            "elements": [{
+                # RenderUtils.renderFluid(..., 12, y) used a centred 12x12
+                # surface.  ItemDisplay/NONE centres model coordinates around
+                # its origin, so y=8 becomes a zero-thickness local plane.
+                "from": [2, 7.99, 2],
+                "to": [14, 8.01, 14],
+                "faces": {
+                    "up": {"uv": [0, 0, 12, 12], "texture": "#fluid"},
+                    "down": {"uv": [0, 0, 12, 12], "texture": "#fluid"},
+                },
+            }],
+        }
+        write_json(model_root / f"{fluid}.json", model)
+
+
+def create_barrel_fluid_models() -> None:
+    """Create the 16x16 fluid surface used by BarrelBlockEntityRender."""
+    model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture/barrel_fluid"
+    for fluid in sorted(BARREL_FLUIDS):
+        namespace = "minecraft" if fluid in {"water", "lava"} else NAMESPACE
+        texture = f"{namespace}:block/{fluid}_still"
+        face: dict[str, Any] = {"uv": [0, 0, 16, 16], "texture": "#fluid"}
+        if fluid == "water":
+            face["tintindex"] = 0
+        model = {
+            "ambientocclusion": False,
+            "render_type": "translucent",
+            "textures": {"fluid": texture, "particle": texture},
+            "elements": [{
+                "from": [0, 7.99, 0],
+                "to": [16, 8.01, 16],
+                "faces": {"up": face, "down": dict(face)},
+            }],
+        }
+        write_json(model_root / f"{fluid}.json", model)
+
+
+def create_bar_stool_body_models() -> None:
+    """Split the source block-entity body from the authored inventory model.
+
+    Forge rendered the pedestal as a block model and the upholstered upper
+    body as a block entity so that only the latter could follow a passenger's
+    body yaw.  The inventory model contains the same seven cuboids in one
+    file: the first three are the pedestal and the final four are the moving
+    seat/back/arms.  Paper uses the split body models from a real ItemDisplay
+    while CraftEngine keeps the static pedestal.
+    """
+    source = read_json(
+        MAIN_RESOURCES / f"assets/{NAMESPACE}/models/item/bar_stool_base.json"
+    )
+    if len(source.get("elements", [])) != 7:
+        raise AssertionError("bar_stool_base must retain its 3 pedestal + 4 body cuboids")
+    model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture"
+    body = {
+        key: deepcopy(value)
+        for key, value in source.items()
+        if key not in {"display", "gui_light"}
+    }
+    body["elements"] = deepcopy(source["elements"][3:])
+    write_json(model_root / "bar_stool_body_base.json", body)
+    for color in BAR_STOOL_COLORS:
+        write_json(model_root / "bar_stool_body" / f"{color}.json", {
+            "parent": f"{NAMESPACE}:furniture/bar_stool_body_base",
+            "textures": {
+                "particle": f"minecraft:block/{color}_wool",
+                "texture": f"{NAMESPACE}:block/deco/bar_stool/{color}",
+            },
+        })
+
+
+def create_shaker_models() -> None:
+    """Split ShakerModel's root body and animated bone2 around its pivot."""
+    source = read_json(
+        MAIN_RESOURCES / f"assets/{NAMESPACE}/models/item/shaker_3d.json"
+    )
+    if len(source.get("elements", [])) != 5:
+        raise AssertionError("shaker_3d must retain its 2 body + 3 lid cuboids")
+    model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture"
+
+    def model_with(elements: list[dict[str, Any]]) -> dict[str, Any]:
+        return {
+            key: deepcopy(value)
+            for key, value in source.items()
+            if key not in {"display", "groups"}
+        } | {"elements": elements}
+
+    write_json(model_root / "shaker_base.json", model_with(
+        deepcopy(source["elements"][:2])))
+
+    # bone2's authored pivot is [8, 12.16667, 8]. ItemDisplay rotates around
+    # model centre [8, 8, 8], so shift the lid geometry to that centre; the
+    # runtime adds the same 4.16667 pixels back as entity translation.
+    pivot_delta = 12.16667 - 8.0
+    lid_elements = deepcopy(source["elements"][2:])
+    for element in lid_elements:
+        element["from"][1] -= pivot_delta
+        element["to"][1] -= pivot_delta
+        rotation = element.get("rotation")
+        if isinstance(rotation, dict) and isinstance(rotation.get("origin"), list):
+            rotation["origin"][1] -= pivot_delta
+    write_json(model_root / "shaker_lid.json", model_with(lid_elements))
+
+
+def add_runtime_render_items(render_items: dict[str, Any]) -> None:
+    """Add stable ids used by Paper-side block-entity visual emulation."""
+    for block_id in sorted(STORAGE_RENDER_ITEMS):
+        model = min(blockstate_records(block_id), key=record_score)[1]
+        definition: dict[str, Any] = {
+            "material": "paper",
+            "data": {"item_name": f"<!i>{block_id} storage render"},
+            "model": {"type": "minecraft:model", "path": model[0]},
+            "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
+        }
+        if block_id == "potion_bottle":
+            definition["model"]["tints"] = [{
+                "type": "minecraft:potion",
+                "default": -13083194,
+            }]
+        render_items[f"{NAMESPACE}:_render/storage/{block_id}"] = definition
+    for fluid in sorted(PRESS_FLUIDS):
+        render_items[f"{NAMESPACE}:_render/pressing_fluid/{fluid}"] = {
+            "material": "paper",
+            "data": {"item_name": f"<!i>{fluid} pressing fluid render"},
+            "model": {
+                "type": "minecraft:model",
+                "path": f"{NAMESPACE}:furniture/pressing_fluid/{fluid}",
+            },
+            "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
+        }
+    for fluid in sorted(BARREL_FLUIDS):
+        definition: dict[str, Any] = {
+            "material": "paper",
+            "data": {"item_name": f"<!i>{fluid} barrel fluid render"},
+            "model": {
+                "type": "minecraft:model",
+                "path": f"{NAMESPACE}:furniture/barrel_fluid/{fluid}",
+            },
+            "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
+        }
+        if fluid == "water":
+            definition["model"]["tints"] = [{
+                "type": "minecraft:constant",
+                "value": 0x3F76E4,
+            }]
+        render_items[f"{NAMESPACE}:_render/barrel_fluid/{fluid}"] = definition
+    for color in BAR_STOOL_COLORS:
+        render_items[f"{NAMESPACE}:_render/bar_stool_body/{color}"] = {
+            "material": "paper",
+            "data": {"item_name": f"<!i>{color} bar stool body render"},
+            "model": {
+                "type": "minecraft:model",
+                "path": f"{NAMESPACE}:furniture/bar_stool_body/{color}",
+            },
+            "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
+        }
+    for part in ("base", "lid"):
+        render_items[f"{NAMESPACE}:_render/shaker_{part}"] = {
+            "material": "paper",
+            "data": {"item_name": f"<!i>shaker {part} render"},
+            "model": {
+                "type": "minecraft:model",
+                "path": f"{NAMESPACE}:furniture/shaker_{part}",
+            },
+            "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
+        }
 
 
 def semantic_variant_name(anchor: str, properties: tuple[tuple[str, str], ...], index: int) -> str:
@@ -922,8 +1521,33 @@ def semantic_variant_name(anchor: str, properties: tuple[tuple[str, str], ...], 
 def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, Any]]:
     behaviors: list[dict[str, Any]] = []
 
-    def display_slots(positions: list[str], width: float, height: float) -> None:
+    def display_slots(
+        positions: list[str],
+        width: float,
+        height: float,
+        *,
+        paper_visual: bool = False,
+    ) -> None:
         for index, position in enumerate(positions):
+            variant_rules: dict[str, Any] = {}
+            for variant in variants:
+                rule: dict[str, Any] = {
+                    # Paper recreates every Forge storage renderer with its
+                    # exact block-model transform and slot-selection math.
+                    # Keep CE's controller solely as persistent storage and
+                    # move its packet-only inventory sprite out of view.
+                    "item_position": "0,-4096,0" if paper_visual else position,
+                }
+                if not paper_visual:
+                    rule["hitboxes"] = [{
+                        "type": "interaction",
+                        "position": position,
+                        "width": width,
+                        "height": height,
+                        "interactive": True,
+                        "blocks_building": False,
+                    }]
+                variant_rules[variant] = rule
             behaviors.append({
                 "type": "display_item_furniture",
                 "data_key": f"{NAMESPACE}:display_slot_{index}",
@@ -931,49 +1555,33 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
                     "put": "minecraft:block.decorated_pot.insert",
                     "take": "minecraft:block.decorated_pot.insert_fail",
                 },
-                "variants": {
-                    variant: {
-                        "item_position": position,
-                        # Each legacy storage slot was selected from the exact
-                        # clicked region. Dedicated behavior hitboxes preserve
-                        # that instead of letting every click fall through to
-                        # the first empty CraftEngine display controller.
-                        "hitboxes": [{
-                            "type": "interaction",
-                            "position": position,
-                            "width": width,
-                            "height": height,
-                            "interactive": True,
-                            "blocks_building": False,
-                        }],
-                    }
-                    for variant in variants
-                },
+                "variants": variant_rules,
             })
 
     if block_id in {"bar_cabinet", "glass_bar_cabinet"}:
-        display_slots(["-0.24,0.62,0.18", "0.24,0.62,0.18"], 0.42, 0.8)
+        display_slots(["-0.25,0.5,0", "0.25,0.5,0"], 0.5, 1.0, paper_visual=True)
     elif block_id == "cellar_cabinet":
         # This was a visible 3x3 bottle cabinet, not a generic inventory GUI.
         display_slots([
             "0.325,0.78,0.375", "0,0.78,0.375", "-0.325,0.78,0.375",
             "0.325,0.49,0.375", "0,0.49,0.375", "-0.325,0.49,0.375",
             "0.325,0.20,0.375", "0,0.20,0.375", "-0.325,0.20,0.375",
-        ], 0.25, 0.27)
+        ], 0.25, 0.27, paper_visual=True)
     elif block_id == "tilted_rack":
-        display_slots(["-0.375,0.32,0", "0,0.32,0", "0.375,0.32,0"], 0.3, 0.62)
+        display_slots(["-0.375,0.32,0", "0,0.32,0", "0.375,0.32,0"],
+                      0.3, 0.62, paper_visual=True)
     elif block_id == "circular_rack":
         display_slots([
             "0,0.13,-0.375", "0.375,0.13,-0.19", "0.375,0.13,0.19",
             "0,0.13,0.375", "-0.375,0.13,0.19", "-0.375,0.13,-0.19",
-        ], 0.26, 0.46)
+        ], 0.26, 0.46, paper_visual=True)
     elif block_id == "holder":
-        display_slots(["0,0.13,0.25"], 0.4, 0.8)
+        display_slots(["0,0.13,0.25"], 0.4, 0.8, paper_visual=True)
     elif block_id == "glassware_holder":
         display_slots([
             "-0.25,-0.24,-0.25", "0.25,-0.24,-0.25",
             "-0.25,-0.24,0.25", "0.25,-0.24,0.25",
-        ], 0.35, 0.35)
+        ], 0.35, 0.35, paper_visual=True)
 
     if block_id in PENDANT_LAMPS:
         behaviors.append({"type": "glowing_furniture", "lights": ["0,-1,0 13"]})
@@ -987,12 +1595,43 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
 def furniture_rules(block_id: str, variant_names: list[str]) -> dict[str, Any]:
     anchors = [name for name in ("ground", "wall", "ceiling") if name in variant_names]
     rules: dict[str, Any] = {}
-    free_place = block_id in SMALL_FURNITURE or block_id.endswith("_sandwich_board") or block_id in PAINTINGS
-    rotation = "sixteen" if free_place else "four"
-    alignment = "any" if free_place else "center"
+    # Forge BlockItem placement always occupied the target block centre.  Only
+    # sandwich boards used ROTATION_16; bottles, paintings and other small
+    # furniture retained horizontal cardinal facing.
+    rotation = "sixteen" if block_id.endswith("_sandwich_board") else "four"
     for anchor in anchors:
-        rules[anchor] = {"rotation": rotation, "alignment": alignment}
+        rules[anchor] = {"rotation": rotation, "alignment": "center"}
     return rules
+
+
+def furniture_settings(block_id: str) -> dict[str, Any]:
+    """Map each Forge block's declared SoundType and instant-break behavior."""
+    if block_id.endswith("_sofa"):
+        family = "wool"
+    elif block_id in PENDANT_LAMPS:
+        family = "chain"
+    elif block_id.endswith("_incense"):
+        family = "decorated_pot"
+    elif block_id in {"tap", "glassware_holder"}:
+        family = "metal"
+    elif block_id == "shaker":
+        family = "lantern"
+    elif block_id in BOTTLE_AND_GLASS_ITEMS:
+        family = "glass"
+    else:
+        family = "wood"
+    instant_break = (
+        block_id in BOTTLE_AND_GLASS_ITEMS
+        or block_id == "shaker"
+        or block_id.endswith("_incense")
+    )
+    return {
+        "hit_times": 1 if instant_break else 3,
+        "sounds": {
+            action: f"minecraft:block.{family}.{action}"
+            for action in ("break", "place", "hit")
+        },
+    }
 
 
 def build_furniture(
@@ -1004,6 +1643,7 @@ def build_furniture(
     placement: dict[str, dict[str, Any]] = {}
     metrics = {"furniture_variants": 0}
     create_chalkboard_models()
+    create_barrel_models()
 
     ignored_semantics = {"facing", "waterlogged", "powered", "triggered", "rotation", "axis", "half", "face"}
     for block_id in furniture_ids:
@@ -1019,10 +1659,7 @@ def build_furniture(
             }
             variants["ground_large"] = {
                 "elements": [furniture_element(render_items, block_id, "large", large_model, "ground")],
-                "hitboxes": [{
-                    "type": "interaction", "position": "0,1,0", "width": 3, "height": 2,
-                    "interactive": True, "blocks_building": True,
-                }],
+                "hitboxes": [interaction_box((-16, 2, 15, 32, 30, 16), "ground")],
             }
         elif block_id.endswith("_sandwich_board"):
             bottom = select_record(records, {"half": "bottom", "rotation": "0", "waterlogged": "false"})[1]
@@ -1049,7 +1686,7 @@ def build_furniture(
                 "facing": "north", "tilt": "false", "waterlogged": "false",
             })[1]
             tilted = select_record(records, {
-                "facing": "north", "tilt": "true", "waterlogged": "false",
+                "facing": "south", "tilt": "true", "waterlogged": "false",
             })[1]
             variants["ground"] = {
                 "elements": [furniture_element(render_items, block_id, "ground", normal, "ground")],
@@ -1058,6 +1695,44 @@ def build_furniture(
             variants["wall"] = {
                 "elements": [furniture_element(render_items, block_id, "wall", tilted, "wall")],
                 "hitboxes": furniture_hitboxes(block_id, "wall"),
+            }
+        elif block_id == "table":
+            # TableBlock can acquire either horizontal AXIS after placement;
+            # its axis is not permanently tied to the player's initial yaw.
+            # Keep both authored model axes so FurnitureConnectionService can
+            # reproduce that state transition when neighbours change.
+            for axis in ("x", "z"):
+                for position in range(4):
+                    if axis == "z" and position == 0:
+                        continue
+                    selected = select_record(records, {
+                        "axis": axis, "position": str(position), "waterlogged": "false",
+                    })[1]
+                    name = "ground" if position == 0 else f"ground_axis_{axis}_position_{position}"
+                    variants[name] = {
+                        "elements": [furniture_element(render_items, block_id, name, selected, "ground")],
+                        "hitboxes": furniture_hitboxes(block_id, "ground", {"position": str(position)}),
+                    }
+        elif block_id == "barrel":
+            closed_model = (f"{NAMESPACE}:furniture/barrel_closed", 0, 0, 0, False)
+            body_model = (f"{NAMESPACE}:furniture/barrel_body", 0, 0, 0, False)
+            lid_model = (f"{NAMESPACE}:furniture/barrel_open_lid", 0, 0, 0, False)
+            closed = furniture_element(
+                render_items, block_id, "closed", closed_model, "ground", "0,1,0")
+            closed["view_range"] = 2.5
+            variants["ground"] = {
+                "elements": [closed],
+                "hitboxes": furniture_hitboxes(block_id, "ground"),
+            }
+            body = furniture_element(
+                render_items, block_id, "open body", body_model, "ground", "0,1,0")
+            lid = furniture_element(
+                render_items, block_id, "open lid", lid_model, "ground", "0,2.5,0.5")
+            lid["rotation"] = "72.5,0,0"
+            body["view_range"] = lid["view_range"] = 2.5
+            variants["ground_open"] = {
+                "elements": [body, lid],
+                "hitboxes": furniture_hitboxes(block_id, "ground"),
             }
         elif block_id == "stepladder":
             bottom = select_record(records, {
@@ -1075,7 +1750,8 @@ def build_furniture(
             }
         elif block_id in PAINTINGS:
             for anchor, face in (("ground", "floor"), ("wall", "wall"), ("ceiling", "ceiling")):
-                selected = select_record(records, {"face": face, "facing": "north", "waterlogged": "false"})[1]
+                facing = "south" if anchor == "wall" else "north"
+                selected = select_record(records, {"face": face, "facing": facing, "waterlogged": "false"})[1]
                 variants[anchor] = {
                     "elements": [furniture_element(render_items, block_id, anchor, selected, anchor)],
                     "hitboxes": furniture_hitboxes(block_id, anchor),
@@ -1092,25 +1768,25 @@ def build_furniture(
             ordered = sorted(grouped.items(), key=lambda entry: (record_score(min(entry[1], key=record_score)), entry[0]))
             used_names: set[str] = set()
             for index, (semantic, candidates) in enumerate(ordered):
-                selected = min(candidates, key=record_score)[1]
+                # CraftEngine's wall yaw already points along the clicked
+                # face.  TapBlock's authored north state has its mounting
+                # plate at z=16 and nozzle toward z=6, so an additional 180°
+                # blockstate rotation reverses it.
+                preferred_facing = "north"
+                preferred = [candidate for candidate in candidates
+                             if candidate[0].get("facing") == preferred_facing]
+                selected = min(preferred or candidates, key=record_score)[1]
                 name = semantic_variant_name(anchor, semantic, index)
                 if name in used_names:
                     name = f"{name}_{index}"
                 used_names.add(name)
                 variants[name] = {
                     "elements": [furniture_element(render_items, block_id, name, selected, anchor)],
-                    "hitboxes": furniture_hitboxes(block_id, anchor),
+                    "hitboxes": furniture_hitboxes(block_id, anchor, dict(semantic)),
                 }
 
         config: dict[str, Any] = {
-            "settings": {
-                "hit_times": 3,
-                "sounds": {
-                    "break": "minecraft:block.wood.break",
-                    "place": "minecraft:block.wood.place",
-                    "hit": "minecraft:block.wood.hit",
-                },
-            },
+            "settings": furniture_settings(block_id),
             "variants": variants,
         }
         full_id = f"{NAMESPACE}:{block_id}"
@@ -1158,7 +1834,10 @@ def material_for(item_id: str, drink_ids: set[str], block_ids: set[str]) -> str:
     if item_id in drink_ids or item_id == "signature_cocktail":
         return "potion"
     if item_id == "molotov":
-        return "splash_potion"
+        # MolotovBlockItem is a 72,000-tick spear-animation charge item, not an
+        # instantly-thrown vanilla splash potion. The consumable component
+        # below supplies client use state while MolotovService handles release.
+        return "paper"
     if item_id.endswith("_bucket"):
         # JuiceBucketItem is a drinkable, effect-clearing milk-bucket analogue.
         return "milk_bucket"
@@ -1171,6 +1850,25 @@ def material_for(item_id: str, drink_ids: set[str], block_ids: set[str]) -> str:
     return "paper"
 
 
+def item_name_key(
+    item_id: str,
+    placeable_ids: set[str],
+    language_keys: set[str],
+) -> str:
+    generic = GENERIC_ITEM_NAME_KEYS.get(item_id)
+    if generic is not None:
+        if generic not in language_keys:
+            raise KeyError(f"Missing generic item-name translation {generic}")
+        return generic
+
+    prefixes = ("block", "item") if item_id in placeable_ids else ("item", "block")
+    for prefix in prefixes:
+        candidate = f"{prefix}.{NAMESPACE}.{item_id}"
+        if candidate in language_keys:
+            return candidate
+    raise KeyError(f"No item-name translation for {NAMESPACE}:{item_id}")
+
+
 def build_items(
     item_ids: list[str],
     block_ids: set[str],
@@ -1178,6 +1876,7 @@ def build_items(
     furniture_placement: dict[str, dict[str, Any]],
     drink_ids: set[str],
     tags: dict[str, list[str]],
+    language_keys: set[str],
 ) -> dict[str, Any]:
     memberships: dict[str, list[str]] = defaultdict(list)
     custom_prefix = f"{NAMESPACE}:"
@@ -1187,13 +1886,16 @@ def build_items(
                 memberships[member.split(":", 1)[1]].append(tag)
 
     items: dict[str, Any] = {}
+    placeable_ids = block_ids | furniture_ids
     for item_id in item_ids:
         model = find_file(ITEM_MODELS, Path(f"{item_id}.json"))
         if model is None:
             raise FileNotFoundError(f"No item model for {item_id}")
         config: dict[str, Any] = {
             "material": material_for(item_id, drink_ids, block_ids),
-            "data": {"item_name": f"<!i><lang:item.{NAMESPACE}.{item_id}>"},
+            "data": {
+                "item_name": f"<!i><lang:{item_name_key(item_id, placeable_ids, language_keys)}>"
+            },
             "model": {"type": "minecraft:model", "path": f"{NAMESPACE}:item/{item_id}"},
         }
         behaviors: list[dict[str, Any]] = []
@@ -1208,12 +1910,22 @@ def build_items(
             # its vanilla stack limit is 1, so preserve the original component
             # explicitly for both drink and place-only bottle items.
             config["data"]["components"] = {"minecraft:max_stack_size": 16}
+        if item_id == "molotov":
+            config["data"].setdefault("components", {})["minecraft:consumable"] = {
+                "consume_seconds": 3_600.0,
+                "animation": "spear",
+                "has_consume_particles": False,
+            }
         lore_keys: list[str] = []
         if item_id == "grapevine":
             lore_keys = [f"tooltip.{NAMESPACE}.grapevine.{index}" for index in range(1, 4)]
         elif item_id == "trellis":
             lore_keys = [f"tooltip.{NAMESPACE}.trellis.{index}" for index in range(1, 3)]
         elif item_id in GRAPE_ITEMS or item_id.endswith("_bucket"):
+            lore_keys = [f"tooltip.{NAMESPACE}.{item_id}"]
+        elif item_id in PAINTINGS:
+            # PaintingBlock shared the generic item name and exposed the
+            # concrete artwork through its per-registry-id tooltip.
             lore_keys = [f"tooltip.{NAMESPACE}.{item_id}"]
         if lore_keys:
             config["data"]["lore"] = [f"<!i><gray><lang:{key}>" for key in lore_keys]
@@ -1224,11 +1936,17 @@ def build_items(
                 "can_always_eat": True,
             }
         if item_id in furniture_ids and not manually_placed_drink:
-            behaviors.append({
+            furniture_behavior: dict[str, Any] = {
                 "type": "furniture_item",
                 "furniture": f"{NAMESPACE}:{item_id}",
                 "rules": furniture_placement[item_id],
-            })
+            }
+            if item_id in PAINTINGS:
+                # CE Interaction hitboxes cannot reproduce a 1/16-thick wall
+                # shape and otherwise reject placement while the player is
+                # standing close enough to click the support block.
+                furniture_behavior["ignore_placer"] = True
+            behaviors.append(furniture_behavior)
         elif item_id in block_ids:
             behaviors.append({"type": "block_item", "block": f"{NAMESPACE}:{item_id}"})
         elif item_id == "grapevine":
@@ -1260,9 +1978,9 @@ def build_items(
 
 def selector(raw: dict[str, Any]) -> str:
     if "item" in raw:
-        return f"item={raw['item']}"
+        return f"item={normalize_legacy_resource_id(str(raw['item']))}"
     if "tag" in raw:
-        return f"tag={raw['tag']}"
+        return f"tag={normalize_legacy_resource_id(str(raw['tag']))}"
     raise ValueError(f"Unsupported station selector: {raw!r}")
 
 
@@ -1349,6 +2067,7 @@ def main() -> None:
     block_tags = load_raw_registry_tags(("blocks", "block"))
     entity_tags = load_raw_registry_tags(("entity_types", "entity_type"))
     drink_ids, effect_rows = load_drink_effects()
+    language_keys = set(read_json(EN_US))
 
     if CONFIGURATION.exists():
         shutil.rmtree(CONFIGURATION)
@@ -1366,6 +2085,11 @@ def main() -> None:
         furniture_ids, set(item_ids)
     )
     render_items = {**block_render_items, **furniture_render_items}
+    create_pressing_fluid_models()
+    create_barrel_fluid_models()
+    create_bar_stool_body_models()
+    create_shaker_models()
+    add_runtime_render_items(render_items)
     items = build_items(
         item_ids,
         set(block_ids),
@@ -1373,6 +2097,7 @@ def main() -> None:
         furniture_placement,
         drink_ids,
         tags,
+        language_keys,
     )
     recipes = convert_standard_recipes(tags)
     runtime_metrics = build_runtime_catalogs(tags, effect_rows, block_tags, entity_tags)

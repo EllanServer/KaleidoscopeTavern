@@ -32,7 +32,6 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior implements 
     private final IntegerProperty ageProperty;
     private final BooleanProperty shearedProperty;
     private final float growSpeed;
-    private final int maxHeight;
 
     private WildGrapevineBehavior(BlockDefinition block, ConfigSection section) {
         super(block);
@@ -41,7 +40,6 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior implements 
         this.shearedProperty = (BooleanProperty) BlockBehaviorFactory.getProperty(
                 section.path(), block, "sheared", Boolean.class);
         this.growSpeed = section.getFloat("grow_speed", 0.15F);
-        this.maxHeight = section.getInt("max_height", 16);
     }
 
     public static void register() {
@@ -52,7 +50,7 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior implements 
 
     @Override
     public boolean canRandomlyTick(ImmutableBlockState state) {
-        return !state.get(shearedProperty);
+        return !state.get(shearedProperty) && state.get(ageProperty) < ageProperty.max;
     }
 
     @Override
@@ -74,17 +72,15 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior implements 
                 Vec3iProxy.INSTANCE.getX(position),
                 Vec3iProxy.INSTANCE.getY(position),
                 Vec3iProxy.INSTANCE.getZ(position));
-        if (state.get(ageProperty) < ageProperty.max) {
-            CraftEngineBlocks.place(block.getLocation(), state.with(ageProperty, state.get(ageProperty) + 1), false);
+        if (state.get(ageProperty) >= ageProperty.max) {
             return;
         }
-        extend(block, state, maxHeight);
+        extend(block, state);
     }
 
     /** Extends a non-sheared head by one block; also used by bone meal interaction. */
-    public static boolean extend(Block headBlock, ImmutableBlockState state, int maxHeight) {
-        if (booleanProperty(state, "sheared") || !headBlock.getRelative(BlockFace.DOWN).isEmpty()
-                || connectedHeight(headBlock) >= maxHeight) {
+    public static boolean extend(Block headBlock, ImmutableBlockState state) {
+        if (booleanProperty(state, "sheared") || !headBlock.getRelative(BlockFace.DOWN).isEmpty()) {
             return false;
         }
         BlockDefinition headDefinition = CraftEngineBlocks.byId(Key.of(HEAD));
@@ -107,7 +103,8 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior implements 
 
     public static Block findHead(Block start) {
         Block cursor = start;
-        for (int index = 0; index < 16; index++) {
+        int worldHeight = start.getWorld().getMaxHeight() - start.getWorld().getMinHeight();
+        for (int index = 0; index < worldHeight && cursor.getY() >= start.getWorld().getMinHeight(); index++) {
             ImmutableBlockState state = CraftEngineBlocks.getCustomBlockState(cursor);
             if (state == null) {
                 return null;
@@ -122,24 +119,6 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior implements 
             cursor = cursor.getRelative(BlockFace.DOWN);
         }
         return null;
-    }
-
-    private static int connectedHeight(Block head) {
-        int height = 0;
-        Block cursor = head;
-        while (height < 64) {
-            ImmutableBlockState state = CraftEngineBlocks.getCustomBlockState(cursor);
-            if (state == null) {
-                break;
-            }
-            String id = state.owner().value().id().toString();
-            if (!id.equals(HEAD) && !id.equals(BODY)) {
-                break;
-            }
-            height++;
-            cursor = cursor.getRelative(BlockFace.UP);
-        }
-        return height;
     }
 
     private static boolean booleanProperty(ImmutableBlockState state, String name) {

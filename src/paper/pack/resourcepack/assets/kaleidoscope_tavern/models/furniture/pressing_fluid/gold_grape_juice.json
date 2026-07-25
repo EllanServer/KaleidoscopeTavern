@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "render_type": "translucent",
+  "textures": {
+    "fluid": "kaleidoscope_tavern:block/gold_grape_juice_still",
+    "particle": "kaleidoscope_tavern:block/gold_grape_juice_still"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        7.99,
+        2
+      ],
+      "to": [
+        14,
+        8.01,
+        14
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            12,
+            12
+          ],
+          "texture": "#fluid"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            12,
+            12
+          ],
+          "texture": "#fluid"
+        }
+      }
+    }
+  ]
+}

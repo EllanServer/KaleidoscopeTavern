@@ -15,6 +15,7 @@ import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -28,8 +29,10 @@ import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
+import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -40,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /** Persistent editable text for the chalkboard and sandwich-board furniture families. */
@@ -47,7 +51,6 @@ public final class BoardTextService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String CHALKBOARD = PREFIX + "chalkboard";
     private static final String BASE_SANDWICH_BOARD = PREFIX + "base_sandwich_board";
-    private static final long EDIT_TIMEOUT_MILLIS = 120_000L;
     private static final Map<Material, String> SANDWICH_VARIANTS = Map.ofEntries(
             Map.entry(Material.SHORT_GRASS, "grass"),
             Map.entry(Material.ALLIUM, "allium"),
@@ -99,12 +102,15 @@ public final class BoardTextService implements Listener {
         Player player = event.player();
         ItemStack hand = player.getInventory().getItemInMainHand();
 
-        if (state.bool("board_waxed")) {
-            player.playSound(furniture.location(), "minecraft:block.waxed_sign.interact_fail", 1F, 1F);
+        // SandwichBoardBlock applies its flower transformation before it
+        // delegates to TextBlockEntity, so waxing locks text properties but
+        // deliberately does not lock the board's decorative variant.
+        if (isSandwichBoard(furniture) && transformSandwichBoard(player, furniture, state, hand)) {
             event.setCancelled(true);
             return;
         }
-        if (isSandwichBoard(furniture) && transformSandwichBoard(player, furniture, state, hand)) {
+        if (state.bool("board_waxed")) {
+            player.playSound(furniture.location(), "minecraft:block.waxed_sign.interact_fail", 1F, 1F);
             event.setCancelled(true);
             return;
         }
@@ -146,8 +152,7 @@ public final class BoardTextService implements Listener {
 
         Entity entity = furniture.bukkitEntity();
         if (entity != null) {
-            editors.put(player.getUniqueId(), new EditSession(entity.getUniqueId(),
-                    System.currentTimeMillis() + EDIT_TIMEOUT_MILLIS));
+            editors.put(player.getUniqueId(), new EditSession(entity.getUniqueId()));
             player.sendMessage(Component.text("请在聊天栏输入文字（\\n 换行；[left]/[center]/[right] 设置对齐；!clear 清空；!cancel 取消）。"));
         }
         event.setCancelled(true);
@@ -220,10 +225,6 @@ public final class BoardTextService implements Listener {
     }
 
     private void applyChatInput(Player player, EditSession session, String rawInput) {
-        if (session.expiresAt() < System.currentTimeMillis()) {
-            player.sendMessage(Component.text("写字板编辑已超时。"));
-            return;
-        }
         if (rawInput.equalsIgnoreCase("!cancel")) {
             player.sendMessage(Component.text("已取消编辑。"));
             return;
@@ -266,6 +267,38 @@ public final class BoardTextService implements Listener {
         state.putString("board_text", input);
         refreshDisplay(furniture);
         player.sendMessage(Component.text(input.isBlank() ? "已清空写字板。" : "写字板文字已更新。"));
+    }
+
+    @EventHandler
+    public void onEntitiesUnload(EntitiesUnloadEvent event) {
+        Set<UUID> unloading = event.getEntities().stream()
+                .map(Entity::getUniqueId)
+                .collect(java.util.stream.Collectors.toSet());
+        editors.entrySet().removeIf(entry -> unloading.contains(entry.getValue().furniture()));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onMove(PlayerMoveEvent event) {
+        if (event.getTo() == null || !editors.containsKey(event.getPlayer().getUniqueId())
+                || event.getFrom().getX() == event.getTo().getX()
+                && event.getFrom().getY() == event.getTo().getY()
+                && event.getFrom().getZ() == event.getTo().getZ()) {
+            return;
+        }
+        validateEditDistance(event.getPlayer());
+    }
+
+    /** Event-driven equivalent of TextBlockEntity.tick's eight-block editor check. */
+    private void validateEditDistance(Player player) {
+        EditSession session = editors.get(player.getUniqueId());
+        if (session == null) {
+            return;
+        }
+        Entity entity = Bukkit.getEntity(session.furniture());
+        if (entity == null || !entity.isValid() || !player.getWorld().equals(entity.getWorld())
+                || player.getLocation().distanceSquared(entity.getLocation()) > 64) {
+            editors.remove(player.getUniqueId());
+        }
     }
 
     private boolean transformSandwichBoard(Player player, BukkitFurniture furniture,
@@ -553,12 +586,12 @@ public final class BoardTextService implements Listener {
     }
 
     private static void consumeUnlessCreative(Player player, ItemStack stack) {
-        if (!player.getGameMode().isInvulnerable()) {
+        if (player.getGameMode() != GameMode.CREATIVE) {
             stack.subtract(1);
         }
     }
 
-    private record EditSession(UUID furniture, long expiresAt) {
+    private record EditSession(UUID furniture) {
     }
 
     private record BoardStateSnapshot(String text, String color, String alignment,

@@ -49,9 +49,6 @@ public final class TapService implements Listener {
     private static final String TAP = PREFIX + "tap";
     private static final String BARREL = PREFIX + "barrel";
     private static final String EMPTY_BOTTLE = PREFIX + "empty_bottle";
-    private static final int TAKE_TICKS = 30;
-    private static final int DRIP_TICKS = 5;
-
     private final JavaPlugin plugin;
     private final StationService stations;
     private final ItemService items;
@@ -67,7 +64,7 @@ public final class TapService implements Listener {
 
     public void start() {
         Bukkit.getScheduler().runTask(plugin, this::bootstrapTaps);
-        redstoneTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pollRedstone, 4L, 4L);
+        redstoneTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pollRedstone, 1L, 1L);
     }
 
     public void stop() {
@@ -129,7 +126,7 @@ public final class TapService implements Listener {
         }
         TapPlan initial = resolve(tap);
         boolean extracting = initial != null;
-        int duration = extracting ? TAKE_TICKS : DRIP_TICKS;
+        int duration = extracting ? TapSemantics.TAKE_TICKS : TapSemantics.EMPTY_OPEN_TICKS;
         setOpen(tap, true);
         tap.location().getWorld().playSound(tap.location(), Sound.BLOCK_IRON_TRAPDOOR_OPEN, 1F, 0.8F);
 
@@ -143,7 +140,8 @@ public final class TapService implements Listener {
                     return;
                 }
                 ticks++;
-                if (ticks <= DRIP_TICKS) {
+                if (extracting && ticks <= TapSemantics.TAKE_PARTICLE_TICKS
+                        || !extracting && TapSemantics.emitsEmptyCloud(ticks)) {
                     spawnDrip(tap, extracting, extracting && initial.hot());
                 }
                 if (ticks < duration) {
@@ -202,7 +200,7 @@ public final class TapService implements Listener {
             return new TapPlan(Kind.BOTTLE_WATERMELON, source, destination, null, bottle, false);
         }
         if (bottle != null) {
-            Optional<BukkitFurniture> barrel = findFurniture(tap.location(), 3.25, BARREL)
+            Optional<BukkitFurniture> barrel = findConnectedBarrel(tap, geometry)
                     .filter(stations::canTapExtract);
             if (barrel.isPresent()) {
                 return new TapPlan(Kind.BOTTLE_BARREL, source, destination, barrel.get(), bottle, false);
@@ -226,7 +224,9 @@ public final class TapService implements Listener {
             return;
         }
         Location location = plan.destination().getLocation().add(0.5, 0.5, 0.5);
-        location.getWorld().playSound(location, Sound.BLOCK_BREWING_STAND_BREW, 1F, 1F);
+        if (plan.kind() != Kind.FILL_WATER_CAULDRON && plan.kind() != Kind.FILL_LAVA_CAULDRON) {
+            location.getWorld().playSound(location, Sound.BLOCK_BREWING_STAND_BREW, 1F, 1F);
+        }
         location.getWorld().spawnParticle(Particle.WAX_OFF, location, 10, 0.25, 0.25, 0.25, 0.1);
     }
 
@@ -412,6 +412,37 @@ public final class TapService implements Listener {
                 .filter(java.util.Objects::nonNull)
                 .filter(furniture -> furniture.id().toString().equals(id))
                 .min(Comparator.comparingDouble(furniture -> furniture.location().distanceSquared(center)));
+    }
+
+    private static Optional<BukkitFurniture> findConnectedBarrel(BukkitFurniture tap, TapGeometry geometry) {
+        Location center = tap.location();
+        Vector tapDirection = horizontalCardinal(center);
+        int tapFacingX = (int) tapDirection.getX();
+        int tapFacingZ = (int) tapDirection.getZ();
+        Block source = geometry.source();
+        return center.getWorld().getNearbyEntities(center, 3.25, 3.25, 3.25).stream()
+                .filter(CraftEngineFurniture::isFurniture)
+                .map(CraftEngineFurniture::getLoadedFurnitureByMetaEntity)
+                .filter(java.util.Objects::nonNull)
+                .filter(BukkitFurniture::isValid)
+                .filter(furniture -> furniture.id().toString().equals(BARREL))
+                .filter(barrel -> {
+                    Location origin = barrel.location();
+                    Vector barrelDirection = horizontalCardinal(origin);
+                    return TapSemantics.isBarrelConnection(
+                            source.getX(), source.getY(), source.getZ(), tapFacingX, tapFacingZ,
+                            origin.getBlockX(), origin.getBlockY(), origin.getBlockZ(),
+                            (int) barrelDirection.getX(), (int) barrelDirection.getZ());
+                })
+                .findFirst();
+    }
+
+    private static Vector horizontalCardinal(Location location) {
+        Vector direction = location.getDirection().setY(0);
+        if (Math.abs(direction.getX()) >= Math.abs(direction.getZ())) {
+            return new Vector(direction.getX() < 0 ? -1 : 1, 0, 0);
+        }
+        return new Vector(0, 0, direction.getZ() < 0 ? -1 : 1);
     }
 
     private enum Kind {
