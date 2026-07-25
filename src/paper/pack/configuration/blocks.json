@@ -2788,7 +2788,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -2799,7 +2802,10 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -2810,7 +2816,10 @@
             }
           },
           "appearance_2": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -2821,7 +2830,10 @@
             }
           },
           "appearance_3": {
-            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -2832,7 +2844,10 @@
             }
           },
           "appearance_4": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -2843,7 +2858,10 @@
             }
           },
           "appearance_5": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -2854,7 +2872,10 @@
             }
           },
           "appearance_6": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3023,7 +3044,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3034,7 +3058,10 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3045,7 +3072,10 @@
             }
           },
           "appearance_2": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3056,7 +3086,10 @@
             }
           },
           "appearance_3": {
-            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3067,7 +3100,10 @@
             }
           },
           "appearance_4": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3078,7 +3114,10 @@
             }
           },
           "appearance_5": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3089,7 +3128,10 @@
             }
           },
           "appearance_6": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3100,7 +3142,10 @@
             }
           },
           "appearance_7": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3111,7 +3156,10 @@
             }
           },
           "appearance_8": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3122,7 +3170,10 @@
             }
           },
           "appearance_9": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3357,7 +3408,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3368,7 +3422,10 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3379,7 +3436,10 @@
             }
           },
           "appearance_2": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3390,7 +3450,10 @@
             }
           },
           "appearance_3": {
-            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3401,7 +3464,10 @@
             }
           },
           "appearance_4": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3412,7 +3478,10 @@
             }
           },
           "appearance_5": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3423,7 +3492,10 @@
             }
           },
           "appearance_6": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3434,7 +3506,10 @@
             }
           },
           "appearance_7": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3445,7 +3520,10 @@
             }
           },
           "appearance_8": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3456,7 +3534,10 @@
             }
           },
           "appearance_9": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3691,7 +3772,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3702,7 +3786,10 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3713,7 +3800,10 @@
             }
           },
           "appearance_2": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3724,7 +3814,10 @@
             }
           },
           "appearance_3": {
-            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3735,7 +3828,10 @@
             }
           },
           "appearance_4": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3746,7 +3842,10 @@
             }
           },
           "appearance_5": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3757,7 +3856,10 @@
             }
           },
           "appearance_6": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3768,7 +3870,10 @@
             }
           },
           "appearance_7": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3779,7 +3884,10 @@
             }
           },
           "appearance_8": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3790,7 +3898,10 @@
             }
           },
           "appearance_9": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-trellis-collidable"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
