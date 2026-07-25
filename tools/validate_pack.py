@@ -635,35 +635,29 @@ def validate() -> dict[str, int]:
         "grapevine_trellis", "ice_grapevine_trellis", "gold_grapevine_trellis")
 
     # A carrier is all the client ever sees, so it decides both what the player
-    # collides with and what can be aimed at. Tripwire does not collide, which
-    # let players walk through posts and blocked grapevine planting outright,
-    # since no RIGHT_CLICK_BLOCK means no CustomBlockInteractEvent. Shapes with
-    # a full-height post therefore ride a vertical copper chain (a 3/16 post,
-    # one pixel under the authored 4/16 shape); beam-only shapes sit overhead
-    # and stay on the shared tripwire carrier.
-    post_carriers = 0
+    # collides with and what can be aimed at. Every trellis appearance now uses a
+    # directional lightning-rod state: up for vertical members, north/east for
+    # horizontal members. The rod's 3/16 collision post closely matches the
+    # authored 4/16 trellis members, and keeping all shapes collidable prevents
+    # connected beams from becoming walk-through gaps.
+    collidable_trellises = 0
     for block_id in ("trellis", *vine_trellis_ids):
         definition = blocks[f"{NAMESPACE}:{block_id}"]
         states = definition["states"]
-        post_appearances = {
-            variant["appearance"]
-            for key, variant in states["variants"].items()
-            if dict(pair.split("=") for pair in key.split(","))["type"] == "single"
-        }
         for name, appearance in states["appearances"].items():
             if appearance.get("entity_renderer", {}).get("type") != "item_display":
                 raise AssertionError(f"{block_id}/{name} must keep its authored item-display model")
-            if name in post_appearances:
-                if appearance.get("state") != "minecraft:copper_chain[axis=y,waterlogged=false]":
-                    raise AssertionError(
-                        f"{block_id}/{name}: upright trellis posts need the colliding chain carrier")
-                post_carriers += 1
-            elif appearance.get("auto_state", {}).get("type") != "higher_tripwire":
+            state = appearance.get("state", "")
+            if not state.startswith("minecraft:lightning_rod["):
                 raise AssertionError(
-                    f"{block_id}/{name}: beam-only trellis shapes must stay on the shared carrier")
-    if post_carriers != 13:
+                    f"{block_id}/{name}: every trellis shape needs a colliding lightning-rod carrier")
+            if "powered=false" not in state or "waterlogged=false" not in state:
+                raise AssertionError(
+                    f"{block_id}/{name}: trellis carrier must remain unpowered and dry")
+            collidable_trellises += 1
+    if collidable_trellises != 37:
         raise AssertionError(
-            f"Expected 13 colliding trellis post appearances, found {post_carriers}")
+            f"Expected 37 collidable trellis appearances, found {collidable_trellises}")
     for block_id in ("trellis", *vine_trellis_ids):
         definition = blocks[f"{NAMESPACE}:{block_id}"]
         settings = definition.get("settings", {})

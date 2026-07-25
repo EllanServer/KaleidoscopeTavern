@@ -500,33 +500,37 @@ def carrier_type(block_id: str) -> tuple[str, str]:
 # packet means CustomBlockInteractEvent never fires, so grapevine planting
 # silently did nothing.
 #
-# Vanilla chains collide as a 3/16 post centred on their axis, one pixel
-# narrower than the 4/16 post authored by ITrellis, so client prediction stays
-# in step with the server shape. Cactus is the other option CraftEngine ships
-# mappings for, but its 15/16 box is needlessly wide; pointed dripstone has no
-# mappings at all.
+# Lightning rods collide as a 3/16 bar along whichever way they face, one pixel
+# under the 4/16 members authored by ITrellis, and they come in all six facings,
+# so every trellis shape gets a carrier oriented like the part it draws. Cactus
+# is the other option CraftEngine ships mappings for, but its 15/16 box is
+# needlessly wide; pointed dripstone has no mappings at all.
 #
-# Carrier choice is purely cosmetic on the server: registerServerSideCustomBlocks
+# The carrier contributes no behaviour of its own: registerServerSideCustomBlocks
 # puts a generated block in the world and the vanilla state exists only as the
-# client's view, so none of these carriers contribute their own behaviour. A
-# vertical lightning rod would collide identically (also 3/16) and offers a far
-# larger state pool, so it stays a valid alternative if 24 chain states ever run
-# short.
+# client's view. That is why CraftEngine's own copper_coil rides a cactus without
+# hurting anyone, and why a lightning rod here neither draws strikes nor emits
+# redstone.
 #
-# Only the shapes that contain a full-height vertical post need this. Beam-only
-# shapes sit at y=6..10 overhead, where the source trellis does not obstruct
-# walking either, so they stay on the cheaper shared tripwire carrier.
-TRELLIS_POST_TYPES = {"single"}
-
-# A vertical chain is exactly the upright post these shapes draw, and staying on
-# waterlogged=false keeps dry trellises from rendering water: the appearance is
-# shared across both waterlogged values, so the carrier cannot encode it.
-#
-# Every post appearance shares this one state. That is safe because the carrier
-# only supplies collision and the aim target; the visible geometry always comes
-# from the appearance's own ItemDisplay, exactly as it already does for the
-# beam shapes sharing one tripwire carrier.
-COPPER_CHAIN_CARRIER = "minecraft:copper_chain[axis=y,waterlogged=false]"
+# Staying on waterlogged=false keeps dry trellises from rendering water, since one
+# appearance covers both waterlogged values and the carrier cannot encode it.
+# Appearances sharing a state is likewise fine: the carrier only supplies collision
+# and the aim target, while visible geometry always comes from each appearance's
+# own ItemDisplay.
+def trellis_carrier_state(trellis_type: str) -> str:
+    """Pick the lightning-rod facing that matches this shape's main member."""
+    # SINGLE and the crosses that include it stand on a full-height post; the
+    # remaining shapes are a single horizontal beam along one axis.
+    facing = {
+        "single": "up",
+        "cross_north_south": "up",
+        "cross_east_west": "up",
+        "six_direction": "up",
+        "north_south": "north",
+        "east_west": "east",
+        "cross_up_down": "north",
+    }[trellis_type]
+    return f"minecraft:lightning_rod[facing={facing},powered=false,waterlogged=false]"
 
 
 def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
@@ -680,7 +684,7 @@ def split_hanging_crop_stages(block_id: str, config: dict[str, Any]) -> dict[str
 def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, Any], dict[str, Any], dict[str, int]]:
     blocks: dict[str, Any] = {}
     render_items: dict[str, Any] = {}
-    metrics = {"appearances": 0, "weighted_variants_reduced": 0, "collidable_posts": 0}
+    metrics = {"appearances": 0, "weighted_variants_reduced": 0, "collidable_trellises": 0}
 
     for block_id in block_ids:
         state_path = find_file(BLOCKSTATES, Path(f"{block_id}.json"))
@@ -716,10 +720,8 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             if isinstance(raw_model, list) and len(raw_model) > 1:
                 metrics["weighted_variants_reduced"] += 1
             model = normalize_model_entry(raw_model)
-            needs_post_collision = (
-                block_id in TRELLIS_BLOCKS
-                and parse_variant_key(variant_key).get("type") in TRELLIS_POST_TYPES
-            )
+            trellis_type = (parse_variant_key(variant_key).get("type")
+                            if block_id in TRELLIS_BLOCKS else None)
             appearance_name = appearance_names.get(model)
             if appearance_name is None:
                 appearance_name = f"appearance_{len(appearance_names)}"
@@ -743,9 +745,9 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 if any(model[1:4]):
                     renderer["rotation"] = f"{model[1]},{model[2]},{model[3]}"
                 appearance: dict[str, Any] = {}
-                if needs_post_collision:
-                    appearance["state"] = COPPER_CHAIN_CARRIER
-                    metrics["collidable_posts"] += 1
+                if trellis_type is not None:
+                    appearance["state"] = trellis_carrier_state(trellis_type)
+                    metrics["collidable_trellises"] += 1
                 else:
                     appearance["auto_state"] = {"type": carrier, "id": carrier_id}
                 appearance["transparent"] = True
