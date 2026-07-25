@@ -183,13 +183,21 @@ public final class BlockService implements Listener {
             }
             return true;
         }
-        if (!GRAPEVINE.equals(handId) || !"single".equals(stringProperty(state, "type"))) {
+        if (!GRAPEVINE.equals(handId)) {
             return false;
+        }
+        // TrellisBlock.use consumes the interaction for any grapevine held against
+        // a trellis, planting only when the shape is SINGLE over suitable soil but
+        // never letting the item place itself. Reporting the interaction as handled
+        // reproduces that: otherwise CraftEngine falls through to the grapevine's
+        // own block_item behavior and drops a wild vine beside the trellis.
+        if (!"single".equals(stringProperty(state, "type"))) {
+            return true;
         }
 
         String planted = grapevineFor(block.getRelative(BlockFace.DOWN));
         if (planted == null) {
-            return false;
+            return true;
         }
         net.momirealms.craftengine.core.block.BlockDefinition definition =
                 CraftEngineBlocks.byId(net.momirealms.craftengine.core.util.Key.of(planted));

@@ -502,9 +502,16 @@ def carrier_type(block_id: str) -> tuple[str, str]:
 #
 # Vanilla chains collide as a 3/16 post centred on their axis, one pixel
 # narrower than the 4/16 post authored by ITrellis, so client prediction stays
-# in step with the server shape. Unlike cactus (15/16, needlessly wide) they
-# carry no contact damage, and unlike pointed dripstone CraftEngine actually
-# ships state mappings for them.
+# in step with the server shape. Cactus is the other option CraftEngine ships
+# mappings for, but its 15/16 box is needlessly wide; pointed dripstone has no
+# mappings at all.
+#
+# Carrier choice is purely cosmetic on the server: registerServerSideCustomBlocks
+# puts a generated block in the world and the vanilla state exists only as the
+# client's view, so none of these carriers contribute their own behaviour. A
+# vertical lightning rod would collide identically (also 3/16) and offers a far
+# larger state pool, so it stays a valid alternative if 24 chain states ever run
+# short.
 #
 # Only the shapes that contain a full-height vertical post need this. Beam-only
 # shapes sit at y=6..10 overhead, where the source trellis does not obstruct
