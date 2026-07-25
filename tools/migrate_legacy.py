@@ -108,8 +108,9 @@ def is_grid_block(block_id: str) -> bool:
 
 
 # Trellises keep their custom block state and gameplay behavior, but their
-# authored model is rendered by an ItemDisplay over a transparent cactus carrier.
-# The carrier supplies client collision/aiming while CE removes its vanilla model.
+# authored model is rendered by an ItemDisplay over a directional lightning-rod
+# carrier. The carrier supplies client collision/aiming while CE removes no
+# gameplay behavior from the generated custom block.
 TRELLIS_BLOCKS = {
     "trellis", "grapevine_trellis",
     "ice_grapevine_trellis", "gold_grapevine_trellis",
@@ -499,19 +500,37 @@ def carrier_type(block_id: str) -> tuple[str, str]:
 # packet means CustomBlockInteractEvent never fires, so grapevine planting
 # silently did nothing.
 #
+# Lightning rods collide as a 3/16 bar along whichever way they face, one pixel
+# under the 4/16 members authored by ITrellis, and they come in all six facings,
+# so every trellis shape gets a carrier oriented like the part it draws. Cactus
+# is the other option CraftEngine ships mappings for, but its 15/16 box is
+# needlessly wide; pointed dripstone has no mappings at all.
+#
 # The carrier contributes no behaviour of its own: registerServerSideCustomBlocks
 # puts a generated block in the world and the vanilla state exists only as the
-# client's view. Use CraftEngine's cactus auto-state for every trellis appearance.
-# `transparent=true` makes CE allocate an empty client model while retaining the
-# cactus collision shape, so no carrier model can z-fight with the authored
-# ItemDisplay. All appearances share one allocation id; the ItemDisplay remains
-# the only visible geometry.
+# client's view. That is why CraftEngine's own copper_coil rides a cactus without
+# hurting anyone, and why a lightning rod here neither draws strikes nor emits
+# redstone.
 #
-# Cactus is wider than the authored 4/16 member, but it is the only built-in
-# collidable auto-state with a transparent-model path. Its vanilla damage never
-# runs because the server stores a generated CraftEngine block, not a cactus.
-TRELLIS_CARRIER_ID = "kaleidoscope-tavern-trellis-collidable"
-TRELLIS_CARRIER = {"type": "cactus", "id": TRELLIS_CARRIER_ID}
+# Staying on waterlogged=false keeps dry trellises from rendering water, since one
+# appearance covers both waterlogged values and the carrier cannot encode it.
+# Appearances sharing a state is likewise fine: the carrier only supplies collision
+# and the aim target, while visible geometry always comes from each appearance's
+# own ItemDisplay.
+def trellis_carrier_state(trellis_type: str) -> str:
+    """Pick the lightning-rod facing that matches this shape's main member."""
+    # SINGLE and the crosses that include it stand on a full-height post; the
+    # remaining shapes are a single horizontal beam along one axis.
+    facing = {
+        "single": "up",
+        "cross_north_south": "up",
+        "cross_east_west": "up",
+        "six_direction": "up",
+        "north_south": "north",
+        "east_west": "east",
+        "cross_up_down": "north",
+    }[trellis_type]
+    return f"minecraft:lightning_rod[facing={facing},powered=false,waterlogged=false]"
 
 
 def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
@@ -727,7 +746,7 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                     renderer["rotation"] = f"{model[1]},{model[2]},{model[3]}"
                 appearance: dict[str, Any] = {}
                 if trellis_type is not None:
-                    appearance["auto_state"] = dict(TRELLIS_CARRIER)
+                    appearance["state"] = trellis_carrier_state(trellis_type)
                     metrics["collidable_trellises"] += 1
                 else:
                     appearance["auto_state"] = {"type": carrier, "id": carrier_id}

@@ -677,26 +677,24 @@ def validate() -> dict[str, int]:
         "grapevine_trellis", "ice_grapevine_trellis", "gold_grapevine_trellis")
 
     # A carrier is all the client ever sees, so it decides both what the player
-    # collides with and what can be aimed at. Trellises use one transparent CE
-    # cactus auto-state: its client model is empty, while its near-full-block
-    # collision keeps every connected shape interactive without z-fighting.
+    # collides with and what can be aimed at. Every trellis appearance uses a
+    # directional lightning-rod state: vertical members use facing=up, while
+    # horizontal members use their matching axis. The state is transparent to
+    # the authored ItemDisplay and remains collidable for connected shapes.
     collidable_trellises = 0
-    expected_carrier = {
-        "type": "cactus",
-        "id": "kaleidoscope-tavern-trellis-collidable",
-    }
     for block_id in ("trellis", *vine_trellis_ids):
         definition = blocks[f"{NAMESPACE}:{block_id}"]
         states = definition["states"]
         for name, appearance in states["appearances"].items():
             if appearance.get("entity_renderer", {}).get("type") != "item_display":
                 raise AssertionError(f"{block_id}/{name} must keep its authored item-display model")
-            if appearance.get("auto_state") != expected_carrier:
+            state = appearance.get("state", "")
+            if not state.startswith("minecraft:lightning_rod["):
                 raise AssertionError(
-                    f"{block_id}/{name}: trellis must use the shared cactus auto-state carrier")
-            if appearance.get("transparent") is not True:
+                    f"{block_id}/{name}: every trellis shape needs a colliding lightning-rod carrier")
+            if "powered=false" not in state or "waterlogged=false" not in state:
                 raise AssertionError(
-                    f"{block_id}/{name}: trellis carrier must use a transparent client model")
+                    f"{block_id}/{name}: trellis carrier must remain unpowered and dry")
             collidable_trellises += 1
     if collidable_trellises != 37:
         raise AssertionError(
