@@ -4,7 +4,11 @@ import com.destroystokyo.paper.event.player.PlayerPickupExperienceEvent;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import org.bukkit.Bukkit;
@@ -76,6 +80,7 @@ import java.util.concurrent.ThreadLocalRandom;
 /** Applies migrated drink data, including the twelve custom Forge effects. */
 public final class EffectService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
+    private static final Key CUSTOM_EFFECT_FONT = Key.key(CustomEffectHudSemantics.FONT_KEY);
     private static final Set<String> INSTANT_EFFECTS = Set.of(
             PREFIX + "shriek_attack", PREFIX + "upside_down", PREFIX + "zenith");
     private static final Set<Material> VANILLA_CROP_BLOCKS = Set.of(
@@ -96,6 +101,7 @@ public final class EffectService implements Listener {
     private final NamespacedKey splashPreparedKey;
     private final NamespacedKey splashCustomEffectsKey;
     private final Map<UUID, Map<String, ActiveEffect>> active = new HashMap<>();
+    private final Map<UUID, BossBar> effectHudBars = new HashMap<>();
     private long elapsedTicks;
     private BukkitTask task;
 
@@ -141,6 +147,13 @@ public final class EffectService implements Listener {
                 removeAttributeModifiers(living);
             }
         }
+        for (Map.Entry<UUID, BossBar> entry : new ArrayList<>(effectHudBars.entrySet())) {
+            Player player = Bukkit.getPlayer(entry.getKey());
+            if (player != null) {
+                player.hideBossBar(entry.getValue());
+            }
+        }
+        effectHudBars.clear();
         active.clear();
     }
 
@@ -252,6 +265,7 @@ public final class EffectService implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         save(event.getPlayer());
+        hideEffectHud(event.getPlayer());
         active.remove(event.getPlayer().getUniqueId());
     }
 
@@ -472,6 +486,9 @@ public final class EffectService implements Listener {
         effects.put(spec.effect(), new ActiveEffect(spec.effect(), merged));
         save(target);
         reconcileAttributes(target, effects);
+        if (target instanceof Player player) {
+            updateEffectHud(player, effects);
+        }
     }
 
     private static void applyVanilla(LivingEntity target, EffectSpec spec) {
@@ -516,6 +533,9 @@ public final class EffectService implements Listener {
             reconcileAttributes(living, effects);
             if (changed || persistThisTick) {
                 save(living);
+                if (living instanceof Player player) {
+                    updateEffectHud(player, effects);
+                }
             }
             if (effects.isEmpty()) {
                 active.remove(uuid);
@@ -891,6 +911,9 @@ public final class EffectService implements Listener {
             active.put(living.getUniqueId(), effects);
         }
         reconcileAttributes(living, effects);
+        if (living instanceof Player player) {
+            updateEffectHud(player, effects);
+        }
     }
 
     private Map<String, ActiveEffect> read(LivingEntity living) {
@@ -965,10 +988,70 @@ public final class EffectService implements Listener {
         }
     }
 
+    private void updateEffectHud(Player player, Map<String, ActiveEffect> effects) {
+        if (effects.isEmpty()) {
+            hideEffectHud(player);
+            return;
+        }
+        Component title = effectHudTitle(effects);
+        BossBar bar = effectHudBars.get(player.getUniqueId());
+        if (bar == null) {
+            bar = BossBar.bossBar(
+                    title, 1.0F, BossBar.Color.BLUE, BossBar.Overlay.PROGRESS);
+            effectHudBars.put(player.getUniqueId(), bar);
+            player.showBossBar(bar);
+        } else {
+            bar.name(title);
+        }
+    }
+
+    private static Component effectHudTitle(Map<String, ActiveEffect> effects) {
+        Component title = Component.empty();
+        boolean first = true;
+        for (ActiveEffect effect : effects.values()) {
+            CustomEffectHudSemantics.Display display = CustomEffectHudSemantics.describe(
+                    effect.effect(), effect.remainingTicks(), effect.amplifier());
+            Component name = Component.translatable(display.effectKey());
+            if (display.potencyKey() != null) {
+                name = Component.translatable("potion.withAmplifier", name,
+                        Component.translatable(display.potencyKey()));
+            }
+            name = Component.translatable("potion.withDuration", name,
+                    Component.text(display.duration()));
+
+            Component entry = Component.empty();
+            if (display.icon() != null) {
+                entry = entry.append(Component.text(display.icon())
+                                .font(CUSTOM_EFFECT_FONT)
+                                .color(NamedTextColor.WHITE))
+                        .append(Component.space());
+            }
+            NamedTextColor color = (PREFIX + "slightly_tipsy").equals(effect.effect())
+                    ? NamedTextColor.GRAY : NamedTextColor.BLUE;
+            entry = entry.append(name.color(color));
+            if (!first) {
+                title = title.append(Component.text("  |  ", NamedTextColor.DARK_GRAY));
+            }
+            title = title.append(entry);
+            first = false;
+        }
+        return title.decoration(TextDecoration.ITALIC, false);
+    }
+
+    private void hideEffectHud(Player player) {
+        BossBar bar = effectHudBars.remove(player.getUniqueId());
+        if (bar != null) {
+            player.hideBossBar(bar);
+        }
+    }
+
     private void clearEffects(LivingEntity living) {
         active.remove(living.getUniqueId());
         living.getPersistentDataContainer().remove(activeKey);
         removeAttributeModifiers(living);
+        if (living instanceof Player player) {
+            hideEffectHud(player);
+        }
     }
 
     private record ActiveEffect(String effect, EffectSemantics.EffectState state) {

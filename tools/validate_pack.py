@@ -15,6 +15,20 @@ CATALOG = ROOT / "src/paper/resources/catalog"
 CUSTOM_CROPS = ROOT / "src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml"
 PLUGIN_CONFIG = ROOT / "src/paper/resources/config.yml"
 NAMESPACE = "kaleidoscope_tavern"
+CUSTOM_EFFECT_ICON_IDS = (
+    "slightly_tipsy",
+    "high_heels",
+    "grass_stealth",
+    "vision",
+    "bloody_mary",
+    "ardent_heat",
+    "long_reach",
+    "tomb_raider",
+    "xp_drain",
+    "upside_down",
+    "zenith",
+    "shriek_attack",
+)
 EN_US = ROOT / f"src/main/resources/assets/{NAMESPACE}/lang/en_us.json"
 ZH_CN = ROOT / f"src/main/resources/assets/{NAMESPACE}/lang/zh_cn.json"
 MOD_BLOCKS = ROOT / f"src/main/java/com/github/ysbbbbbb/kaleidoscopetavern/init/ModBlocks.java"
@@ -470,6 +484,12 @@ def validate() -> dict[str, int]:
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game")
     bottle_placement_source = (game_package / "BottlePlacementService.java").read_text(
         encoding="utf-8-sig")
+    block_service_source = (game_package / "block/BlockService.java").read_text(
+        encoding="utf-8-sig")
+    if ("grapevineFor returned null" in block_service_source
+            or "onRightClickWithGrapevine: clicked" in block_service_source):
+        raise AssertionError(
+            "Unsupported grapevine soil is an expected rejection and must not spam the server log")
     plugin_config = PLUGIN_CONFIG.read_text(encoding="utf-8-sig")
     if ("bottle-placement.drinks" in bottle_placement_source
             or re.search(r"(?m)^\s+drinks:\s*", plugin_config)
@@ -968,6 +988,32 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{item_id}: fixed cocktail creative preview is missing real effect lore")
 
+    legacy_attribute_keys = {
+        "attribute.name.generic.step_height",
+        "attribute.name.player.block_interaction_range",
+        "attribute.name.player.entity_interaction_range",
+    }
+    generated_lore = {
+        line
+        for item in items.values()
+        for line in item.get("data", {}).get("lore", [])
+    }
+    if any(key in line for key in legacy_attribute_keys for line in generated_lore):
+        raise AssertionError("Drink lore still contains pre-26.2 attribute translation keys")
+    expected_attribute_lore = {
+        f"{NAMESPACE}:white_lady": {"attribute.name.step_height"},
+        f"{NAMESPACE}:emerald": {
+            "attribute.name.block_interaction_range",
+            "attribute.name.entity_interaction_range",
+        },
+    }
+    for item_id, attribute_keys in expected_attribute_lore.items():
+        lore = items[item_id].get("data", {}).get("lore", [])
+        missing = {key for key in attribute_keys if not any(key in line for line in lore)}
+        if missing:
+            raise AssertionError(
+                f"{item_id}: missing canonical 26.2 attribute lore keys {sorted(missing)}")
+
     for item_id, item in items.items():
         if not item_id.endswith("_bucket"):
             continue
@@ -1105,6 +1151,22 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Shaker inventory model must remain vanilla-compatible instead of using Forge loaders")
     paper_asset_roots = (ROOT / "src/paper/pack/resourcepack/assets",)
+    custom_effect_font = asset_json(
+        f"{NAMESPACE}:custom_effects", "font", paper_asset_roots)
+    expected_effect_providers = [{
+        "type": "bitmap",
+        "file": f"{NAMESPACE}:mob_effect/{effect_id}.png",
+        "ascent": 8,
+        "height": 9,
+        "chars": [chr(0xE100 + index)],
+    } for index, effect_id in enumerate(CUSTOM_EFFECT_ICON_IDS)]
+    if (custom_effect_font is None
+            or custom_effect_font.get("providers") != expected_effect_providers):
+        raise AssertionError(
+            "Custom drink-effect HUD font must map all archived icons deterministically")
+    for effect_id in CUSTOM_EFFECT_ICON_IDS:
+        if not asset_exists(f"{NAMESPACE}:mob_effect/{effect_id}", "textures", ".png"):
+            raise AssertionError(f"Missing custom drink-effect HUD icon: {effect_id}")
     shaker_3d_model = asset_json(
         f"{NAMESPACE}:item/shaker_3d", "models", paper_asset_roots)
     source_shaker_3d = asset_json(
@@ -1182,6 +1244,17 @@ def validate() -> dict[str, int]:
     pendant = furniture[f"{NAMESPACE}:bell_pendant_lamp"]["variants"]["ceiling"]
     if [element.get("translation") for element in pendant["elements"]] != ["0,-0.49,0", "0,-1.49,0"]:
         raise AssertionError("Ceiling pendant model halves are vertically misaligned")
+    for pendant_id in ("bell_pendant_lamp", "blue_pendant_lamp", "yellow_pendant_lamp"):
+        for half in ("top", "bottom"):
+            model = asset_json(
+                f"{NAMESPACE}:block/deco/{pendant_id}/{half}",
+                "models",
+                paper_asset_roots,
+            )
+            particle = None if model is None else model.get("textures", {}).get("particle")
+            if particle != "minecraft:block/iron_chain":
+                raise AssertionError(
+                    f"{pendant_id}/{half}: Paper 26.2 requires the iron_chain particle texture")
     tap = furniture[f"{NAMESPACE}:tap"]["variants"]["wall"]["elements"][0]
     if tap.get("position") != "0,0,0.01" or tap.get("translation") != "0,0,0.49":
         raise AssertionError("Wall model must retain its target-block offset after anti-blackening compensation")

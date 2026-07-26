@@ -2402,7 +2402,7 @@
           "<!i><insert:kaleidoscope_tavern_managed_lore><blue><lang:potion.withDuration:'<lang:effect.kaleidoscope_tavern.high_heels>':'1:00:00'>",
           "<!i><insert:kaleidoscope_tavern_managed_lore>",
           "<!i><insert:kaleidoscope_tavern_managed_lore><dark_purple><lang:potion.whenDrank>",
-          "<!i><insert:kaleidoscope_tavern_managed_lore><blue><lang:attribute.modifier.plus.0:'0.5':'<lang:attribute.name.generic.step_height>'>"
+          "<!i><insert:kaleidoscope_tavern_managed_lore><blue><lang:attribute.modifier.plus.0:'0.5':'<lang:attribute.name.step_height>'>"
         ]
       },
       "model": {
@@ -2428,8 +2428,8 @@
           "<!i><insert:kaleidoscope_tavern_managed_lore><blue><lang:potion.withDuration:'<lang:effect.kaleidoscope_tavern.long_reach>':'45:00'>",
           "<!i><insert:kaleidoscope_tavern_managed_lore>",
           "<!i><insert:kaleidoscope_tavern_managed_lore><dark_purple><lang:potion.whenDrank>",
-          "<!i><insert:kaleidoscope_tavern_managed_lore><blue><lang:attribute.modifier.plus.0:'3':'<lang:attribute.name.player.block_interaction_range>'>",
-          "<!i><insert:kaleidoscope_tavern_managed_lore><blue><lang:attribute.modifier.plus.0:'3':'<lang:attribute.name.player.entity_interaction_range>'>"
+          "<!i><insert:kaleidoscope_tavern_managed_lore><blue><lang:attribute.modifier.plus.0:'3':'<lang:attribute.name.block_interaction_range>'>",
+          "<!i><insert:kaleidoscope_tavern_managed_lore><blue><lang:attribute.modifier.plus.0:'3':'<lang:attribute.name.entity_interaction_range>'>"
         ]
       },
       "model": {

@@ -1,0 +1,112 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:mob_effect/slightly_tipsy.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:mob_effect/high_heels.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:mob_effect/grass_stealth.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:mob_effect/vision.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:mob_effect/bloody_mary.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:mob_effect/ardent_heat.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:mob_effect/long_reach.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:mob_effect/tomb_raider.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:mob_effect/xp_drain.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:mob_effect/upside_down.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:mob_effect/zenith.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:mob_effect/shriek_attack.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    }
+  ]
+}

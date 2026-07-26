@@ -3,7 +3,7 @@
 
 The Forge source tree is intentionally kept as the auditable migration input.  It
 is not part of the Paper source set.  Running this script is deterministic and
-only rewrites files under ``src/paper/pack/configuration`` and
+only rewrites generated files under ``src/paper/pack`` and
 ``src/paper/resources/catalog``.
 """
 
@@ -23,6 +23,20 @@ from typing import Any, Iterable
 ROOT = Path(__file__).resolve().parents[1]
 NAMESPACE = "kaleidoscope_tavern"
 HANGING_GRAPE_CROPS = {"grape_crop", "ice_grape_crop", "gold_grape_crop"}
+CUSTOM_EFFECT_ICON_IDS = (
+    "slightly_tipsy",
+    "high_heels",
+    "grass_stealth",
+    "vision",
+    "bloody_mary",
+    "ardent_heat",
+    "long_reach",
+    "tomb_raider",
+    "xp_drain",
+    "upside_down",
+    "zenith",
+    "shriek_attack",
+)
 JAVA_INIT = ROOT / "src/main/java/com/github/ysbbbbbb/kaleidoscopetavern/init"
 GENERATED = ROOT / "src/generated/resources"
 MAIN_RESOURCES = ROOT / "src/main/resources"
@@ -49,6 +63,14 @@ EN_US = MAIN_RESOURCES / f"assets/{NAMESPACE}/lang/en_us.json"
 LEGACY_RESOURCE_RENAMES: dict[str, str] = {
     "minecraft:chain": "minecraft:iron_chain",
     "minecraft:grass": "minecraft:short_grass",
+}
+
+# The same 26.2 rename also affects model texture paths.  These values are
+# deliberately normalized in Paper-only model overrides so the archived Forge
+# assets remain an auditable migration input.
+LEGACY_MODEL_TEXTURE_RENAMES: dict[str, str] = {
+    "block/chain": "minecraft:block/iron_chain",
+    "minecraft:block/chain": "minecraft:block/iron_chain",
 }
 
 
@@ -1465,6 +1487,57 @@ def create_chalkboard_models() -> None:
     write_json(model_root / "chalkboard_large.json", large)
 
 
+def create_pendant_lamp_models() -> None:
+    """Override the six pendant halves with their Paper 26.2 particle texture.
+
+    Vanilla renamed the chain texture to ``iron_chain``.  The particle entry is
+    still resolved by CraftEngine even though every visible face uses the
+    tavern's own lamp texture, so leaving the archived id emits a missing-texture
+    warning while loading the pack.
+    """
+    source_root = MAIN_RESOURCES / f"assets/{NAMESPACE}/models/block/deco"
+    target_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/block/deco"
+    for block_id in sorted(PENDANT_LAMPS):
+        for half in ("top", "bottom"):
+            model = read_json(source_root / block_id / f"{half}.json")
+            textures = model.get("textures")
+            if not isinstance(textures, dict):
+                raise AssertionError(f"{block_id}/{half}: missing model textures")
+            particle = textures.get("particle")
+            normalized = LEGACY_MODEL_TEXTURE_RENAMES.get(particle, particle)
+            if normalized != "minecraft:block/iron_chain":
+                raise AssertionError(
+                    f"{block_id}/{half}: unexpected particle texture {particle!r}")
+            textures["particle"] = normalized
+            write_json(target_root / block_id / f"{half}.json", model)
+
+
+def create_custom_effect_font() -> None:
+    """Expose the archived 18x18 MobEffect icons to the Paper-side HUD.
+
+    A vanilla client cannot register the Tavern's custom mob-effect registry
+    entries, but a resource-pack bitmap font can render the original icons in
+    an Adventure component without replacing any vanilla effect.
+    """
+    providers: list[dict[str, Any]] = []
+    texture_root = MAIN_RESOURCES / f"assets/{NAMESPACE}/textures/mob_effect"
+    for index, effect_id in enumerate(CUSTOM_EFFECT_ICON_IDS):
+        texture = texture_root / f"{effect_id}.png"
+        if not texture.is_file():
+            raise AssertionError(f"Missing custom effect icon: {texture}")
+        providers.append({
+            "type": "bitmap",
+            "file": f"{NAMESPACE}:mob_effect/{effect_id}.png",
+            "ascent": 8,
+            "height": 9,
+            "chars": [chr(0xE100 + index)],
+        })
+    write_json(
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/font/custom_effects.json",
+        {"providers": providers},
+    )
+
+
 def create_pressing_fluid_models() -> None:
     """Create the six horizontal fluid surfaces rendered inside the tub."""
     model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture/pressing_fluid"
@@ -2010,14 +2083,14 @@ MANAGED_LORE_INSERTION = "kaleidoscope_tavern_managed_lore"
 # Operation 0 is an absolute addition and operation 1 is a percentage, matching
 # the vanilla attribute.modifier translation keys used by PotionUtils.
 DRINK_EFFECT_ATTRIBUTES: dict[str, list[tuple[str, float, int]]] = {
-    "minecraft:speed": [("attribute.name.generic.movement_speed", 0.2, 1)],
-    "minecraft:strength": [("attribute.name.generic.attack_damage", 3.0, 0)],
+    "minecraft:speed": [("attribute.name.movement_speed", 0.2, 1)],
+    "minecraft:strength": [("attribute.name.attack_damage", 3.0, 0)],
     f"{NAMESPACE}:high_heels": [
-        ("attribute.name.generic.step_height", 0.5, 0),
+        ("attribute.name.step_height", 0.5, 0),
     ],
     f"{NAMESPACE}:long_reach": [
-        ("attribute.name.player.block_interaction_range", 3.0, 0),
-        ("attribute.name.player.entity_interaction_range", 3.0, 0),
+        ("attribute.name.block_interaction_range", 3.0, 0),
+        ("attribute.name.entity_interaction_range", 3.0, 0),
     ],
 }
 
@@ -2421,6 +2494,8 @@ def main() -> None:
     render_items = {**block_render_items, **furniture_render_items}
     create_pressing_fluid_models()
     create_barrel_fluid_models()
+    create_pendant_lamp_models()
+    create_custom_effect_font()
     create_bar_stool_body_models()
     create_shaker_models()
     add_runtime_render_items(render_items)
