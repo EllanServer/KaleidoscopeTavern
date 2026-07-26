@@ -105,7 +105,6 @@ public final class StationService implements Listener {
     private final Map<UUID, Boolean> recentLandings = new HashMap<>();
     private final Map<UUID, PortableShakerUse> portableShakers = new HashMap<>();
     private final Set<UUID> loadedIncense = new HashSet<>();
-    private final Set<UUID> activeIncense = new HashSet<>();
     private final Set<UUID> loadedBarrels = new HashSet<>();
     private final Set<UUID> pendingVanillaBucketEmpty = new HashSet<>();
     private BukkitTask incenseTask;
@@ -159,7 +158,6 @@ public final class StationService implements Listener {
         recentLandings.clear();
         portableShakers.clear();
         loadedIncense.clear();
-        activeIncense.clear();
         loadedBarrels.clear();
         pendingVanillaBucketEmpty.clear();
     }
@@ -176,8 +174,8 @@ public final class StationService implements Listener {
             case BARREL -> interactBarrel(event.player(), event.furniture(), event.interactionPoint());
             case SHAKER -> interactShaker(event.player(), event.furniture());
             case EMPTY_GLASSWARE -> pourPortableShaker(event.player(), event.furniture(), event.hand());
-            default -> id.startsWith(NAMESPACE) && id.endsWith("_incense")
-                    && interactIncense(event.player(), event.furniture());
+            // Incense toggling lives in the generated CE furniture events.
+            default -> false;
         };
         if (handled) {
             event.setCancelled(true);
@@ -257,10 +255,7 @@ public final class StationService implements Listener {
                     Entity entity = furniture.bukkitEntity();
                     if (entity != null) {
                         UUID furnitureId = entity.getUniqueId();
-                        deferFurnitureBreak(event, () -> {
-                            loadedIncense.remove(furnitureId);
-                            activeIncense.remove(furnitureId);
-                        });
+                        deferFurnitureBreak(event, () -> loadedIncense.remove(furnitureId));
                     }
                 }
             }
@@ -541,9 +536,6 @@ public final class StationService implements Listener {
             } else if (isIncense(furniture)) {
                 loadedIncense.add(entity.getUniqueId());
                 initializeIncense(furniture);
-                if (new FurnitureState(plugin, furniture).bool("incense_active")) {
-                    activeIncense.add(entity.getUniqueId());
-                }
             }
         }
     }
@@ -1302,27 +1294,13 @@ public final class StationService implements Listener {
         return true;
     }
 
-    private boolean interactIncense(Player player, BukkitFurniture furniture) {
-        initializeIncense(furniture);
-        FurnitureState state = new FurnitureState(plugin, furniture);
-        boolean active = !state.bool("incense_active");
-        setIncenseActive(furniture, active, true);
-        messages.send(player, active ? "incense-on" : "incense-off");
-        return true;
-    }
-
+    /**
+     * Manual toggling now lives in the generated CE furniture events; the
+     * {@code *_open} furniture variant is the single source of truth for a
+     * lit incense. This setter remains for the redstone edge toggle and the
+     * placement initializer, both of which write the same variant.
+     */
     private void setIncenseActive(BukkitFurniture furniture, boolean active, boolean playSound) {
-        FurnitureState state = new FurnitureState(plugin, furniture);
-        state.bool("incense_active", active);
-        Entity entity = furniture.bukkitEntity();
-        if (entity != null) {
-            loadedIncense.add(entity.getUniqueId());
-            if (active) {
-                activeIncense.add(entity.getUniqueId());
-            } else {
-                activeIncense.remove(entity.getUniqueId());
-            }
-        }
         String current = furniture.currentVariant().name();
         String base = current.endsWith("_open") ? current.substring(0, current.length() - 5) : current;
         furniture.setVariant(active ? base + "_open" : base, true);
@@ -1335,17 +1313,24 @@ public final class StationService implements Listener {
         }
     }
 
+    private static boolean isIncenseLit(BukkitFurniture furniture) {
+        return furniture.currentVariant().name().endsWith("_open");
+    }
+
     private void pulseIncense() {
         List<UUID> invalid = null;
-        for (UUID uuid : activeIncense) {
+        for (UUID uuid : loadedIncense) {
             Entity entity = Bukkit.getEntity(uuid);
             if (entity == null || !entity.isValid()) {
                 invalid = addInvalid(invalid, uuid);
                 continue;
             }
             BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (furniture == null || !new FurnitureState(plugin, furniture).bool("incense_active")) {
+            if (!isIncense(furniture)) {
                 invalid = addInvalid(invalid, uuid);
+                continue;
+            }
+            if (!isIncenseLit(furniture)) {
                 continue;
             }
             Location center = furniture.location();
@@ -1366,7 +1351,7 @@ public final class StationService implements Listener {
             }
         }
         if (invalid != null) {
-            activeIncense.removeAll(invalid);
+            loadedIncense.removeAll(invalid);
         }
     }
 
@@ -1394,7 +1379,6 @@ public final class StationService implements Listener {
         }
         if (invalid != null) {
             loadedIncense.removeAll(invalid);
-            activeIncense.removeAll(invalid);
         }
     }
 
@@ -1408,9 +1392,6 @@ public final class StationService implements Listener {
                 if (isIncense(furniture)) {
                     loadedIncense.add(display.getUniqueId());
                     initializeIncense(furniture);
-                    if (new FurnitureState(plugin, furniture).bool("incense_active")) {
-                        activeIncense.add(display.getUniqueId());
-                    }
                 }
             }
         }

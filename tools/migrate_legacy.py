@@ -852,6 +852,10 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             config["behavior"] = behavior
         if block_id.startswith("string_lights_"):
             config["events"] = string_lights_dye_events(block_id)
+        elif block_id == "trellis":
+            config["events"] = trellis_wax_events()
+        elif block_id == "wild_grapevine":
+            config["events"] = wild_grapevine_shear_events()
         if block_id in item_ids:
             config["loot"] = {
                 "pools": [{
@@ -1728,6 +1732,122 @@ def string_lights_dye_events(block_id: str) -> list[dict[str, Any]]:
     return events
 
 
+def trellis_wax_events() -> list[dict[str, Any]]:
+    """TrellisBlock#use waxing branches as CraftEngine block events.
+
+    Honeycomb waxes a bare trellis and any axe scrapes the wax back off,
+    replaying the source sounds and the vanilla wax particles.  Neither
+    branch consumes the honeycomb or damages the axe: the Forge block never
+    called shrink/hurtAndBreak here and the Paper port kept that.  The hand
+    condition stops the duplicate off-hand interact event (same as the
+    string-lights dye events) and cancel_event suppresses vanilla item use.
+    """
+    particle_position = {
+        "x": "<arg:position.x> + 0.5",
+        "y": "<arg:position.y> + 0.5",
+        "z": "<arg:position.z> + 0.5",
+        "count": 8,
+        "offset_x": 0.35, "offset_y": 0.35, "offset_z": 0.35,
+    }
+    events: list[dict[str, Any]] = []
+    for item, regex, waxed_before, waxed_after, sound, particle in (
+            ("minecraft:honeycomb", False, "false", "true",
+             "minecraft:item.honeycomb.wax_on", "minecraft:wax_on"),
+            ("minecraft:.+_axe", True, "true", "false",
+             "minecraft:item.axe.wax_off", "minecraft:wax_off")):
+        match_item: dict[str, Any] = {"type": "match_item", "item": item}
+        if regex:
+            match_item["regex"] = True
+        events.append({
+            "on": "right_click",
+            "conditions": [
+                match_item,
+                {"type": "match_block_property",
+                 "properties": {"waxed": waxed_before}},
+                {"type": "hand", "hand": "main_hand"},
+            ],
+            "functions": [
+                {"type": "update_block_property",
+                 "properties": {"waxed": waxed_after}},
+                {"type": "play_sound", "sound": sound, "source": "block"},
+                {"type": "particle", "particle": particle, **particle_position},
+                {"type": "swing_hand"},
+                {"type": "cancel_event"},
+            ],
+        })
+    return events
+
+
+def wild_grapevine_shear_events() -> list[dict[str, Any]]:
+    """WildGrapevineBlock#use shearing as a CraftEngine block event.
+
+    Shears lock a head's growth (sheared=true), take one durability point
+    (damage_item routes through vanilla hurtAndBreak, so creative mode and
+    Unbreaking behave like the source) and play the sheep-shear sound.  A
+    sheared head simply stops matching, mirroring the source no-op.
+    """
+    return [{
+        "on": "right_click",
+        "conditions": [
+            {"type": "match_item", "item": "minecraft:shears"},
+            {"type": "match_block_property", "properties": {"sheared": "false"}},
+            {"type": "hand", "hand": "main_hand"},
+        ],
+        "functions": [
+            {"type": "update_block_property", "properties": {"sheared": "true"}},
+            {"type": "damage_item", "amount": 1},
+            {"type": "play_sound", "sound": "minecraft:entity.sheep.shear",
+             "source": "block"},
+            {"type": "swing_hand"},
+            {"type": "cancel_event"},
+        ],
+    }]
+
+
+def incense_toggle_events() -> list[dict[str, Any]]:
+    """IncenseBlock#use lit toggling as a CraftEngine furniture event.
+
+    The *_open furniture variant is the single source of truth for a lit
+    incense, so the toggle must be atomic: two mutually exclusive events on
+    the same trigger would both run in order (the second sees the variant the
+    first just set and flips it straight back).  A single if_else runs only
+    the first matching branch.  Message texts mirror the plugin's config.yml
+    incense-on/incense-off entries, prefix included; the redstone edge toggle
+    stays in StationService and writes the same variant.
+    """
+    prefix = "<dark_aqua>[森罗酒馆]</dark_aqua> "
+    return [{
+        "on": "right_click",
+        "conditions": [{"type": "hand", "hand": "main_hand"}],
+        "functions": [
+            {"type": "if_else", "rules": [
+                {"conditions": [{"type": "match_furniture_variant",
+                                 "variant": "ground"}],
+                 "functions": [
+                     {"type": "set_furniture_variant", "variant": "ground_open"},
+                     {"type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_on",
+                      "source": "block"},
+                     {"type": "message",
+                      "message": f"{prefix}<green>香炉已点燃。</green>"},
+                 ]},
+                {"conditions": [{"type": "match_furniture_variant",
+                                 "variant": "ground_open"}],
+                 "functions": [
+                     {"type": "set_furniture_variant", "variant": "ground"},
+                     {"type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_off",
+                      "source": "block"},
+                     {"type": "message",
+                      "message": f"{prefix}<gray>香炉已熄灭。</gray>"},
+                 ]},
+            ]},
+            {"type": "swing_hand"},
+            {"type": "cancel_event"},
+        ],
+    }]
+
+
 def create_molotov_charging_model() -> None:
     """A raised, tilted display variant shown while the molotov charges.
 
@@ -2374,6 +2494,8 @@ def build_furniture(
             config["behavior"] = behaviors[0]
         elif behaviors:
             config["behaviors"] = behaviors
+        if block_id.endswith("_incense"):
+            config["events"] = incense_toggle_events()
         furniture[full_id] = config
         metrics["furniture_variants"] += len(variants)
 

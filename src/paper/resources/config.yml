@@ -78,5 +78,4 @@ messages:
   barrel-brewing-cannot-open: '<red>无法在酿造过程中打开酒桶！</red>'
   barrel-fluid-not-full: '<yellow>需要先把酒桶装满流体，才能添加原料！</yellow>'
   barrel-no-space: '<yellow>酒桶已满，无法添加更多原料！</yellow>'
-  incense-on: '<green>香炉已点燃。</green>'
-  incense-off: '<gray>香炉已熄灭。</gray>'
+  # 香炉开关提示已迁入生成的 CE furniture events(tools/migrate_legacy.py)。
