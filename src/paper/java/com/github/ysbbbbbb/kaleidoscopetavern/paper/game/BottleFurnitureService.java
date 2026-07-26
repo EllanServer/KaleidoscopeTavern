@@ -5,7 +5,6 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.item.BukkitItem;
@@ -59,18 +58,6 @@ public final class BottleFurnitureService implements Listener {
         this.catalog = catalog;
         this.items = items;
         this.effects = effects;
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlace(FurniturePlaceEvent event) {
-        BukkitFurniture furniture = event.furniture();
-        if (!isBottleOrGlass(furniture.id().toString())) {
-            return;
-        }
-        ItemStack source = sourceItem(furniture);
-        if (source != null) {
-            new FurnitureState(furniture).items("bottle_items", List.of(source));
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -222,7 +209,7 @@ public final class BottleFurnitureService implements Listener {
             // break sound (glass shatter) must stay muted here.
             CraftEngineFurniture.remove(furniture, event.player(), false, false);
         } else {
-            new FurnitureState(furniture).items("bottle_items", stored);
+            storeExpandedItems(furniture, stored);
             setBottleCount(furniture, stored.size());
             furniture.setUnsaved();
         }
@@ -251,7 +238,7 @@ public final class BottleFurnitureService implements Listener {
             hand.subtract(1);
         }
         stored.add(addition);
-        new FurnitureState(furniture).items("bottle_items", stored);
+        storeExpandedItems(furniture, stored);
         setBottleCount(furniture, stored.size());
         furniture.setUnsaved();
         event.setCancelled(true);
@@ -283,6 +270,15 @@ public final class BottleFurnitureService implements Listener {
         return items.build(furniture.id().toString(), null).orElse(null);
     }
 
+    private static void storeExpandedItems(BukkitFurniture furniture, List<ItemStack> stored) {
+        // CE already persists the first bottle as sourceItem. Store an
+        // explicit list only while extra bottles with potentially different
+        // brew levels/effects are stacked on the same furniture.
+        new FurnitureState(furniture).items("bottle_items",
+                BottleFurnitureSemantics.needsExpandedItemState(stored.size())
+                        ? stored : List.of());
+    }
+
     private boolean isBottleOrGlass(String id) {
         return SIMPLE_BOTTLES.contains(id) || id.equals(PREFIX + "empty_glassware")
                 || id.equals(WATERMELON_JUICE)
@@ -303,7 +299,6 @@ public final class BottleFurnitureService implements Listener {
     }
 
     private static void setBottleCount(BukkitFurniture furniture, int count) {
-        String variant = count <= 1 ? "ground" : "ground_count_" + count;
-        furniture.setVariant(variant, true);
+        furniture.setVariant(BottleFurnitureSemantics.variantForCount(count), true);
     }
 }

@@ -1178,7 +1178,6 @@ public final class StationService implements Listener {
         ItemStack source = result.clone();
         source.setAmount(1);
         placed.setSourceItem(BukkitAdaptor.adapt(source));
-        new FurnitureState(placed).items("bottle_items", List.of(source));
         placed.refreshElements();
         placed.setUnsaved();
         items.withShakerState(shaker, List.of(), null);

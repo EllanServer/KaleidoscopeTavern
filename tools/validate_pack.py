@@ -377,8 +377,8 @@ BLOCK_ENTITY_COVERAGE = {
     "BarCabinetBlockEntity.java": (("DisplayStorageService.java", "BAR_CABINET"),),
     "BarrelBlockEntity.java": (("StationService.java", "barrel_items"),),
     "CellarCabinetBlockEntity.java": (("DisplayStorageService.java", "CELLAR_CABINET"),),
-    "DrinkBlockEntity.java": (("BottleFurnitureService.java", "bottle_items"),),
-    "PotionBottleBlockEntity.java": (("BottlePlacementService.java", "bottle_items"),),
+    "DrinkBlockEntity.java": (("BottleFurnitureService.java", "storedItems"),),
+    "PotionBottleBlockEntity.java": (("BottleFurnitureService.java", "sourceItem"),),
     "PressingTubBlockEntity.java": (("StationService.java", "press_count"),),
     "TapBlockEntity.java": (("TapService.java", "running"),),
     "BarStoolBlockEntity.java": (("BarStoolVisualService.java", "refreshBody"),),
@@ -602,6 +602,8 @@ def validate() -> dict[str, int]:
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game")
     bottle_placement_source = (game_package / "BottlePlacementService.java").read_text(
         encoding="utf-8-sig")
+    bottle_furniture_source = (game_package / "BottleFurnitureService.java").read_text(
+        encoding="utf-8-sig")
     block_service_source = (game_package / "block/BlockService.java").read_text(
         encoding="utf-8-sig")
     if ("grapevineFor returned null" in block_service_source
@@ -660,6 +662,24 @@ def validate() -> dict[str, int]:
                 "Drink CE behavior must preserve normal drinking and own rejected sneak placement")
     if "new Placement(customId" in bottle_placement_source:
         raise AssertionError("Paper must not duplicate custom drink player placement")
+    for redundant_owner in (
+            game_package / "BottlePlacementService.java",
+            game_package / "TapService.java",
+            game_package / "StationService.java"):
+        if 'items("bottle_items", List.of(source))' in redundant_owner.read_text(
+                encoding="utf-8-sig"):
+            raise AssertionError(
+                f"{redundant_owner.name}: a single bottle must use CE sourceItem, not duplicate state")
+    if "onPlace(FurniturePlaceEvent" in bottle_furniture_source:
+        raise AssertionError(
+            "Bottle furniture placement must not copy CE sourceItem into duplicate custom state")
+    for native_bottle_state_token in (
+            "Item source = furniture.sourceItem()",
+            "BottleFurnitureSemantics.needsExpandedItemState(stored.size())",
+            '? stored : List.of()'):
+        if native_bottle_state_token not in bottle_furniture_source:
+            raise AssertionError(
+                "Single bottles must use CE sourceItem and only stacked bottles may store a list")
 
     board_text_source = (game_package / "BoardTextService.java").read_text(
         encoding="utf-8-sig")

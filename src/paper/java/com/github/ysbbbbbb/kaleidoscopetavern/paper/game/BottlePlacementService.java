@@ -139,8 +139,6 @@ public final class BottlePlacementService implements Listener {
             furniture.setSourceItem(BukkitAdaptor.adapt(source));
             furniture.refreshElements();
             furniture.setUnsaved();
-            FurnitureState state = new FurnitureState(furniture);
-            state.items("bottle_items", List.of(source));
 
             FurniturePlaceEvent placed = new FurniturePlaceEvent(
                     event.getPlayer(), furniture, location, hand, context);
@@ -192,7 +190,6 @@ public final class BottlePlacementService implements Listener {
         furniture.setSourceItem(BukkitAdaptor.adapt(source));
         furniture.refreshElements();
         furniture.setUnsaved();
-        new FurnitureState(furniture).items("bottle_items", List.of(source));
         if (!takeOneFromDispenser(event.getBlock().getState(), source)) {
             CraftEngineFurniture.remove(furniture, false, false);
             return;
