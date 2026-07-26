@@ -12,14 +12,18 @@ final class DrinkEffectLoreSemantics {
     }
 
     static Display describe(EffectSpec spec) {
-        String[] id = spec.effect().split(":", 2);
-        String namespace = id.length == 2 ? id[0] : "minecraft";
-        String path = id.length == 2 ? id[1] : id[0];
         return new Display(
-                "effect." + namespace + "." + path,
+                effectKey(spec.effect()),
                 spec.amplifier() > 0 ? "potion.potency." + spec.amplifier() : null,
                 spec.durationTicks() > 0 ? formatDuration(spec.durationTicks()) : null,
                 spec.probability() < 1.0 ? formatProbability(spec.probability()) : null);
+    }
+
+    static String effectKey(String effectId) {
+        int separator = effectId.indexOf(':');
+        String namespace = separator < 0 ? "minecraft" : effectId.substring(0, separator);
+        String path = separator < 0 ? effectId : effectId.substring(separator + 1);
+        return "effect." + namespace + "." + path;
     }
 
     static String formatDuration(int ticks) {

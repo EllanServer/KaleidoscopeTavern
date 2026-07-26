@@ -4,18 +4,23 @@ import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.ListPersistentDataType;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
-import java.util.Base64;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Namespaced persistent state stored directly on CraftEngine's furniture meta entity. */
 final class FurnitureState {
+    private static final Map<String, NamespacedKey> KEY_CACHE = new ConcurrentHashMap<>();
+    private static final ListPersistentDataType<String, String> STRING_LIST = PersistentDataType.LIST.strings();
+    private static final ListPersistentDataType<byte[], byte[]> BYTE_ARRAY_LIST =
+            PersistentDataType.LIST.byteArrays();
+
     private final JavaPlugin plugin;
     private final PersistentDataContainer data;
 
@@ -56,18 +61,6 @@ final class FurnitureState {
         }
     }
 
-    long longValue(String name) {
-        return data.getOrDefault(key(name), PersistentDataType.LONG, 0L);
-    }
-
-    void longValue(String name, long value) {
-        if (value == 0L) {
-            data.remove(key(name));
-        } else {
-            data.set(key(name), PersistentDataType.LONG, value);
-        }
-    }
-
     boolean bool(String name) {
         return data.getOrDefault(key(name), PersistentDataType.BOOLEAN, false);
     }
@@ -81,47 +74,39 @@ final class FurnitureState {
     }
 
     List<String> strings(String name) {
-        String encoded = string(name, "");
-        return encoded.isEmpty() ? new ArrayList<>() : new ArrayList<>(List.of(encoded.split(";", -1)));
+        NamespacedKey stateKey = key(name);
+        if (!data.has(stateKey, STRING_LIST)) {
+            return new ArrayList<>();
+        }
+        List<String> stored = data.get(stateKey, STRING_LIST);
+        return stored == null ? new ArrayList<>() : new ArrayList<>(stored);
     }
 
     void strings(String name, List<String> values) {
-        putString(name, String.join(";", values));
-    }
-
-    Map<String, Integer> counts(String name) {
-        Map<String, Integer> result = new LinkedHashMap<>();
-        for (String entry : strings(name)) {
-            int separator = entry.lastIndexOf('=');
-            if (separator <= 0) {
-                continue;
-            }
-            try {
-                int count = Integer.parseInt(entry.substring(separator + 1));
-                if (count > 0) {
-                    result.put(entry.substring(0, separator), count);
-                }
-            } catch (NumberFormatException ignored) {
-                // Skip a corrupt entry while preserving the rest of the furniture state.
-            }
+        if (values.isEmpty()) {
+            data.remove(key(name));
+        } else {
+            data.set(key(name), STRING_LIST, values);
         }
-        return result;
-    }
-
-    void counts(String name, Map<String, Integer> counts) {
-        List<String> encoded = counts.entrySet().stream()
-                .filter(entry -> entry.getValue() > 0)
-                .map(entry -> entry.getKey() + '=' + entry.getValue())
-                .toList();
-        strings(name, encoded);
     }
 
     List<ItemStack> items(String name) {
         List<ItemStack> result = new ArrayList<>();
-        for (String encoded : strings(name)) {
+        NamespacedKey stateKey = key(name);
+        if (!data.has(stateKey, BYTE_ARRAY_LIST)) {
+            return result;
+        }
+        List<byte[]> encodedItems = data.get(stateKey, BYTE_ARRAY_LIST);
+        if (encodedItems == null) {
+            return result;
+        }
+        for (byte[] encoded : encodedItems) {
             try {
-                result.add(ItemStack.deserializeBytes(Base64.getUrlDecoder().decode(encoded)));
-            } catch (IllegalArgumentException ignored) {
+                ItemStack item = ItemStack.deserializeBytes(encoded);
+                if (!item.isEmpty()) {
+                    result.add(item);
+                }
+            } catch (RuntimeException ignored) {
                 // A malformed item should not prevent the furniture itself from loading.
             }
         }
@@ -129,20 +114,44 @@ final class FurnitureState {
     }
 
     void items(String name, List<ItemStack> items) {
-        List<String> encoded = items.stream()
+        if (items.isEmpty()) {
+            data.remove(key(name));
+            return;
+        }
+        List<byte[]> encoded = items.stream()
+                .filter(item -> item != null && !item.isEmpty())
                 .map(ItemStack::serializeAsBytes)
-                .map(Base64.getUrlEncoder().withoutPadding()::encodeToString)
                 .toList();
-        strings(name, encoded);
+        if (encoded.isEmpty()) {
+            data.remove(key(name));
+        } else {
+            data.set(key(name), BYTE_ARRAY_LIST, encoded);
+        }
     }
 
     ItemStack item(String name) {
-        List<ItemStack> items = items(name);
-        return items.isEmpty() ? null : items.getFirst();
+        NamespacedKey stateKey = key(name);
+        if (!data.has(stateKey, PersistentDataType.BYTE_ARRAY)) {
+            return null;
+        }
+        byte[] encoded = data.get(stateKey, PersistentDataType.BYTE_ARRAY);
+        if (encoded == null) {
+            return null;
+        }
+        try {
+            ItemStack item = ItemStack.deserializeBytes(encoded);
+            return item.isEmpty() ? null : item;
+        } catch (RuntimeException ignored) {
+            return null;
+        }
     }
 
     void item(String name, ItemStack item) {
-        items(name, item == null || item.isEmpty() ? List.of() : List.of(item));
+        if (item == null || item.isEmpty()) {
+            data.remove(key(name));
+        } else {
+            data.set(key(name), PersistentDataType.BYTE_ARRAY, item.serializeAsBytes());
+        }
     }
 
     void clear(String... names) {
@@ -152,6 +161,12 @@ final class FurnitureState {
     }
 
     private NamespacedKey key(String name) {
-        return new NamespacedKey(plugin, name);
+        NamespacedKey cached = KEY_CACHE.get(name);
+        if (cached != null) {
+            return cached;
+        }
+        NamespacedKey created = new NamespacedKey(plugin, name);
+        NamespacedKey existing = KEY_CACHE.putIfAbsent(name, created);
+        return existing == null ? created : existing;
     }
 }

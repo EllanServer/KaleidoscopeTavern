@@ -254,10 +254,7 @@ public final class BottleFurnitureService implements Listener {
         if (!stored.isEmpty()) {
             return stored;
         }
-        ItemStack fallback = state.item("placed_potion");
-        if (fallback == null) {
-            fallback = sourceItem(furniture);
-        }
+        ItemStack fallback = sourceItem(furniture);
         if (fallback != null) {
             stored.add(fallback);
         }

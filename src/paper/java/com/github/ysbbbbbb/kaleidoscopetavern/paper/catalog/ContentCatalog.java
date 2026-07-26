@@ -19,6 +19,16 @@ import java.util.Set;
 
 /** Immutable, validated view of the Forge data maps migrated into runtime TSV catalogs. */
 public final class ContentCatalog {
+    private static final Map<String, Integer> COCKTAIL_COLORS = Map.ofEntries(
+            Map.entry("black", 0x000000), Map.entry("dark_blue", 0x0000AA),
+            Map.entry("dark_green", 0x00AA00), Map.entry("dark_aqua", 0x00AAAA),
+            Map.entry("dark_red", 0xAA0000), Map.entry("dark_purple", 0xAA00AA),
+            Map.entry("gold", 0xFFAA00), Map.entry("gray", 0xAAAAAA),
+            Map.entry("dark_gray", 0x555555), Map.entry("blue", 0x5555FF),
+            Map.entry("green", 0x55FF55), Map.entry("aqua", 0x55FFFF),
+            Map.entry("red", 0xFF5555), Map.entry("light_purple", 0xFF55FF),
+            Map.entry("yellow", 0xFFFF55), Map.entry("white", 0xFFFFFF));
+
     private final Map<String, Set<String>> tags;
     private final List<PressingRecipe> pressingRecipes;
     private final List<BarrelRecipe> barrelRecipes;
@@ -26,6 +36,12 @@ public final class ContentCatalog {
     private final Map<String, Map<Integer, List<EffectSpec>>> effects;
     private final Map<String, Set<String>> blockTags;
     private final Map<String, Set<String>> entityTypeTags;
+    private final Map<String, PressingRecipe> pressingByIngredient;
+    private final Map<String, PressingRecipe> pressingByFluid;
+    private final Map<String, PressingRecipe> pressingByBucket;
+    private final Map<String, BarrelRecipe> barrelById;
+    private final Set<String> cocktailItems;
+    private final Map<String, Integer> cocktailColors;
 
     private ContentCatalog(Map<String, Set<String>> tags,
                            List<PressingRecipe> pressingRecipes,
@@ -41,6 +57,40 @@ public final class ContentCatalog {
         this.effects = effects;
         this.blockTags = blockTags;
         this.entityTypeTags = entityTypeTags;
+
+        Map<String, PressingRecipe> ingredientIndex = new LinkedHashMap<>();
+        Map<String, PressingRecipe> fluidIndex = new LinkedHashMap<>();
+        Map<String, PressingRecipe> bucketIndex = new LinkedHashMap<>();
+        for (PressingRecipe recipe : this.pressingRecipes) {
+            fluidIndex.putIfAbsent(recipe.fluid(), recipe);
+            bucketIndex.putIfAbsent(recipe.bucket(), recipe);
+            if (recipe.ingredient().kind() == SelectorKind.ITEM) {
+                ingredientIndex.putIfAbsent(recipe.ingredient().value(), recipe);
+            } else {
+                this.tags.getOrDefault(recipe.ingredient().value(), Set.of())
+                        .forEach(item -> ingredientIndex.putIfAbsent(item, recipe));
+            }
+        }
+        this.pressingByIngredient = Collections.unmodifiableMap(ingredientIndex);
+        this.pressingByFluid = Collections.unmodifiableMap(fluidIndex);
+        this.pressingByBucket = Collections.unmodifiableMap(bucketIndex);
+
+        Map<String, BarrelRecipe> barrelIndex = new LinkedHashMap<>();
+        this.barrelRecipes.forEach(recipe -> barrelIndex.putIfAbsent(recipe.id(), recipe));
+        this.barrelById = Collections.unmodifiableMap(barrelIndex);
+
+        Set<String> cocktails = new LinkedHashSet<>();
+        cocktails.add("kaleidoscope_tavern:signature_cocktail");
+        cocktails.add("kaleidoscope_tavern:mystery_cocktail");
+        this.shakerRecipes.forEach(recipe -> cocktails.add(recipe.result()));
+        this.cocktailItems = Set.copyOf(cocktails);
+
+        Map<String, Integer> colorIndex = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> entry : COCKTAIL_COLORS.entrySet()) {
+            this.tags.getOrDefault("kaleidoscope_tavern:cocktail_ingredient_" + entry.getKey(), Set.of())
+                    .forEach(item -> colorIndex.putIfAbsent(item, entry.getValue()));
+        }
+        this.cocktailColors = Collections.unmodifiableMap(colorIndex);
     }
 
     public static ContentCatalog load(ClassLoader loader) throws IOException {
@@ -115,15 +165,15 @@ public final class ContentCatalog {
     }
 
     public Optional<PressingRecipe> pressing(String itemId) {
-        return pressingRecipes.stream().filter(recipe -> matches(recipe.ingredient(), itemId)).findFirst();
+        return Optional.ofNullable(pressingByIngredient.get(itemId));
     }
 
     public Optional<PressingRecipe> pressingByFluid(String fluid) {
-        return pressingRecipes.stream().filter(recipe -> recipe.fluid().equals(fluid)).findFirst();
+        return Optional.ofNullable(pressingByFluid.get(fluid));
     }
 
     public Optional<PressingRecipe> pressingByBucket(String bucket) {
-        return pressingRecipes.stream().filter(recipe -> recipe.bucket().equals(bucket)).findFirst();
+        return Optional.ofNullable(pressingByBucket.get(bucket));
     }
 
     public Optional<BarrelRecipe> barrel(String fluid, List<String> ingredients) {
@@ -134,7 +184,7 @@ public final class ContentCatalog {
     }
 
     public Optional<BarrelRecipe> barrelById(String recipeId) {
-        return barrelRecipes.stream().filter(recipe -> recipe.id().equals(recipeId)).findFirst();
+        return Optional.ofNullable(barrelById.get(recipeId));
     }
 
     public boolean mayBeBarrelIngredient(String fluid, List<String> current, String candidate) {
@@ -169,10 +219,12 @@ public final class ContentCatalog {
         return effects.containsKey(itemId);
     }
 
+    public Set<String> drinkItems() {
+        return effects.keySet();
+    }
+
     public boolean isCocktail(String itemId) {
-        return itemId.equals("kaleidoscope_tavern:signature_cocktail")
-                || itemId.equals("kaleidoscope_tavern:mystery_cocktail")
-                || shakerRecipes.stream().anyMatch(recipe -> recipe.result().equals(itemId));
+        return cocktailItems.contains(itemId);
     }
 
     public Set<String> tag(String tagId) {
@@ -192,21 +244,8 @@ public final class ContentCatalog {
     }
 
     public OptionalInt cocktailColor(String itemId) {
-        Map<String, Integer> colors = Map.ofEntries(
-                Map.entry("black", 0x000000), Map.entry("dark_blue", 0x0000AA),
-                Map.entry("dark_green", 0x00AA00), Map.entry("dark_aqua", 0x00AAAA),
-                Map.entry("dark_red", 0xAA0000), Map.entry("dark_purple", 0xAA00AA),
-                Map.entry("gold", 0xFFAA00), Map.entry("gray", 0xAAAAAA),
-                Map.entry("dark_gray", 0x555555), Map.entry("blue", 0x5555FF),
-                Map.entry("green", 0x55FF55), Map.entry("aqua", 0x55FFFF),
-                Map.entry("red", 0xFF5555), Map.entry("light_purple", 0xFF55FF),
-                Map.entry("yellow", 0xFFFF55), Map.entry("white", 0xFFFFFF));
-        for (Map.Entry<String, Integer> entry : colors.entrySet()) {
-            if (tag("kaleidoscope_tavern:cocktail_ingredient_" + entry.getKey()).contains(itemId)) {
-                return OptionalInt.of(entry.getValue());
-            }
-        }
-        return OptionalInt.empty();
+        Integer color = cocktailColors.get(itemId);
+        return color == null ? OptionalInt.empty() : OptionalInt.of(color);
     }
 
     public List<PressingRecipe> pressingRecipes() {

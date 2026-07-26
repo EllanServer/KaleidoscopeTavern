@@ -197,13 +197,16 @@ public final class BarStoolVisualService implements Listener {
     }
 
     private void tickOccupied() {
-        List<UUID> invalid = new ArrayList<>();
+        List<UUID> invalid = null;
         for (Map.Entry<UUID, UUID> entry : occupied.entrySet()) {
             Entity entity = Bukkit.getEntity(entry.getKey());
             BukkitFurniture stool = loadedFurniture(entry.getValue());
             if (!(entity instanceof LivingEntity rider) || !rider.isValid()
                     || !rider.isInsideVehicle() || !isBarStool(stool)) {
                 resetBody(entry.getValue());
+                if (invalid == null) {
+                    invalid = new ArrayList<>();
+                }
                 invalid.add(entry.getKey());
                 continue;
             }
@@ -215,7 +218,9 @@ public final class BarStoolVisualService implements Listener {
                 rotateBody(body, rider.getBodyYaw());
             }
         }
-        invalid.forEach(occupied::remove);
+        if (invalid != null) {
+            invalid.forEach(occupied::remove);
+        }
         stopRotationTaskIfIdle();
     }
 

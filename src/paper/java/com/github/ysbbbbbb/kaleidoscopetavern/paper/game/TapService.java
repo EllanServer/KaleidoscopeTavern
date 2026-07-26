@@ -51,6 +51,8 @@ public final class TapService implements Listener {
     private static final String TAP = PREFIX + "tap";
     private static final String BARREL = PREFIX + "barrel";
     private static final String EMPTY_BOTTLE = PREFIX + "empty_bottle";
+    private static final Key TAP_KEY = Key.of(TAP);
+    private static final Key BARREL_KEY = Key.of(BARREL);
     private final JavaPlugin plugin;
     private final StationService stations;
     private final ItemService items;
@@ -82,7 +84,7 @@ public final class TapService implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(FurnitureInteractEvent event) {
         if (event.hand() != InteractionHand.MAIN_HAND
-                || !event.furniture().id().toString().equals(TAP)) {
+                || !event.furniture().id().equals(TAP_KEY)) {
             return;
         }
         event.setCancelled(true);
@@ -96,14 +98,14 @@ public final class TapService implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlace(FurniturePlaceEvent event) {
-        if (event.furniture().id().toString().equals(TAP)) {
+        if (event.furniture().id().equals(TAP_KEY)) {
             loadedTaps.add(event.furniture().uuid());
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBreak(FurnitureBreakEvent event) {
-        if (event.furniture().id().toString().equals(TAP)) {
+        if (event.furniture().id().equals(TAP_KEY)) {
             closeTap(event.furniture(), false);
             loadedTaps.remove(event.furniture().uuid());
         }
@@ -116,7 +118,7 @@ public final class TapService implements Listener {
                 continue;
             }
             BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (furniture != null && furniture.id().toString().equals(TAP)) {
+            if (furniture != null && furniture.id().equals(TAP_KEY)) {
                 loadedTaps.add(entity.getUniqueId());
             }
         }
@@ -456,19 +458,25 @@ public final class TapService implements Listener {
     }
 
     private void pollRedstone() {
-        List<UUID> invalid = new ArrayList<>();
+        List<UUID> invalid = null;
         for (UUID id : loadedTaps) {
             Entity entity = Bukkit.getEntity(id);
             if (entity == null || !entity.isValid()) {
+                if (invalid == null) {
+                    invalid = new ArrayList<>();
+                }
                 invalid.add(id);
                 continue;
             }
             BukkitFurniture tap = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (tap == null || !tap.id().toString().equals(TAP)) {
+            if (tap == null || !tap.id().equals(TAP_KEY)) {
+                if (invalid == null) {
+                    invalid = new ArrayList<>();
+                }
                 invalid.add(id);
                 continue;
             }
-            Block block = geometry(tap).tapBlock();
+            Block block = tapBlock(tap);
             boolean powered = block.isBlockPowered() || block.getRelative(BlockFace.UP).isBlockPowered();
             FurnitureState state = new FurnitureState(plugin, tap);
             boolean triggered = state.bool("tap_triggered");
@@ -479,7 +487,9 @@ public final class TapService implements Listener {
                 state.bool("tap_triggered", false);
             }
         }
-        loadedTaps.removeAll(invalid);
+        if (invalid != null) {
+            loadedTaps.removeAll(invalid);
+        }
     }
 
     private void bootstrapTaps() {
@@ -489,7 +499,7 @@ public final class TapService implements Listener {
                     continue;
                 }
                 BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                if (furniture != null && furniture.id().toString().equals(TAP)) {
+                if (furniture != null && furniture.id().equals(TAP_KEY)) {
                     loadedTaps.add(display.getUniqueId());
                 }
             }
@@ -507,6 +517,17 @@ public final class TapService implements Listener {
         Block source = origin.clone().subtract(outward.clone().multiply(0.05)).getBlock();
         Block tapBlock = origin.clone().add(outward.clone().multiply(0.05)).getBlock();
         return new TapGeometry(source, tapBlock, tapBlock.getRelative(BlockFace.DOWN));
+    }
+
+    private static Block tapBlock(BukkitFurniture tap) {
+        Location origin = tap.location().clone();
+        Vector outward = origin.getDirection().setY(0);
+        if (outward.lengthSquared() < 0.001) {
+            outward = new Vector(0, 0, 1);
+        } else {
+            outward.normalize();
+        }
+        return origin.add(outward.multiply(0.05)).getBlock();
     }
 
     private Optional<BottleCarrier> findPlacedBottleCarrier(Block block) {
@@ -532,12 +553,13 @@ public final class TapService implements Listener {
 
     private static Optional<BukkitFurniture> findFurnitureAtBlock(Block block, String id) {
         Location center = block.getLocation().add(0.5, 0.5, 0.5);
+        Key furnitureId = Key.of(id);
         return center.getWorld().getNearbyEntities(center, 1.0, 1.0, 1.0).stream()
                 .filter(CraftEngineFurniture::isFurniture)
                 .map(CraftEngineFurniture::getLoadedFurnitureByMetaEntity)
                 .filter(java.util.Objects::nonNull)
                 .filter(BukkitFurniture::isValid)
-                .filter(furniture -> furniture.id().toString().equals(id))
+                .filter(furniture -> furniture.id().equals(furnitureId))
                 .filter(furniture -> furniture.location().getBlockX() == block.getX()
                         && furniture.location().getBlockY() == block.getY()
                         && furniture.location().getBlockZ() == block.getZ())
@@ -568,7 +590,7 @@ public final class TapService implements Listener {
                 .map(CraftEngineFurniture::getLoadedFurnitureByMetaEntity)
                 .filter(java.util.Objects::nonNull)
                 .filter(BukkitFurniture::isValid)
-                .filter(furniture -> furniture.id().toString().equals(BARREL))
+                .filter(furniture -> furniture.id().equals(BARREL_KEY))
                 .filter(barrel -> {
                     Location origin = barrel.location();
                     Vector barrelDirection = horizontalCardinal(origin);

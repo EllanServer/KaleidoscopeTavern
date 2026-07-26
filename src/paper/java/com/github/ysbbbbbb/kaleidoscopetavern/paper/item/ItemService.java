@@ -28,6 +28,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.persistence.ListPersistentDataType;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,18 +37,22 @@ import org.bukkit.potion.PotionEffectTypeCategory;
 import org.bukkit.potion.PotionType;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 /** Boundary between Bukkit inventory objects and CraftEngine item definitions. */
 public final class ItemService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
+    private static final ListPersistentDataType<byte[], byte[]> BYTE_ARRAY_LIST =
+            PersistentDataType.LIST.byteArrays();
+    private static final ListPersistentDataType<String, String> STRING_LIST =
+            PersistentDataType.LIST.strings();
     private static final java.util.Set<String> NEUTRAL_CUSTOM_EFFECTS = java.util.Set.of(
             PREFIX + "slightly_tipsy", PREFIX + "upside_down");
     private static final Map<Integer, String> COLOR_NAMES_BY_RGB = Map.ofEntries(
@@ -64,16 +69,33 @@ public final class ItemService implements Listener {
     private final NamespacedKey brewLevelKey;
     private final NamespacedKey signatureEffectsKey;
     private final NamespacedKey signatureColorKey;
+    private final NamespacedKey signatureEffectIdsKey;
+    private final NamespacedKey signatureEffectValuesKey;
     private final NamespacedKey shakerIngredientsKey;
     private final NamespacedKey shakerResultKey;
+    private final Map<String, Set<String>> knownEffectKeys;
 
     public ItemService(JavaPlugin plugin, ContentCatalog catalog) {
         this.catalog = catalog;
         this.brewLevelKey = new NamespacedKey(plugin, "brew_level");
         this.signatureEffectsKey = new NamespacedKey(plugin, "signature_effects");
         this.signatureColorKey = new NamespacedKey(plugin, "signature_color");
+        this.signatureEffectIdsKey = new NamespacedKey(plugin, "signature_effect_ids");
+        this.signatureEffectValuesKey = new NamespacedKey(plugin, "signature_effect_values");
         this.shakerIngredientsKey = new NamespacedKey(plugin, "shaker_ingredients");
         this.shakerResultKey = new NamespacedKey(plugin, "shaker_result");
+
+        Map<String, Set<String>> keysByItem = new LinkedHashMap<>();
+        for (String itemId : catalog.drinkItems()) {
+            Set<String> keys = new LinkedHashSet<>();
+            for (int level = 1; level <= 6; level++) {
+                for (EffectSpec spec : catalog.effects(itemId, level)) {
+                    keys.add(DrinkEffectLoreSemantics.effectKey(spec.effect()));
+                }
+            }
+            keysByItem.put(itemId, Set.copyOf(keys));
+        }
+        this.knownEffectKeys = Map.copyOf(keysByItem);
     }
 
     public String id(ItemStack stack) {
@@ -131,7 +153,7 @@ public final class ItemService implements Listener {
     public ItemStack withSignature(ItemStack stack, List<EffectSpec> effects, int rgb) {
         ItemMeta meta = stack.getItemMeta();
         PersistentDataContainer data = meta.getPersistentDataContainer();
-        data.set(signatureEffectsKey, PersistentDataType.STRING, encodeEffects(effects));
+        putEffects(data, effects);
         data.set(signatureColorKey, PersistentDataType.INTEGER, rgb & 0xFFFFFF);
         if (meta instanceof PotionMeta potionMeta) {
             potionMeta.setColor(Color.fromRGB(rgb & 0xFFFFFF));
@@ -145,10 +167,19 @@ public final class ItemService implements Listener {
         if (stack == null || stack.isEmpty()) {
             return stack;
         }
-        String itemId = id(stack);
-        List<EffectSpec> specs = signatureEffects(stack);
+        return refreshDrinkLore(stack, id(stack));
+    }
+
+    private ItemStack refreshDrinkLore(ItemStack stack, String itemId) {
         boolean cocktail = catalog.isCocktail(itemId);
-        if (specs.isEmpty() && !cocktail && !catalog.hasDrinkEffects(itemId)) {
+        boolean configuredDrink = catalog.hasDrinkEffects(itemId);
+        boolean hasSignature = stack.getPersistentDataContainer()
+                .has(signatureEffectsKey, PersistentDataType.TAG_CONTAINER);
+        if (!cocktail && !configuredDrink && !hasSignature) {
+            return stack;
+        }
+        List<EffectSpec> specs = hasSignature ? signatureEffects(stack) : List.of();
+        if (specs.isEmpty() && !cocktail && !configuredDrink) {
             return stack;
         }
 
@@ -184,22 +215,28 @@ public final class ItemService implements Listener {
             managedLore.addAll(attributeLore(specs));
         }
 
-        Set<String> knownEffectKeys = new LinkedHashSet<>();
-        for (int knownLevel = 1; knownLevel <= 6; knownLevel++) {
-            for (EffectSpec known : catalog.effects(itemId, knownLevel)) {
-                knownEffectKeys.add(DrinkEffectLoreSemantics.describe(known).effectKey());
+        Set<String> itemEffectKeys = knownEffectKeys.getOrDefault(itemId, Set.of());
+        Set<String> expandedEffectKeys = null;
+        for (EffectSpec known : specs) {
+            String effectKey = DrinkEffectLoreSemantics.effectKey(known.effect());
+            if (!itemEffectKeys.contains(effectKey)) {
+                if (expandedEffectKeys == null) {
+                    expandedEffectKeys = new LinkedHashSet<>(itemEffectKeys);
+                }
+                expandedEffectKeys.add(effectKey);
             }
         }
-        for (EffectSpec known : specs) {
-            knownEffectKeys.add(DrinkEffectLoreSemantics.describe(known).effectKey());
-        }
+        Set<String> effectiveKeys = expandedEffectKeys == null ? itemEffectKeys : expandedEffectKeys;
         List<Component> mergedLore = ManagedLoreSemantics.replace(
                 meta.lore(),
-                line -> DrinkLore.isManagedOrLegacyDrinkLine(line, knownEffectKeys),
+                line -> DrinkLore.isManagedOrLegacyDrinkLine(line, effectiveKeys),
                 Component.empty()::equals,
                 managedLore);
-        meta.lore(mergedLore.isEmpty() ? null : mergedLore);
-        stack.setItemMeta(meta);
+        List<Component> updatedLore = mergedLore.isEmpty() ? null : mergedLore;
+        if (!Objects.equals(meta.lore(), updatedLore)) {
+            meta.lore(updatedLore);
+            stack.setItemMeta(meta);
+        }
         hidePotionTooltip(stack);
         return stack;
     }
@@ -232,6 +269,9 @@ public final class ItemService implements Listener {
 
     private static void hidePotionTooltip(ItemStack stack) {
         TooltipDisplay current = stack.getData(DataComponentTypes.TOOLTIP_DISPLAY);
+        if (current != null && current.hiddenComponents().contains(DataComponentTypes.POTION_CONTENTS)) {
+            return;
+        }
         TooltipDisplay.Builder builder = TooltipDisplay.tooltipDisplay();
         if (current != null) {
             builder.hideTooltip(current.hideTooltip()).hiddenComponents(current.hiddenComponents());
@@ -248,7 +288,10 @@ public final class ItemService implements Listener {
         for (int slot = 0; slot < inventory.getSize(); slot++) {
             ItemStack stack = inventory.getItem(slot);
             if (stack != null && !stack.isEmpty()) {
-                inventory.setItem(slot, refreshLore(stack));
+                String itemId = id(stack);
+                if (needsLoreRefresh(stack, itemId)) {
+                    inventory.setItem(slot, refreshLore(stack, itemId));
+                }
             }
         }
     }
@@ -267,12 +310,19 @@ public final class ItemService implements Listener {
             return;
         }
         ItemStack stack = event.getItem().getItemStack();
-        event.getItem().setItemStack(refreshLore(stack));
+        String itemId = id(stack);
+        if (needsLoreRefresh(stack, itemId)) {
+            event.getItem().setItemStack(refreshLore(stack, itemId));
+        }
     }
 
     private ItemStack refreshLore(ItemStack stack) {
-        refreshDrinkLore(stack);
-        if (PREFIX.concat("shaker").equals(id(stack))) {
+        return refreshLore(stack, id(stack));
+    }
+
+    private ItemStack refreshLore(ItemStack stack, String itemId) {
+        refreshDrinkLore(stack, itemId);
+        if (PREFIX.concat("shaker").equals(itemId)) {
             List<ItemStack> ingredients = new ArrayList<>(shakerIngredients(stack));
             ingredients.replaceAll(this::refreshDrinkLore);
             ItemStack result = shakerResult(stack);
@@ -284,6 +334,13 @@ public final class ItemService implements Listener {
             withShakerState(stack, ingredients, result);
         }
         return stack;
+    }
+
+    private boolean needsLoreRefresh(ItemStack stack, String itemId) {
+        return PREFIX.concat("shaker").equals(itemId)
+                || catalog.isCocktail(itemId)
+                || catalog.hasDrinkEffects(itemId)
+                || stack.getPersistentDataContainer().has(signatureEffectsKey, PersistentDataType.TAG_CONTAINER);
     }
 
     private static NamedTextColor effectColor(String effectId) {
@@ -348,8 +405,20 @@ public final class ItemService implements Listener {
         if (stack == null || stack.isEmpty()) {
             return List.of();
         }
-        String encoded = stack.getPersistentDataContainer().get(signatureEffectsKey, PersistentDataType.STRING);
-        return encoded == null ? List.of() : decodeEffects(encoded);
+        var data = stack.getPersistentDataContainer();
+        if (!data.has(signatureEffectsKey, PersistentDataType.TAG_CONTAINER)) {
+            return List.of();
+        }
+        PersistentDataContainer encoded = data.get(signatureEffectsKey, PersistentDataType.TAG_CONTAINER);
+        if (encoded == null
+                || !encoded.has(signatureEffectIdsKey, STRING_LIST)
+                || !encoded.has(signatureEffectValuesKey, PersistentDataType.LONG_ARRAY)) {
+            return List.of();
+        }
+        List<String> ids = encoded.get(signatureEffectIdsKey, STRING_LIST);
+        long[] values = encoded.get(signatureEffectValuesKey, PersistentDataType.LONG_ARRAY);
+        return SignatureEffectStorageSemantics.decode(
+                ids, values, effectId -> NamespacedKey.fromString(effectId) != null);
     }
 
     public int signatureColor(ItemStack stack) {
@@ -364,8 +433,11 @@ public final class ItemService implements Listener {
         if (stack == null || stack.isEmpty()) {
             return List.of();
         }
-        String encoded = stack.getPersistentDataContainer()
-                .get(shakerIngredientsKey, PersistentDataType.STRING);
+        var data = stack.getPersistentDataContainer();
+        if (!data.has(shakerIngredientsKey, BYTE_ARRAY_LIST)) {
+            return List.of();
+        }
+        List<byte[]> encoded = data.get(shakerIngredientsKey, BYTE_ARRAY_LIST);
         return encoded == null ? List.of() : decodeItems(encoded);
     }
 
@@ -373,16 +445,27 @@ public final class ItemService implements Listener {
         if (stack == null || stack.isEmpty()) {
             return null;
         }
-        String encoded = stack.getPersistentDataContainer().get(shakerResultKey, PersistentDataType.STRING);
-        List<ItemStack> decoded = encoded == null ? List.of() : decodeItems(encoded);
-        return decoded.isEmpty() ? null : decoded.getFirst();
+        var data = stack.getPersistentDataContainer();
+        if (!data.has(shakerResultKey, PersistentDataType.BYTE_ARRAY)) {
+            return null;
+        }
+        byte[] encoded = data.get(shakerResultKey, PersistentDataType.BYTE_ARRAY);
+        if (encoded == null) {
+            return null;
+        }
+        try {
+            ItemStack result = ItemStack.deserializeBytes(encoded);
+            return result.isEmpty() ? null : result;
+        } catch (RuntimeException ignored) {
+            return null;
+        }
     }
 
     public ItemStack withShakerState(ItemStack stack, List<ItemStack> ingredients, ItemStack result) {
         ItemMeta meta = stack.getItemMeta();
         PersistentDataContainer data = meta.getPersistentDataContainer();
         putEncodedItems(data, shakerIngredientsKey, ingredients);
-        putEncodedItems(data, shakerResultKey, result == null ? List.of() : List.of(result));
+        putEncodedItem(data, shakerResultKey, result);
         stack.setItemMeta(meta);
         return refreshShakerLore(stack, ingredients, result);
     }
@@ -412,8 +495,11 @@ public final class ItemService implements Listener {
                 DrinkLore::isManagedOrLegacyShakerLine,
                 Component.empty()::equals,
                 managedLore);
-        meta.lore(mergedLore.isEmpty() ? null : mergedLore);
-        stack.setItemMeta(meta);
+        List<Component> updatedLore = mergedLore.isEmpty() ? null : mergedLore;
+        if (!Objects.equals(meta.lore(), updatedLore)) {
+            meta.lore(updatedLore);
+            stack.setItemMeta(meta);
+        }
         return stack;
     }
 
@@ -446,32 +532,13 @@ public final class ItemService implements Listener {
         return Optional.empty();
     }
 
-    private static String encodeEffects(List<EffectSpec> effects) {
-        return effects.stream()
-                .map(effect -> effect.effect() + ',' + effect.durationTicks() + ',' + effect.amplifier()
-                        + ',' + effect.probability())
-                .reduce((left, right) -> left + ';' + right)
-                .orElse("");
-    }
-
-    private static List<EffectSpec> decodeEffects(String encoded) {
-        if (encoded.isBlank()) {
-            return List.of();
-        }
-        List<EffectSpec> effects = new ArrayList<>();
-        for (String entry : encoded.split(";")) {
-            String[] fields = entry.split(",", -1);
-            if (fields.length != 4) {
-                continue;
-            }
-            try {
-                effects.add(new EffectSpec(fields[0], Integer.parseInt(fields[1]),
-                        Integer.parseInt(fields[2]), Double.parseDouble(fields[3])));
-            } catch (NumberFormatException ignored) {
-                // Ignore a single corrupt legacy entry rather than invalidating the entire drink.
-            }
-        }
-        return List.copyOf(effects);
+    private void putEffects(PersistentDataContainer data, List<EffectSpec> effects) {
+        SignatureEffectStorageSemantics.Encoded packed =
+                SignatureEffectStorageSemantics.encode(effects);
+        PersistentDataContainer encoded = data.getAdapterContext().newPersistentDataContainer();
+        encoded.set(signatureEffectIdsKey, STRING_LIST, packed.ids());
+        encoded.set(signatureEffectValuesKey, PersistentDataType.LONG_ARRAY, packed.values());
+        data.set(signatureEffectsKey, PersistentDataType.TAG_CONTAINER, encoded);
     }
 
     private static void putEncodedItems(PersistentDataContainer data, NamespacedKey key,
@@ -480,31 +547,37 @@ public final class ItemService implements Listener {
             data.remove(key);
             return;
         }
-        String encoded = stacks.stream()
+        List<byte[]> encoded = stacks.stream()
                 .filter(stack -> stack != null && !stack.isEmpty())
                 .map(ItemStack::serializeAsBytes)
-                .map(Base64.getUrlEncoder().withoutPadding()::encodeToString)
-                .reduce((left, right) -> left + ';' + right)
-                .orElse("");
+                .toList();
         if (encoded.isEmpty()) {
             data.remove(key);
         } else {
-            data.set(key, PersistentDataType.STRING, encoded);
+            data.set(key, BYTE_ARRAY_LIST, encoded);
         }
     }
 
-    private static List<ItemStack> decodeItems(String encoded) {
-        if (encoded.isBlank()) {
+    private static void putEncodedItem(PersistentDataContainer data, NamespacedKey key, ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            data.remove(key);
+        } else {
+            data.set(key, PersistentDataType.BYTE_ARRAY, stack.serializeAsBytes());
+        }
+    }
+
+    private static List<ItemStack> decodeItems(List<byte[]> encoded) {
+        if (encoded.isEmpty()) {
             return List.of();
         }
         List<ItemStack> result = new ArrayList<>();
-        for (String entry : encoded.split(";")) {
+        for (byte[] entry : encoded) {
             try {
-                ItemStack stack = ItemStack.deserializeBytes(Base64.getUrlDecoder().decode(entry));
+                ItemStack stack = ItemStack.deserializeBytes(entry);
                 if (!stack.isEmpty()) {
                     result.add(stack);
                 }
-            } catch (IllegalArgumentException ignored) {
+            } catch (RuntimeException ignored) {
                 // Preserve the remaining shaker slots if one serialized item was corrupt.
             }
         }

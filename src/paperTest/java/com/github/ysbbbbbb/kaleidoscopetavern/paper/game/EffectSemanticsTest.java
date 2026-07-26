@@ -126,8 +126,12 @@ class EffectSemanticsTest {
         assertFalse(targets.targetsSender());
         assertEquals("@a", targets.target());
 
+        assertTrue(EffectSemantics.parseClearCommand("/EFFECT CLEAR").orElseThrow()
+                .targetsSender());
+
         assertTrue(EffectSemantics.parseClearCommand("/effect clear @a minecraft:speed").isEmpty());
         assertTrue(EffectSemantics.parseClearCommand("/execute as @a run effect clear @s").isEmpty());
+        assertTrue(EffectSemantics.parseClearCommand("/effects clear").isEmpty());
     }
 
     @Test
