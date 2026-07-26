@@ -30,7 +30,8 @@ class TapSemanticsTest {
         assertFalse(TapSemantics.emitsEmptyCloud(3));
         assertTrue(TapSemantics.emitsEmptyCloud(4));
         assertFalse(TapSemantics.emitsEmptyCloud(5));
-        assertFalse(TapSemantics.emitsEmptyCloud(TapSemantics.EMPTY_OPEN_TICKS));
+        assertTrue(TapSemantics.emitsEmptyCloud(TapSemantics.EMPTY_OPEN_TICKS));
+        assertFalse(TapSemantics.emitsEmptyCloud(TapSemantics.EMPTY_OPEN_TICKS + 2));
     }
 
     @Test

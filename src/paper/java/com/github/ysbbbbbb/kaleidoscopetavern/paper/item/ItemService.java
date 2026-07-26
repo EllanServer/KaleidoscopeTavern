@@ -15,6 +15,7 @@ import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Material;
 import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
+import org.bukkit.SoundCategory;
 import org.bukkit.Registry;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -42,6 +43,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -131,8 +133,20 @@ public final class ItemService implements Listener {
 
     public void give(Player player, ItemStack stack) {
         refreshLore(stack);
-        Map<Integer, ItemStack> overflow = player.getInventory().addItem(stack);
-        overflow.values().forEach(item -> player.getWorld().dropItemNaturally(player.getLocation(), item));
+        // ItemUtils#giveItemToPlayer: an empty main hand receives the item
+        // directly, the rest goes to the inventory with overflow dropped, and
+        // the vanilla pickup blip always plays.
+        if (player.getInventory().getItemInMainHand().isEmpty()) {
+            player.getInventory().setItemInMainHand(stack);
+        } else {
+            Map<Integer, ItemStack> overflow = player.getInventory().addItem(stack);
+            overflow.values().forEach(item ->
+                    player.getWorld().dropItemNaturally(player.getLocation(), item));
+        }
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        player.getWorld().playSound(player.getLocation(), "minecraft:entity.item.pickup",
+                SoundCategory.PLAYERS, 0.2F,
+                ((random.nextFloat() - random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
     }
 
     public ItemStack withBrewLevel(ItemStack stack, int level) {

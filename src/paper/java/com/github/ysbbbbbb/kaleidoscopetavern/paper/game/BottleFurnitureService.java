@@ -42,6 +42,8 @@ public final class BottleFurnitureService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String POTION_BOTTLE = PREFIX + "potion_bottle";
     private static final String MOLOTOV = PREFIX + "molotov";
+    // A DrinkBlockItem with no drink-effects entry: still a stackable drink.
+    private static final String WATERMELON_JUICE = PREFIX + "watermelon_juice";
     private static final Set<String> SIMPLE_BOTTLES = Set.of(
             PREFIX + "empty_bottle", PREFIX + "water_bottle", PREFIX + "honey_bottle",
             PREFIX + "dragon_breath_bottle", PREFIX + "xp_bottle", POTION_BOTTLE, MOLOTOV);
@@ -280,11 +282,13 @@ public final class BottleFurnitureService implements Listener {
 
     private boolean isBottleOrGlass(String id) {
         return SIMPLE_BOTTLES.contains(id) || id.equals(PREFIX + "empty_glassware")
+                || id.equals(WATERMELON_JUICE)
                 || catalog.hasDrinkEffects(id) || catalog.isCocktail(id);
     }
 
     private boolean isDrinkBlock(String id) {
-        return catalog.hasDrinkEffects(id) && !catalog.isCocktail(id);
+        return id.equals(WATERMELON_JUICE)
+                || catalog.hasDrinkEffects(id) && !catalog.isCocktail(id);
     }
 
     private static int maxBottleCount(BukkitFurniture furniture) {

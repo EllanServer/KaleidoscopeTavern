@@ -51,6 +51,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Persistent editable text for the chalkboard and sandwich-board furniture families. */
 public final class BoardTextService implements Listener {
@@ -98,7 +99,8 @@ public final class BoardTextService implements Listener {
     private final ItemService items;
     private final NamespacedKey boardOwnerKey;
     private final NamespacedKey boardLineKey;
-    private final Map<UUID, EditSession> editors = new HashMap<>();
+    // AsyncChatEvent removes entries off the main thread.
+    private final Map<UUID, EditSession> editors = new ConcurrentHashMap<>();
 
     public BoardTextService(JavaPlugin plugin, ItemService items) {
         this.plugin = plugin;
@@ -259,6 +261,7 @@ public final class BoardTextService implements Listener {
         }
         BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
         if (furniture == null || !isBoard(furniture)
+                || !furniture.location().getWorld().equals(player.getWorld())
                 || furniture.location().distanceSquared(player.getLocation()) > 64) {
             player.sendMessage(Component.text("你离写字板太远，编辑已取消。"));
             return;
@@ -270,17 +273,27 @@ public final class BoardTextService implements Listener {
         }
 
         String input = rawInput.replace("\\n", "\n");
-        if (input.equalsIgnoreCase("!clear")) {
+        boolean clearRequested = input.equalsIgnoreCase("!clear");
+        if (clearRequested) {
             input = "";
         }
         String lower = input.toLowerCase(Locale.ROOT);
+        boolean alignmentUpdated = false;
         for (String alignment : List.of("left", "center", "right")) {
             String prefix = '[' + alignment + ']';
             if (lower.startsWith(prefix)) {
                 state.putString("board_alignment", alignment);
                 input = input.substring(prefix.length()).stripLeading();
+                alignmentUpdated = true;
                 break;
             }
+        }
+        if (alignmentUpdated && input.isEmpty() && !clearRequested) {
+            // The source GUI pre-fills the current text, so submitting only a
+            // new alignment never wipes the board.
+            refreshDisplay(furniture);
+            player.sendMessage(Component.text("对齐方式已更新。"));
+            return;
         }
         int maxLength = maxTextLength(furniture);
         if (input.length() > maxLength) {
@@ -495,7 +508,8 @@ public final class BoardTextService implements Listener {
             display.setSeeThrough(false);
             display.setBillboard(Display.Billboard.FIXED);
             display.setTransformation(textTransformation(furniture));
-            display.setViewRange(1.0F);
+            // TextBlockEntityRender culls text beyond 48 blocks.
+            display.setViewRange(0.75F);
             display.setShadowRadius(0F);
             display.setGlowing(glowing);
             display.setGlowColorOverride(glowing ? dye.getColor() : null);

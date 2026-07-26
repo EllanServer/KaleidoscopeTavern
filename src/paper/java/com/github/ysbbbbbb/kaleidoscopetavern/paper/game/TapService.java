@@ -58,6 +58,8 @@ public final class TapService implements Listener {
     private final ItemService items;
     private final Set<UUID> loadedTaps = new HashSet<>();
     private final Map<UUID, BukkitTask> running = new HashMap<>();
+    private final Map<UUID, Boolean> tapTriggered = new HashMap<>();
+    private boolean redstonePollParity;
     private BukkitTask redstoneTask;
 
     public TapService(JavaPlugin plugin, StationService stations, ItemService items) {
@@ -76,9 +78,18 @@ public final class TapService implements Listener {
             redstoneTask.cancel();
             redstoneTask = null;
         }
+        for (UUID id : new ArrayList<>(running.keySet())) {
+            if (Bukkit.getEntity(id) instanceof ItemDisplay display) {
+                BukkitFurniture tap = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
+                if (tap != null && tap.isValid()) {
+                    setOpen(tap, false);
+                }
+            }
+        }
         new ArrayList<>(running.values()).forEach(BukkitTask::cancel);
         running.clear();
         loadedTaps.clear();
+        tapTriggered.clear();
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -140,7 +151,14 @@ public final class TapService implements Listener {
 
             @Override
             public void run() {
-                if (!tap.isValid() || !running.containsKey(tap.uuid())) {
+                if (!tap.isValid()) {
+                    // Chunk unloads mid-extraction: drop the running marker or
+                    // the reloaded tap swallows its next click.
+                    running.remove(tap.uuid());
+                    cancel();
+                    return;
+                }
+                if (!running.containsKey(tap.uuid())) {
                     cancel();
                     return;
                 }
@@ -148,6 +166,9 @@ public final class TapService implements Listener {
                 if (extracting && ticks <= TapSemantics.TAKE_PARTICLE_TICKS
                         || !extracting && TapSemantics.emitsEmptyCloud(ticks)) {
                     spawnDrip(tap, extracting, extracting && initial.hot());
+                }
+                if (extracting && ticks <= TapSemantics.TAKE_PARTICLE_TICKS + DRIP_LIFETIME_TICKS) {
+                    spawnFallingDrip(tap, initial.hot());
                 }
                 if (ticks < duration) {
                     return;
@@ -166,6 +187,9 @@ public final class TapService implements Listener {
         BukkitTask task = runnable.runTaskTimer(plugin, 1L, 1L);
         running.put(tap.uuid(), task);
     }
+
+    /** TapDripParticle: each hanging drip lives for 18 ticks. */
+    private static final int DRIP_LIFETIME_TICKS = 18;
 
     private TapPlan resolve(BukkitFurniture tap, Player feedback) {
         TapGeometry geometry = geometry(tap);
@@ -401,7 +425,7 @@ public final class TapService implements Listener {
         Levelled state = (Levelled) Bukkit.createBlockData(Material.WATER_CAULDRON);
         state.setLevel(state.getMaximumLevel());
         destination.setBlockData(state, true);
-        destination.getWorld().playSound(destination.getLocation(), Sound.ENTITY_AXOLOTL_SPLASH,
+        destination.getWorld().playSound(destination.getLocation().add(0.5, 0.5, 0.5), Sound.ENTITY_AXOLOTL_SPLASH,
                 SoundCategory.BLOCKS, 1F, 1F);
         return true;
     }
@@ -411,7 +435,7 @@ public final class TapService implements Listener {
             return false;
         }
         destination.setType(Material.LAVA_CAULDRON, true);
-        destination.getWorld().playSound(destination.getLocation(), Sound.BLOCK_LAVA_POP,
+        destination.getWorld().playSound(destination.getLocation().add(0.5, 0.5, 0.5), Sound.BLOCK_LAVA_POP,
                 SoundCategory.BLOCKS, 1F, 1F);
         return true;
     }
@@ -448,7 +472,8 @@ public final class TapService implements Listener {
     }
 
     private static void spawnDrip(BukkitFurniture tap, boolean extracting, boolean hot) {
-        Location location = tap.location().clone().add(0, -0.25, 0);
+        // TapBlockEntity emits at the tap block's horizontal centre, +0.25 up.
+        Location location = tapBlock(tap).getLocation().add(0.5, 0.25, 0.5);
         if (extracting) {
             Particle particle = hot ? Particle.DRIPPING_LAVA : Particle.DRIPPING_WATER;
             location.getWorld().spawnParticle(particle, location, 1, 0, 0, 0, 0);
@@ -457,7 +482,24 @@ public final class TapService implements Listener {
         }
     }
 
+    /**
+     * TapDripParticle spawns a falling dripstone particle on every tick of a
+     * hanging drip's 18-tick life, forming the visible stream below the tap.
+     */
+    private static void spawnFallingDrip(BukkitFurniture tap, boolean hot) {
+        Location location = tapBlock(tap).getLocation().add(0.5, 0.25, 0.5);
+        Particle particle = hot
+                ? Particle.FALLING_DRIPSTONE_LAVA : Particle.FALLING_DRIPSTONE_WATER;
+        location.getWorld().spawnParticle(particle, location, 1, 0, 0, 0, 0);
+    }
+
     private void pollRedstone() {
+        // Redstone gates are never shorter than two game ticks, so polling on
+        // alternate ticks halves the idle cost without observable latency.
+        redstonePollParity ^= true;
+        if (!redstonePollParity) {
+            return;
+        }
         List<UUID> invalid = null;
         for (UUID id : loadedTaps) {
             Entity entity = Bukkit.getEntity(id);
@@ -477,18 +519,26 @@ public final class TapService implements Listener {
                 continue;
             }
             Block block = tapBlock(tap);
-            boolean powered = block.isBlockPowered() || block.getRelative(BlockFace.UP).isBlockPowered();
-            FurnitureState state = new FurnitureState(plugin, tap);
-            boolean triggered = state.bool("tap_triggered");
+            // TapBlock#neighborChanged uses hasNeighborSignal - weak power.
+            boolean powered = block.isBlockIndirectlyPowered()
+                    || block.getRelative(BlockFace.UP).isBlockIndirectlyPowered();
+            Boolean cached = tapTriggered.get(id);
+            boolean triggered = cached != null
+                    ? cached : new FurnitureState(plugin, tap).bool("tap_triggered");
             if (powered && !triggered) {
-                state.bool("tap_triggered", true);
+                tapTriggered.put(id, true);
+                new FurnitureState(plugin, tap).bool("tap_triggered", true);
                 openTap(tap, null);
             } else if (!powered && triggered) {
-                state.bool("tap_triggered", false);
+                tapTriggered.put(id, false);
+                new FurnitureState(plugin, tap).bool("tap_triggered", false);
+            } else if (cached == null) {
+                tapTriggered.put(id, triggered);
             }
         }
         if (invalid != null) {
             loadedTaps.removeAll(invalid);
+            invalid.forEach(tapTriggered::remove);
         }
     }
 

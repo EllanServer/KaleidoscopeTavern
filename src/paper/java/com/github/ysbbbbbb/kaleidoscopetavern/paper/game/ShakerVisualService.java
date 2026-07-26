@@ -303,8 +303,11 @@ public final class ShakerVisualService implements Listener {
                 new Vector3f(0, 0.5F, 0), rootRotation,
                 new Vector3f(1), new Quaternionf()));
         Quaternionf lidRotation = new Quaternionf().rotateY(rootY).rotateX(lidX);
+        // KeyframeAnimations.posVec negates Y into part space and the
+        // renderer's 180-degree Z flip negates it back, so a positive
+        // keyframe offset pops the lid UP in world space.
         float pivotTranslation = 0.5F + (LID_PIVOT_Y_PIXELS - 8F) / 16F
-                - pose.lidYOffsetPixels() / 16F;
+                + pose.lidYOffsetPixels() / 16F;
         pair.lid().setTransformation(new Transformation(
                 new Vector3f(0, pivotTranslation, 0), lidRotation,
                 new Vector3f(1), new Quaternionf()));

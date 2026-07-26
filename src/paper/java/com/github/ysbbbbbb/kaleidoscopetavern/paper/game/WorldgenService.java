@@ -5,6 +5,7 @@ import net.momirealms.craftengine.core.block.BlockDefinition;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Chunk;
+import org.bukkit.ChunkSnapshot;
 import org.bukkit.HeightMap;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -45,15 +46,22 @@ public final class WorldgenService implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onNewChunkLoad(ChunkLoadEvent event) {
+        // ChunkPopulateEvent occasionally misses chunks generated while the
+        // player rides the generation edge, so isNewChunk stays as a safety
+        // net; the PDC marker keeps the two entry points idempotent.
         if (event.isNewChunk()) {
             plugin.getServer().getScheduler().runTask(plugin, () -> generate(event.getChunk()));
         }
     }
 
     private void generate(Chunk chunk) {
+        // The disabled and non-overworld cases return before touching the
+        // chunk PDC so idle worlds never accumulate marker NBT.
         if (!plugin.getConfig().getBoolean("worldgen.wild-grapevines", true)
-                || chunk.getWorld().getEnvironment() != World.Environment.NORMAL
-                || chunk.getPersistentDataContainer().getOrDefault(
+                || chunk.getWorld().getEnvironment() != World.Environment.NORMAL) {
+            return;
+        }
+        if (chunk.getPersistentDataContainer().getOrDefault(
                 generatedKey, PersistentDataType.INTEGER, 0) >= GENERATION_VERSION) {
             return;
         }
@@ -87,20 +95,25 @@ public final class WorldgenService implements Listener {
     }
 
     private static List<Block> candidates(Chunk chunk) {
+        // A snapshot walk avoids ~3800 Block object round-trips per triggered
+        // chunk; Block handles are materialised for the few candidates only.
         List<Block> result = new ArrayList<>();
         World world = chunk.getWorld();
+        ChunkSnapshot snapshot = chunk.getChunkSnapshot(true, false, false);
         int baseX = chunk.getX() << 4;
         int baseZ = chunk.getZ() << 4;
-        for (int x = baseX; x < baseX + 16; x++) {
-            for (int z = baseZ; z < baseZ + 16; z++) {
-                int top = world.getHighestBlockYAt(x, z, HeightMap.WORLD_SURFACE);
-                int bottom = Math.max(world.getMinHeight(), top - 14);
+        int minY = world.getMinHeight();
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                int top = snapshot.getHighestBlockYAt(x, z);
+                int bottom = Math.max(minY, top - 14);
                 for (int y = top; y >= bottom; y--) {
-                    Block leaf = world.getBlockAt(x, y, z);
-                    if ((leaf.getType() == Material.OAK_LEAVES || leaf.getType() == Material.BIRCH_LEAVES)
-                            && leaf.getRelative(BlockFace.DOWN).isEmpty()
-                            && leaf.getRelative(BlockFace.DOWN, 2).isEmpty()) {
-                        result.add(leaf);
+                    Material type = snapshot.getBlockType(x, y, z);
+                    if ((type == Material.OAK_LEAVES || type == Material.BIRCH_LEAVES)
+                            && y - 2 >= minY
+                            && snapshot.getBlockType(x, y - 1, z).isAir()
+                            && snapshot.getBlockType(x, y - 2, z).isAir()) {
+                        result.add(world.getBlockAt(baseX + x, y, baseZ + z));
                     }
                 }
             }
