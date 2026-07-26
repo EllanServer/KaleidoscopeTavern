@@ -8,7 +8,6 @@ import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.item.Item;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -37,7 +36,7 @@ public final class BarStoolVisualService {
     private final JavaPlugin plugin;
     private final ItemService items;
     private final Map<UUID, BukkitFurniture> loaded = new HashMap<>();
-    private final Map<UUID, UUID> occupied = new HashMap<>();
+    private final Map<UUID, Occupancy> occupied = new HashMap<>();
     private final Map<UUID, Float> bodyYaws = new HashMap<>();
     private final Map<String, Item> renderItems = new HashMap<>();
     private final AnimatedItemFurnitureBehavior.Handler visualHandler = this::visuals;
@@ -64,7 +63,7 @@ public final class BarStoolVisualService {
                 UUID owner = furniture.uuid();
                 loaded.remove(owner, furniture);
                 bodyYaws.remove(owner);
-                occupied.values().removeIf(owner::equals);
+                occupied.values().removeIf(occupancy -> owner.equals(occupancy.owner()));
                 stopRotationTaskIfIdle();
                 stopSeatEventsIfIdle();
             }
@@ -81,7 +80,8 @@ public final class BarStoolVisualService {
     public void stop() {
         HandlerList.unregisterAll(seatEventListener);
         seatEventsRegistered = false;
-        occupied.values().stream().distinct().toList().forEach(this::resetBody);
+        occupied.values().stream().map(Occupancy::owner).distinct().toList()
+                .forEach(this::resetBody);
         if (rotationTask != null) {
             rotationTask.cancel();
             rotationTask = null;
@@ -97,10 +97,9 @@ public final class BarStoolVisualService {
     }
 
     private void onMount(EntityMountEvent event) {
-        if (!(event.getEntity() instanceof LivingEntity)) {
+        if (!(event.getEntity() instanceof LivingEntity rider)) {
             return;
         }
-        UUID rider = event.getEntity().getUniqueId();
         Location mount = event.getMount().getLocation().clone();
         // CE finishes the seat relationship after the event.
         Bukkit.getScheduler().runTask(plugin, () -> activate(rider, mount));
@@ -147,10 +146,8 @@ public final class BarStoolVisualService {
         }
     }
 
-    private void activate(UUID riderId, Location mount) {
-        Entity entity = Bukkit.getEntity(riderId);
-        if (!(entity instanceof LivingEntity rider) || !rider.isValid()
-                || !rider.isInsideVehicle()) {
+    private void activate(LivingEntity rider, Location mount) {
+        if (!rider.isValid() || !rider.isInsideVehicle()) {
             return;
         }
         BukkitFurniture stool = findBarStool(mount);
@@ -158,9 +155,10 @@ public final class BarStoolVisualService {
             return;
         }
         UUID owner = stool.uuid();
-        UUID previous = occupied.put(riderId, owner);
-        if (previous != null && !previous.equals(owner)) {
-            resetBody(previous);
+        Occupancy previous = occupied.put(
+                rider.getUniqueId(), new Occupancy(owner, rider));
+        if (previous != null && !previous.owner().equals(owner)) {
+            resetBody(previous.owner());
         }
         bodyYaws.put(owner, rider.getBodyYaw());
         AnimatedItemFurnitureBehavior.updatePosition(stool);
@@ -168,9 +166,9 @@ public final class BarStoolVisualService {
     }
 
     private void deactivate(UUID riderId) {
-        UUID owner = occupied.remove(riderId);
-        if (owner != null) {
-            resetBody(owner);
+        Occupancy occupancy = occupied.remove(riderId);
+        if (occupancy != null) {
+            resetBody(occupancy.owner());
         }
         stopRotationTaskIfIdle();
     }
@@ -191,12 +189,13 @@ public final class BarStoolVisualService {
 
     private void tickOccupied() {
         List<UUID> invalid = null;
-        for (Map.Entry<UUID, UUID> entry : occupied.entrySet()) {
-            Entity entity = Bukkit.getEntity(entry.getKey());
-            BukkitFurniture stool = loaded.get(entry.getValue());
-            if (!(entity instanceof LivingEntity rider) || !rider.isValid()
+        for (Map.Entry<UUID, Occupancy> entry : occupied.entrySet()) {
+            Occupancy occupancy = entry.getValue();
+            LivingEntity rider = occupancy.rider();
+            BukkitFurniture stool = loaded.get(occupancy.owner());
+            if (!rider.isValid()
                     || !rider.isInsideVehicle() || !isBarStool(stool)) {
-                resetBody(entry.getValue());
+                resetBody(occupancy.owner());
                 if (invalid == null) {
                     invalid = new ArrayList<>();
                 }
@@ -204,7 +203,7 @@ public final class BarStoolVisualService {
                 continue;
             }
             float yaw = rider.getBodyYaw();
-            Float previous = bodyYaws.put(entry.getValue(), yaw);
+            Float previous = bodyYaws.put(occupancy.owner(), yaw);
             if (previous == null || yawDistance(previous, yaw) >= 0.1F) {
                 AnimatedItemFurnitureBehavior.updatePosition(stool);
             }
@@ -269,6 +268,9 @@ public final class BarStoolVisualService {
 
     private static float yawDistance(float left, float right) {
         return Math.abs(Math.floorMod(Math.round(left - right) + 180, 360) - 180);
+    }
+
+    private record Occupancy(UUID owner, LivingEntity rider) {
     }
 
     private static boolean isBarStool(BukkitFurniture furniture) {

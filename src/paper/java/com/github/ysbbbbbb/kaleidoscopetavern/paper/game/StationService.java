@@ -388,7 +388,8 @@ public final class StationService implements Listener {
                     || items.shakerIngredients(current).size() != 3) {
                 return;
             }
-            portableShakers.put(player.getUniqueId(), new PortableShakerUse(hand, 0));
+            portableShakers.put(
+                    player.getUniqueId(), new PortableShakerUse(player, hand, 0));
             ensurePortableShakerTask();
             player.startUsingItem(hand);
             player.setActiveItemRemainingTime(72_000);
@@ -431,12 +432,14 @@ public final class StationService implements Listener {
     }
 
     private void tickPortableShakers() {
-        for (UUID playerId : new ArrayList<>(portableShakers.keySet())) {
-            PortableShakerUse use = portableShakers.get(playerId);
-            Player player = Bukkit.getPlayer(playerId);
-            if (use == null || player == null || !player.isOnline()
+        var iterator = portableShakers.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, PortableShakerUse> entry = iterator.next();
+            PortableShakerUse use = entry.getValue();
+            Player player = use.player();
+            if (!player.isOnline()
                     || !player.isHandRaised() || !items.id(handItem(player, use.hand())).equals(SHAKER)) {
-                portableShakers.remove(playerId);
+                iterator.remove();
                 continue;
             }
             int ticks = use.ticks();
@@ -448,11 +451,11 @@ public final class StationService implements Listener {
                         SoundCategory.PLAYERS, volume, pitch);
             }
             if (ShakerSemantics.shouldAutoRelease(ticks)) {
-                portableShakers.remove(playerId);
+                iterator.remove();
                 player.clearActiveItem();
                 finishPortableShaker(player, use.hand(), ticks);
             } else {
-                portableShakers.put(playerId, new PortableShakerUse(use.hand(), ticks + 1));
+                entry.setValue(new PortableShakerUse(player, use.hand(), ticks + 1));
             }
         }
         stopPortableShakerTaskIfIdle();
@@ -1575,7 +1578,7 @@ public final class StationService implements Listener {
                 : player.getInventory().getItemInMainHand();
     }
 
-    private record PortableShakerUse(EquipmentSlot hand, int ticks) {
+    private record PortableShakerUse(Player player, EquipmentSlot hand, int ticks) {
     }
 
     private static void setHandItem(Player player, EquipmentSlot hand, ItemStack stack) {

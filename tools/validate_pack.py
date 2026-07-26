@@ -1224,6 +1224,20 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Bar-stool mount events must follow CE loaded furniture availability; "
                 f"missing token: {required_token}")
+    for required_token in (
+            "Map<UUID, Occupancy> occupied",
+            "new Occupancy(owner, rider)",
+            "LivingEntity rider = occupancy.rider()",
+            "private record Occupancy(UUID owner, LivingEntity rider)"):
+        if required_token not in bar_stool_visual_source:
+            raise AssertionError(
+                "Active bar-stool rotation must retain its short-lived rider reference; "
+                f"missing token: {required_token}")
+    for stale_token in ("Bukkit.getEntity(entry.getKey())", "private void activate(UUID"):
+        if stale_token in bar_stool_visual_source:
+            raise AssertionError(
+                "Bar-stool every-tick rotation must not resolve riders through Bukkit UUID lookup; "
+                f"found {stale_token}")
     if ("BarStoolVisualService implements Listener" in bar_stool_visual_source
             or "registerEvents(barStoolVisuals, this)" in plugin_source):
         raise AssertionError(
@@ -1240,11 +1254,22 @@ def validate() -> dict[str, int]:
                 f"stale token found: {stale_token}")
     for required_token in (
             "ensurePortableShakerTask();",
-            "stopPortableShakerTaskIfIdle();"):
+            "stopPortableShakerTaskIfIdle();",
+            "new PortableShakerUse(player, hand, 0)",
+            "var iterator = portableShakers.entrySet().iterator()",
+            "Player player = use.player()",
+            "private record PortableShakerUse(Player player, EquipmentSlot hand, int ticks)"):
         if required_token not in station_source:
             raise AssertionError(
                 "Portable shaker ticking must start on demand and stop when idle; "
                 f"missing token: {required_token}")
+    for stale_token in (
+            "new ArrayList<>(portableShakers.keySet())",
+            "Bukkit.getPlayer(playerId)"):
+        if stale_token in station_source:
+            raise AssertionError(
+                "Portable shaker every-tick path must retain the active player reference; "
+                f"found {stale_token}")
     station_start = station_source.partition("public void start() {")[2].partition(
         "public void stop() {")[0]
     if "portableShakerTask" in station_start:
