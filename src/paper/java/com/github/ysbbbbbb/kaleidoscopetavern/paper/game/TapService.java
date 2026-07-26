@@ -6,7 +6,6 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
@@ -25,9 +24,6 @@ import org.bukkit.block.data.Waterlogged;
 import org.bukkit.block.data.type.Beehive;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -43,12 +39,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 /** Restores the tap's source/destination pipeline while keeping bottles and barrels as furniture. */
-public final class TapService implements Listener {
+public final class TapService {
     private static final String PREFIX = "kaleidoscope_tavern:";
-    private static final String TAP = PREFIX + "tap";
     private static final String BARREL = PREFIX + "barrel";
     private static final String EMPTY_BOTTLE = PREFIX + "empty_bottle";
-    private static final Key TAP_KEY = Key.of(TAP);
     private final JavaPlugin plugin;
     private final StationService stations;
     private final ItemService items;
@@ -73,6 +67,11 @@ public final class TapService implements Listener {
                 @Override
                 public void onUnload(BukkitFurniture furniture, boolean isStopping) {
                     cancelRunning(furniture);
+                }
+
+                @Override
+                public void onRemove(BukkitFurniture furniture) {
+                    closeTap(furniture, false);
                 }
             };
     private final RedstoneFurnitureBehavior.InteractionHandler tapInteractionHandler =
@@ -120,13 +119,6 @@ public final class TapService implements Listener {
             openTap(furniture, (Player) context.getPlayer().platformPlayer());
         }
         return InteractionResult.SUCCESS_AND_CANCEL;
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBreak(FurnitureBreakEvent event) {
-        if (event.furniture().id().equals(TAP_KEY)) {
-            closeTap(event.furniture(), false);
-        }
     }
 
     private void openTap(BukkitFurniture tap, Player player) {

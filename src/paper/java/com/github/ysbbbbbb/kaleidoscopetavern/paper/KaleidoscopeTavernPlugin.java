@@ -170,7 +170,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         getServer().getPluginManager().registerEvents(barStoolVisuals, this);
         getServer().getPluginManager().registerEvents(shakerVisuals, this);
         getServer().getPluginManager().registerEvents(boards, this);
-        getServer().getPluginManager().registerEvents(taps, this);
         getServer().getPluginManager().registerEvents(stations, this);
         getServer().getPluginManager().registerEvents(effects, this);
         stations.start();

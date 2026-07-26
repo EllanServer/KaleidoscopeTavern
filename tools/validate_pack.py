@@ -1317,12 +1317,16 @@ def validate() -> dict[str, int]:
             "RedstoneFurnitureBehavior.unbindInteraction(",
             "private InteractionResult interact(",
             "context.getHand() != InteractionHand.MAIN_HAND",
+            "public void onRemove(BukkitFurniture furniture)",
+            "closeTap(furniture, false)",
             "InteractionResult.SUCCESS_AND_CANCEL"):
         if required_token not in tap_source:
             raise AssertionError(
                 "Tap clicks must be dispatched by the tap's CE redstone controller; "
                 f"missing token: {required_token}")
-    for stale_token in ("FurnitureInteractEvent", "public void onInteract("):
+    for stale_token in (
+            "FurnitureInteractEvent", "public void onInteract(",
+            "FurnitureBreakEvent", "public void onBreak(", "implements Listener"):
         if stale_token in tap_source:
             raise AssertionError(
                 "TapService must not retain a global Paper furniture interaction listener; "
@@ -1335,11 +1339,16 @@ def validate() -> dict[str, int]:
             "public static void unbindInteraction(",
             "public InteractionResult useOnFurniture(",
             "INTERACTION_HANDLERS.get(channel)",
-            "handler.interact(bukkitFurniture, context)"):
+            "handler.interact(bukkitFurniture, context)",
+            "public void preRemove(Player player)",
+            "handler.onRemove(bukkitFurniture)"):
         if required_token not in redstone_behavior_source:
             raise AssertionError(
                 "CE redstone furniture must also own channel-scoped player interaction; "
                 f"missing token: {required_token}")
+    if "registerEvents(taps, this)" in plugin_source:
+        raise AssertionError(
+            "TapService has no Paper events after CE interaction/removal migration")
     stale_redstone_tokens = (
         "pollRedstone", "pollIncenseRedstone", "tap_triggered",
         "storage_powered", "storage_power_initialized", "incense_powered",

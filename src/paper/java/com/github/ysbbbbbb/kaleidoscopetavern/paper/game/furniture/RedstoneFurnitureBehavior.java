@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehavi
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureController;
 import net.momirealms.craftengine.core.entity.furniture.hitbox.FurnitureHitBox;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.entity.furniture.tick.FurnitureTicker;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Key;
@@ -107,6 +108,9 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
 
         default void onUnload(BukkitFurniture furniture, boolean isStopping) {
         }
+
+        default void onRemove(BukkitFurniture furniture) {
+        }
     }
 
     @FunctionalInterface
@@ -185,6 +189,14 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
             deliveredHandler = null;
             primaryPowerBlock = null;
             secondaryPowerBlock = null;
+        }
+
+        @Override
+        public void preRemove(Player player) {
+            Handler handler = HANDLERS.get(channel);
+            if (handler != null) {
+                handler.onRemove(bukkitFurniture);
+            }
         }
 
         private void tickRedstone() {
