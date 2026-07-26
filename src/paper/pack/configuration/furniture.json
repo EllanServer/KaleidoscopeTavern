@@ -15070,9 +15070,15 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "tap_bottle"
+        }
+      ]
     },
     "kaleidoscope_tavern:empty_glassware": {
       "settings": {
@@ -16814,6 +16820,10 @@
       "behaviors": [
         {
           "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "barrel"
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",

@@ -99,6 +99,8 @@ EXPECTED_LIFECYCLE_FURNITURE: dict[str, tuple[str, ...]] = {
     "holder": ("storage",),
     "glassware_holder": ("storage",),
     "shaker": ("shaker",),
+    "barrel": ("barrel",),
+    "empty_bottle": ("tap_bottle",),
     "bar_counter": ("connection",),
     "table": ("connection",),
 }
@@ -838,6 +840,7 @@ def validate() -> dict[str, int]:
             "handler.onReady(bukkitFurniture, readyReason)",
             "currentHandler.onUnavailable(bukkitFurniture, removed, stopping)",
             "public static List<BukkitFurniture> nearby(",
+            "public static Optional<BukkitFurniture> atBlock(",
             "FurnitureSpatialSemantics.minimumColumn(",
             "FurnitureSpatialSemantics.insideBox("):
         if required_token not in lifecycle_behavior_source:
@@ -911,11 +914,26 @@ def validate() -> dict[str, int]:
     for required_token in (
             "PressingTubFurnitureBehavior.bind(pressingTubLifecycleHandler)",
             "PressingTubFurnitureBehavior.hasPotentialBelow(living.getLocation())",
-            "PressingTubFurnitureBehavior.findBelow(living.getLocation())"):
+            "PressingTubFurnitureBehavior.findBelow(living.getLocation())",
+            "PressingTubFurnitureBehavior.occupiesBlock(block)",
+            "LifecycleFurnitureBehavior.Channel.BARREL, center, 3.0, 3.0"):
         if required_token not in station_source:
             raise AssertionError(
                 "StationService must retain only the source-compatible fallOn bridge; "
                 f"missing token: {required_token}")
+    tap_source = (game_package / "TapService.java").read_text(
+        encoding="utf-8-sig")
+    for required_token in (
+            "LifecycleFurnitureBehavior.Channel.TAP_BOTTLE, block",
+            "LifecycleFurnitureBehavior.Channel.BARREL,",
+            "center, 3.25, 3.25"):
+        if required_token not in tap_source:
+            raise AssertionError(
+                "TapService must use CE lifecycle indexes for placed bottles and barrels; "
+                f"missing token: {required_token}")
+    if "findFurnitureAtBlock" in tap_source:
+        raise AssertionError(
+            "TapService must not rediscover indexed placed bottles through Bukkit entities")
     stale_redstone_tokens = (
         "pollRedstone", "pollIncenseRedstone", "tap_triggered",
         "storage_powered", "storage_power_initialized", "incense_powered",

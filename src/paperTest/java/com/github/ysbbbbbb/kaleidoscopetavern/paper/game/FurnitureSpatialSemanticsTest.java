@@ -24,4 +24,14 @@ class FurnitureSpatialSemanticsTest {
         assertFalse(FurnitureSpatialSemantics.insideBox(
                 -1.75, 65.2501, 1.25, -0.25, 64, -0.25, 1.5, 1.25));
     }
+
+    @Test
+    void exactBlockLookupUsesMinecraftFloorCoordinates() {
+        assertTrue(FurnitureSpatialSemantics.insideBlock(
+                -0.01, -64.0, 2.999, -1, -64, 2));
+        assertFalse(FurnitureSpatialSemantics.insideBlock(
+                0.0, -64.0, 2.999, -1, -64, 2));
+        assertFalse(FurnitureSpatialSemantics.insideBlock(
+                -0.01, -63.999, 2.999, -1, -64, 2));
+    }
 }

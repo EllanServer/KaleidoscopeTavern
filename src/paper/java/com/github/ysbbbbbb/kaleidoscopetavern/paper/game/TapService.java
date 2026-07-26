@@ -1,5 +1,6 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.kyori.adventure.text.Component;
@@ -47,7 +48,6 @@ public final class TapService implements Listener {
     private static final String BARREL = PREFIX + "barrel";
     private static final String EMPTY_BOTTLE = PREFIX + "empty_bottle";
     private static final Key TAP_KEY = Key.of(TAP);
-    private static final Key BARREL_KEY = Key.of(BARREL);
     private final JavaPlugin plugin;
     private final StationService stations;
     private final ItemService items;
@@ -510,7 +510,8 @@ public final class TapService implements Listener {
     }
 
     private Optional<BottleCarrier> findPlacedBottleCarrier(Block block) {
-        Optional<BukkitFurniture> placed = findFurnitureAtBlock(block, EMPTY_BOTTLE);
+        Optional<BukkitFurniture> placed = LifecycleFurnitureBehavior.atBlock(
+                LifecycleFurnitureBehavior.Channel.TAP_BOTTLE, block);
         return placed.map(furniture -> new BottleCarrier(furniture, null));
     }
 
@@ -527,21 +528,6 @@ public final class TapService implements Listener {
                                 && items.id(dropped.getItemStack()).equals(EMPTY_BOTTLE))
                 .stream()
                 .map(entity -> new BottleCarrier(null, (org.bukkit.entity.Item) entity))
-                .findFirst();
-    }
-
-    private static Optional<BukkitFurniture> findFurnitureAtBlock(Block block, String id) {
-        Location center = block.getLocation().add(0.5, 0.5, 0.5);
-        Key furnitureId = Key.of(id);
-        return center.getWorld().getNearbyEntities(center, 1.0, 1.0, 1.0).stream()
-                .filter(CraftEngineFurniture::isFurniture)
-                .map(CraftEngineFurniture::getLoadedFurnitureByMetaEntity)
-                .filter(java.util.Objects::nonNull)
-                .filter(BukkitFurniture::isValid)
-                .filter(furniture -> furniture.id().equals(furnitureId))
-                .filter(furniture -> furniture.location().getBlockX() == block.getX()
-                        && furniture.location().getBlockY() == block.getY()
-                        && furniture.location().getBlockZ() == block.getZ())
                 .findFirst();
     }
 
@@ -564,12 +550,9 @@ public final class TapService implements Listener {
         int tapFacingX = (int) tapDirection.getX();
         int tapFacingZ = (int) tapDirection.getZ();
         Block source = geometry.source();
-        return center.getWorld().getNearbyEntities(center, 3.25, 3.25, 3.25).stream()
-                .filter(CraftEngineFurniture::isFurniture)
-                .map(CraftEngineFurniture::getLoadedFurnitureByMetaEntity)
-                .filter(java.util.Objects::nonNull)
-                .filter(BukkitFurniture::isValid)
-                .filter(furniture -> furniture.id().equals(BARREL_KEY))
+        return LifecycleFurnitureBehavior.nearby(
+                        LifecycleFurnitureBehavior.Channel.BARREL,
+                        center, 3.25, 3.25).stream()
                 .filter(barrel -> {
                     Location origin = barrel.location();
                     Vector barrelDirection = horizontalCardinal(origin);

@@ -11,11 +11,13 @@ import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -109,6 +111,19 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
         return result;
     }
 
+    /** Returns loaded furniture in this channel whose CE origin occupies the block. */
+    public static Optional<BukkitFurniture> atBlock(Channel channel, Block block) {
+        Location center = block.getLocation().add(0.5, 0.5, 0.5);
+        return nearby(channel, center, 1.0, 1.0).stream()
+                .filter(furniture -> {
+                    Location location = furniture.location();
+                    return FurnitureSpatialSemantics.insideBlock(
+                            location.getX(), location.getY(), location.getZ(),
+                            block.getX(), block.getY(), block.getZ());
+                })
+                .findFirst();
+    }
+
     @Override
     public FurnitureController createController(Furniture furniture) {
         if (!(furniture instanceof BukkitFurniture bukkitFurniture)) {
@@ -136,8 +151,10 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
         BAR_STOOL,
         BOARD,
         CONNECTION,
+        BARREL,
         SHAKER,
-        STORAGE
+        STORAGE,
+        TAP_BOTTLE
     }
 
     public enum ReadyReason {

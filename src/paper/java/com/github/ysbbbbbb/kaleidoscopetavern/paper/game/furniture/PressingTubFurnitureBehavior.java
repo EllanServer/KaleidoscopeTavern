@@ -12,6 +12,7 @@ import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -64,6 +65,32 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
     public static boolean hasLoadedInWorld(World world) {
         WorldIndex index = WORLD_INDEX.get(world.getUID());
         return index != null && !index.columns.isEmpty();
+    }
+
+    /** Whether a loaded pressing-tub origin occupies this exact block. */
+    public static boolean occupiesBlock(Block block) {
+        WorldIndex index = WORLD_INDEX.get(block.getWorld().getUID());
+        if (index == null) {
+            return false;
+        }
+        Set<Controller> controllers = index.columns.get(
+                packColumn(block.getX(), block.getZ()));
+        if (controllers == null) {
+            return false;
+        }
+        for (Controller controller : controllers) {
+            BukkitFurniture furniture = controller.bukkitFurniture;
+            if (!furniture.isValid()) {
+                continue;
+            }
+            Location location = furniture.location();
+            if (FurnitureSpatialSemantics.insideBlock(
+                    location.getX(), location.getY(), location.getZ(),
+                    block.getX(), block.getY(), block.getZ())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Whether a falling entity is horizontally above any loaded ground tub. */

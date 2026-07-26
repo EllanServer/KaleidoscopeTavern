@@ -5,6 +5,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.BarrelRecipe;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.PressingRecipe;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.PressingTubFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnitureBehavior;
@@ -348,29 +349,19 @@ public final class StationService implements Listener {
         if (block == null) {
             return false;
         }
+        if (PressingTubFurnitureBehavior.occupiesBlock(block)) {
+            return true;
+        }
         Location center = block.getLocation().add(0.5, 0.5, 0.5);
-        // The barrel's hitbox is a 3x3x3 around its origin, so scan far enough to
-        // find a meta entity two blocks away and then test the real footprint.
-        for (Entity entity : center.getWorld().getNearbyEntities(center, 3, 3, 3,
-                candidate -> candidate instanceof ItemDisplay
-                        && CraftEngineFurniture.isFurniture(candidate))) {
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (furniture == null) {
-                continue;
-            }
+        // CE supplies loaded barrel origins; Paper only preserves the source
+        // multiblock's exact 3x3x3 bucket-interaction footprint.
+        for (BukkitFurniture furniture : LifecycleFurnitureBehavior.nearby(
+                LifecycleFurnitureBehavior.Channel.BARREL, center, 3.0, 3.0)) {
             Block origin = furniture.location().getBlock();
-            if (!origin.getWorld().equals(block.getWorld())) {
-                continue;
-            }
             int dx = block.getX() - origin.getX();
             int dy = block.getY() - origin.getY();
             int dz = block.getZ() - origin.getZ();
-            boolean covered = switch (furniture.id().toString()) {
-                case BARREL -> Math.abs(dx) <= 1 && Math.abs(dz) <= 1 && dy >= 0 && dy <= 2;
-                case PRESSING_TUB -> dx == 0 && dz == 0 && dy == 0;
-                default -> false;
-            };
-            if (covered) {
+            if (Math.abs(dx) <= 1 && Math.abs(dz) <= 1 && dy >= 0 && dy <= 2) {
                 return true;
             }
         }

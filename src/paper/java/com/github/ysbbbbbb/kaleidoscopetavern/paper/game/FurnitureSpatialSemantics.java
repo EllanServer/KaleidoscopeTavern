@@ -22,4 +22,11 @@ public final class FurnitureSpatialSemantics {
                 && Math.abs(y - centerY) <= vertical
                 && Math.abs(z - centerZ) <= horizontal;
     }
+
+    public static boolean insideBlock(double x, double y, double z,
+                                      int blockX, int blockY, int blockZ) {
+        return Math.floor(x) == blockX
+                && Math.floor(y) == blockY
+                && Math.floor(z) == blockZ;
+    }
 }

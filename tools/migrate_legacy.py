@@ -2227,6 +2227,10 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         lifecycle_channels.append("bar_stool")
     if block_id == "shaker":
         lifecycle_channels.append("shaker")
+    if block_id == "barrel":
+        lifecycle_channels.append("barrel")
+    if block_id == "empty_bottle":
+        lifecycle_channels.append("tap_bottle")
     if (block_id.endswith("_sofa")
             or block_id in {
                 "bar_counter", "table", "bar_cabinet",
