@@ -18,6 +18,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -34,12 +35,17 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.map.MinecraftFont;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
+import org.joml.AxisAngle4f;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -51,6 +57,19 @@ public final class BoardTextService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String CHALKBOARD = PREFIX + "chalkboard";
     private static final String BASE_SANDWICH_BOARD = PREFIX + "base_sandwich_board";
+    private static final float VANILLA_TEXT_SCALE = 0.025F;
+    private static final float SANDWICH_TEXT_SCALE = 0.01F;
+    private static final float CHALKBOARD_TEXT_SCALE = 0.012F;
+    private static final int FONT_UNITS_PER_PIXEL = 2;
+    private static final int TEXT_DISPLAY_SINGLE_LINE_HEIGHT = 9;
+    private static final int LEGACY_FIRST_LINE_Y = -19;
+    private static final int FIRST_LINE_ENTITY_OFFSET =
+            -LEGACY_FIRST_LINE_Y - TEXT_DISPLAY_SINGLE_LINE_HEIGHT;
+    private static final int SANDWICH_LINE_HEIGHT = 10;
+    private static final int CHALKBOARD_LINE_HEIGHT = 12;
+    private static final int SANDWICH_MAX_LINES = 8;
+    private static final int CHALKBOARD_MAX_LINES = 11;
+    private static final double SANDWICH_TILT_RADIANS = Math.toRadians(22.5);
     private static final Map<Material, String> SANDWICH_VARIANTS = Map.ofEntries(
             Map.entry(Material.SHORT_GRASS, "grass"),
             Map.entry(Material.ALLIUM, "allium"),
@@ -77,11 +96,15 @@ public final class BoardTextService implements Listener {
 
     private final JavaPlugin plugin;
     private final ItemService items;
+    private final NamespacedKey boardOwnerKey;
+    private final NamespacedKey boardLineKey;
     private final Map<UUID, EditSession> editors = new HashMap<>();
 
     public BoardTextService(JavaPlugin plugin, ItemService items) {
         this.plugin = plugin;
         this.items = items;
+        this.boardOwnerKey = new NamespacedKey(plugin, "board_owner");
+        this.boardLineKey = new NamespacedKey(plugin, "board_line");
     }
 
     public void start() {
@@ -396,89 +419,143 @@ public final class BoardTextService implements Listener {
             removeDisplay(state);
             return;
         }
-        TextDisplay display = findDisplay(furniture, state);
-        Location position = textLocation(furniture);
-        if (display == null) {
-            display = position.getWorld().spawn(position, TextDisplay.class, spawned -> {
-                spawned.setPersistent(true);
-                spawned.setGravity(false);
-                spawned.setInvulnerable(true);
-                spawned.setSilent(true);
-                spawned.getPersistentDataContainer().set(
-                        new org.bukkit.NamespacedKey(plugin, "board_owner"),
-                        PersistentDataType.STRING,
-                        furniture.bukkitEntity().getUniqueId().toString());
-            });
-            state.putString("board_display", display.getUniqueId().toString());
-        } else {
-            display.teleport(position);
+        Entity owner = furniture.bukkitEntity();
+        if (owner == null) {
+            return;
         }
+
+        boolean sandwich = isSandwichBoard(furniture);
+        int maxWidth = textMaxWidth(furniture);
+        int maxWidthUnits = maxWidth * FONT_UNITS_PER_PIXEL;
+        int maxLines = sandwich ? SANDWICH_MAX_LINES : CHALKBOARD_MAX_LINES;
+        List<BoardTextLayout.Line> lines = BoardTextLayout.wrap(
+                text, maxWidthUnits, maxLines,
+                codePoint -> minecraftGlyphAdvanceUnits(codePoint, sandwich));
+
+        List<TextDisplay> existing = findDisplays(furniture, state);
+        Map<Integer, TextDisplay> indexed = new HashMap<>();
+        List<TextDisplay> reusable = new ArrayList<>();
+        for (TextDisplay display : existing) {
+            Integer lineIndex = display.getPersistentDataContainer().get(
+                    boardLineKey, PersistentDataType.INTEGER);
+            if (lineIndex != null && lineIndex >= 0 && lineIndex < maxLines
+                    && indexed.putIfAbsent(lineIndex, display) == null) {
+                continue;
+            }
+            reusable.add(display);
+        }
+
         DyeColor dye = parseDye(state.string("board_color", "WHITE"));
         boolean glowing = state.bool("board_glowing");
         int rgb = dye.getColor().asRGB();
         if (!glowing) {
             rgb = darken(rgb, 0.6);
         }
-        Component component = Component.text(text, TextColor.color(rgb));
-        if (isSandwichBoard(furniture)) {
-            component = component.decorate(net.kyori.adventure.text.format.TextDecoration.BOLD);
+        TextDisplay.TextAlignment alignment = parseAlignment(
+                state.string("board_alignment", "center"));
+        List<TextDisplay> active = new ArrayList<>(lines.size());
+        for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
+            BoardTextLayout.Line line = lines.get(lineIndex);
+            if (line.text().isBlank()) {
+                continue;
+            }
+            TextDisplay display = indexed.remove(lineIndex);
+            if (display == null && !reusable.isEmpty()) {
+                display = reusable.remove(reusable.size() - 1);
+            }
+            Location position = textLineLocation(
+                    furniture, lineIndex, line.width(), maxWidthUnits, alignment);
+            if (display == null) {
+                display = position.getWorld().spawn(position, TextDisplay.class, spawned -> {
+                    spawned.setPersistent(true);
+                    spawned.setGravity(false);
+                    spawned.setInvulnerable(true);
+                    spawned.setSilent(true);
+                });
+            } else {
+                display.teleport(position);
+            }
+            display.getPersistentDataContainer().set(
+                    boardOwnerKey, PersistentDataType.STRING, owner.getUniqueId().toString());
+            display.getPersistentDataContainer().set(
+                    boardLineKey, PersistentDataType.INTEGER, lineIndex);
+
+            Component component = Component.text(line.text(), TextColor.color(rgb));
+            if (sandwich) {
+                component = component.decorate(net.kyori.adventure.text.format.TextDecoration.BOLD);
+            }
+            display.text(component);
+            display.setAlignment(TextDisplay.TextAlignment.CENTER);
+            // Lines are already wrapped to the archived renderer's pixel width.
+            // Keeping this effectively unbounded prevents a client-side second wrap.
+            display.setLineWidth(Integer.MAX_VALUE);
+            display.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
+            display.setDefaultBackground(false);
+            display.setShadowed(false);
+            display.setSeeThrough(false);
+            display.setBillboard(Display.Billboard.FIXED);
+            display.setTransformation(textTransformation(furniture));
+            display.setViewRange(1.0F);
+            display.setShadowRadius(0F);
+            display.setGlowing(glowing);
+            display.setGlowColorOverride(glowing ? dye.getColor() : null);
+            active.add(display);
         }
-        display.text(component);
-        display.setAlignment(parseAlignment(state.string("board_alignment", "center")));
-        display.setLineWidth(furniture.currentVariant().name().equals("ground_large") ? 232 :
-                isSandwichBoard(furniture) ? 55 : 63);
-        display.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
-        display.setDefaultBackground(false);
-        display.setShadowed(false);
-        display.setSeeThrough(false);
-        display.setBillboard(Display.Billboard.FIXED);
-        display.setViewRange(1.0F);
-        display.setShadowRadius(0F);
-        display.setGlowing(glowing);
-        display.setGlowColorOverride(glowing ? dye.getColor() : null);
+
+        indexed.values().forEach(Entity::remove);
+        reusable.forEach(Entity::remove);
+        if (active.isEmpty()) {
+            state.clear("board_displays");
+        } else {
+            state.putString("board_displays", String.join(",", active.stream()
+                    .map(display -> display.getUniqueId().toString())
+                    .toList()));
+        }
+        state.clear("board_display");
     }
 
-    private TextDisplay findDisplay(BukkitFurniture furniture, FurnitureState state) {
-        String stored = state.string("board_display");
-        if (stored != null) {
-            try {
-                Entity entity = Bukkit.getEntity(UUID.fromString(stored));
-                if (entity instanceof TextDisplay textDisplay && entity.isValid()) {
-                    return textDisplay;
-                }
-            } catch (IllegalArgumentException ignored) {
-                state.clear("board_display");
-            }
-        }
+    private List<TextDisplay> findDisplays(BukkitFurniture furniture, FurnitureState state) {
+        Map<UUID, TextDisplay> displays = new LinkedHashMap<>();
+        addStoredDisplays(state.string("board_displays"), displays);
+        addStoredDisplays(state.string("board_display"), displays);
         Entity owner = furniture.bukkitEntity();
         if (owner == null) {
-            return null;
+            return new ArrayList<>(displays.values());
         }
         String ownerId = owner.getUniqueId().toString();
         for (Entity entity : furniture.location().getWorld().getNearbyEntities(
                 furniture.location(), 3, 3, 3, nearby -> nearby instanceof TextDisplay)) {
             String candidate = entity.getPersistentDataContainer().get(
-                    new org.bukkit.NamespacedKey(plugin, "board_owner"), PersistentDataType.STRING);
-            if (ownerId.equals(candidate)) {
-                state.putString("board_display", entity.getUniqueId().toString());
-                return (TextDisplay) entity;
+                    boardOwnerKey, PersistentDataType.STRING);
+            if (ownerId.equals(candidate) && entity.isValid()) {
+                displays.putIfAbsent(entity.getUniqueId(), (TextDisplay) entity);
             }
         }
-        return null;
+        return new ArrayList<>(displays.values());
+    }
+
+    private static void addStoredDisplays(String stored, Map<UUID, TextDisplay> displays) {
+        if (stored == null || stored.isBlank()) {
+            return;
+        }
+        for (String token : stored.split(",")) {
+            try {
+                Entity entity = Bukkit.getEntity(UUID.fromString(token));
+                if (entity instanceof TextDisplay textDisplay && entity.isValid()) {
+                    displays.putIfAbsent(entity.getUniqueId(), textDisplay);
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Ignore malformed legacy state; the caller rewrites it after refresh.
+            }
+        }
     }
 
     private void removeDisplay(FurnitureState state) {
-        String stored = state.string("board_display");
-        if (stored != null) {
-            try {
-                Entity display = Bukkit.getEntity(UUID.fromString(stored));
-                if (display != null) {
-                    display.remove();
-                }
-            } catch (IllegalArgumentException ignored) {
-                // Clear a malformed UUID below.
-            }
-        }
+        Map<UUID, TextDisplay> displays = new LinkedHashMap<>();
+        addStoredDisplays(state.string("board_displays"), displays);
+        addStoredDisplays(state.string("board_display"), displays);
+        displays.values().forEach(Entity::remove);
+        state.clear("board_displays");
         state.clear("board_display");
     }
 
@@ -510,19 +587,119 @@ public final class BoardTextService implements Listener {
         return result;
     }
 
-    private static Location textLocation(BukkitFurniture furniture) {
+    private static Location textLineLocation(BukkitFurniture furniture, int lineIndex,
+                                             int lineWidthUnits, int maxWidthUnits,
+                                             TextDisplay.TextAlignment alignment) {
         Location origin = furniture.location().clone();
         boolean sandwich = isSandwichBoard(furniture);
-        double forwardOffset = sandwich ? -0.06 : -0.43;
+        float scale = sandwich ? SANDWICH_TEXT_SCALE : CHALKBOARD_TEXT_SCALE;
+        int lineHeight = sandwich ? SANDWICH_LINE_HEIGHT : CHALKBOARD_LINE_HEIGHT;
+        double localVerticalOffset = (FIRST_LINE_ENTITY_OFFSET - lineIndex * lineHeight) * scale;
+        double forwardOffset = sandwich
+                ? 0.06 - localVerticalOffset * Math.sin(SANDWICH_TILT_RADIANS)
+                : -0.43;
         Vector forward = origin.getDirection().setY(0);
         if (forward.lengthSquared() > 0) {
             forward.normalize().multiply(forwardOffset);
             origin.add(forward);
         }
-        origin.add(0, sandwich ? 1.06 : 1.535, 0);
+        double verticalOffset = sandwich
+                ? localVerticalOffset * Math.cos(SANDWICH_TILT_RADIANS)
+                : localVerticalOffset;
+        origin.add(0, (sandwich ? 1.06 : 1.535) + verticalOffset, 0);
+
+        double alignedCenterUnits = switch (alignment) {
+            case LEFT -> (lineWidthUnits - maxWidthUnits) / 2.0;
+            case RIGHT -> (maxWidthUnits - lineWidthUnits) / 2.0;
+            case CENTER -> 0.0;
+        };
+        double alignedCenterPixels = alignedCenterUnits / FONT_UNITS_PER_PIXEL;
+        // The 26.2 TextDisplay renderer adds a one-pixel left background margin.
+        // Counter it so alignment matches TextBlockEntityRender#getPosX exactly.
+        origin.add(horizontalRight(origin.getYaw()).multiply((alignedCenterPixels - 1.0) * scale));
         origin.setPitch(sandwich ? -22.5F : 0F);
-        origin.setYaw(origin.getYaw() + 180F);
         return origin;
+    }
+
+    private static Transformation textTransformation(BukkitFurniture furniture) {
+        float legacyScale = legacyTextScale(furniture);
+        float displayScale = legacyScale / VANILLA_TEXT_SCALE;
+        return new Transformation(
+                new Vector3f(),
+                new AxisAngle4f(),
+                new Vector3f(displayScale),
+                new AxisAngle4f());
+    }
+
+    private static float legacyTextScale(BukkitFurniture furniture) {
+        return isSandwichBoard(furniture) ? SANDWICH_TEXT_SCALE : CHALKBOARD_TEXT_SCALE;
+    }
+
+    private static int textMaxWidth(BukkitFurniture furniture) {
+        if (furniture.currentVariant().name().equals("ground_large")) {
+            return 232;
+        }
+        return isSandwichBoard(furniture) ? 55 : 63;
+    }
+
+    /** Returns 26.2 font advance in half-pixel units. */
+    private static int minecraftGlyphAdvanceUnits(int codePoint, boolean bold) {
+        if (codePoint == '\t') {
+            return (bold ? 20 : 16) * FONT_UNITS_PER_PIXEL;
+        }
+        int type = Character.getType(codePoint);
+        if (type == Character.NON_SPACING_MARK
+                || type == Character.COMBINING_SPACING_MARK
+                || type == Character.ENCLOSING_MARK
+                || type == Character.FORMAT) {
+            return 0;
+        }
+
+        int advanceUnits;
+        if (codePoint >= 32 && codePoint <= 126) {
+            advanceUnits = asciiGlyphAdvance((char) codePoint) * FONT_UNITS_PER_PIXEL;
+            if (bold) {
+                advanceUnits += FONT_UNITS_PER_PIXEL;
+            }
+        } else if (usesFullWidthUnihexGlyph(codePoint)) {
+            // The official 26.2 unifont provider overrides CJK glyphs to
+            // 16 source pixels: 16 / 2 + 1 = 9 rendered pixels. Unihex's
+            // bold offset is half a pixel rather than the bitmap font's one.
+            advanceUnits = 18 + (bold ? 1 : 0);
+        } else if (Character.isBmpCodePoint(codePoint)) {
+            String glyph = Character.toString((char) codePoint);
+            if (MinecraftFont.Font.isValid(glyph)) {
+                // MapFont excludes the trailing pixel that Font#width includes.
+                advanceUnits = (MinecraftFont.Font.getWidth(glyph) + 1)
+                        * FONT_UNITS_PER_PIXEL;
+                if (bold) {
+                    advanceUnits += FONT_UNITS_PER_PIXEL;
+                }
+            } else {
+                advanceUnits = 18 + (bold ? 1 : 0);
+            }
+        } else {
+            advanceUnits = 18 + (bold ? 1 : 0);
+        }
+        return advanceUnits;
+    }
+
+    private static boolean usesFullWidthUnihexGlyph(int codePoint) {
+        Character.UnicodeScript script = Character.UnicodeScript.of(codePoint);
+        return script == Character.UnicodeScript.HAN
+                || script == Character.UnicodeScript.HIRAGANA
+                || script == Character.UnicodeScript.KATAKANA;
+    }
+
+    private static int asciiGlyphAdvance(char character) {
+        return switch (character) {
+            case '!', '\'', ',', '.', ':', ';', 'i', '|' -> 2;
+            case '`', 'l' -> 3;
+            case ' ', '"', '(', ')', '*', 'I', '[', ']', 't', '{', '}' -> 4;
+            case '<', '>', 'f', 'k' -> 5;
+            case '@', '~' -> 7;
+            default -> 6;
+        };
     }
 
     private static Vector horizontalRight(float yaw) {

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 
 /** Immutable, validated view of the Forge data maps migrated into runtime TSV catalogs. */
@@ -190,23 +191,22 @@ public final class ContentCatalog {
         return matches(selector, itemId);
     }
 
-    public int cocktailColor(String itemId) {
+    public OptionalInt cocktailColor(String itemId) {
         Map<String, Integer> colors = Map.ofEntries(
-                Map.entry("black", 0x1D1D21), Map.entry("blue", 0x3C44AA),
-                Map.entry("brown", 0x835432), Map.entry("cyan", 0x169C9C),
-                Map.entry("gray", 0x474F52), Map.entry("green", 0x5E7C16),
-                Map.entry("light_blue", 0x3AB3DA), Map.entry("light_gray", 0x9D9D97),
-                Map.entry("light_purple", 0xC74EBD), Map.entry("lime", 0x80C71F),
-                Map.entry("orange", 0xF9801D), Map.entry("pink", 0xF38BAA),
-                Map.entry("purple", 0x8932B8), Map.entry("red", 0xB02E26),
-                Map.entry("white", 0xF9FFFE), Map.entry("yellow", 0xFED83D),
-                Map.entry("gold", 0xF6C344));
+                Map.entry("black", 0x000000), Map.entry("dark_blue", 0x0000AA),
+                Map.entry("dark_green", 0x00AA00), Map.entry("dark_aqua", 0x00AAAA),
+                Map.entry("dark_red", 0xAA0000), Map.entry("dark_purple", 0xAA00AA),
+                Map.entry("gold", 0xFFAA00), Map.entry("gray", 0xAAAAAA),
+                Map.entry("dark_gray", 0x555555), Map.entry("blue", 0x5555FF),
+                Map.entry("green", 0x55FF55), Map.entry("aqua", 0x55FFFF),
+                Map.entry("red", 0xFF5555), Map.entry("light_purple", 0xFF55FF),
+                Map.entry("yellow", 0xFFFF55), Map.entry("white", 0xFFFFFF));
         for (Map.Entry<String, Integer> entry : colors.entrySet()) {
             if (tag("kaleidoscope_tavern:cocktail_ingredient_" + entry.getKey()).contains(itemId)) {
-                return entry.getValue();
+                return OptionalInt.of(entry.getValue());
             }
         }
-        return 0xA349A4;
+        return OptionalInt.empty();
     }
 
     public List<PressingRecipe> pressingRecipes() {

@@ -334,6 +334,19 @@ def model_references(value: Any):
             yield from model_references(child)
 
 
+def item_model_paths(value: Any):
+    """Yield every vanilla block-model path nested in an item definition."""
+    if isinstance(value, dict):
+        if (value.get("type") in {"model", "minecraft:model"}
+                and isinstance(value.get("path"), str)):
+            yield value["path"]
+        for child in value.values():
+            yield from item_model_paths(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from item_model_paths(child)
+
+
 def model_has_geometry(resource_id: str, roots=ASSET_ROOTS, seen=frozenset()) -> bool:
     if resource_id in seen:
         return False
@@ -540,6 +553,29 @@ def validate() -> dict[str, int]:
     for source_name, owners in RUNTIME_BEHAVIOR_COVERAGE.items():
         assert_owner_evidence(source_name, owners, game_package)
 
+    block_service_source = (game_package / "block/BlockService.java").read_text(
+        encoding="utf-8-sig")
+    for evidence in (
+            "ItemStack eventItem = event.item();",
+            "String planted = grapevineFor(soil);",
+            'withNamed(replacement, "type", stringProperty(trellisState, "type"))',
+            "void plantGrapevineOnTrellis(",
+            "onRightClickWithGrapevine"):
+        if evidence not in block_service_source:
+            raise AssertionError(f"BlockService grapevine planting evidence is missing: {evidence}")
+    if '"single".equals(stringProperty(state, "type"))' in block_service_source:
+        raise AssertionError("Grapevine planting must support connected trellis shapes")
+
+    # DisplayStorageService must cancel off-hand furniture interactions to
+    # prevent CraftEngine's built-in display_item_furniture behavior from
+    # duplicating items and desyncing storage visuals.
+    storage_source = (game_package / "DisplayStorageService.java").read_text(
+        encoding="utf-8-sig")
+    if "event.hand() != InteractionHand.MAIN_HAND" not in storage_source \
+            or "event.setCancelled(true)" not in storage_source:
+        raise AssertionError(
+            "DisplayStorageService must cancel off-hand interactions to prevent item duplication")
+
     tap_behavior_files = {
         path.name for path in SOURCE_TAP_BEHAVIORS.glob("*Behavior.java")
     }
@@ -628,17 +664,71 @@ def validate() -> dict[str, int]:
                 raise AssertionError(
                     f"{block_id}/{variant_name}: particle-only source still maps to invisible model {model}")
 
+    stepladder = furniture[f"{NAMESPACE}:stepladder"]
+    stepladder_variants = stepladder.get("variants", {})
+    if set(stepladder_variants) != {"ground"}:
+        raise AssertionError(
+            f"Stepladder must expose only its ground variant, found {sorted(stepladder_variants)}")
+    stepladder_ground = stepladder_variants["ground"]
+    stepladder_elements = stepladder_ground.get("elements", [])
+    if len(stepladder_elements) != 2 or any(
+            element.get("type") != "item_display" for element in stepladder_elements):
+        raise AssertionError("Stepladder must keep exactly two ItemDisplay halves")
+    stepladder_hitboxes = stepladder_ground.get("hitboxes", [])
+    if len(stepladder_hitboxes) != 4 or any(
+            hitbox.get("type") != "shulker" for hitbox in stepladder_hitboxes):
+        raise AssertionError("Stepladder must use four physical shulker hitboxes")
+    expected_stepladder_hitboxes = {
+        ("0,0,0", 0.75, 0, "up", True, False),
+        ("0,0.75,-0.25", 0.625, 25, "north", False, False),
+        ("-0.25,1.5,-0.25", 0.4, 35, "up", False, False),
+        ("0.25,1.5,-0.25", 0.4, 35, "up", False, False),
+    }
+    actual_stepladder_hitboxes = {
+        (
+            hitbox.get("position"),
+            hitbox.get("scale", 1),
+            hitbox.get("peek", 0),
+            hitbox.get("direction", "up"),
+            hitbox.get("blocks_building"),
+            hitbox.get("invisible"),
+        )
+        for hitbox in stepladder_hitboxes
+    }
+    if actual_stepladder_hitboxes != expected_stepladder_hitboxes:
+        raise AssertionError(
+            "Stepladder hitboxes must retain the server-tested compact layout: "
+            f"found={sorted(actual_stepladder_hitboxes)}")
+
     trellis = blocks[f"{NAMESPACE}:trellis"]
     if "support_shape" in trellis.get("settings", {}):
         raise AssertionError("Trellis must not expose a full-cube support/occlusion shape")
-    trellis_appearances = trellis["states"]["appearances"].values()
-    if any(appearance.get("auto_state", {}).get("type") != "higher_tripwire"
-           or appearance.get("entity_renderer", {}).get("type") != "item_display"
-           for appearance in trellis_appearances):
-        raise AssertionError("Trellis must use a non-occluding carrier plus entity renderer")
-
     vine_trellis_ids = (
         "grapevine_trellis", "ice_grapevine_trellis", "gold_grapevine_trellis")
+
+    # A carrier is all the client ever sees, so it decides both what the player
+    # collides with and what can be aimed at. Every trellis appearance uses a
+    # directional lightning-rod state: vertical members use facing=up, while
+    # horizontal members use their matching axis. The state is transparent to
+    # the authored ItemDisplay and remains collidable for connected shapes.
+    collidable_trellises = 0
+    for block_id in ("trellis", *vine_trellis_ids):
+        definition = blocks[f"{NAMESPACE}:{block_id}"]
+        states = definition["states"]
+        for name, appearance in states["appearances"].items():
+            if appearance.get("entity_renderer", {}).get("type") != "item_display":
+                raise AssertionError(f"{block_id}/{name} must keep its authored item-display model")
+            state = appearance.get("state", "")
+            if not state.startswith("minecraft:lightning_rod["):
+                raise AssertionError(
+                    f"{block_id}/{name}: every trellis shape needs a colliding lightning-rod carrier")
+            if "powered=false" not in state or "waterlogged=false" not in state:
+                raise AssertionError(
+                    f"{block_id}/{name}: trellis carrier must remain unpowered and dry")
+            collidable_trellises += 1
+    if collidable_trellises != 37:
+        raise AssertionError(
+            f"Expected 37 collidable trellis appearances, found {collidable_trellises}")
     for block_id in ("trellis", *vine_trellis_ids):
         definition = blocks[f"{NAMESPACE}:{block_id}"]
         settings = definition.get("settings", {})
@@ -763,9 +853,12 @@ def validate() -> dict[str, int]:
         raise AssertionError("CustomCrops must not add a second grape random-growth scheduler")
 
     for item_id, item in {**items, **render_items}.items():
-        model = item.get("model", {}).get("path")
-        if not model or not asset_exists(model, "models"):
-            raise AssertionError(f"{item_id}: missing model {model!r}")
+        models = set(item_model_paths(item.get("model", {})))
+        if not models:
+            raise AssertionError(f"{item_id}: item definition has no block-model path")
+        for model in models:
+            if not asset_exists(model, "models"):
+                raise AssertionError(f"{item_id}: missing model {model!r}")
 
     for block_id, block in blocks.items():
         public_item = block.get("settings", {}).get("item")
@@ -824,10 +917,11 @@ def validate() -> dict[str, int]:
         if expected is not None and count != expected:
             raise AssertionError(f"{name}: expected {expected} rows, found {count}")
         catalog_counts[name] = count
-    if len({row[0] for row in tsv_rows("drink-effects.tsv")}) != 37:
+    effect_rows = tsv_rows("drink-effects.tsv")
+    if len({row[0] for row in effect_rows}) != 37:
         raise AssertionError("Expected drink effects for 37 items")
 
-    drink_ids = {row[0] for row in tsv_rows("drink-effects.tsv")}
+    drink_ids = {row[0] for row in effect_rows}
     drink_ids.add(f"{NAMESPACE}:signature_cocktail")
     for item_id in drink_ids:
         item = items[item_id]
@@ -840,6 +934,37 @@ def validate() -> dict[str, int]:
             raise AssertionError(f"{item_id}: drinks must remain consumable items with manual sneak placement")
         if item.get("data", {}).get("components", {}).get("minecraft:max_stack_size") != 16:
             raise AssertionError(f"{item_id}: bottle/glassware stack size must remain 16")
+        data = item.get("data", {})
+        if data.get("custom_name") != data.get("item_name"):
+            raise AssertionError(
+                f"{item_id}: potion drinks require custom_name because PotionItem "
+                "ignores item_name when deriving its hover title")
+        if data.get("hide_tooltip") != ["minecraft:potion_contents"]:
+            raise AssertionError(
+                f"{item_id}: drinks must hide only the vanilla potion_contents tooltip; "
+                "their real server-side effects are rendered as custom lore")
+        potion_contents = data.get("components", {}).get("minecraft:potion_contents")
+        if (not isinstance(potion_contents, dict)
+                or potion_contents.get("potion") != "minecraft:water"
+                or not set(potion_contents).issubset({"potion", "custom_color"})
+                or ("custom_color" in potion_contents
+                    and not isinstance(potion_contents["custom_color"], int))):
+            raise AssertionError(
+                f"{item_id}: drink potion_contents must use the neutral water base "
+                "and may only add an integer custom_color")
+
+    fixed_cocktails = {row[1] for row in tsv_rows("shaker.tsv")}
+    fixed_cocktails.add(f"{NAMESPACE}:mystery_cocktail")
+    for item_id in fixed_cocktails:
+        lore = items[item_id].get("data", {}).get("lore", [])
+        expected_effects = {
+            f"effect.{row[2].replace(':', '.')}"
+            for row in effect_rows if row[0] == item_id and row[1] == "1"
+        }
+        if not lore or any(not any(effect in line for line in lore)
+                           for effect in expected_effects):
+            raise AssertionError(
+                f"{item_id}: fixed cocktail creative preview is missing real effect lore")
 
     for item_id, item in items.items():
         if not item_id.endswith("_bucket"):
@@ -862,6 +987,35 @@ def validate() -> dict[str, int]:
             }):
         raise AssertionError(
             "Molotov must retain its 72,000-tick spear charge instead of instant splash-potion use")
+
+    shaker_item = items[f"{NAMESPACE}:shaker"]
+    shaker_components = shaker_item.get("data", {}).get("components", {})
+    if (shaker_item.get("material") != "paper"
+            or shaker_components.get("minecraft:max_stack_size") != 1
+            or shaker_components.get("minecraft:consumable") != {
+                "consume_seconds": 3_600.0,
+                "animation": "brush",
+                "has_consume_particles": False,
+            }):
+        raise AssertionError(
+            "Shaker must use a behavior-free material with a component-only brush animation")
+    if shaker_item.get("model") != {
+            "type": "minecraft:select",
+            "property": "display_context",
+            "cases": [{
+                "when": ["gui", "fixed"],
+                "model": {
+                    "type": "minecraft:model",
+                    "path": f"{NAMESPACE}:item/shaker",
+                },
+            }],
+            "fallback": {
+                "type": "minecraft:model",
+                "path": f"{NAMESPACE}:item/shaker_3d",
+            },
+            }:
+        raise AssertionError(
+            "Shaker must use the 2D icon only in GUI/FIXED display contexts")
 
     barrel_variants = furniture[f"{NAMESPACE}:barrel"]["variants"]
     if set(barrel_variants) != {"ground", "ground_open"}:
@@ -896,10 +1050,15 @@ def validate() -> dict[str, int]:
         raise AssertionError("Ground block models must be lifted to the authored target block")
     if sofa["hitboxes"][0].get("height") != 1.125 or stool["hitboxes"][0].get("height") != 1.3125:
         raise AssertionError("Seat hitboxes must retain the Forge VoxelShape height")
-    if sofa["hitboxes"][0].get("seats") != ["0,0.2625,0 0"]:
-        raise AssertionError("Sofa seat must include SitEntity's -0.25 passenger offset")
-    if stool["hitboxes"][0].get("seats") != ["0,0.625,0 0"]:
-        raise AssertionError("Bar-stool seat must include SitEntity's -0.25 passenger offset")
+    # BukkitSeat adds a flat 0.6 to the seat position and then sinks the small
+    # armour stand by its own 0.9875 height so the stand's top-mounted passenger
+    # lands back on that point. Those two cancel each other, not the 0.6, so the
+    # player's feet end up at `furniture origin + seat.y + 0.6` and each seat y is
+    # its cushion height minus 0.6.
+    if sofa["hitboxes"][0].get("seats") != ["0,-0.1,0 0"]:
+        raise AssertionError("Sofa seat must rest on the 8/16 cushion, not float above it")
+    if stool["hitboxes"][0].get("seats") != ["0,0.3375,0 0"]:
+        raise AssertionError("Bar-stool seat must rest on the 15/16 cushion, not float above it")
     stool_render_id = stool["elements"][0].get("item")
     if render_items.get(stool_render_id, {}).get("model", {}).get("path") != (
             f"{NAMESPACE}:block/deco/bar_stool/white"):
@@ -936,6 +1095,31 @@ def validate() -> dict[str, int]:
     if (shaker_base is None or len(shaker_base.get("elements", [])) != 2
             or shaker_lid is None or len(shaker_lid.get("elements", [])) != 3):
         raise AssertionError("ShakerModel must remain split as 2 root + 3 animated lid cuboids")
+    shaker_item_model = asset_json(f"{NAMESPACE}:item/shaker", "models")
+    if shaker_item_model != {
+            "parent": "minecraft:item/generated",
+            "textures": {"layer0": f"{NAMESPACE}:item/shaker"},
+            }:
+        raise AssertionError(
+            "Shaker inventory model must remain vanilla-compatible instead of using Forge loaders")
+    paper_asset_roots = (ROOT / "src/paper/pack/resourcepack/assets",)
+    shaker_3d_model = asset_json(
+        f"{NAMESPACE}:item/shaker_3d", "models", paper_asset_roots)
+    source_shaker_3d = asset_json(
+        f"{NAMESPACE}:item/shaker_3d", "models", SOURCE_ASSET_ROOTS)
+    if (shaker_3d_model is None or source_shaker_3d is None
+            or shaker_3d_model != {
+                key: value for key, value in source_shaker_3d.items()
+                if key != "groups"
+            }
+            or len(shaker_3d_model.get("elements", [])) != 5
+            or set(shaker_3d_model.get("display", {})) != {
+                "thirdperson_righthand", "thirdperson_lefthand",
+                "firstperson_righthand", "firstperson_lefthand",
+                "ground", "head",
+            }):
+        raise AssertionError(
+            "Shaker held/ground/head model must retain the authored 3D geometry and transforms")
     if bottle["hitboxes"][0].get("width") != 0.375 or bottle["hitboxes"][0].get("height") != 0.875:
         raise AssertionError("Bottle hitboxes must retain the 6x14x6 source VoxelShape")
 
@@ -1003,8 +1187,18 @@ def validate() -> dict[str, int]:
             f"{NAMESPACE}:block/brew/tap/close"):
         raise AssertionError("Tap must retain the north-authored mounting-plate orientation")
     tap_hitbox = furniture[f"{NAMESPACE}:tap"]["variants"]["wall"]["hitboxes"][0]
-    if tap_hitbox.get("position") != "0,-0.1875,0.6875":
-        raise AssertionError("Tap hitbox must run from its z=16 mounting plate toward z=6")
+    if tap_hitbox.get("position") != "0,-0.1875,0.35":
+        raise AssertionError("Tap interaction hitbox must retain its corrected wall depth")
+    tap_open_hitbox = furniture[
+        f"{NAMESPACE}:tap"]["variants"]["wall_open"]["hitboxes"][0]
+    if tap_open_hitbox.get("position") != "0,-0.1875,0.6875":
+        raise AssertionError("Open tap interaction hitbox must retain its authored depth")
+
+    pressing_tub_wall = furniture[
+        f"{NAMESPACE}:pressing_tub"]["variants"]["wall"]["elements"][0]
+    if (pressing_tub_wall.get("position") != "0,0,0.19"
+            or pressing_tub_wall.get("translation") != "0,0,-0.627"):
+        raise AssertionError("Tilted pressing tub must retain its corrected wall depth")
 
     paintings = [item_id for item_id in items if item_id.endswith("_painting")]
     if len(paintings) != 14:
@@ -1017,6 +1211,10 @@ def validate() -> dict[str, int]:
             raise AssertionError(f"{painting_id}: wall/ceiling placement rules are incomplete")
         if any(hitbox.get("blocks_building") is not False for hitbox in wall["hitboxes"]):
             raise AssertionError(f"{painting_id}: square wall hitbox must not block placement")
+        wall_element = wall["elements"][0]
+        if (wall_element.get("position") != "0,0,0.19"
+                or wall_element.get("translation") != "0,0,-0.627"):
+            raise AssertionError(f"{painting_id}: wall display depth drifted")
 
     storage_slot_counts = {
         "bar_cabinet": 2,

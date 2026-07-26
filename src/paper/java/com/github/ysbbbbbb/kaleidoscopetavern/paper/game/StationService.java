@@ -26,6 +26,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
+import org.bukkit.SoundCategory;
 import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -43,6 +44,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -100,6 +102,7 @@ public final class StationService implements Listener {
     private final Set<UUID> loadedIncense = new HashSet<>();
     private final Set<UUID> activeIncense = new HashSet<>();
     private final Set<UUID> loadedBarrels = new HashSet<>();
+    private final Set<UUID> pendingVanillaBucketEmpty = new HashSet<>();
     private BukkitTask incenseTask;
     private BukkitTask incenseRedstoneTask;
     private BukkitTask portableShakerTask;
@@ -153,6 +156,7 @@ public final class StationService implements Listener {
         loadedIncense.clear();
         activeIncense.clear();
         loadedBarrels.clear();
+        pendingVanillaBucketEmpty.clear();
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -196,31 +200,97 @@ public final class StationService implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onFurnitureBreak(FurnitureBreakEvent event) {
-        String id = event.furniture().id().toString();
+        BukkitFurniture furniture = event.furniture();
+        String id = furniture.id().toString();
+        Location dropLocation = event.location().clone();
         switch (id) {
             case PRESSING_TUB -> {
-                removePressVisuals(event.furniture());
-                if (event.dropItems()) dropPressingContents(event.furniture(), event.location());
+                FurnitureState state = new FurnitureState(plugin, furniture);
+                List<ItemDisplay> visuals = currentPressVisuals(furniture, state);
+                ItemStack storedIngredient = pressingItem(state, null);
+                ItemStack ingredient = storedIngredient == null ? null : storedIngredient.clone();
+                int ingredientCount = ingredient == null ? 0 : state.integer("press_count");
+                deferFurnitureBreak(event, () -> {
+                    visuals.forEach(Entity::remove);
+                    if (event.dropItems() && ingredient != null) {
+                        dropStored(dropLocation, ingredient, ingredientCount);
+                    }
+                });
+                // PressingTubBlock#getDrops restores only the ingredient;
+                // finished tank fluid is deliberately lost on break.
             }
             case BARREL -> {
-                Entity entity = event.furniture().bukkitEntity();
-                if (entity != null) loadedBarrels.remove(entity.getUniqueId());
-                removeBarrelVisuals(event.furniture());
-                if (event.dropItems()) dropBarrelContents(event.furniture(), event.location());
+                Entity entity = furniture.bukkitEntity();
+                UUID furnitureId = entity == null ? null : entity.getUniqueId();
+                FurnitureState state = new FurnitureState(plugin, furniture);
+                List<ItemDisplay> visuals = currentBarrelVisuals(furniture, state);
+                deferFurnitureBreak(event, () -> {
+                    if (furnitureId != null) {
+                        loadedBarrels.remove(furnitureId);
+                    }
+                    visuals.forEach(Entity::remove);
+                });
+                // Forge only drops the barrel itself. Its internal ingredients, fluid and
+                // finished output are deliberately lost when the multiblock is destroyed.
             }
             case SHAKER -> {
-                if (event.dropItems()) dropShaker(event);
+                Optional<ItemStack> shaker = event.dropItems()
+                        ? buildShakerItem(new FurnitureState(plugin, furniture), event.player())
+                        : Optional.empty();
+                if (shaker.isPresent()) {
+                    event.setDropItems(false);
+                    ItemStack drop = shaker.get().clone();
+                    deferFurnitureBreak(event, () -> {
+                        if (!event.dropItems()) {
+                            dropLocation.getWorld().dropItemNaturally(dropLocation, drop);
+                        }
+                    });
+                }
             }
             default -> {
                 if (id.startsWith(NAMESPACE) && id.endsWith("_incense")) {
-                    Entity entity = event.furniture().bukkitEntity();
+                    Entity entity = furniture.bukkitEntity();
                     if (entity != null) {
-                        loadedIncense.remove(entity.getUniqueId());
-                        activeIncense.remove(entity.getUniqueId());
+                        UUID furnitureId = entity.getUniqueId();
+                        deferFurnitureBreak(event, () -> {
+                            loadedIncense.remove(furnitureId);
+                            activeIncense.remove(furnitureId);
+                        });
                     }
                 }
             }
         }
+    }
+
+    private void deferFurnitureBreak(FurnitureBreakEvent event, Runnable action) {
+        // EventPriority does not define registration order within a priority,
+        // and even a MONITOR listener can technically cancel the event. Wait
+        // until dispatch is over before producing drops or deleting helpers.
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (!event.isCancelled()) {
+                action.run();
+            }
+        });
+    }
+
+    private List<ItemDisplay> currentPressVisuals(BukkitFurniture furniture, FurnitureState state) {
+        if (furniture.bukkitEntity() == null) {
+            return List.of();
+        }
+        List<ItemDisplay> displays = new ArrayList<>();
+        displays.addAll(pressVisuals(furniture, state, "item", "press_item_visuals"));
+        displays.addAll(pressVisuals(furniture, state, "fluid", "press_fluid_visual"));
+        return List.copyOf(displays);
+    }
+
+    private List<ItemDisplay> currentBarrelVisuals(BukkitFurniture furniture, FurnitureState state) {
+        if (furniture.bukkitEntity() == null) {
+            return List.of();
+        }
+        List<ItemDisplay> displays = new ArrayList<>();
+        displays.addAll(barrelVisuals(furniture, state, "item", "barrel_item_visuals"));
+        displays.addAll(barrelVisuals(furniture, state, "fluid", "barrel_fluid_visual"));
+        return List.copyOf(displays);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -255,11 +325,79 @@ public final class StationService implements Listener {
         }
     }
 
+    /**
+     * Stops a bucket from also emptying into the world when it feeds a station.
+     *
+     * <p>Filling a barrel or pressing tub is driven by FurnitureInteractEvent,
+     * which only governs CraftEngine's own interaction flow. Vanilla still runs
+     * its bucket placement for the same right-click, so the fluid was recorded on
+     * the furniture *and* spilled as a real block beside it. Interaction hitboxes
+     * are not blocks, so vanilla picks the air the player aimed through.
+     */
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBucketEmpty(PlayerBucketEmptyEvent event) {
+        // FurnitureInteractEvent already consumed this bucket into the station.
+        // The vanilla target can be a block behind the furniture because its
+        // hitboxes are entities, so the exact interaction is more reliable than
+        // trying to infer the station from that target block.
+        if (pendingVanillaBucketEmpty.remove(event.getPlayer().getUniqueId())) {
+            event.setCancelled(true);
+            return;
+        }
+        // Read the bucket from the hand the event reports, so an off-hand pour is
+        // recognised too, and keep using the item id because pressing recipes are
+        // keyed by custom juice buckets rather than vanilla materials.
+        ItemStack bucket = event.getHand() == EquipmentSlot.OFF_HAND
+                ? event.getPlayer().getInventory().getItemInOffHand()
+                : event.getPlayer().getInventory().getItemInMainHand();
+        if (fluidFromBucket(items.id(bucket)).isEmpty()) {
+            return;
+        }
+        if (fluidStationAt(event.getBlock()) || fluidStationAt(event.getBlockClicked())) {
+            event.setCancelled(true);
+        }
+    }
+
+    /** Whether a station that consumes bucket fluids occupies this block. */
+    private boolean fluidStationAt(Block block) {
+        if (block == null) {
+            return false;
+        }
+        Location center = block.getLocation().add(0.5, 0.5, 0.5);
+        // The barrel's hitbox is a 3x3x3 around its origin, so scan far enough to
+        // find a meta entity two blocks away and then test the real footprint.
+        for (Entity entity : center.getWorld().getNearbyEntities(center, 3, 3, 3,
+                candidate -> candidate instanceof ItemDisplay
+                        && CraftEngineFurniture.isFurniture(candidate))) {
+            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
+            if (furniture == null) {
+                continue;
+            }
+            Block origin = furniture.location().getBlock();
+            if (!origin.getWorld().equals(block.getWorld())) {
+                continue;
+            }
+            int dx = block.getX() - origin.getX();
+            int dy = block.getY() - origin.getY();
+            int dz = block.getZ() - origin.getZ();
+            boolean covered = switch (furniture.id().toString()) {
+                case BARREL -> Math.abs(dx) <= 1 && Math.abs(dz) <= 1 && dy >= 0 && dy <= 2;
+                case PRESSING_TUB -> dx == 0 && dz == 0 && dy == 0;
+                default -> false;
+            };
+            if (covered) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         falling.remove(event.getPlayer().getUniqueId());
         recentLandings.remove(event.getPlayer().getUniqueId());
         portableShakers.remove(event.getPlayer().getUniqueId());
+        pendingVanillaBucketEmpty.remove(event.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -268,6 +406,11 @@ public final class StationService implements Listener {
                 || event.getItem() == null || !items.id(event.getItem()).equals(SHAKER)) {
             return;
         }
+        // The migrated shaker uses a long consumable component solely to
+        // expose the original brush-style use animation. Always suppress the
+        // vanilla item use; only a valid three-ingredient shaker is started
+        // explicitly below.
+        event.setCancelled(true);
         ItemStack shaker = event.getItem();
         if (items.shakerResult(shaker) != null) {
             return;
@@ -283,7 +426,6 @@ public final class StationService implements Listener {
 
         Player player = event.getPlayer();
         EquipmentSlot hand = event.getHand();
-        event.setCancelled(true);
         Bukkit.getScheduler().runTask(plugin, () -> {
             ItemStack current = handItem(player, hand);
             if (!player.isOnline() || !items.id(current).equals(SHAKER)
@@ -328,7 +470,7 @@ public final class StationService implements Listener {
         items.withShakerState(shaker, ingredients, result.get());
         setHandItem(player, hand, shaker);
         player.getWorld().playSound(player.getLocation(),
-                "kaleidoscope_tavern:item.shaker.end", 1.0F, 1.0F);
+                "kaleidoscope_tavern:item.shaker.end", SoundCategory.PLAYERS, 1.0F, 1.0F);
     }
 
     private void tickPortableShakers() {
@@ -345,7 +487,8 @@ public final class StationService implements Listener {
                 float volume = 0.75F + ThreadLocalRandom.current().nextFloat() * 0.2F;
                 float pitch = 0.8F + ThreadLocalRandom.current().nextFloat() * 0.2F;
                 player.getWorld().playSound(player.getLocation(),
-                        "kaleidoscope_tavern:item.shaker.shaking", volume, pitch);
+                        "kaleidoscope_tavern:item.shaker.shaking",
+                        SoundCategory.PLAYERS, volume, pitch);
             }
             if (ShakerSemantics.shouldAutoRelease(ticks)) {
                 portableShakers.remove(playerId);
@@ -414,7 +557,7 @@ public final class StationService implements Listener {
                 items.give(player, result.get());
                 state.clear("press_amount", "press_fluid");
                 furniture.location().getWorld().playSound(furniture.location(),
-                        "minecraft:item.bucket.fill", 1.0F, 1.0F);
+                        "minecraft:item.bucket.fill", SoundCategory.BLOCKS, 1.0F, 1.0F);
                 refreshPressVisuals(furniture);
                 return true;
             }
@@ -522,12 +665,14 @@ public final class StationService implements Listener {
     private static void playPressSound(Location location, String sound) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         location.getWorld().playSound(location, sound,
+                SoundCategory.BLOCKS,
                 0.5F + random.nextFloat(), random.nextFloat() * 0.3F + 0.7F);
     }
 
     private static void playItemFrameSound(Location location, String sound) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         location.getWorld().playSound(location, sound,
+                SoundCategory.BLOCKS,
                 0.5F + random.nextFloat(), random.nextFloat() * 0.7F + 0.6F);
     }
 
@@ -652,7 +797,8 @@ public final class StationService implements Listener {
                 state.items("barrel_items", stored);
                 refreshBarrelVisuals(furniture);
                 furniture.location().getWorld().playSound(furniture.location(),
-                        "minecraft:entity.item_frame.remove_item", 0.75F, 1.0F);
+                        "minecraft:entity.item_frame.remove_item",
+                        SoundCategory.BLOCKS, 0.75F, 1.0F);
                 return true;
             }
             return false;
@@ -671,8 +817,9 @@ public final class StationService implements Listener {
                 state.putString("barrel_fluid", fluid.get());
                 state.integer("barrel_amount", amount + 1_000);
                 items.build("minecraft:bucket", player).ifPresent(bucket -> items.give(player, bucket));
+                suppressVanillaBucketEmpty(player);
                 furniture.location().getWorld().playSound(furniture.location(),
-                        "minecraft:item.bucket.empty", 0.9F, 1.0F);
+                        "minecraft:item.bucket.empty", SoundCategory.BLOCKS, 0.9F, 1.0F);
                 refreshBarrelVisuals(furniture);
                 return true;
             }
@@ -741,8 +888,15 @@ public final class StationService implements Listener {
         state.items("barrel_items", stored);
         refreshBarrelVisuals(furniture);
         furniture.location().getWorld().playSound(furniture.location(),
-                "minecraft:entity.item_frame.add_item", 0.75F, 0.9F);
+                "minecraft:entity.item_frame.add_item", SoundCategory.BLOCKS, 0.75F, 0.9F);
         return true;
+    }
+
+    private void suppressVanillaBucketEmpty(Player player) {
+        UUID playerId = player.getUniqueId();
+        pendingVanillaBucketEmpty.add(playerId);
+        Bukkit.getScheduler().runTask(plugin,
+                () -> pendingVanillaBucketEmpty.remove(playerId));
     }
 
     private boolean initializeBarrelState(BukkitFurniture furniture, FurnitureState state) {
@@ -786,7 +940,7 @@ public final class StationService implements Listener {
             // both transitions and plays it at the lid, two blocks above.
             furniture.location().getWorld().playSound(
                     furniture.location().clone().add(0, 2, 0),
-                    "minecraft:block.barrel.open", 1.0F, 1.0F);
+                    "minecraft:block.barrel.open", SoundCategory.BLOCKS, 1.0F, 1.0F);
         }
         refreshBarrelVisuals(furniture);
     }
@@ -913,14 +1067,14 @@ public final class StationService implements Listener {
             items.returnedContainer(handId, catalog.isCocktail(handId)).flatMap(id -> items.build(id, player))
                     .ifPresent(container -> items.give(player, container));
             furniture.location().getWorld().playSound(furniture.location(),
-                    "minecraft:item.bottle.empty", 0.75F, 1.0F);
+                    "minecraft:item.bottle.empty", SoundCategory.BLOCKS, 0.75F, 1.0F);
         } else if (captured.getItemMeta() instanceof PotionMeta) {
             items.give(player, new ItemStack(org.bukkit.Material.GLASS_BOTTLE));
             furniture.location().getWorld().playSound(furniture.location(),
-                    "minecraft:item.bottle.empty", 0.75F, 1.0F);
+                    "minecraft:item.bottle.empty", SoundCategory.BLOCKS, 0.75F, 1.0F);
         } else {
             furniture.location().getWorld().playSound(furniture.location(),
-                    "minecraft:entity.item_frame.add_item", 0.75F, 1.0F);
+                    "minecraft:entity.item_frame.add_item", SoundCategory.BLOCKS, 0.75F, 1.0F);
         }
         furniture.location().getWorld().spawnParticle(Particle.BUBBLE_POP,
                 furniture.location().clone().add(0, 0.75, 0), 8, 0.2, 0.3, 0.2, 0);
@@ -972,8 +1126,12 @@ public final class StationService implements Listener {
         }
         Location location = furniture.location().clone();
         items.give(player, portable.get());
+        // Programmatic removal does not emit FurnitureBreakEvent, so the
+        // split base/lid ItemDisplays must be removed explicitly on pickup.
+        shakerVisuals.removeFurnitureVisuals(furniture);
         CraftEngineFurniture.remove(furniture, player, false, true);
-        location.getWorld().playSound(location, "minecraft:block.lantern.break", 0.8F, 1.1F);
+        location.getWorld().playSound(location, "minecraft:block.lantern.break",
+                SoundCategory.BLOCKS, 1.0F, 1.0F);
         return true;
     }
 
@@ -1035,7 +1193,10 @@ public final class StationService implements Listener {
         placed.setUnsaved();
         items.withShakerState(shaker, List.of(), null);
         setHandItem(player, hand, shaker);
-        location.getWorld().playSound(location, "minecraft:item.bottle.fill", 1.0F, 1.0F);
+        location.getWorld().spawnParticle(Particle.ENTITY_EFFECT,
+                location.clone().add(0, 0.5, 0), 20, 0.1, 0.1, 0.1, 0.5);
+        location.getWorld().playSound(location, "minecraft:item.bottle.fill",
+                SoundCategory.BLOCKS, 1.0F, 1.0F);
         return true;
     }
 
@@ -1044,7 +1205,8 @@ public final class StationService implements Listener {
         List<EffectSpec> result = new ArrayList<>(catalog.effects(id, items.brewLevel(ingredient)));
         if (ingredient.getItemMeta() instanceof PotionMeta potion) {
             for (PotionEffect effect : potion.getAllEffects()) {
-                result.add(new EffectSpec(effect.getType().getKey().asString(), effect.getDuration(),
+                result.add(new EffectSpec(effect.getType().getKey().asString(),
+                        ShakerSemantics.normalizePotionDurationTicks(effect.getDuration()),
                         effect.getAmplifier(), 1.0));
             }
         }
@@ -1052,52 +1214,58 @@ public final class StationService implements Listener {
     }
 
     private int averageColor(List<ItemStack> ingredients) {
-        int red = 0;
-        int green = 0;
-        int blue = 0;
+        List<Integer> colors = new ArrayList<>();
         for (ItemStack ingredient : ingredients) {
-            int rgb;
-            if (ingredient.getItemMeta() instanceof PotionMeta potion && potion.hasColor()) {
-                rgb = potion.getColor().asRGB();
-            } else {
-                rgb = catalog.cocktailColor(items.id(ingredient));
-            }
-            red += rgb >> 16 & 0xFF;
-            green += rgb >> 8 & 0xFF;
-            blue += rgb & 0xFF;
+            String itemId = items.id(ingredient);
+            ShakerSemantics.ingredientColor(itemId, catalog.cocktailColor(itemId))
+                    .ifPresent(colors::add);
         }
-        int count = Math.max(1, ingredients.size());
-        return red / count << 16 | green / count << 8 | blue / count;
+        return ShakerSemantics.mixIngredientColors(
+                colors.stream().mapToInt(Integer::intValue).toArray());
     }
 
     boolean canTapExtract(BukkitFurniture barrel) {
-        if (!barrel.isValid() || !barrel.id().toString().equals(BARREL)) {
-            return false;
-        }
-        FurnitureState state = new FurnitureState(plugin, barrel);
-        return isBarrelBrewing(state)
-                && state.integer("barrel_output") > 0
-                && state.string("barrel_result") != null;
+        return tapExtractStatus(barrel) == BarrelSemantics.TapExtractStatus.READY;
     }
 
-    Optional<ItemStack> takeTapOutput(BukkitFurniture barrel, Player context) {
+    BarrelSemantics.TapExtractStatus tapExtractStatus(BukkitFurniture barrel) {
+        if (barrel == null || !barrel.isValid() || !barrel.id().toString().equals(BARREL)) {
+            return BarrelSemantics.TapExtractStatus.INVALID_CONTAINER;
+        }
+        FurnitureState state = new FurnitureState(plugin, barrel);
+        String recipeId = state.string("barrel_recipe");
+        boolean carrierRecipeValid = state.string("barrel_result") != null
+                && (recipeId == null || recipeId.equals(NAMESPACE + "empty")
+                || catalog.barrelById(recipeId).isPresent());
+        return BarrelSemantics.tapExtractStatus(
+                isBarrelBrewing(state), state.integer("barrel_output"), carrierRecipeValid);
+    }
+
+    boolean isTapOutputHot(BukkitFurniture barrel) {
+        return barrel != null && barrel.isValid() && barrel.id().toString().equals(BARREL)
+                && TapSemantics.isHotBarrelOutput(
+                        new FurnitureState(plugin, barrel).string("barrel_result"));
+    }
+
+    boolean transferTapOutput(BukkitFurniture barrel, Player context,
+                              java.util.function.Predicate<ItemStack> receiver) {
         if (!canTapExtract(barrel)) {
-            return Optional.empty();
+            return false;
         }
         FurnitureState state = new FurnitureState(plugin, barrel);
         String resultId = state.string("barrel_result");
         int remaining = state.integer("barrel_output");
         Optional<ItemStack> built = items.build(resultId, context)
                 .map(result -> items.withBrewLevel(result, brewLevel(state)));
-        if (built.isEmpty()) {
-            return Optional.empty();
+        if (built.isEmpty() || !receiver.test(built.get())) {
+            return false;
         }
         state.integer("barrel_output", remaining - 1);
         if (remaining == 1) {
             state.clear("barrel_recipe", "barrel_result", "barrel_output", "barrel_unit",
                     "barrel_started", "barrel_level", "barrel_time");
         }
-        return built;
+        return true;
     }
 
     private boolean interactIncense(Player player, BukkitFurniture furniture) {
@@ -1752,41 +1920,6 @@ public final class StationService implements Listener {
             return Optional.of("minecraft:lava_bucket");
         }
         return catalog.pressingByFluid(fluid == null ? "" : fluid).map(PressingRecipe::bucket);
-    }
-
-    private void dropPressingContents(BukkitFurniture furniture, Location location) {
-        FurnitureState state = new FurnitureState(plugin, furniture);
-        ItemStack ingredient = pressingItem(state, null);
-        if (ingredient != null) {
-            dropStored(location, ingredient, state.integer("press_count"));
-        }
-        if (state.integer("press_amount") >= PRESS_CAPACITY) {
-            catalog.pressingByFluid(state.string("press_fluid", ""))
-                    .ifPresent(recipe -> dropAmount(location, recipe.bucket(), 1, 1, 1));
-        }
-    }
-
-    private void dropBarrelContents(BukkitFurniture furniture, Location location) {
-        FurnitureState state = new FurnitureState(plugin, furniture);
-        for (ItemStack stack : barrelIngredients(state, null)) {
-            dropStored(location, stack, stack.getAmount());
-        }
-        int buckets = state.integer("barrel_amount") / 1_000;
-        bucketForFluid(state.string("barrel_fluid")).ifPresent(id -> dropAmount(location, id, buckets, 16, 1));
-        String result = state.string("barrel_result");
-        if (result != null) {
-            dropAmount(location, result, state.integer("barrel_output"), 16, Math.max(1, brewLevel(state)));
-        }
-    }
-
-    private void dropShaker(FurnitureBreakEvent event) {
-        FurnitureState state = new FurnitureState(plugin, event.furniture());
-        Optional<ItemStack> shaker = buildShakerItem(state, event.player());
-        if (shaker.isEmpty()) {
-            return;
-        }
-        event.setDropItems(false);
-        event.location().getWorld().dropItemNaturally(event.location(), shaker.get());
     }
 
     private void giveAmount(Player player, String id, int amount) {

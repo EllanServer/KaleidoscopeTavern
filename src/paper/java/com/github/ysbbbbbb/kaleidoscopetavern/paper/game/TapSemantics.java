@@ -9,6 +9,20 @@ final class TapSemantics {
     private TapSemantics() {
     }
 
+    /** Exact one-block AABB used by Forge when looking for a dropped carrier item. */
+    record BlockBounds(double minX, double minY, double minZ,
+                       double maxX, double maxY, double maxZ) {
+    }
+
+    static BlockBounds blockBounds(int x, int y, int z) {
+        return new BlockBounds(x, y, z, x + 1.0, y + 1.0, z + 1.0);
+    }
+
+    /** BarrelTapBehavior uses lava drips only when its current output is Molotov. */
+    static boolean isHotBarrelOutput(String resultId) {
+        return "kaleidoscope_tavern:molotov".equals(resultId);
+    }
+
     /**
      * The Forge tap may only connect to the middle cell of the barrel's front
      * face (LAYER=wall and INDEX=1/3/5/7).  The barrel furniture origin is the

@@ -108,9 +108,9 @@ def is_grid_block(block_id: str) -> bool:
 
 
 # Trellises keep their custom block state and gameplay behavior, but their
-# authored model is rendered by an ItemDisplay over a non-occluding carrier.
-# A transparent full-cube carrier culls the neighbouring ground face and makes
-# it look as if the floor has been replaced.
+# authored model is rendered by an ItemDisplay over a directional lightning-rod
+# carrier. The carrier supplies client collision/aiming while CE removes no
+# gameplay behavior from the generated custom block.
 TRELLIS_BLOCKS = {
     "trellis", "grapevine_trellis",
     "ice_grapevine_trellis", "gold_grapevine_trellis",
@@ -493,6 +493,46 @@ def carrier_type(block_id: str) -> tuple[str, str]:
     return "higher_tripwire", "kaleidoscope-tavern-decor-transparent"
 
 
+# A CraftEngine carrier decides what the *client* collides with and can aim at,
+# because the client only ever sees the vanilla state behind the custom block.
+# `higher_tripwire` is non-colliding, which let players walk through trellis
+# posts and made them nearly impossible to right-click: no RIGHT_CLICK_BLOCK
+# packet means CustomBlockInteractEvent never fires, so grapevine planting
+# silently did nothing.
+#
+# Lightning rods collide as a 3/16 bar along whichever way they face, one pixel
+# under the 4/16 members authored by ITrellis, and they come in all six facings,
+# so every trellis shape gets a carrier oriented like the part it draws. Cactus
+# is the other option CraftEngine ships mappings for, but its 15/16 box is
+# needlessly wide; pointed dripstone has no mappings at all.
+#
+# The carrier contributes no behaviour of its own: registerServerSideCustomBlocks
+# puts a generated block in the world and the vanilla state exists only as the
+# client's view. That is why CraftEngine's own copper_coil rides a cactus without
+# hurting anyone, and why a lightning rod here neither draws strikes nor emits
+# redstone.
+#
+# Staying on waterlogged=false keeps dry trellises from rendering water, since one
+# appearance covers both waterlogged values and the carrier cannot encode it.
+# Appearances sharing a state is likewise fine: the carrier only supplies collision
+# and the aim target, while visible geometry always comes from each appearance's
+# own ItemDisplay.
+def trellis_carrier_state(trellis_type: str) -> str:
+    """Pick the lightning-rod facing that matches this shape's main member."""
+    # SINGLE and the crosses that include it stand on a full-height post; the
+    # remaining shapes are a single horizontal beam along one axis.
+    facing = {
+        "single": "up",
+        "cross_north_south": "up",
+        "cross_east_west": "up",
+        "six_direction": "up",
+        "north_south": "north",
+        "east_west": "east",
+        "cross_up_down": "north",
+    }[trellis_type]
+    return f"minecraft:lightning_rod[facing={facing},powered=false,waterlogged=false]"
+
+
 def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
     if isinstance(raw, list):
         if not raw:
@@ -644,7 +684,7 @@ def split_hanging_crop_stages(block_id: str, config: dict[str, Any]) -> dict[str
 def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, Any], dict[str, Any], dict[str, int]]:
     blocks: dict[str, Any] = {}
     render_items: dict[str, Any] = {}
-    metrics = {"appearances": 0, "weighted_variants_reduced": 0}
+    metrics = {"appearances": 0, "weighted_variants_reduced": 0, "collidable_trellises": 0}
 
     for block_id in block_ids:
         state_path = find_file(BLOCKSTATES, Path(f"{block_id}.json"))
@@ -680,6 +720,8 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             if isinstance(raw_model, list) and len(raw_model) > 1:
                 metrics["weighted_variants_reduced"] += 1
             model = normalize_model_entry(raw_model)
+            trellis_type = (parse_variant_key(variant_key).get("type")
+                            if block_id in TRELLIS_BLOCKS else None)
             appearance_name = appearance_names.get(model)
             if appearance_name is None:
                 appearance_name = f"appearance_{len(appearance_names)}"
@@ -702,11 +744,15 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 }
                 if any(model[1:4]):
                     renderer["rotation"] = f"{model[1]},{model[2]},{model[3]}"
-                appearances[appearance_name] = {
-                    "auto_state": {"type": carrier, "id": carrier_id},
-                    "transparent": True,
-                    "entity_renderer": renderer,
-                }
+                appearance: dict[str, Any] = {}
+                if trellis_type is not None:
+                    appearance["state"] = trellis_carrier_state(trellis_type)
+                    metrics["collidable_trellises"] += 1
+                else:
+                    appearance["auto_state"] = {"type": carrier, "id": carrier_id}
+                appearance["transparent"] = True
+                appearance["entity_renderer"] = renderer
+                appearances[appearance_name] = appearance
             if property_values:
                 mapped_variants[variant_key] = {"appearance": appearance_name}
 
@@ -876,13 +922,19 @@ def furniture_element(
     # so every model needs the corresponding half-block translation.  The
     # 0.01 entity offsets keep wall/ceiling displays lit; their translation is
     # compensated so the final visual location remains exact.
+    # Paintings and the tilted pressing tub use the empirically corrected wall
+    # depth from the live pack. Keep it in the generator so regeneration does
+    # not restore the old floating placement.
+    corrected_wall_depth = anchor == "wall" and (
+        block_id in PAINTINGS or block_id == "pressing_tub"
+    )
     base_translation = {
         "ground": (0.0, 0.5, 0.0),
-        "wall": (0.0, 0.0, 0.49),
+        "wall": (0.0, 0.0, -0.627 if corrected_wall_depth else 0.49),
         "ceiling": (0.0, -0.49, 0.0),
     }[anchor]
     if anchor == "wall":
-        element["position"] = "0,0,0.01"
+        element["position"] = "0,0,0.19" if corrected_wall_depth else "0,0,0.01"
     elif anchor == "ceiling":
         element["position"] = "0,-0.01,0"
 
@@ -1021,6 +1073,25 @@ def aggregate_box(boxes: list[Box]) -> Box:
     )
 
 
+# BukkitSeat.calculateSeatLocation adds a flat 0.6 to the configured seat
+# position, then drops the small armour stand by 0.9875 so that the stand's
+# passenger mount -- which sits at the top of its 0.9875-tall body -- lands back
+# on the computed point. Those two terms cancel each other, not the 0.6, so the
+# net result is:
+#
+#     player feet = furniture origin + seat.y + 0.6
+#
+# CraftEngine's own chairs corroborate this: wooden_chair seats at y=0 over a
+# 9/16 cushion, putting feet at 0.6 for a 0.5625 surface, i.e. the small sink a
+# seated pose normally shows.
+SEAT_MOUNT_HEIGHT = 0.6
+
+
+def seat_offset(cushion_top: float) -> float:
+    """Return the CE seat y that rests a player on a cushion of this height."""
+    return round(cushion_top - SEAT_MOUNT_HEIGHT, 6)
+
+
 def interaction_box(box: Box, anchor: str, seats: list[str] | None = None) -> dict[str, Any]:
     min_x, min_y, min_z, max_x, max_y, max_z = box
     position = hitbox_position(anchor, (min_x + max_x) / 2, min_y, (min_z + max_z) / 2)
@@ -1043,6 +1114,10 @@ def shulker_box(
     position: tuple[float, float, float],
     scale: float = 1.0,
     peek: int = 0,
+    direction: str | None = None,
+    *,
+    blocks_building: bool = True,
+    invisible: bool | None = None,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "type": "shulker",
@@ -1052,10 +1127,14 @@ def shulker_box(
         "can_use_item_on": True,
         "can_be_hit_by_projectile": True,
         "interactive": False,
-        "blocks_building": True,
+        "blocks_building": blocks_building,
     }
     if abs(scale - 1.0) > 1.0e-8:
         result["scale"] = round(scale, 6)
+    if direction is not None:
+        result["direction"] = direction
+    if invisible is not None:
+        result["invisible"] = invisible
     return result
 
 
@@ -1157,6 +1236,48 @@ def entity_barrel_box(
     }
 
 
+# BarrelModel renders with entityCutoutNoCull, so its flat interior panels show
+# from both sides. Block models always cull back faces, which made those panels
+# disappear when viewed from above through an open lid and left the cavity black.
+# Giving each plane a hair of thickness makes it a solid that reads correctly from
+# either side, without the z-fighting a coincident mirrored copy would cause.
+#
+# The entity UV layout (entity_uv_faces) only paints the "front" face of a flat
+# panel; the "back" face UV lands on an empty/transparent region of the texture
+# that was never rendered under entityCutoutNoCull.  After thickening, that back
+# face becomes visible, so its UV must be copied from the front face to avoid
+# being culled by FaceBakery.computeMaterialTransparency in 26.2+.
+INTERIOR_PANEL_THICKNESS = 0.01
+
+# axis → (front_face, back_face): the back face UV is overwritten with the
+# front face UV so both sides show the same texture.
+_FLAT_AXIS_FACE_PAIRS = {
+    0: ("east", "west"),   # flat in X
+    1: ("up", "down"),     # flat in Y
+    2: ("north", "south"), # flat in Z
+}
+
+
+def solidify_planes(element: dict[str, Any]) -> dict[str, Any]:
+    """Thicken a zero-thickness plane so both of its sides render."""
+    flat = [index for index in range(3) if element["from"][index] == element["to"][index]]
+    if len(flat) != 1:
+        return element
+    axis = flat[0]
+    start = list(element["from"])
+    end = list(element["to"])
+    # Grow symmetrically so the panel keeps sitting exactly where it was authored.
+    start[axis] -= INTERIOR_PANEL_THICKNESS
+    end[axis] += INTERIOR_PANEL_THICKNESS
+    # Copy the front face UV onto the back face so the newly-visible side maps
+    # to opaque texels instead of the empty region the entity layout reserved.
+    faces = {k: dict(v) for k, v in element.get("faces", {}).items()}
+    front, back = _FLAT_AXIS_FACE_PAIRS[axis]
+    if front in faces and back in faces:
+        faces[back]["uv"] = list(faces[front]["uv"])
+    return {**element, "from": start, "to": end, "faces": faces}
+
+
 def create_barrel_models() -> None:
     """Recreate BarrelModel's body and articulated lid from the Forge source."""
     model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture"
@@ -1174,7 +1295,7 @@ def create_barrel_models() -> None:
         (-16, -12, 1, 16, 0, 16, 32, 160),
         (-16, -33, 17, 16, 21, 0, 0, 160),
     ]
-    body_elements = [entity_barrel_box(*spec) for spec in body_specs]
+    body_elements = [solidify_planes(entity_barrel_box(*spec)) for spec in body_specs]
     closed_lid = entity_barrel_box(-16, -33, 1, 16, 2, 16, 102, 113)
     base = {
         "ambientocclusion": False,
@@ -1218,22 +1339,36 @@ def furniture_hitboxes(
             for z in (-1, 0, 1)
         ]
     if block_id == "stepladder":
-        return [shulker_box((0, 0, 0)), shulker_box((0, 1, 0))]
+        # Keep the compact, server-tested layout. Only the base blocks building;
+        # the upper rails remain physical without preventing adjacent placement.
+        return [
+            shulker_box((0, 0, 0), 0.75, direction="up", invisible=False),
+            shulker_box(
+                (0, 0.75, -0.25), 0.625, 25, "north",
+                blocks_building=False, invisible=False,
+            ),
+            shulker_box(
+                (-0.25, 1.5, -0.25), 0.4, 35, "up",
+                blocks_building=False, invisible=False,
+            ),
+            shulker_box(
+                (0.25, 1.5, -0.25), 0.4, 35, "up",
+                blocks_building=False, invisible=False,
+            ),
+        ]
     if block_id.endswith("_sofa"):
         # Four half-block cubes reproduce the solid seat/base without filling
         # the open space in front of the authored 18-pixel-high backrest.
         return [
-            # SitEntity was created at y=0.5125 but exposed a -0.25 passenger
-            # riding offset.  CE seat coordinates describe the final mount
-            # point, so preserve the effective y=0.2625 position.
-            interaction_box(aggregate, anchor, ["0,0.2625,0 0"]),
+            # The sofa cushion ends at 8/16.
+            interaction_box(aggregate, anchor, [f"0,{seat_offset(8 / 16)},0 0"]),
             *(shulker_box((x, 0, z), 0.5) for x in (-0.25, 0.25) for z in (-0.25, 0.25)),
         ]
     if block_id.endswith("_bar_stool"):
         return [
-            interaction_box(aggregate, anchor, ["0,0.625,0 0"]),
             # The broad seat ends at 15/16; the taller back remains an
             # interaction volume rather than blocking the player's torso.
+            interaction_box(aggregate, anchor, [f"0,{seat_offset(15 / 16)},0 0"]),
             shulker_box((0, 3 / 16, 0), 0.75),
         ]
     if block_id.endswith("_sandwich_board"):
@@ -1280,7 +1415,12 @@ def furniture_hitboxes(
         return [shulker_box(hitbox_position(anchor, 8, 0, 8))]
     if block_id == "circular_rack":
         return [interaction_box(aggregate, anchor)]
-    if block_id in {"tilted_rack", "holder", "tap"}:
+    if block_id == "tap":
+        hitboxes = [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
+        if properties.get("open") == "false":
+            hitboxes[0]["position"] = "0,-0.1875,0.35"
+        return hitboxes
+    if block_id in {"tilted_rack", "holder"}:
         return [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
     if block_id in SMALL_FURNITURE or block_id.endswith("_incense"):
         return [interaction_box(aggregate, anchor), *(hitbox for box in boxes for hitbox in physical_box(box, anchor))]
@@ -1411,7 +1551,21 @@ def create_shaker_models() -> None:
     )
     if len(source.get("elements", [])) != 5:
         raise AssertionError("shaker_3d must retain its 2 body + 3 lid cuboids")
-    model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture"
+    model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models"
+
+    # Forge's generated item model is a forge:separate_transforms wrapper. A
+    # vanilla 26.2 client ignores that loader, so the Paper item definition
+    # performs the same GUI/FIXED selection with display_context. Keep both
+    # vanilla child models available to that selector.
+    write_json(model_root / "item/shaker.json", {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": f"{NAMESPACE}:item/shaker"},
+    })
+    write_json(model_root / "item/shaker_3d.json", {
+        key: deepcopy(value)
+        for key, value in source.items()
+        if key != "groups"
+    })
 
     def model_with(elements: list[dict[str, Any]]) -> dict[str, Any]:
         return {
@@ -1420,7 +1574,7 @@ def create_shaker_models() -> None:
             if key not in {"display", "groups"}
         } | {"elements": elements}
 
-    write_json(model_root / "shaker_base.json", model_with(
+    write_json(model_root / "furniture/shaker_base.json", model_with(
         deepcopy(source["elements"][:2])))
 
     # bone2's authored pivot is [8, 12.16667, 8]. ItemDisplay rotates around
@@ -1434,7 +1588,7 @@ def create_shaker_models() -> None:
         rotation = element.get("rotation")
         if isinstance(rotation, dict) and isinstance(rotation.get("origin"), list):
             rotation["origin"][1] -= pivot_delta
-    write_json(model_root / "shaker_lid.json", model_with(lid_elements))
+    write_json(model_root / "furniture/shaker_lid.json", model_with(lid_elements))
 
 
 def add_runtime_render_items(render_items: dict[str, Any]) -> None:
@@ -1720,6 +1874,9 @@ def build_furniture(
             closed = furniture_element(
                 render_items, block_id, "closed", closed_model, "ground", "0,1,0")
             closed["view_range"] = 2.5
+            # Same override as the open variant so opening a barrel does not make
+            # it visibly change shade.
+            closed["brightness"] = {"block_light": 6, "sky_light": 6}
             variants["ground"] = {
                 "elements": [closed],
                 "hitboxes": furniture_hitboxes(block_id, "ground"),
@@ -1730,6 +1887,16 @@ def build_furniture(
                 render_items, block_id, "open lid", lid_model, "ground", "0,2.5,0.5")
             lid["rotation"] = "72.5,0,0"
             body["view_range"] = lid["view_range"] = 2.5
+            # An item display samples the light where its own entity sits, and the
+            # barrel's 3x3x3 collider makes that centre pitch black, so the cavity
+            # walls came out as silhouettes while only the rim caught sky light.
+            # BarrelBlockEntityRender instead received the block position's combined
+            # light. CraftEngine only honours a brightness override when both
+            # channels are given, and it cannot track a neighbour's light level, so
+            # pin one modest level: bright enough to read the staves and the floor,
+            # dim enough that the barrel never looks emissive in a dark cellar.
+            body["brightness"] = {"block_light": 6, "sky_light": 6}
+            lid["brightness"] = {"block_light": 6, "sky_light": 6}
             variants["ground_open"] = {
                 "elements": [body, lid],
                 "hitboxes": furniture_hitboxes(block_id, "ground"),
@@ -1830,6 +1997,118 @@ def load_drink_effects() -> tuple[set[str], list[list[Any]]]:
     return drink_ids, rows
 
 
+HARMFUL_DRINK_EFFECTS = {
+    "minecraft:bad_omen", "minecraft:blindness", "minecraft:mining_fatigue",
+    "minecraft:nausea",
+}
+NEUTRAL_DRINK_EFFECTS = {
+    f"{NAMESPACE}:slightly_tipsy", f"{NAMESPACE}:upside_down",
+}
+MANAGED_LORE_INSERTION = "kaleidoscope_tavern_managed_lore"
+
+# effect id -> (attribute translation key, base amount, operation id).
+# Operation 0 is an absolute addition and operation 1 is a percentage, matching
+# the vanilla attribute.modifier translation keys used by PotionUtils.
+DRINK_EFFECT_ATTRIBUTES: dict[str, list[tuple[str, float, int]]] = {
+    "minecraft:speed": [("attribute.name.generic.movement_speed", 0.2, 1)],
+    "minecraft:strength": [("attribute.name.generic.attack_damage", 3.0, 0)],
+    f"{NAMESPACE}:high_heels": [
+        ("attribute.name.generic.step_height", 0.5, 0),
+    ],
+    f"{NAMESPACE}:long_reach": [
+        ("attribute.name.player.block_interaction_range", 3.0, 0),
+        ("attribute.name.player.entity_interaction_range", 3.0, 0),
+    ],
+}
+
+
+def format_effect_duration(ticks: int) -> str:
+    total_seconds = max(1, ticks // 20)
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if hours:
+        return f"{hours}:{minutes:02d}:{seconds:02d}"
+    return f"{minutes}:{seconds:02d}"
+
+
+def mini_message_quote(value: str) -> str:
+    return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
+
+
+def translatable_component(key: str, *arguments: str) -> str:
+    suffix = "".join(f":{mini_message_quote(argument)}" for argument in arguments)
+    return f"<lang:{key}{suffix}>"
+
+
+def format_attribute_amount(amount: float, operation: int) -> str:
+    displayed = abs(amount) * (100.0 if operation in {1, 2} else 1.0)
+    return f"{displayed:.12f}".rstrip("0").rstrip(".")
+
+
+def fixed_cocktail_lore(item_id: str, effect_rows: list[list[Any]]) -> list[str]:
+    """Build the creative-menu preview for cocktails whose effects are fixed."""
+    full_id = f"{NAMESPACE}:{item_id}"
+    lore: list[str] = []
+    attributes: list[tuple[str, float, int]] = []
+    for effect_item, level, effect_id, duration, amplifier, probability in effect_rows:
+        if effect_item != full_id or level != 1:
+            continue
+        namespace, path = effect_id.split(":", 1)
+        color = "red" if effect_id in HARMFUL_DRINK_EFFECTS else (
+            "gray" if effect_id in NEUTRAL_DRINK_EFFECTS else "blue")
+        effect = translatable_component(f"effect.{namespace}.{path}")
+        if amplifier > 0:
+            effect = translatable_component(
+                "potion.withAmplifier", effect,
+                translatable_component(f"potion.potency.{amplifier}"))
+        if duration > 0:
+            effect = translatable_component(
+                "potion.withDuration", effect, format_effect_duration(duration))
+        line = (f"<!i><insert:{MANAGED_LORE_INSERTION}><{color}>" + effect)
+        if probability < 1.0:
+            chance = f"{probability * 100:g}%"
+            line += " <dark_gray>" + translatable_component(
+                f"tooltip.{NAMESPACE}.drink_effect.chance", chance)
+        lore.append(line)
+
+        if probability >= 1.0:
+            for attribute_key, base_amount, operation in DRINK_EFFECT_ATTRIBUTES.get(effect_id, []):
+                attributes.append((attribute_key, base_amount * (amplifier + 1), operation))
+
+    if attributes:
+        lore.append(f"<!i><insert:{MANAGED_LORE_INSERTION}>")
+        lore.append(f"<!i><insert:{MANAGED_LORE_INSERTION}><dark_purple>"
+                    + translatable_component("potion.whenDrank"))
+        for attribute_key, amount, operation in attributes:
+            sign = "plus" if amount >= 0 else "take"
+            modifier = translatable_component(
+                f"attribute.modifier.{sign}.{operation}",
+                format_attribute_amount(amount, operation),
+                translatable_component(attribute_key))
+            color = "blue" if amount >= 0 else "red"
+            lore.append(f"<!i><insert:{MANAGED_LORE_INSERTION}><{color}>{modifier}")
+    return lore
+
+
+# Exact RGB values returned by the Forge ChatFormatting entries in ColorUtils.
+DRINK_COLORS: dict[str, int] = {
+    "black": 0x000000, "dark_blue": 0x0000AA, "dark_green": 0x00AA00,
+    "dark_aqua": 0x00AAAA, "dark_red": 0xAA0000, "dark_purple": 0xAA00AA,
+    "gold": 0xFFAA00, "gray": 0xAAAAAA, "dark_gray": 0x555555,
+    "blue": 0x5555FF, "green": 0x55FF55, "aqua": 0x55FFFF,
+    "red": 0xFF5555, "light_purple": 0xFF55FF, "yellow": 0xFFFF55,
+    "white": 0xFFFFFF,
+}
+
+
+def drink_color(item_tags: list[str]) -> int | None:
+    prefix = f"{NAMESPACE}:cocktail_ingredient_"
+    for tag in item_tags:
+        if tag.startswith(prefix):
+            return DRINK_COLORS.get(tag[len(prefix):])
+    return None
+
+
 def material_for(item_id: str, drink_ids: set[str], block_ids: set[str]) -> str:
     if item_id in drink_ids or item_id == "signature_cocktail":
         return "potion"
@@ -1844,7 +2123,9 @@ def material_for(item_id: str, drink_ids: set[str], block_ids: set[str]) -> str:
     if item_id in GRAPE_ITEMS:
         return "sweet_berries"
     if item_id == "shaker":
-        return "brush"
+        # A real BrushItem can brush suspicious blocks and take durability
+        # while StationService is driving the long use state.
+        return "paper"
     if item_id in block_ids:
         return "paper"
     return "paper"
@@ -1875,6 +2156,7 @@ def build_items(
     furniture_ids: set[str],
     furniture_placement: dict[str, dict[str, Any]],
     drink_ids: set[str],
+    effect_rows: list[list[Any]],
     tags: dict[str, list[str]],
     language_keys: set[str],
 ) -> dict[str, Any]:
@@ -1910,6 +2192,51 @@ def build_items(
             # its vanilla stack limit is 1, so preserve the original component
             # explicitly for both drink and place-only bottle items.
             config["data"]["components"] = {"minecraft:max_stack_size": 16}
+        if config["material"] == "potion":
+            # PotionItem#getName derives its title from potion_contents and does
+            # not honor ITEM_NAME. A valid neutral base avoids "Uncraftable
+            # Potion", while CUSTOM_NAME wins in ItemStack#getHoverName and
+            # retains the authored drink name. Tagged drinks also keep their
+            # source liquid tint.
+            components = config["data"].setdefault("components", {})
+            potion_contents: dict[str, Any] = {"potion": "minecraft:water"}
+            color = drink_color(memberships.get(item_id, []))
+            if color is not None:
+                potion_contents["custom_color"] = color
+            components["minecraft:potion_contents"] = potion_contents
+            config["data"]["custom_name"] = config["data"]["item_name"]
+            # Drink effects are implemented by the Paper service rather than
+            # potion_contents. Hide only that vanilla tooltip section so it
+            # cannot claim "No Effects" while retaining custom lore and names.
+            config["data"]["hide_tooltip"] = ["minecraft:potion_contents"]
+        if item_id == "shaker":
+            config["data"].setdefault("components", {}).update({
+                "minecraft:max_stack_size": 1,
+                "minecraft:consumable": {
+                    "consume_seconds": 3_600.0,
+                    "animation": "brush",
+                    "has_consume_particles": False,
+                },
+            })
+            # This is the vanilla item-model equivalent of the source
+            # forge:separate_transforms wrapper: inventory/item-frame views
+            # use the authored icon, while held/dropped/head views retain the
+            # complete cuboid model and its original display transforms.
+            config["model"] = {
+                "type": "minecraft:select",
+                "property": "display_context",
+                "cases": [{
+                    "when": ["gui", "fixed"],
+                    "model": {
+                        "type": "minecraft:model",
+                        "path": f"{NAMESPACE}:item/shaker",
+                    },
+                }],
+                "fallback": {
+                    "type": "minecraft:model",
+                    "path": f"{NAMESPACE}:item/shaker_3d",
+                },
+            }
         if item_id == "molotov":
             config["data"].setdefault("components", {})["minecraft:consumable"] = {
                 "consume_seconds": 3_600.0,
@@ -1929,6 +2256,13 @@ def build_items(
             lore_keys = [f"tooltip.{NAMESPACE}.{item_id}"]
         if lore_keys:
             config["data"]["lore"] = [f"<!i><gray><lang:{key}>" for key in lore_keys]
+        elif item_id in COCKTAILS:
+            # Creative-menu entries bypass ItemService, so fixed cocktails
+            # need a generated preview. Aged wines and signature cocktails are
+            # rebuilt at runtime because their effects live on the item stack.
+            cocktail_lore = fixed_cocktail_lore(item_id, effect_rows)
+            if cocktail_lore:
+                config["data"]["lore"] = cocktail_lore
         if item_id in GRAPE_ITEMS:
             config["data"]["food"] = {
                 "nutrition": 2,
@@ -2096,6 +2430,7 @@ def main() -> None:
         set(furniture_ids),
         furniture_placement,
         drink_ids,
+        effect_rows,
         tags,
         language_keys,
     )

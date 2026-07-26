@@ -199,6 +199,7 @@
   "tooltip.kaleidoscope_tavern.mona_lisa_painting": "蒙娜丽莎",
   "tooltip.kaleidoscope_tavern.mondrian_painting": "蒙德里安",
   "tooltip.kaleidoscope_tavern.bottle_block.brew_level": "品质：%s",
+  "tooltip.kaleidoscope_tavern.drink_effect.chance": "触发概率 %s",
   "tooltip.kaleidoscope_tavern.grape_bucket": "用于酿造淡紫色饮品",
   "tooltip.kaleidoscope_tavern.ice_grape_bucket": "用于酿造蓝色饮品",
   "tooltip.kaleidoscope_tavern.gold_grape_bucket": "用于酿造金色饮品",

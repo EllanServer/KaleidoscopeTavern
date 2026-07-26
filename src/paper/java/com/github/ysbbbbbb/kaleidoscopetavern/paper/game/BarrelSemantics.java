@@ -20,6 +20,14 @@ final class BarrelSemantics {
         TOP_CENTER
     }
 
+    /** Failure order used by {@code BarrelBlockEntity.canTapExtract}. */
+    enum TapExtractStatus {
+        READY,
+        NOT_BREWING,
+        EMPTY,
+        INVALID_CONTAINER
+    }
+
     /** One source {@code BarrelBlockEntity.tick} check for an active brew. */
     static BrewState advance(int level, int remainingTicks, int unitTicks) {
         if (level < 1 || level >= 6) {
@@ -33,6 +41,17 @@ final class BarrelSemantics {
     }
 
     record BrewState(int level, int remainingTicks) {
+    }
+
+    static TapExtractStatus tapExtractStatus(boolean brewing, int outputCount,
+                                             boolean carrierRecipeValid) {
+        if (!brewing) {
+            return TapExtractStatus.NOT_BREWING;
+        }
+        if (outputCount <= 0) {
+            return TapExtractStatus.EMPTY;
+        }
+        return carrierRecipeValid ? TapExtractStatus.READY : TapExtractStatus.INVALID_CONTAINER;
     }
 
     static Hit classify(double sourceX, double sourceY, double sourceZ) {

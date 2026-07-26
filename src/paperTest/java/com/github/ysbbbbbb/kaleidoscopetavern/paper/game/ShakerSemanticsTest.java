@@ -2,6 +2,8 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.OptionalInt;
+
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.ShakerSemantics.ResultBand.HAND_RECIPE;
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.ShakerSemantics.ResultBand.MYSTERY;
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.ShakerSemantics.ResultBand.NONE;
@@ -30,5 +32,34 @@ class ShakerSemanticsTest {
         assertTrue(ShakerSemantics.playsShakeSound(10));
         assertFalse(ShakerSemantics.shouldAutoRelease(110));
         assertTrue(ShakerSemantics.shouldAutoRelease(111));
+    }
+
+    @Test
+    void preservesSourcePotionColorAndWholeSecondDurations() {
+        assertEquals(40, ShakerSemantics.normalizePotionDurationTicks(59));
+        assertEquals(0, ShakerSemantics.normalizePotionDurationTicks(-1));
+        assertEquals(0xFFFFFF,
+                ShakerSemantics.ingredientColor(
+                        "minecraft:potion", OptionalInt.of(0x123456)).orElseThrow());
+        assertEquals(0x123456,
+                ShakerSemantics.ingredientColor(
+                        "kaleidoscope_tavern:wine", OptionalInt.of(0x123456)).orElseThrow());
+        assertTrue(ShakerSemantics.ingredientColor(
+                "kaleidoscope_tavern:uncolored", OptionalInt.empty()).isEmpty());
+    }
+
+    @Test
+    void mergesDurationsInWholeSecondsBeforeReturningTicks() {
+        assertEquals(0, ShakerSemantics.mergedEffectDurationTicks(0));
+        assertEquals(20, ShakerSemantics.mergedEffectDurationTicks(20));
+        assertEquals(40, ShakerSemantics.mergedEffectDurationTicks(59));
+        assertEquals(120, ShakerSemantics.mergedEffectDurationTicks(100));
+    }
+
+    @Test
+    void averagesIngredientColorsPerChannelLikeForge() {
+        assertEquals(0x7F7F7F,
+                ShakerSemantics.mixIngredientColors(0x000000, 0xFFFFFF));
+        assertEquals(0xFFFFFF, ShakerSemantics.mixIngredientColors());
     }
 }

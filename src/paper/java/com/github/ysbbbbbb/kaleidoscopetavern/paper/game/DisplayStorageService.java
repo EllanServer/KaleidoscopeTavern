@@ -125,6 +125,11 @@ public final class DisplayStorageService implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onInteract(FurnitureInteractEvent event) {
         if (event.hand() != InteractionHand.MAIN_HAND) {
+            // Cancel off-hand interactions so CraftEngine's built-in
+            // display_item_furniture behavior does not fire. Without this,
+            // the off-hand take/put duplicates items and skips the visual
+            // refresh, causing bottles to visually disappear.
+            event.setCancelled(true);
             return;
         }
         BukkitFurniture furniture = event.furniture();

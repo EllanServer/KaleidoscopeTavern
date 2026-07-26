@@ -2,6 +2,7 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -30,5 +31,18 @@ class TapSemanticsTest {
         assertTrue(TapSemantics.emitsEmptyCloud(4));
         assertFalse(TapSemantics.emitsEmptyCloud(5));
         assertFalse(TapSemantics.emitsEmptyCloud(TapSemantics.EMPTY_OPEN_TICKS));
+    }
+
+    @Test
+    void droppedCarrierSearchUsesExactlyTheDestinationBlock() {
+        assertEquals(new TapSemantics.BlockBounds(10, 64, -4, 11, 65, -3),
+                TapSemantics.blockBounds(10, 64, -4));
+    }
+
+    @Test
+    void onlyMolotovBarrelOutputUsesHotDrips() {
+        assertTrue(TapSemantics.isHotBarrelOutput("kaleidoscope_tavern:molotov"));
+        assertFalse(TapSemantics.isHotBarrelOutput("kaleidoscope_tavern:wine"));
+        assertFalse(TapSemantics.isHotBarrelOutput(null));
     }
 }

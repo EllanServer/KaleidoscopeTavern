@@ -100,6 +100,7 @@
   "tooltip.kaleidoscope_tavern.mona_lisa_painting": "Мона Лиза",
   "tooltip.kaleidoscope_tavern.mondrian_painting": "Мондриан",
   "tooltip.kaleidoscope_tavern.bottle_block.brew_level": "Уровень выдержки: %s",
+  "tooltip.kaleidoscope_tavern.drink_effect.chance": "Шанс %s",
   "jei.kaleidoscope_tavern.pressing_tub.need_press_count": "Требуется нажатий: %d",
   "block.kaleidoscope_tavern.bar_counter": "Барная стойка",
   "block.kaleidoscope_tavern.stepladder": "Стремянка",

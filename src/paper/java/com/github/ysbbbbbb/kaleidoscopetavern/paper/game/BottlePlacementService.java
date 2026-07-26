@@ -4,7 +4,6 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Location;
@@ -95,18 +94,6 @@ public final class BottlePlacementService implements Listener {
         event.setUseInteractedBlock(Event.Result.DENY);
         event.setUseItemInHand(Event.Result.DENY);
         target.getWorld().playSound(location, Sound.BLOCK_GLASS_PLACE, 1F, 1F);
-    }
-
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onPotionBottleBreak(FurnitureBreakEvent event) {
-        if (!event.furniture().id().toString().equals(POTION_BOTTLE)) {
-            return;
-        }
-        ItemStack stored = new FurnitureState(plugin, event.furniture()).item("placed_potion");
-        if (stored != null && event.dropItems()) {
-            event.setDropItems(false);
-            event.location().getWorld().dropItemNaturally(event.location(), stored);
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

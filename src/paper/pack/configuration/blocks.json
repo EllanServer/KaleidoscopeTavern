@@ -2788,10 +2788,7 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -2802,10 +2799,7 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -2816,10 +2810,7 @@
             }
           },
           "appearance_2": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -2830,10 +2821,7 @@
             }
           },
           "appearance_3": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -2844,10 +2832,7 @@
             }
           },
           "appearance_4": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -2858,10 +2843,7 @@
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -2872,10 +2854,7 @@
             }
           },
           "appearance_6": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3044,10 +3023,7 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3058,10 +3034,7 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3072,10 +3045,7 @@
             }
           },
           "appearance_2": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3086,10 +3056,7 @@
             }
           },
           "appearance_3": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3100,10 +3067,7 @@
             }
           },
           "appearance_4": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3114,10 +3078,7 @@
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3128,10 +3089,7 @@
             }
           },
           "appearance_6": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3142,10 +3100,7 @@
             }
           },
           "appearance_7": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3156,10 +3111,7 @@
             }
           },
           "appearance_8": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3170,10 +3122,7 @@
             }
           },
           "appearance_9": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3408,10 +3357,7 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3422,10 +3368,7 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3436,10 +3379,7 @@
             }
           },
           "appearance_2": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3450,10 +3390,7 @@
             }
           },
           "appearance_3": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3464,10 +3401,7 @@
             }
           },
           "appearance_4": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3478,10 +3412,7 @@
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3492,10 +3423,7 @@
             }
           },
           "appearance_6": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3506,10 +3434,7 @@
             }
           },
           "appearance_7": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3520,10 +3445,7 @@
             }
           },
           "appearance_8": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3534,10 +3456,7 @@
             }
           },
           "appearance_9": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3772,10 +3691,7 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3786,10 +3702,7 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3800,10 +3713,7 @@
             }
           },
           "appearance_2": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3814,10 +3724,7 @@
             }
           },
           "appearance_3": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3828,10 +3735,7 @@
             }
           },
           "appearance_4": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3842,10 +3746,7 @@
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3856,10 +3757,7 @@
             }
           },
           "appearance_6": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3870,10 +3768,7 @@
             }
           },
           "appearance_7": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3884,10 +3779,7 @@
             }
           },
           "appearance_8": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -3898,10 +3790,7 @@
             }
           },
           "appearance_9": {
-            "auto_state": {
-              "type": "higher_tripwire",
-              "id": "kaleidoscope-tavern-decor-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
