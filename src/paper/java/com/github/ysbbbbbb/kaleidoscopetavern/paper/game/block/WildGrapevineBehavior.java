@@ -1,6 +1,5 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
-import net.momirealms.antigrieflib.Flag;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
 import net.momirealms.craftengine.bukkit.block.behavior.VineCropBodyBlockBehavior;
@@ -24,6 +23,7 @@ import net.momirealms.craftengine.core.util.ItemUtils;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.context.UseOnContext;
+import net.momirealms.craftengine.libraries.antigrieflib.Flag;
 import net.momirealms.craftengine.proxy.minecraft.core.Vec3iProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
 import org.bukkit.Location;
