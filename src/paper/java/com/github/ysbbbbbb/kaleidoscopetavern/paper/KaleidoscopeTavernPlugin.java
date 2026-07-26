@@ -31,6 +31,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurn
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.PressingTubFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StateFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageVisualFurnitureBehavior;
@@ -106,6 +107,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             PressingTubFurnitureBehavior.register();
             RedstoneFurnitureBehavior.register();
             TickingFurnitureBehavior.register();
+            StationInteractionFurnitureBehavior.register();
             StationVisualFurnitureBehavior.register();
             StorageInteractionFurnitureBehavior.register();
             StorageVisualFurnitureBehavior.register();

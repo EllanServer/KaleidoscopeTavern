@@ -8,6 +8,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.Press
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.PressingTubFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
@@ -16,14 +17,15 @@ import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
@@ -98,6 +100,8 @@ public final class StationService implements Listener {
             (furniture, powered, initial) -> setIncenseActive(furniture, powered, !initial);
     private final StationVisualFurnitureBehavior.Handler stationVisualHandler =
             this::stationVisuals;
+    private final StationInteractionFurnitureBehavior.Handler stationInteractionHandler =
+            this::interactStation;
     private final TickingFurnitureBehavior.Handler barrelTickingHandler =
             new TickingFurnitureBehavior.Handler() {
                 @Override
@@ -121,6 +125,7 @@ public final class StationService implements Listener {
     }
 
     public void start() {
+        StationInteractionFurnitureBehavior.bind(stationInteractionHandler);
         StationVisualFurnitureBehavior.bind(stationVisualHandler);
         RedstoneFurnitureBehavior.bind(
                 RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
@@ -130,6 +135,7 @@ public final class StationService implements Listener {
     }
 
     public void stop() {
+        StationInteractionFurnitureBehavior.unbind(stationInteractionHandler);
         StationVisualFurnitureBehavior.unbind(stationVisualHandler);
         RedstoneFurnitureBehavior.unbind(
                 RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
@@ -152,24 +158,29 @@ public final class StationService implements Listener {
         pendingVanillaBucketEmpty.clear();
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onFurnitureInteract(FurnitureInteractEvent event) {
-        String id = event.furniture().id().toString();
+    private InteractionResult interactStation(BukkitFurniture furniture,
+                                              InteractEntityContext context) {
+        String id = furniture.id().toString();
         if (!id.equals(PRESSING_TUB) && !id.equals(EMPTY_GLASSWARE)
-                && event.hand() != InteractionHand.MAIN_HAND) {
-            return;
+                && context.getHand() != InteractionHand.MAIN_HAND) {
+            return InteractionResult.PASS;
         }
+        Player player = (Player) context.getPlayer().platformPlayer();
         boolean handled = switch (id) {
-            case PRESSING_TUB -> interactPress(event.player(), event.furniture(), event.hand());
-            case BARREL -> interactBarrel(event.player(), event.furniture(), event.interactionPoint());
-            case SHAKER -> interactShaker(event.player(), event.furniture());
-            case EMPTY_GLASSWARE -> pourPortableShaker(event.player(), event.furniture(), event.hand());
+            case PRESSING_TUB -> interactPress(player, furniture, context.getHand());
+            case BARREL -> {
+                Vec3d click = context.getClickLocation();
+                Location interactionPoint = new Location(
+                        furniture.location().getWorld(), click.x, click.y, click.z);
+                yield interactBarrel(player, furniture, interactionPoint);
+            }
+            case SHAKER -> interactShaker(player, furniture);
+            case EMPTY_GLASSWARE -> pourPortableShaker(
+                    player, furniture, context.getHand());
             // Incense toggling lives in the generated CE furniture events.
             default -> false;
         };
-        if (handled) {
-            event.setCancelled(true);
-        }
+        return handled ? InteractionResult.SUCCESS_AND_CANCEL : InteractionResult.PASS;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -260,15 +271,15 @@ public final class StationService implements Listener {
     /**
      * Stops a bucket from also emptying into the world when it feeds a station.
      *
-     * <p>Filling a barrel or pressing tub is driven by FurnitureInteractEvent,
-     * which only governs CraftEngine's own interaction flow. Vanilla still runs
+     * <p>Filling a barrel or pressing tub is driven by the CE furniture
+     * controller, which only governs CraftEngine's own interaction flow. Vanilla still runs
      * its bucket placement for the same right-click, so the fluid was recorded on
      * the furniture *and* spilled as a real block beside it. Interaction hitboxes
      * are not blocks, so vanilla picks the air the player aimed through.
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
-        // FurnitureInteractEvent already consumed this bucket into the station.
+        // The CE furniture controller already consumed this bucket into the station.
         // The vanilla target can be a block behind the furniture because its
         // hitboxes are entities, so the exact interaction is more reliable than
         // trying to infer the station from that target block.

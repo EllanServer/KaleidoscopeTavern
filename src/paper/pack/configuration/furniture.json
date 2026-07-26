@@ -14982,6 +14982,9 @@
           "type": "kaleidoscope_tavern:station_visual_furniture",
           "max_elements": 65,
           "view_range": 1.25
+        },
+        {
+          "type": "kaleidoscope_tavern:station_interaction_furniture"
         }
       ]
     },
@@ -15336,9 +15339,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:bottle_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:station_interaction_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:signature_cocktail": {
       "settings": {
@@ -16372,6 +16380,9 @@
           "channel": "shaker",
           "max_elements": 2,
           "view_range": 1.25
+        },
+        {
+          "type": "kaleidoscope_tavern:station_interaction_furniture"
         }
       ]
     },
@@ -17088,6 +17099,9 @@
           "type": "kaleidoscope_tavern:station_visual_furniture",
           "max_elements": 37,
           "view_range": 2.5
+        },
+        {
+          "type": "kaleidoscope_tavern:station_interaction_furniture"
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",

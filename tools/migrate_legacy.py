@@ -2363,6 +2363,9 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
             "view_range": view_range,
         })
 
+    if block_id in {"pressing_tub", "barrel", "shaker", "empty_glassware"}:
+        behaviors.append({"type": f"{NAMESPACE}:station_interaction_furniture"})
+
     if block_id in PENDANT_LAMPS:
         behaviors.append({"type": "glowing_furniture", "lights": ["0,-1,0 13"]})
     elif block_id == "glassware_holder":

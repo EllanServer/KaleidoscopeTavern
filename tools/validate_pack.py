@@ -81,6 +81,9 @@ EXPECTED_STORAGE_INTERACTION_FURNITURE = {
     "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet", "tilted_rack",
     "circular_rack", "holder", "glassware_holder",
 }
+EXPECTED_STATION_INTERACTION_FURNITURE = {
+    "pressing_tub", "barrel", "shaker", "empty_glassware",
+}
 FURNITURE_COLORS = {
     "black", "blue", "brown", "cyan", "gray", "green", "light_blue",
     "light_gray", "lime", "magenta", "orange", "pink", "purple", "red",
@@ -732,6 +735,9 @@ def validate() -> dict[str, int]:
                 "Single bottles must bypass custom state; only stacked bottles may store a list")
     station_source = (game_package / "StationService.java").read_text(
         encoding="utf-8-sig")
+    station_interaction_behavior_source = (
+        game_package / "furniture/StationInteractionFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
     if ('state.items("shaker_ingredients"' in station_source
             or 'state.item("shaker_result"' in station_source
             or "loadPortableShaker" in station_source):
@@ -929,6 +935,9 @@ def validate() -> dict[str, int]:
     if "StationVisualFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register station_visual_furniture before pack loading")
+    if "StationInteractionFurnitureBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register station_interaction_furniture before pack loading")
     if "BoardTextFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register board_text_furniture before pack loading")
@@ -1195,6 +1204,12 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "StationService.start must not schedule an idle falling-entity cleanup task")
     for required_token in (
+            "StationInteractionFurnitureBehavior.bind(stationInteractionHandler)",
+            "StationInteractionFurnitureBehavior.unbind(stationInteractionHandler)",
+            "private InteractionResult interactStation(",
+            "context.getHand() != InteractionHand.MAIN_HAND",
+            "Vec3d click = context.getClickLocation()",
+            "InteractionResult.SUCCESS_AND_CANCEL",
             "StationVisualFurnitureBehavior.bind(stationVisualHandler)",
             "StationVisualFurnitureBehavior.unbind(stationVisualHandler)",
             "PressingTubFurnitureBehavior.hasPotentialBelow(feet)",
@@ -1214,6 +1229,27 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "StationService must retain only the source-compatible fallOn bridge; "
                 f"missing token: {required_token}")
+    for stale_token in ("FurnitureInteractEvent", "public void onFurnitureInteract("):
+        if stale_token in station_source:
+            raise AssertionError(
+                "StationService must not retain a global Paper furniture interaction listener; "
+                f"found {stale_token}")
+    for required_token in (
+            "extends FurnitureBehaviorTemplate",
+            "FurnitureBehaviors.register(Key.of(TYPE)",
+            "public InteractionResult useOnFurniture(",
+            "current.interact(bukkitFurniture, context)"):
+        if required_token not in station_interaction_behavior_source:
+            raise AssertionError(
+                "Station CE interaction adapter is incomplete; "
+                f"missing token: {required_token}")
+    for forbidden_token in (
+            "org.bukkit.event", "PersistentDataType", "NamespacedKey",
+            "getNearbyEntities(", "runTaskTimer"):
+        if forbidden_token in station_interaction_behavior_source:
+            raise AssertionError(
+                "Station CE interaction adapter must not own Paper polling/PDC; "
+                f"found {forbidden_token}")
     for stale_station_visual_token in (
             "org.bukkit.entity.ItemDisplay", "PersistentDataType",
             "press_visual_owner", "press_visual_role", "press_visual_index",
@@ -2724,7 +2760,7 @@ def validate() -> dict[str, int]:
     if pressing_single_behavior is not None:
         pressing_behaviors.append(pressing_single_behavior)
     expected_pressing_behavior = {"type": f"{NAMESPACE}:pressing_tub_furniture"}
-    if len(pressing_behaviors) != 3 or pressing_behaviors[1] != expected_pressing_behavior:
+    if len(pressing_behaviors) != 4 or pressing_behaviors[1] != expected_pressing_behavior:
         raise AssertionError(
             "pressing_tub must put pressing_tub_furniture after its index-zero state controller")
 
@@ -2756,6 +2792,49 @@ def validate() -> dict[str, int]:
         if configured_behaviors.index(visual_behaviors[0]) != expected_index:
             raise AssertionError(
                 f"{block_id}: station visual controller order drifted")
+
+    station_interaction_type = f"{NAMESPACE}:station_interaction_furniture"
+    configured_station_interactions: dict[str, tuple[int, dict[str, Any]]] = {}
+    for furniture_id, definition in furniture.items():
+        all_behaviors = list(definition.get("behaviors", []))
+        single_behavior = definition.get("behavior")
+        if single_behavior is not None:
+            all_behaviors.append(single_behavior)
+        matches = [
+            (index, behavior) for index, behavior in enumerate(all_behaviors)
+            if behavior.get("type") == station_interaction_type
+        ]
+        if len(matches) > 1:
+            raise AssertionError(
+                f"{furniture_id}: duplicate station_interaction_furniture behaviors")
+        if matches:
+            configured_station_interactions[furniture_id] = matches[0]
+    expected_station_interaction_ids = {
+        f"{NAMESPACE}:{block_id}"
+        for block_id in EXPECTED_STATION_INTERACTION_FURNITURE
+    }
+    if set(configured_station_interactions) != expected_station_interaction_ids:
+        missing = sorted(expected_station_interaction_ids
+                         - set(configured_station_interactions))
+        unexpected = sorted(set(configured_station_interactions)
+                            - expected_station_interaction_ids)
+        raise AssertionError(
+            "Station CE interaction coverage drift: "
+            f"missing={missing}, unexpected={unexpected}")
+    expected_station_interaction_indices = {
+        "pressing_tub": 3,
+        "barrel": 3,
+        "shaker": 2,
+        "empty_glassware": 1,
+    }
+    for block_id, expected_index in expected_station_interaction_indices.items():
+        furniture_id = f"{NAMESPACE}:{block_id}"
+        index, behavior = configured_station_interactions[furniture_id]
+        if (index != expected_index
+                or behavior != {"type": station_interaction_type}):
+            raise AssertionError(
+                f"{furniture_id}: station interaction order/config drifted: "
+                f"index={index}, behavior={behavior}")
 
     configured_redstone: dict[str, dict[str, Any]] = {}
     redstone_type = f"{NAMESPACE}:redstone_furniture"
