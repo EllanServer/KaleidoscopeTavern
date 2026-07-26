@@ -38,10 +38,10 @@ import java.util.Set;
 public final class BottlePlacementService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String POTION_BOTTLE = PREFIX + "potion_bottle";
+    private static final String WATERMELON_JUICE = PREFIX + "watermelon_juice";
     private static final Set<String> DISPENSABLE_BOTTLES = Set.of(
             PREFIX + "empty_bottle", PREFIX + "molotov", PREFIX + "water_bottle",
-            PREFIX + "honey_bottle", PREFIX + "dragon_breath_bottle", PREFIX + "xp_bottle",
-            PREFIX + "watermelon_juice"
+            PREFIX + "honey_bottle", PREFIX + "dragon_breath_bottle", PREFIX + "xp_bottle"
     );
 
     private final JavaPlugin plugin;
@@ -137,7 +137,7 @@ public final class BottlePlacementService implements Listener {
 
     private Placement placementFor(ItemStack stack) {
         String customId = items.id(stack);
-        if (catalog.hasDrinkEffects(customId) || catalog.isCocktail(customId)) {
+        if (isPlaceableDrink(customId)) {
             // DrinkBlockItem/CocktailBlockItem placement is unconditional;
             // only the five vanilla bottle families had Forge config gates.
             return new Placement(customId, null);
@@ -159,6 +159,15 @@ public final class BottlePlacementService implements Listener {
 
     private boolean isDispensableBottle(String id) {
         return DISPENSABLE_BOTTLES.contains(id)
+                || isBottleDrink(id);
+    }
+
+    private boolean isPlaceableDrink(String id) {
+        return isBottleDrink(id) || catalog.isCocktail(id);
+    }
+
+    private boolean isBottleDrink(String id) {
+        return id.equals(WATERMELON_JUICE)
                 || catalog.hasDrinkEffects(id) && !catalog.isCocktail(id);
     }
 

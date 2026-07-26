@@ -43,6 +43,14 @@ final class BarrelSemantics {
     record BrewState(int level, int remainingTicks) {
     }
 
+    /** Mirrors Minecraft's {@code StringUtil.formatTickDuration}. */
+    static String formatTickDuration(int ticks) {
+        int totalSeconds = Math.max(0, ticks) / 20;
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+    }
+
     static TapExtractStatus tapExtractStatus(boolean brewing, int outputCount,
                                              boolean carrierRecipeValid) {
         if (!brewing) {

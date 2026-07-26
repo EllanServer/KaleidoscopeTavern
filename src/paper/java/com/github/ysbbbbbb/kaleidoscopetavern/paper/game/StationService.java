@@ -774,11 +774,7 @@ public final class StationService implements Listener {
         // BarrelBlock only delegates the top nine multiblock cells to the lid
         // and inventory logic. Every lower cell is informational.
         if (hit == BarrelSemantics.Hit.BODY) {
-            if (isBarrelBrewing(state)) {
-                messages.send(player, "barrel-progress", Map.of("level", brewLevel(state)));
-            } else {
-                messages.send(player, "barrel-not-brewing");
-            }
+            showBarrelBrewInfo(player, state);
             return true;
         }
 
@@ -921,6 +917,38 @@ public final class StationService implements Listener {
         player.getWorld().playSound(player.getLocation(),
                 "minecraft:entity.item_frame.add_item", SoundCategory.PLAYERS, 1.0F, 1.0F);
         return true;
+    }
+
+    /** Mirrors {@code BarrelBlockEntity.tipBrewInfo} from the archived Forge source. */
+    private void showBarrelBrewInfo(Player player, FurnitureState state) {
+        if (!isBarrelBrewing(state)) {
+            player.sendActionBar(net.kyori.adventure.text.Component.translatable(
+                    "message.kaleidoscope_tavern.barrel.not_brewing"));
+            return;
+        }
+
+        String resultId = state.string("barrel_result", "");
+        net.kyori.adventure.text.Component resultName = items.build(resultId, player)
+                .map(ItemStack::effectiveName)
+                .orElseGet(() -> net.kyori.adventure.text.Component.text(resultId));
+        net.kyori.adventure.text.Component count = net.kyori.adventure.text.Component.text(
+                Math.max(0, state.integer("barrel_output")));
+        int level = brewLevel(state);
+        net.kyori.adventure.text.Component quality = net.kyori.adventure.text.Component.translatable(
+                "message.kaleidoscope_tavern.barrel.brew_level." + level);
+
+        if (level >= 6) {
+            player.sendActionBar(net.kyori.adventure.text.Component.translatable(
+                    "message.kaleidoscope_tavern.barrel.brew_info.full",
+                    resultName, count, quality));
+            return;
+        }
+
+        net.kyori.adventure.text.Component remaining = net.kyori.adventure.text.Component.text(
+                BarrelSemantics.formatTickDuration(state.integer("barrel_time")));
+        player.sendActionBar(net.kyori.adventure.text.Component.translatable(
+                "message.kaleidoscope_tavern.barrel.brew_info.next",
+                resultName, count, quality, remaining));
     }
 
     private void suppressVanillaBucketEmpty(Player player) {

@@ -3504,26 +3504,26 @@
       }
     },
     "kaleidoscope_tavern:watermelon_juice": {
-      "material": "paper",
+      "material": "potion",
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.watermelon_juice>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.watermelon_juice>",
+        "hide_tooltip": [
+          "minecraft:potion_contents"
+        ]
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/watermelon_juice"
       },
-      "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:watermelon_juice",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:sakura_incense": {

@@ -62,6 +62,7 @@ public final class DisplayStorageService implements Listener {
     private static final String IRREGULAR_TAG = PREFIX + "bar_cabinet_irregular";
     private static final String EMPTY_GLASSWARE = PREFIX + "empty_glassware";
     private static final String MOLOTOV = PREFIX + "molotov";
+    private static final String WATERMELON_JUICE = PREFIX + "watermelon_juice";
     private static final Map<Key, StorageSpec> STORAGE = Map.ofEntries(
             Map.entry(Key.of(PREFIX + "bar_cabinet"), new StorageSpec(
                     2, null, false, StorageSemantics.Kind.BAR_CABINET)),
@@ -416,7 +417,7 @@ public final class DisplayStorageService implements Listener {
         ItemStack projectileItem = bukkitItem(stored);
         String projectileId = items.id(projectileItem);
         boolean molotov = projectileId.equals(MOLOTOV);
-        boolean drink = catalog.hasDrinkEffects(projectileId) && !catalog.isCocktail(projectileId);
+        boolean drink = isBottleDrink(projectileId);
         if (!molotov && !drink) {
             return;
         }
@@ -544,7 +545,11 @@ public final class DisplayStorageService implements Listener {
         return id.equals(PREFIX + "empty_bottle") || id.equals(PREFIX + "water_bottle")
                 || id.equals(PREFIX + "honey_bottle") || id.equals(PREFIX + "dragon_breath_bottle")
                 || id.equals(PREFIX + "xp_bottle") || id.equals(MOLOTOV)
-                || id.equals(PREFIX + "watermelon_juice")
+                || isBottleDrink(id);
+    }
+
+    private boolean isBottleDrink(String id) {
+        return id.equals(WATERMELON_JUICE)
                 || catalog.hasDrinkEffects(id) && !catalog.isCocktail(id);
     }
 

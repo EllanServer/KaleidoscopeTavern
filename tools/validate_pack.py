@@ -15,6 +15,7 @@ CATALOG = ROOT / "src/paper/resources/catalog"
 CUSTOM_CROPS = ROOT / "src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml"
 PLUGIN_CONFIG = ROOT / "src/paper/resources/config.yml"
 NAMESPACE = "kaleidoscope_tavern"
+EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
 CUSTOM_EFFECT_ICON_IDS = (
     "slightly_tipsy",
     "high_heels",
@@ -910,6 +911,15 @@ def validate() -> dict[str, int]:
 
     all_items = set(items) | {item_id for item_id in render_items}
     for recipe_id, recipe in recipes.items():
+        recipe_type = recipe.get("type")
+        if recipe_type not in {"shaped", "shapeless"}:
+            raise AssertionError(f"{recipe_id}: unsupported standard recipe type {recipe_type!r}")
+        if recipe.get("unlock_on_ingredient_obtained") is not True:
+            raise AssertionError(
+                f"{recipe_id}: must set unlock_on_ingredient_obtained to true"
+            )
+        if "unlock_on_join" in recipe:
+            raise AssertionError(f"{recipe_id}: must not use unlock_on_join")
         obsolete = obsolete_vanilla_ids(nested_strings(recipe))
         if obsolete:
             raise AssertionError(f"{recipe_id}: obsolete vanilla ids {obsolete}")
@@ -943,7 +953,12 @@ def validate() -> dict[str, int]:
     if len({row[0] for row in effect_rows}) != 37:
         raise AssertionError("Expected drink effects for 37 items")
 
-    drink_ids = {row[0] for row in effect_rows}
+    effect_drink_ids = {row[0] for row in effect_rows}
+    unexpected_effects = effect_drink_ids & EFFECTLESS_DRINKS
+    if unexpected_effects:
+        raise AssertionError(
+            f"Effectless drinks unexpectedly declare drink effects: {sorted(unexpected_effects)}")
+    drink_ids = effect_drink_ids | EFFECTLESS_DRINKS
     drink_ids.add(f"{NAMESPACE}:signature_cocktail")
     for item_id in drink_ids:
         item = items[item_id]
@@ -974,6 +989,12 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{item_id}: drink potion_contents must use the neutral water base "
                 "and may only add an integer custom_color")
+
+    for item_id in EFFECTLESS_DRINKS:
+        replacement = items[item_id].get("settings", {}).get("consume_replacement")
+        if replacement != f"{NAMESPACE}:empty_bottle":
+            raise AssertionError(
+                f"{item_id}: effectless bottle drinks must return empty_bottle after consumption")
 
     fixed_cocktails = {row[1] for row in tsv_rows("shaker.tsv")}
     fixed_cocktails.add(f"{NAMESPACE}:mystery_cocktail")
