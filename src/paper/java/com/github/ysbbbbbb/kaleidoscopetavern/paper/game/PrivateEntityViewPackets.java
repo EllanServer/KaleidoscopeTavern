@@ -60,7 +60,7 @@ final class PrivateEntityViewPackets {
     private boolean sendCustomName(Player viewer, LivingEntity target,
                                    Optional<Object> name, boolean visible) {
         BukkitNetworkManager network = BukkitNetworkManager.instance();
-        NetWorkUser user = network == null ? null : network.getUser(viewer);
+        NetWorkUser user = network == null ? null : network.getOnlineUser(viewer.getUniqueId());
         if (user == null) {
             return false;
         }
