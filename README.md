@@ -54,13 +54,17 @@
 
 ### 酒效 HUD（可选：CustomNameplates）
 
-纯原版客户端无法注册自定义状态效果，插件默认用内置 BossBar 显示持续型酒效（图标 + 本地化名称 + 倒计时）。如果服务端装有 PlaceholderAPI 与 CustomNameplates，可以把显示层交给 CustomNameplates：
+纯原版客户端无法注册自定义状态效果，插件通过隐形 BossBar 文本渲染持续型酒效。默认 `effect-hud.style: corner` 会把效果图标排到**原版药水 HUD 的位置**：右上角 24x24 原版效果框、增益第一行、其余第二行、从右向左每 25px 一格，与原版视觉一致（原版 HUD 同样不显示文字）。`style: line` 则退回顶部居中一行（图标 + 名称 + 等级 + 倒计时）。
+
+corner 排版基于零和偏移：BossBar 文本以屏幕中心为锚，按 `effect-hud.gui-half-width`（默认 240，对应 1920x1080 + GUI 比例 4）推算右上角坐标。其他分辨率/GUI 比例的玩家图标仍在顶行，只是水平位置偏移；若服上另有 BossBar（末影龙、其他插件），整行会随原版堆叠规则下移一格。corner 风格占用 YELLOW BossBar 颜色（tavern 资源包把 `boss_bar/yellow_*` 覆盖为全透明），服务器上其他黄色 BossBar 也会因此隐形。
+
+如果服务端装有 PlaceholderAPI 与 CustomNameplates，可以把显示层交给 CustomNameplates：
 
 1. 安装 PlaceholderAPI 与 CustomNameplates。
-2. 把 JAR 内 `customnameplates/bossbar-tavern-effects.yml` 中的 `tavern_effects` 一节合并进 `plugins/CustomNameplates/configs/bossbar.yml`，然后 `/nameplates reload`。
+2. 把 JAR 内 `customnameplates/bossbar-tavern-effects.yml` 中的 `tavern_effects` 一节合并进 `plugins/CustomNameplates/configs/bossbar.yml`，然后 `/nameplates reload`（`color` 保持 `YELLOW` 以隐藏条本体）。
 3. 本插件 `config.yml` 的 `effect-hud.mode` 默认为 `auto`：检测到 CustomNameplates 时自动停用内置 BossBar，避免重复显示；也可强制 `builtin` / `external`。
 
-占位符：`%kaleidoscopetavern_effect_hud%`（完整 MiniMessage 行，与内置 BossBar 内容一致）、`%kaleidoscopetavern_effect_count%`（酒效数量，用于隐藏条件）。图标字形来自 CraftEngine 分发的 `kaleidoscope_tavern:custom_effects` 位图字体，无需在 CustomNameplates 中另行注册 image。
+占位符：`%kaleidoscopetavern_effect_hud%`（完整 MiniMessage 行，随 `style` 输出 corner 或 line 排版，与内置 BossBar 内容一致）、`%kaleidoscopetavern_effect_count%`（酒效数量，用于隐藏条件）。字形来自 CraftEngine 分发的 `kaleidoscope_tavern:custom_effects`（line）与 `kaleidoscope_tavern:custom_effects_hud`（corner）位图字体，无需在 CustomNameplates 中另行注册 image。
 
 ### 命令
 

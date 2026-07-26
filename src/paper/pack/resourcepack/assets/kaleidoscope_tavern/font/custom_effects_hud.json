@@ -1,0 +1,261 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        "": 1,
+        "": -1,
+        "": 2,
+        "": -2,
+        "": 4,
+        "": -4,
+        "": 8,
+        "": -8,
+        "": 16,
+        "": -16,
+        "": 32,
+        "": -32,
+        "": 64,
+        "": -64,
+        "": 128,
+        "": -128,
+        "": 256,
+        "": -256
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:gui/sprites/hud/effect_background.png",
+      "ascent": 9,
+      "height": 24,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/slightly_tipsy.png",
+      "ascent": 6,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/high_heels.png",
+      "ascent": 6,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/grass_stealth.png",
+      "ascent": 6,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/vision.png",
+      "ascent": 6,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/bloody_mary.png",
+      "ascent": 6,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/ardent_heat.png",
+      "ascent": 6,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/long_reach.png",
+      "ascent": 6,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/tomb_raider.png",
+      "ascent": 6,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/xp_drain.png",
+      "ascent": 6,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/upside_down.png",
+      "ascent": 6,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/zenith.png",
+      "ascent": 6,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/shriek_attack.png",
+      "ascent": 6,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:gui/sprites/hud/effect_background.png",
+      "ascent": -16,
+      "height": 24,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/slightly_tipsy.png",
+      "ascent": -19,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/high_heels.png",
+      "ascent": -19,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/grass_stealth.png",
+      "ascent": -19,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/vision.png",
+      "ascent": -19,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/bloody_mary.png",
+      "ascent": -19,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/ardent_heat.png",
+      "ascent": -19,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/long_reach.png",
+      "ascent": -19,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/tomb_raider.png",
+      "ascent": -19,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/xp_drain.png",
+      "ascent": -19,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/upside_down.png",
+      "ascent": -19,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/zenith.png",
+      "ascent": -19,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/hud_effect/shriek_attack.png",
+      "ascent": -19,
+      "height": 18,
+      "chars": [
+        ""
+      ]
+    }
+  ]
+}

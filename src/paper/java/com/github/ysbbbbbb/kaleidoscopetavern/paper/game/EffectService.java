@@ -100,6 +100,8 @@ public final class EffectService implements Listener {
     private final Map<UUID, Map<String, ActiveEffect>> active = new HashMap<>();
     private final Map<UUID, BossBar> effectHudBars = new HashMap<>();
     private final boolean builtinHud;
+    private final boolean cornerHud;
+    private final int hudGuiHalfWidth;
     private long elapsedTicks;
     private BukkitTask task;
 
@@ -116,6 +118,8 @@ public final class EffectService implements Listener {
             case "external" -> false;
             default -> Bukkit.getPluginManager().getPlugin("CustomNameplates") == null;
         };
+        this.cornerHud = !"line".equals(plugin.getConfig().getString("effect-hud.style", "corner"));
+        this.hudGuiHalfWidth = plugin.getConfig().getInt("effect-hud.gui-half-width", 240);
         this.activeKey = new NamespacedKey(plugin, "active_drink_effects");
         this.collisionKey = new NamespacedKey(plugin, "ardent_heat_collisions");
         this.heelsModifierKey = new NamespacedKey(plugin, "effect_high_heels");
@@ -1004,7 +1008,14 @@ public final class EffectService implements Listener {
         if (effects == null) {
             return "";
         }
-        return CustomEffectHudSemantics.miniMessageLine(hudEntries(effects));
+        return hudLine(effects);
+    }
+
+    private String hudLine(Map<String, ActiveEffect> effects) {
+        List<CustomEffectHudSemantics.EffectEntry> entries = hudEntries(effects);
+        return cornerHud
+                ? CustomEffectHudSemantics.cornerLine(entries, hudGuiHalfWidth)
+                : CustomEffectHudSemantics.miniMessageLine(entries);
     }
 
     public int activeEffectCount(Player player) {
@@ -1020,12 +1031,14 @@ public final class EffectService implements Listener {
             hideEffectHud(player);
             return;
         }
-        Component title = MiniMessage.miniMessage().deserialize(
-                CustomEffectHudSemantics.miniMessageLine(hudEntries(effects)));
+        Component title = MiniMessage.miniMessage().deserialize(hudLine(effects));
         BossBar bar = effectHudBars.get(player.getUniqueId());
         if (bar == null) {
-            bar = BossBar.bossBar(
-                    title, 1.0F, BossBar.Color.BLUE, BossBar.Overlay.PROGRESS);
+            // The corner style hides the bar itself: the pack overrides the
+            // YELLOW boss bar sprites with fully transparent textures.
+            bar = BossBar.bossBar(title, 1.0F,
+                    cornerHud ? BossBar.Color.YELLOW : BossBar.Color.BLUE,
+                    BossBar.Overlay.PROGRESS);
             effectHudBars.put(player.getUniqueId(), bar);
             player.showBossBar(bar);
         } else {

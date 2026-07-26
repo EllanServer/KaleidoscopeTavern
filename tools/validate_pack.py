@@ -1168,6 +1168,69 @@ def validate() -> dict[str, int]:
         if not asset_exists(f"{NAMESPACE}:mob_effect/{effect_id}", "textures", ".png"):
             raise AssertionError(f"Missing custom drink-effect HUD icon: {effect_id}")
 
+    # The corner HUD font must mirror tools/migrate_legacy.py and the glyph
+    # tables hard-coded in CustomEffectHudSemantics exactly.
+    hud_offset_powers = (1, 2, 4, 8, 16, 32, 64, 128, 256)
+    expected_hud_providers: list[dict] = [{
+        "type": "space",
+        "advances": {
+            **{chr(0xE300 + index): power for index, power in enumerate(hud_offset_powers)},
+            **{chr(0xE310 + index): -power for index, power in enumerate(hud_offset_powers)},
+        },
+    }]
+    for bg_char, bg_ascent, icon_base, icon_ascent in (
+            (0xE320, 9, 0xE330, 6), (0xE321, -16, 0xE340, -19)):
+        expected_hud_providers.append({
+            "type": "bitmap",
+            "file": "minecraft:gui/sprites/hud/effect_background.png",
+            "ascent": bg_ascent,
+            "height": 24,
+            "chars": [chr(bg_char)],
+        })
+        expected_hud_providers.extend({
+            "type": "bitmap",
+            "file": f"{NAMESPACE}:font/hud_effect/{effect_id}.png",
+            "ascent": icon_ascent,
+            "height": 18,
+            "chars": [chr(icon_base + index)],
+        } for index, effect_id in enumerate(CUSTOM_EFFECT_ICON_IDS))
+    hud_font = asset_json(f"{NAMESPACE}:custom_effects_hud", "font", paper_asset_roots)
+    if hud_font is None or hud_font.get("providers") != expected_hud_providers:
+        raise AssertionError(
+            "Corner HUD font must keep the deterministic space/frame/icon glyph layout")
+    for effect_id in CUSTOM_EFFECT_ICON_IDS:
+        if not asset_exists(f"{NAMESPACE}:font/hud_effect/{effect_id}", "textures", ".png"):
+            raise AssertionError(f"Missing padded corner HUD icon: {effect_id}")
+    for sprite in ("yellow_background", "yellow_progress"):
+        if not (ROOT / "src/paper/pack/resourcepack/assets/minecraft/textures"
+                / f"gui/sprites/boss_bar/{sprite}.png").is_file():
+            raise AssertionError(
+                f"Corner HUD needs the transparent YELLOW boss bar sprite: {sprite}")
+    # The vanilla overlay splits rows by MobEffectCategory; the archived Forge
+    # registrations are the source of truth for which effects are beneficial.
+    forge_effect_root = ROOT / "src/main/java/com/github/ysbbbbbb/kaleidoscopetavern/effect"
+    mod_effects_source = (MOD_BLOCKS.parent / "ModEffects.java").read_text(encoding="utf-8-sig")
+    neutral_effects = set()
+    if "SLIGHTLY_TIPSY = EFFECTS.register(\"slightly_tipsy\", () -> new BaseEffect(MobEffectCategory.NEUTRAL" in mod_effects_source:
+        neutral_effects.add("slightly_tipsy")
+    for source_file in sorted(forge_effect_root.glob("*Effect.java")):
+        body = source_file.read_text(encoding="utf-8-sig")
+        if "MobEffectCategory.NEUTRAL" in body and source_file.name != "BaseEffect.java":
+            neutral_effects.add(re.sub(
+                r"(?<!^)(?=[A-Z])", "_", source_file.stem.removesuffix("Effect")).lower())
+        if "MobEffectCategory.HARMFUL" in body:
+            raise AssertionError(
+                f"{source_file.name}: harmful category is new; update the corner HUD row split")
+    if neutral_effects != {"slightly_tipsy", "upside_down"}:
+        raise AssertionError(
+            f"Corner HUD row-two set drifted from the Forge registrations: {sorted(neutral_effects)}")
+    hud_semantics_source = (game_package / "CustomEffectHudSemantics.java").read_text(
+        encoding="utf-8-sig")
+    for row2_effect in ("slightly_tipsy", "upside_down"):
+        if f'"{NAMESPACE}:{row2_effect}"' not in hud_semantics_source.split("HUD_ROW2_EFFECTS")[1].split(";")[0]:
+            raise AssertionError(
+                f"CustomEffectHudSemantics.HUD_ROW2_EFFECTS must contain {row2_effect}")
+
     # The CustomNameplates hand-off: the bundled reference config, the
     # PlaceholderAPI expansion and the soft dependencies must stay consistent.
     hud_placeholder_source = (
@@ -1194,6 +1257,9 @@ def validate() -> dict[str, int]:
     if "mode: auto" not in plugin_config or "effect-hud:" not in plugin_config:
         raise AssertionError(
             "config.yml must document the effect-hud mode switch and default to auto")
+    if "style: corner" not in plugin_config or "gui-half-width: 240" not in plugin_config:
+        raise AssertionError(
+            "config.yml must default the effect HUD to the vanilla-position corner style")
     shaker_3d_model = asset_json(
         f"{NAMESPACE}:item/shaker_3d", "models", paper_asset_roots)
     source_shaker_3d = asset_json(

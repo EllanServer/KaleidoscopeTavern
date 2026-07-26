@@ -1538,6 +1538,89 @@ def create_custom_effect_font() -> None:
     )
 
 
+# The corner HUD mirrors the vanilla effect overlay: a 24x24 frame per effect,
+# advancing 25 GUI pixels right-to-left, beneficial effects on row one and the
+# remaining categories on row two.  The layout is composed from exact glyph
+# advances, so every icon is padded to a deterministic 19px advance and every
+# horizontal move uses the space provider below.
+HUD_OFFSET_POWERS = (1, 2, 4, 8, 16, 32, 64, 128, 256)
+HUD_BG_ROW1 = 0xE320
+HUD_BG_ROW2 = 0xE321
+HUD_ICON_ROW1 = 0xE330
+HUD_ICON_ROW2 = 0xE340
+
+
+def create_custom_effect_hud_assets() -> None:
+    """Generate the vanilla-position corner HUD font, icons and bar sprites.
+
+    Boss bar text is centre-anchored, so the line is composed as a zero-advance
+    string: absolute offsets from the screen centre place each 25px slot at the
+    same coordinates the vanilla effect overlay uses, assuming the configured
+    GUI half-width.  The built-in renderer and CustomNameplates both display it
+    through a YELLOW boss bar whose sprites are overridden to be transparent.
+    """
+    try:
+        from PIL import Image
+    except ImportError as error:  # pragma: no cover - developer machine setup
+        raise AssertionError(
+            "Pillow is required to regenerate the corner HUD assets (pip install pillow)"
+        ) from error
+
+    texture_root = MAIN_RESOURCES / f"assets/{NAMESPACE}/textures/mob_effect"
+    padded_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/textures/font/hud_effect"
+    padded_root.mkdir(parents=True, exist_ok=True)
+    for effect_id in CUSTOM_EFFECT_ICON_IDS:
+        with Image.open(texture_root / f"{effect_id}.png") as source:
+            icon = source.convert("RGBA")
+        if icon.size != (18, 18):
+            raise AssertionError(f"{effect_id}: expected an 18x18 icon, got {icon.size}")
+        # The font renderer trims fully-transparent columns when measuring a
+        # glyph.  A nearly invisible pixel on both vertical edges keeps every
+        # icon at the full 18px width, so the advance is always 18 + 1.
+        for x in (0, 17):
+            if all(icon.getpixel((x, y))[3] == 0 for y in range(18)):
+                icon.putpixel((x, 9), (255, 255, 255, 2))
+        icon.save(padded_root / f"{effect_id}.png")
+
+    sprite_root = ROOT / "src/paper/pack/resourcepack/assets/minecraft/textures/gui/sprites/boss_bar"
+    sprite_root.mkdir(parents=True, exist_ok=True)
+    transparent_bar = Image.new("RGBA", (182, 5), (0, 0, 0, 0))
+    for sprite in ("yellow_background", "yellow_progress"):
+        transparent_bar.save(sprite_root / f"{sprite}.png")
+
+    advances: dict[str, int] = {}
+    for index, power in enumerate(HUD_OFFSET_POWERS):
+        advances[chr(0xE300 + index)] = power
+        advances[chr(0xE310 + index)] = -power
+    providers: list[dict[str, Any]] = [{"type": "space", "advances": advances}]
+    # Boss bar text starts at y=3 with its baseline at y=10, so an ascent of
+    # (10 - target_y) puts a glyph's top edge at the vanilla HUD coordinates:
+    # frames at y=1/26 and their 18x18 icons inset by 3px.
+    for bg_char, bg_ascent, icon_base, icon_ascent in (
+            (HUD_BG_ROW1, 9, HUD_ICON_ROW1, 6),
+            (HUD_BG_ROW2, -16, HUD_ICON_ROW2, -19),
+    ):
+        providers.append({
+            "type": "bitmap",
+            "file": "minecraft:gui/sprites/hud/effect_background.png",
+            "ascent": bg_ascent,
+            "height": 24,
+            "chars": [chr(bg_char)],
+        })
+        for index, effect_id in enumerate(CUSTOM_EFFECT_ICON_IDS):
+            providers.append({
+                "type": "bitmap",
+                "file": f"{NAMESPACE}:font/hud_effect/{effect_id}.png",
+                "ascent": icon_ascent,
+                "height": 18,
+                "chars": [chr(icon_base + index)],
+            })
+    write_json(
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/font/custom_effects_hud.json",
+        {"providers": providers},
+    )
+
+
 def create_pressing_fluid_models() -> None:
     """Create the six horizontal fluid surfaces rendered inside the tub."""
     model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture/pressing_fluid"
@@ -2496,6 +2579,7 @@ def main() -> None:
     create_barrel_fluid_models()
     create_pendant_lamp_models()
     create_custom_effect_font()
+    create_custom_effect_hud_assets()
     create_bar_stool_body_models()
     create_shaker_models()
     add_runtime_render_items(render_items)

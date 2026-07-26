@@ -89,6 +89,63 @@ class CustomEffectHudSemanticsTest {
                 && Key.key(CustomEffectHudSemantics.FONT_KEY).equals(text.font())));
     }
 
+    @Test
+    void cornerLineIsEmptyWithoutEffects() {
+        assertEquals("", CustomEffectHudSemantics.cornerLine(List.of(), 240));
+    }
+
+    @Test
+    void cornerLineRebuildsTheVanillaOverlayGeometryWithZeroTotalAdvance() {
+        String line = CustomEffectHudSemantics.cornerLine(List.of(
+                new CustomEffectHudSemantics.EffectEntry("kaleidoscope_tavern:vision", 1_199, 2),
+                new CustomEffectHudSemantics.EffectEntry("kaleidoscope_tavern:high_heels", 200, 0),
+                new CustomEffectHudSemantics.EffectEntry(
+                        "kaleidoscope_tavern:slightly_tipsy", 200, 0)),
+                240);
+
+        Component parsed = MiniMessage.miniMessage().deserialize(line);
+        StringBuilder hudGlyphs = new StringBuilder();
+        walk(parsed, component -> {
+            if (component instanceof TextComponent text) {
+                assertFalse(text.content().contains("<"), text.content());
+                if (Key.key(CustomEffectHudSemantics.HUD_FONT_KEY).equals(text.font())) {
+                    hudGlyphs.append(text.content());
+                }
+            }
+        });
+        String glyphs = hudGlyphs.toString();
+
+        // Centre-anchored boss bar text keeps its anchor only at zero width.
+        assertEquals(0, advanceOf(glyphs));
+        // Beneficial effects use row one, the neutral slightly_tipsy row two.
+        assertEquals(2, glyphs.chars().filter(glyph -> glyph == 0xE320).count());
+        assertEquals(1, glyphs.chars().filter(glyph -> glyph == 0xE321).count());
+        // Icon glyphs reuse the shared 0xE100 index on the row pages.
+        assertTrue(glyphs.contains("") && glyphs.contains("")
+                && glyphs.contains(""));
+        // The first frame starts at gui-half-width - 25, like the vanilla HUD.
+        assertEquals(215, advanceOf(glyphs.substring(0, glyphs.indexOf(''))));
+    }
+
+    /** Mirrors the generated space/frame/icon advances to pin the layout. */
+    private static int advanceOf(String glyphs) {
+        int total = 0;
+        for (char glyph : glyphs.toCharArray()) {
+            if (glyph >= 0xE300 && glyph <= 0xE308) {
+                total += 1 << (glyph - 0xE300);
+            } else if (glyph >= 0xE310 && glyph <= 0xE318) {
+                total -= 1 << (glyph - 0xE310);
+            } else if (glyph == 0xE320 || glyph == 0xE321) {
+                total += 25;
+            } else if (glyph >= 0xE330 && glyph <= 0xE34B) {
+                total += 19;
+            } else {
+                throw new AssertionError("unexpected glyph " + Integer.toHexString(glyph));
+            }
+        }
+        return total;
+    }
+
     private static void walk(Component component, Consumer<Component> visitor) {
         visitor.accept(component);
         if (component instanceof TranslatableComponent translatable) {
