@@ -13,7 +13,6 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.MolotovService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.ShakerVisualService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.StationService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.TapService;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.WorldgenService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.BlockService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
@@ -138,7 +137,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         getServer().getPluginManager().registerEvents(shakerVisuals, this);
         getServer().getPluginManager().registerEvents(boards, this);
         getServer().getPluginManager().registerEvents(taps, this);
-        getServer().getPluginManager().registerEvents(new WorldgenService(this), this);
         getServer().getPluginManager().registerEvents(stations, this);
         getServer().getPluginManager().registerEvents(effects, this);
         stations.start();

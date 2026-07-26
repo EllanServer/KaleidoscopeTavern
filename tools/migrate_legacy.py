@@ -1639,6 +1639,108 @@ def create_custom_effect_hud_assets() -> None:
     )
 
 
+def create_worldgen_features() -> None:
+    """Generate the CraftEngine worldgen features for wild grapevines.
+
+    The chains are injected into real chunk generation through CraftEngine's
+    configured/placed feature parsers instead of a Bukkit post-populate scan:
+    an 8.3% (1/12) chunk rarity rolls 1-5 attempts, each scanning down from
+    the world surface for air directly beneath oak or birch leaves with two
+    free blocks, then hanging a 1-7 block column (body segments plus a head,
+    all default states) exactly like WildGrapevineDecorator intended.
+    """
+    leaves = ["minecraft:oak_leaves", "minecraft:birch_leaves"]
+    configured = {
+        "type": "minecraft:block_column",
+        "config": {
+            "direction": "down",
+            "allowed_placement": {
+                "type": "minecraft:matching_blocks",
+                "blocks": "minecraft:air",
+            },
+            "prioritize_tip": True,
+            "layers": [
+                {
+                    "height": {
+                        "type": "minecraft:uniform",
+                        "min_inclusive": 0,
+                        "max_inclusive": 6,
+                    },
+                    "provider": {
+                        "type": "minecraft:simple_state_provider",
+                        "state": {"Name": f"{NAMESPACE}:wild_grapevine_plant"},
+                    },
+                },
+                {
+                    "height": 1,
+                    "provider": {
+                        "type": "minecraft:simple_state_provider",
+                        "state": {"Name": f"{NAMESPACE}:wild_grapevine"},
+                    },
+                },
+            ],
+        },
+    }
+    placed = {
+        "dimensions": ["minecraft:overworld"],
+        "feature": f"{NAMESPACE}:wild_grapevine_chain",
+        "placement": [
+            {"type": "minecraft:rarity_filter", "chance": 12},
+            {
+                "type": "minecraft:count",
+                "count": {
+                    "type": "minecraft:uniform",
+                    "min_inclusive": 1,
+                    "max_inclusive": 5,
+                },
+            },
+            {"type": "minecraft:in_square"},
+            {"type": "minecraft:heightmap", "heightmap": "WORLD_SURFACE"},
+            {
+                "type": "minecraft:environment_scan",
+                "direction_of_search": "down",
+                "max_steps": 32,
+                "target_condition": {
+                    "type": "minecraft:all_of",
+                    "predicates": [
+                        {"type": "minecraft:matching_blocks", "blocks": "minecraft:air"},
+                        {
+                            "type": "minecraft:matching_blocks",
+                            "offset": [0, 1, 0],
+                            "blocks": leaves,
+                        },
+                    ],
+                },
+                "allowed_search_condition": {
+                    "type": "minecraft:any_of",
+                    "predicates": [
+                        {"type": "minecraft:matching_blocks", "blocks": "minecraft:air"},
+                        {"type": "minecraft:matching_block_tag", "tag": "minecraft:leaves"},
+                    ],
+                },
+            },
+            {
+                "type": "minecraft:block_predicate_filter",
+                "predicate": {
+                    "type": "minecraft:all_of",
+                    "predicates": [
+                        {"type": "minecraft:matching_blocks", "blocks": "minecraft:air"},
+                        {
+                            "type": "minecraft:matching_blocks",
+                            "offset": [0, -1, 0],
+                            "blocks": "minecraft:air",
+                        },
+                    ],
+                },
+            },
+        ],
+    }
+    write_json(ROOT / "src/paper/pack/configuration/worldgen.json", {
+        "configured_features": {f"{NAMESPACE}:wild_grapevine_chain": configured},
+        "placed_features": {f"{NAMESPACE}:wild_grapevine": placed},
+    })
+
+
 def create_pressing_fluid_models() -> None:
     """Create the six horizontal fluid surfaces rendered inside the tub."""
     model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture/pressing_fluid"
@@ -2480,6 +2582,15 @@ def build_items(
                 "consume_replacement": "minecraft:bucket",
                 "craft_remainder": "minecraft:bucket",
             })
+        # IHasContainer#returnContainerToEntity: CraftEngine's own
+        # consume_replacement setting now hands back the empty vessel, so the
+        # plugin no longer rewrites PlayerItemConsumeEvent replacements.
+        if item_id in COCKTAILS or item_id == "signature_cocktail":
+            config.setdefault("settings", {})["consume_replacement"] = (
+                f"{NAMESPACE}:empty_glassware")
+        elif item_id in drink_ids:
+            config.setdefault("settings", {})["consume_replacement"] = (
+                f"{NAMESPACE}:empty_bottle")
         items[f"{NAMESPACE}:{item_id}"] = config
     return items
 
@@ -2598,6 +2709,7 @@ def main() -> None:
     create_pendant_lamp_models()
     create_custom_effect_font()
     create_custom_effect_hud_assets()
+    create_worldgen_features()
     create_bar_stool_body_models()
     create_shaker_models()
     add_runtime_render_items(render_items)

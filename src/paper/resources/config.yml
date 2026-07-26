@@ -36,11 +36,9 @@ bottle-placement:
   dragon-breath: true
   experience: true
 
-worldgen:
-  wild-grapevines: true
-  chunk-chance: 0.08
-  max-chains-per-chunk: 5
-  max-chain-length: 7
+# 野生葡萄藤世界生成已迁移至 CraftEngine 的 configured/placed feature
+# (内容包 configuration/worldgen.json),在真实区块生成管线内执行,
+# 无需运行时开关;调整密度请编辑该文件后 /ce reload all。
 
 messages:
   prefix: '<dark_aqua>[森罗酒馆]</dark_aqua> '

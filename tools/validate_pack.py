@@ -235,7 +235,7 @@ EFFECT_BEHAVIOR_COVERAGE = {
 }
 
 EVENT_BEHAVIOR_COVERAGE = {
-    "AddFeaturesEvent.java": (("WorldgenService.java", "wild_grapevine_generation"),),
+    "AddFeaturesEvent.java": (("src/paper/pack/configuration/worldgen.json", "wild_grapevine"),),
     "ChangeTargetEvent.java": (("EffectService.java", "onTarget"),),
     "EffectEvent.java": (
         ("EffectService.java", "onDeath"),
@@ -1242,6 +1242,40 @@ def validate() -> dict[str, int]:
         if f'"{NAMESPACE}:{row2_effect}"' not in hud_semantics_source.split("HUD_ROW2_EFFECTS")[1].split(";")[0]:
             raise AssertionError(
                 f"CustomEffectHudSemantics.HUD_ROW2_EFFECTS must contain {row2_effect}")
+
+    # Drinking hands the vessel back through CE's consume_replacement.
+    for item_id, item in items.items():
+        settings = item.get("settings", {})
+        replacement = settings.get("consume_replacement")
+        if item_id in (f"{NAMESPACE}:signature_cocktail",):
+            if replacement != f"{NAMESPACE}:empty_glassware":
+                raise AssertionError(f"{item_id}: missing empty_glassware consume_replacement")
+    if not any(item.get("settings", {}).get("consume_replacement") == f"{NAMESPACE}:empty_bottle"
+               for item in items.values()):
+        raise AssertionError("No drink declares an empty_bottle consume_replacement")
+
+    # Wild grapevine worldgen rides CraftEngine's feature pipeline now; the
+    # plugin must not re-implement a Bukkit-side generator.
+    worldgen = json.loads((ROOT / "src/paper/pack/configuration/worldgen.json").read_text(
+        encoding="utf-8-sig"))
+    chain = worldgen["configured_features"][f"{NAMESPACE}:wild_grapevine_chain"]
+    if (chain["type"] != "minecraft:block_column"
+            or chain["config"]["direction"] != "down"
+            or chain["config"]["layers"][0]["provider"]["state"]["Name"]
+            != f"{NAMESPACE}:wild_grapevine_plant"
+            or chain["config"]["layers"][1]["provider"]["state"]["Name"]
+            != f"{NAMESPACE}:wild_grapevine"):
+        raise AssertionError("Wild grapevine feature must hang body segments above a head")
+    placements = {entry["type"] for entry in
+                  worldgen["placed_features"][f"{NAMESPACE}:wild_grapevine"]["placement"]}
+    for required in ("minecraft:rarity_filter", "minecraft:count", "minecraft:in_square",
+                     "minecraft:heightmap", "minecraft:environment_scan",
+                     "minecraft:block_predicate_filter"):
+        if required not in placements:
+            raise AssertionError(f"Wild grapevine placed feature is missing {required}")
+    if (ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game"
+            / "WorldgenService.java").exists():
+        raise AssertionError("WorldgenService must stay deleted; CE features own worldgen")
 
     # The CustomNameplates hand-off: the bundled reference config, the
     # PlaceholderAPI expansion and the soft dependencies must stay consistent.

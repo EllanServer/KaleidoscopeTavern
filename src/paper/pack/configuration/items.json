@@ -2339,6 +2339,9 @@
             "alignment": "center"
           }
         }
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:signature_cocktail": {
@@ -2359,6 +2362,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/signature_cocktail"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:mystery_cocktail": {
@@ -2382,6 +2388,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/mystery_cocktail"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:white_lady": {
@@ -2408,6 +2417,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/white_lady"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:emerald": {
@@ -2435,6 +2447,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/emerald"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:brass_heart": {
@@ -2458,6 +2473,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/brass_heart"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:godfather": {
@@ -2481,6 +2499,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/godfather"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:grasshopper": {
@@ -2504,6 +2525,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/grasshopper"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:screwdriver": {
@@ -2527,6 +2551,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/screwdriver"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:mojito": {
@@ -2550,6 +2577,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/mojito"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:allium_garden": {
@@ -2573,6 +2603,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/allium_garden"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:depth_charge": {
@@ -2596,6 +2629,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/depth_charge"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:nether_special": {
@@ -2619,6 +2655,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/nether_special"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:bloody_mary": {
@@ -2642,6 +2681,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/bloody_mary"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:sculk_special": {
@@ -2665,6 +2707,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sculk_special"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:shaker": {
@@ -2783,7 +2828,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_light_purple"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:champagne": {
@@ -2810,7 +2856,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_light_purple"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:vodka": {
@@ -2839,7 +2886,8 @@
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_white",
           "kaleidoscope_tavern:holder_blocklist"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:brandy": {
@@ -2870,7 +2918,8 @@
           "kaleidoscope_tavern:cocktail_ingredient_light_purple",
           "kaleidoscope_tavern:holder_blocklist",
           "kaleidoscope_tavern:tilted_rack_blocklist"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:carignan": {
@@ -2901,7 +2950,8 @@
           "kaleidoscope_tavern:cocktail_ingredient_light_purple",
           "kaleidoscope_tavern:holder_blocklist",
           "kaleidoscope_tavern:tilted_rack_blocklist"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:sakura_wine": {
@@ -2928,7 +2978,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_light_purple"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:plum_wine": {
@@ -2955,7 +3006,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_red"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:whiskey": {
@@ -2982,7 +3034,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_white"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:ice_wine": {
@@ -3009,7 +3062,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_blue"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:polaris_sweet_white": {
@@ -3036,7 +3090,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_blue"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:honey_wine": {
@@ -3063,7 +3118,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_gold"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:red_queen": {
@@ -3090,7 +3146,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_red"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:miners_star": {
@@ -3119,7 +3176,8 @@
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_gold",
           "kaleidoscope_tavern:holder_blocklist"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:rum": {
@@ -3148,7 +3206,8 @@
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_white",
           "kaleidoscope_tavern:holder_blocklist"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:riesling_dry_white": {
@@ -3177,7 +3236,8 @@
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_green",
           "kaleidoscope_tavern:holder_blocklist"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:sunset_glow": {
@@ -3206,7 +3266,8 @@
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_gold",
           "kaleidoscope_tavern:holder_blocklist"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:madame_shexiang": {
@@ -3235,7 +3296,8 @@
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_gold",
           "kaleidoscope_tavern:holder_blocklist"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:sweet_berry_wine": {
@@ -3264,7 +3326,8 @@
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_red",
           "kaleidoscope_tavern:holder_blocklist"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:sherry": {
@@ -3291,7 +3354,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_blue"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:mother_snow": {
@@ -3320,7 +3384,8 @@
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_blue",
           "kaleidoscope_tavern:holder_blocklist"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:luminous_bride": {
@@ -3347,7 +3412,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_yellow"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:glowflower_brew": {
@@ -3374,7 +3440,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_yellow"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:sauvignon_blanc_dry_white": {
@@ -3401,7 +3468,8 @@
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
           "kaleidoscope_tavern:cocktail_ingredient_green"
-        ]
+        ],
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:vinegar": {
@@ -3422,6 +3490,9 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/vinegar"
+      },
+      "settings": {
+        "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
     },
     "kaleidoscope_tavern:watermelon_juice": {

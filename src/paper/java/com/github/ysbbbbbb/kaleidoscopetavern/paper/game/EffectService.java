@@ -202,24 +202,9 @@ public final class EffectService implements Listener {
                 apply(event.getPlayer(), spec);
             }
         }
-        String remainderId = catalog.isCocktail(itemId)
-                ? PREFIX + "empty_glassware"
-                : PREFIX + "empty_bottle";
-        items.build(remainderId, event.getPlayer()).ifPresent(container -> {
-            EffectSemantics.ContainerResult result = EffectSemantics.consumedContainer(
-                    consumed.getAmount(), event.getPlayer().getGameMode() == GameMode.CREATIVE);
-            if (result.containerReplacesHand()) {
-                event.setReplacement(container);
-            } else {
-                ItemStack remaining = consumed.clone();
-                remaining.setAmount(result.remainingDrinks());
-                event.setReplacement(remaining);
-            }
-            if (result.returnContainerToInventory()) {
-                container.setAmount(1);
-                items.give(event.getPlayer(), container);
-            }
-        });
+        // The empty bottle or glassware now comes back through CraftEngine's
+        // settings.consume_replacement on each drink item; this handler only
+        // applies the migrated effects.
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
