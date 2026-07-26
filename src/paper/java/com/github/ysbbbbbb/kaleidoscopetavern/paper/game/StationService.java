@@ -1126,6 +1126,9 @@ public final class StationService implements Listener {
         }
         Location location = furniture.location().clone();
         items.give(player, portable.get());
+        // Programmatic removal does not emit FurnitureBreakEvent, so the
+        // split base/lid ItemDisplays must be removed explicitly on pickup.
+        shakerVisuals.removeFurnitureVisuals(furniture);
         CraftEngineFurniture.remove(furniture, player, false, true);
         location.getWorld().playSound(location, "minecraft:block.lantern.break",
                 SoundCategory.BLOCKS, 1.0F, 1.0F);

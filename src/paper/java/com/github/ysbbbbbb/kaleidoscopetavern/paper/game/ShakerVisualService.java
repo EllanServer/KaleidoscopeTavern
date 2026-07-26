@@ -87,6 +87,15 @@ public final class ShakerVisualService implements Listener {
         ensureAnimationTask();
     }
 
+    /** Removes helper displays for programmatic pickup paths that emit no break event. */
+    void removeFurnitureVisuals(BukkitFurniture furniture) {
+        if (!isShaker(furniture) || furniture.bukkitEntity() == null) {
+            return;
+        }
+        removeVisualsAndAnimation(
+                furniture.bukkitEntity().getUniqueId(), furniture.location().clone());
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlace(FurniturePlaceEvent event) {
         if (isShaker(event.furniture())) {
@@ -106,15 +115,14 @@ public final class ShakerVisualService implements Listener {
             if (event.isCancelled()) {
                 return;
             }
-            animations.remove(owner);
-            removeVisuals(owner, location);
-            stopAnimationTaskIfIdle();
+            removeVisualsAndAnimation(owner, location);
         });
     }
 
     @EventHandler
     public void onEntitiesLoad(EntitiesLoadEvent event) {
         List<BukkitFurniture> shakers = new ArrayList<>();
+        List<ItemDisplay> orphanCandidates = new ArrayList<>();
         for (Entity entity : event.getEntities()) {
             if (entity instanceof ItemDisplay display && CraftEngineFurniture.isFurniture(display)) {
                 BukkitFurniture furniture =
@@ -122,10 +130,18 @@ public final class ShakerVisualService implements Listener {
                 if (isShaker(furniture)) {
                     shakers.add(furniture);
                 }
+            } else if (entity instanceof ItemDisplay display && owner(display) != null) {
+                orphanCandidates.add(display);
             }
         }
-        if (!shakers.isEmpty()) {
-            Bukkit.getScheduler().runTask(plugin, () -> shakers.forEach(this::refreshVisuals));
+        if (!shakers.isEmpty() || !orphanCandidates.isEmpty()) {
+            // Wait until CraftEngine has registered all furniture entities in
+            // this chunk, then repair live models and discard pickup ghosts.
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                shakers.forEach(this::refreshVisuals);
+                orphanCandidates.forEach(this::removeIfOrphan);
+                stopAnimationTaskIfIdle();
+            });
         }
     }
 
@@ -325,6 +341,22 @@ public final class ShakerVisualService implements Listener {
         visuals.remove(owner);
     }
 
+    private void removeVisualsAndAnimation(UUID owner, Location origin) {
+        animations.remove(owner);
+        removeVisuals(owner, origin);
+        stopAnimationTaskIfIdle();
+    }
+
+    private void removeIfOrphan(ItemDisplay display) {
+        UUID owner = owner(display);
+        if (owner == null || isShaker(loadedFurniture(owner))) {
+            return;
+        }
+        display.remove();
+        animations.remove(owner);
+        visuals.remove(owner);
+    }
+
     private UUID owner(ItemDisplay display) {
         String value = display.getPersistentDataContainer().get(
                 ownerKey, PersistentDataType.STRING);
@@ -353,9 +385,13 @@ public final class ShakerVisualService implements Listener {
     }
 
     private void bootstrap() {
+        List<ItemDisplay> orphanCandidates = new ArrayList<>();
         for (World world : Bukkit.getWorlds()) {
             for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
                 if (!CraftEngineFurniture.isFurniture(display)) {
+                    if (owner(display) != null) {
+                        orphanCandidates.add(display);
+                    }
                     continue;
                 }
                 BukkitFurniture furniture =
@@ -365,6 +401,8 @@ public final class ShakerVisualService implements Listener {
                 }
             }
         }
+        orphanCandidates.forEach(this::removeIfOrphan);
+        stopAnimationTaskIfIdle();
     }
 
     private record VisualIds(UUID base, UUID lid) {
