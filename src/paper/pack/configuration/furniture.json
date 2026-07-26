@@ -10765,8 +10765,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -10867,8 +10867,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -10969,8 +10969,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -11071,8 +11071,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -11173,8 +11173,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -11275,8 +11275,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -11377,8 +11377,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -11479,8 +11479,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -11581,8 +11581,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -11683,8 +11683,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -11785,8 +11785,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -11887,8 +11887,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -11989,8 +11989,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -12091,8 +12091,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "90,180,0"
             }
           ],
@@ -13319,195 +13319,55 @@
           "hitboxes": [
             {
               "type": "shulker",
-              "position": "-0.25,0,0",
-              "peek": 100,
+              "position": "0,0,0",
+              "peek": 0,
               "interaction_entity": false,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": false,
               "blocks_building": true,
-              "scale": 0.5,
-              "direction": "up"
+              "scale": 0.75,
+              "direction": "up",
+              "invisible": false
             },
             {
               "type": "shulker",
-              "position": "-0.25,0,0.25",
-              "peek": 100,
+              "position": "0,0.75,-0.25",
+              "peek": 25,
               "interaction_entity": false,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": false,
-              "blocks_building": true,
-              "scale": 0.5,
-              "direction": "up"
+              "blocks_building": false,
+              "scale": 0.625,
+              "direction": "north",
+              "invisible": false
             },
             {
               "type": "shulker",
-              "position": "0.25,0,0",
-              "peek": 100,
+              "position": "-0.25,1.5,-0.25",
+              "peek": 35,
               "interaction_entity": false,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": false,
-              "blocks_building": true,
-              "scale": 0.5,
-              "direction": "up"
+              "blocks_building": false,
+              "scale": 0.4,
+              "direction": "up",
+              "invisible": false
             },
             {
               "type": "shulker",
-              "position": "0.25,0,0.25",
-              "peek": 100,
+              "position": "0.25,1.5,-0.25",
+              "peek": 35,
               "interaction_entity": false,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": false,
-              "blocks_building": true,
-              "scale": 0.5,
-              "direction": "up"
-            },
-            {
-              "type": "shulker",
-              "position": "-0.375,0,-0.375",
-              "peek": 100,
-              "interaction_entity": false,
-              "can_use_item_on": true,
-              "can_be_hit_by_projectile": true,
-              "interactive": false,
-              "blocks_building": true,
-              "scale": 0.25,
-              "direction": "up"
-            },
-            {
-              "type": "shulker",
-              "position": "-0.125,0,-0.375",
-              "peek": 100,
-              "interaction_entity": false,
-              "can_use_item_on": true,
-              "can_be_hit_by_projectile": true,
-              "interactive": false,
-              "blocks_building": true,
-              "scale": 0.25,
-              "direction": "up"
-            },
-            {
-              "type": "shulker",
-              "position": "0.125,0,-0.375",
-              "peek": 100,
-              "interaction_entity": false,
-              "can_use_item_on": true,
-              "can_be_hit_by_projectile": true,
-              "interactive": false,
-              "blocks_building": true,
-              "scale": 0.25,
-              "direction": "up"
-            },
-            {
-              "type": "shulker",
-              "position": "0.375,0,-0.375",
-              "peek": 100,
-              "interaction_entity": false,
-              "can_use_item_on": true,
-              "can_be_hit_by_projectile": true,
-              "interactive": false,
-              "blocks_building": true,
-              "scale": 0.25,
-              "direction": "up"
-            },
-            {
-              "type": "shulker",
-              "position": "-0.25,1,0",
-              "peek": 100,
-              "interaction_entity": false,
-              "can_use_item_on": true,
-              "can_be_hit_by_projectile": true,
-              "interactive": false,
-              "blocks_building": true,
-              "scale": 0.5,
-              "direction": "up"
-            },
-            {
-              "type": "shulker",
-              "position": "-0.25,1,0.25",
-              "peek": 100,
-              "interaction_entity": false,
-              "can_use_item_on": true,
-              "can_be_hit_by_projectile": true,
-              "interactive": false,
-              "blocks_building": true,
-              "scale": 0.5,
-              "direction": "up"
-            },
-            {
-              "type": "shulker",
-              "position": "0.25,1,0",
-              "peek": 100,
-              "interaction_entity": false,
-              "can_use_item_on": true,
-              "can_be_hit_by_projectile": true,
-              "interactive": false,
-              "blocks_building": true,
-              "scale": 0.5,
-              "direction": "up"
-            },
-            {
-              "type": "shulker",
-              "position": "0.25,1,0.25",
-              "peek": 100,
-              "interaction_entity": false,
-              "can_use_item_on": true,
-              "can_be_hit_by_projectile": true,
-              "interactive": false,
-              "blocks_building": true,
-              "scale": 0.5,
-              "direction": "up"
-            },
-            {
-              "type": "shulker",
-              "position": "-0.375,1,-0.375",
-              "peek": 100,
-              "interaction_entity": false,
-              "can_use_item_on": true,
-              "can_be_hit_by_projectile": true,
-              "interactive": false,
-              "blocks_building": true,
-              "scale": 0.25,
-              "direction": "up"
-            },
-            {
-              "type": "shulker",
-              "position": "-0.125,1,-0.375",
-              "peek": 100,
-              "interaction_entity": false,
-              "can_use_item_on": true,
-              "can_be_hit_by_projectile": true,
-              "interactive": false,
-              "blocks_building": true,
-              "scale": 0.25,
-              "direction": "up"
-            },
-            {
-              "type": "shulker",
-              "position": "0.125,1,-0.375",
-              "peek": 100,
-              "interaction_entity": false,
-              "can_use_item_on": true,
-              "can_be_hit_by_projectile": true,
-              "interactive": false,
-              "blocks_building": true,
-              "scale": 0.25,
-              "direction": "up"
-            },
-            {
-              "type": "shulker",
-              "position": "0.375,1,-0.375",
-              "peek": 100,
-              "interaction_entity": false,
-              "can_use_item_on": true,
-              "can_be_hit_by_projectile": true,
-              "interactive": false,
-              "blocks_building": true,
-              "scale": 0.25,
-              "direction": "up"
+              "blocks_building": false,
+              "scale": 0.4,
+              "direction": "up",
+              "invisible": false
             }
           ]
         }
@@ -13745,8 +13605,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.01",
-              "translation": "0,0,0.49",
+              "position": "0,0,0.19",
+              "translation": "0,0,-0.627",
               "rotation": "0,180,0"
             }
           ],
@@ -13870,7 +13730,7 @@
           "hitboxes": [
             {
               "type": "interaction",
-              "position": "0,-0.1875,0.6875",
+              "position": "0,-0.1875,0.35",
               "width": 0.625,
               "height": 0.5,
               "can_use_item_on": true,
