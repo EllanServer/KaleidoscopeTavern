@@ -1025,6 +1025,30 @@ def validate() -> dict[str, int]:
     for source_name, owners in EFFECT_BEHAVIOR_COVERAGE.items():
         assert_owner_evidence(source_name, owners, game_package)
 
+    # Vision and upside-down are point-of-view effects. They must never write
+    # shared entity state, otherwise unrelated players see the outline/name
+    # and upside-down permanently pollutes the mob's saved custom name.
+    effect_service_source = (game_package / "EffectService.java").read_text(
+        encoding="utf-8-sig")
+    viewer_packet_source = (game_package / "ViewerEffectPackets.java").read_text(
+        encoding="utf-8-sig")
+    for shared_state_write in (
+            "living.addPotionEffect(new PotionEffect(glowing",
+            'customName(Component.text("Grumm"))',
+            'setCustomNameVisible(false)'):
+        if shared_state_write in effect_service_source:
+            raise AssertionError(
+                f"Viewer-only drink effect writes shared entity state: {shared_state_write}")
+    if "viewer.sendPotionEffectChange" not in effect_service_source:
+        raise AssertionError("Vision must use Paper's per-viewer effect packet")
+    for packet_token in (
+            "ClientboundSetEntityDataPacketProxy",
+            'ComponentProxy.INSTANCE.literal("Grumm")',
+            "restoreCustomName"):
+        if packet_token not in viewer_packet_source:
+            raise AssertionError(
+                f"Upside-down viewer packet bridge is missing {packet_token}")
+
     event_files = {path.name for path in SOURCE_EVENTS.glob("*.java")}
     if event_files != set(EVENT_BEHAVIOR_COVERAGE):
         unhandled = sorted(event_files - set(EVENT_BEHAVIOR_COVERAGE))
