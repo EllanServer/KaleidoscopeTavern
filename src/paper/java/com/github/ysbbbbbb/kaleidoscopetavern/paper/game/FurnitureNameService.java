@@ -22,6 +22,7 @@ import org.bukkit.event.world.EntitiesLoadEvent;
  * hover readable everywhere without touching the resource pack.
  */
 public final class FurnitureNameService implements Listener {
+    private static final String PREFIX = "kaleidoscope_tavern:";
     private final ItemService items;
 
     public FurnitureNameService(ItemService items) {
@@ -53,7 +54,11 @@ public final class FurnitureNameService implements Listener {
     }
 
     private void name(BukkitFurniture furniture) {
+        // Tavern furniture only, and strictly once: the custom name persists
+        // in the entity NBT, so every later load exits on the null check and
+        // no per-load work accumulates.
         if (furniture == null || !furniture.isValid()
+                || !furniture.id().toString().startsWith(PREFIX)
                 || !(furniture.bukkitEntity() instanceof ItemDisplay display)
                 || display.customName() != null) {
             return;
