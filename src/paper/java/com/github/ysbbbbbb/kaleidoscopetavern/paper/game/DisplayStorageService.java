@@ -33,6 +33,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.EntitiesLoadEvent;
+import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -47,6 +48,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -85,6 +87,7 @@ public final class DisplayStorageService implements Listener {
     private final NamespacedKey cabinetVisualOwnerKey;
     private final NamespacedKey cabinetVisualSlotKey;
     private final Set<UUID> loadedLaunchers = new HashSet<>();
+    private final Map<UUID, Boolean> launcherPowered = new HashMap<>();
     private final Field savedItemField;
     private final Method saveDisplayItemMethod;
     private BukkitTask redstoneTask;
@@ -123,6 +126,7 @@ public final class DisplayStorageService implements Listener {
             redstoneTask = null;
         }
         loadedLaunchers.clear();
+        launcherPowered.clear();
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -171,7 +175,9 @@ public final class DisplayStorageService implements Listener {
         }
         Entity entity = event.furniture().bukkitEntity();
         if (entity != null) {
-            loadedLaunchers.remove(entity.getUniqueId());
+            UUID id = entity.getUniqueId();
+            loadedLaunchers.remove(id);
+            launcherPowered.remove(id);
         }
     }
 
@@ -185,6 +191,16 @@ public final class DisplayStorageService implements Listener {
             track(furniture);
             if (isStorage(furniture)) {
                 Bukkit.getScheduler().runTask(plugin, () -> refreshStorageVisuals(furniture));
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntitiesUnload(EntitiesUnloadEvent event) {
+        for (Entity entity : event.getEntities()) {
+            UUID id = entity.getUniqueId();
+            if (loadedLaunchers.remove(id)) {
+                launcherPowered.remove(id);
             }
         }
     }
@@ -377,10 +393,17 @@ public final class DisplayStorageService implements Listener {
                 continue;
             }
             boolean powered = isPowered(furniture);
-            FurnitureState state = new FurnitureState(plugin, furniture);
-            boolean wasPowered = state.bool("storage_powered");
+            Boolean cached = launcherPowered.get(uuid);
+            boolean wasPowered;
+            if (cached == null) {
+                wasPowered = new FurnitureState(plugin, furniture).bool("storage_powered");
+                launcherPowered.put(uuid, wasPowered);
+            } else {
+                wasPowered = cached;
+            }
             if (powered != wasPowered) {
-                state.bool("storage_powered", powered);
+                launcherPowered.put(uuid, powered);
+                new FurnitureState(plugin, furniture).bool("storage_powered", powered);
                 if (powered) {
                     launchRandomBottle(furniture, spec);
                 }
@@ -388,6 +411,7 @@ public final class DisplayStorageService implements Listener {
         }
         if (invalid != null) {
             loadedLaunchers.removeAll(invalid);
+            invalid.forEach(launcherPowered::remove);
         }
     }
 
@@ -770,7 +794,8 @@ public final class DisplayStorageService implements Listener {
         StorageSpec spec = STORAGE.get(furniture.id());
         Entity entity = furniture.bukkitEntity();
         if (spec != null && spec.redstoneLauncher() && entity != null) {
-            loadedLaunchers.add(entity.getUniqueId());
+            UUID id = entity.getUniqueId();
+            loadedLaunchers.add(id);
             FurnitureState state = new FurnitureState(plugin, furniture);
             if (!state.bool("storage_power_initialized")) {
                 // getStateForPlacement copied the current signal into POWERED;
@@ -779,6 +804,7 @@ public final class DisplayStorageService implements Listener {
                 state.bool("storage_power_initialized", true);
                 state.bool("storage_powered", isPowered(furniture));
             }
+            launcherPowered.put(id, state.bool("storage_powered"));
         }
     }
 
