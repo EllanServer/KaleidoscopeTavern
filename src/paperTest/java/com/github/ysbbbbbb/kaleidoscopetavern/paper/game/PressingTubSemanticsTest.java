@@ -10,6 +10,14 @@ class PressingTubSemanticsTest {
     private static final double EPSILON = 1.0E-9;
 
     @Test
+    void ignoresGroundMovementWhenNoFallIsBeingTracked() {
+        assertFalse(PressingTubSemantics.needsMovementInspection(0, false));
+        assertFalse(PressingTubSemantics.needsMovementInspection(-0.1F, false));
+        assertTrue(PressingTubSemantics.needsMovementInspection(0.5F, false));
+        assertTrue(PressingTubSemantics.needsMovementInspection(0, true));
+    }
+
+    @Test
     void reproducesTheForgeFacingSouthTiltMatrix() {
         PressingTubSemantics.Point center = PressingTubSemantics.tiltSouth(0.5, 0.2, 0.5);
         assertEquals(0.5, center.x(), EPSILON);

@@ -672,8 +672,8 @@ public final class StationService implements Listener {
         }
     }
 
-    private void trackPressLanding(LivingEntity living, Location feet) {
-        float currentFallDistance = living.getFallDistance();
+    private void trackPressLanding(LivingEntity living, Location feet,
+                                   float currentFallDistance) {
         if (currentFallDistance > 0) {
             if (PressingTubFurnitureBehavior.hasPotentialBelow(feet)) {
                 falling.merge(living.getUniqueId(), currentFallDistance, Math::max);
@@ -681,9 +681,9 @@ public final class StationService implements Listener {
             }
             return;
         }
-        // Nearly every movement event is an entity walking on the ground. If
-        // nobody is being tracked, avoid UUID creation and hash lookups for
-        // that overwhelmingly common path.
+        // The listener already filters untracked ground movement. Retain this
+        // guard for lifecycle races that clear the map between that filter and
+        // the landing edge.
         if (falling.isEmpty()) {
             return;
         }
@@ -1296,25 +1296,37 @@ public final class StationService implements Listener {
     private final class PressLandingListener implements Listener {
         @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
         public void onMove(PlayerMoveEvent event) {
+            Player player = event.getPlayer();
+            float fallDistance = player.getFallDistance();
+            boolean trackingPlayer = fallDistance <= 0 && !falling.isEmpty()
+                    && falling.containsKey(player.getUniqueId());
+            if (!PressingTubSemantics.needsMovementInspection(
+                    fallDistance, trackingPlayer)) {
+                return;
+            }
             Location to = event.getTo();
             if (to == null || (event.getFrom().getX() == to.getX()
                     && event.getFrom().getY() == to.getY()
-                    && event.getFrom().getZ() == to.getZ())
-                    || !PressingTubFurnitureBehavior.hasLoadedInWorld(
-                            event.getPlayer().getWorld())) {
+                    && event.getFrom().getZ() == to.getZ())) {
                 return;
             }
-            trackPressLanding(event.getPlayer(), to);
+            trackPressLanding(player, to, fallDistance);
         }
 
         @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
         public void onEntityMove(EntityMoveEvent event) {
-            if (event.getEntity() instanceof Player || !event.hasExplicitlyChangedPosition()
-                    || !PressingTubFurnitureBehavior.hasLoadedInWorld(
-                            event.getEntity().getWorld())) {
+            LivingEntity living = event.getEntity();
+            if (living instanceof Player || !event.hasExplicitlyChangedPosition()) {
                 return;
             }
-            trackPressLanding(event.getEntity(), event.getTo());
+            float fallDistance = living.getFallDistance();
+            boolean trackingEntity = fallDistance <= 0 && !falling.isEmpty()
+                    && falling.containsKey(living.getUniqueId());
+            if (!PressingTubSemantics.needsMovementInspection(
+                    fallDistance, trackingEntity)) {
+                return;
+            }
+            trackPressLanding(living, event.getTo(), fallDistance);
         }
     }
 

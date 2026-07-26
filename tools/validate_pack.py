@@ -1335,12 +1335,22 @@ def validate() -> dict[str, int]:
             "HandlerList.unregisterAll(pressLandingListener)",
             "ensureFallingCleanupTask();",
             "stopFallingCleanupTaskIfIdle();",
-            "trackPressLanding(event.getEntity(), event.getTo())",
+            "PressingTubSemantics.needsMovementInspection(",
+            "falling.containsKey(player.getUniqueId())",
+            "falling.containsKey(living.getUniqueId())",
+            "trackPressLanding(living, event.getTo(), fallDistance)",
             "furniture.refreshElements()"):
         if required_token not in station_source:
             raise AssertionError(
                 "StationService must retain only the source-compatible fallOn bridge; "
                 f"missing token: {required_token}")
+    press_landing_listener_source = station_source.partition(
+        "private final class PressLandingListener")[2].partition(
+        "private void tickBarrel")[0]
+    if "PressingTubFurnitureBehavior.hasLoadedInWorld(" in press_landing_listener_source:
+        raise AssertionError(
+            "The movement hot path must rely on CE's indexed hasPotentialBelow/findBelow "
+            "lookups only after observing an actual fall")
     for stale_token in (
             "FurnitureInteractEvent", "public void onFurnitureInteract(",
             "FurniturePlaceEvent", "public void onFurniturePlace("):
