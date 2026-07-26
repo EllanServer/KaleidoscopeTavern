@@ -2,11 +2,34 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Set;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EffectSemanticsTest {
+    @Test
+    void viewerIdsRoundTripThroughNativeLongArray() {
+        UUID first = UUID.fromString("00000000-0000-0001-0000-000000000002");
+        UUID second = UUID.fromString("00000000-0000-0003-0000-000000000004");
+
+        long[] encoded = EffectSemantics.encodeViewerIds(Set.of(second, first));
+
+        assertArrayEquals(new long[]{1L, 2L, 3L, 4L}, encoded);
+        assertEquals(Set.of(first, second), EffectSemantics.decodeViewerIds(encoded));
+    }
+
+    @Test
+    void malformedViewerIdTailIsIgnored() {
+        UUID viewer = UUID.fromString("00000000-0000-0005-0000-000000000006");
+
+        assertEquals(Set.of(viewer), EffectSemantics.decodeViewerIds(new long[]{5L, 6L, 7L}));
+        assertTrue(EffectSemantics.decodeViewerIds(null).isEmpty());
+    }
+
     @Test
     void persistedTickDurationsDoNotAdvanceWhileOffline() {
         assertEquals(1_200, EffectSemantics.decodeRemainingTicks(

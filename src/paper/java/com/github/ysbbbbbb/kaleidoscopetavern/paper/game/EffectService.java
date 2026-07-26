@@ -4,6 +4,8 @@ import com.destroystokyo.paper.event.player.PlayerPickupExperienceEvent;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
+import io.papermc.paper.event.player.PlayerTrackEntityEvent;
+import io.papermc.paper.event.player.PlayerUntrackEntityEvent;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -47,9 +49,11 @@ import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
@@ -101,10 +105,17 @@ public final class EffectService implements Listener {
     private final NamespacedKey entityReachModifierKey;
     private final NamespacedKey splashPreparedKey;
     private final NamespacedKey splashCustomEffectsKey;
+    private final NamespacedKey upsideDownViewersKey;
+    private final PrivateEntityViewPackets privateEntityPackets;
     private final Map<UUID, Map<String, ActiveEffect>> active = new HashMap<>();
     private final Map<UUID, BossBar> effectHudBars = new HashMap<>();
     private final Map<UUID, String> effectHudLines = new HashMap<>();
     private final Set<UUID> stealthHidden = new HashSet<>();
+    private final Set<UUID> privateTipsyVisual = new HashSet<>();
+    private final Map<UUID, Set<UUID>> privateVisionTargets = new HashMap<>();
+    private final Map<UUID, Set<UUID>> upsideDownTargets = new HashMap<>();
+    private final Map<UUID, Set<UUID>> upsideDownViewersByTarget = new HashMap<>();
+    private final Map<UUID, Set<UUID>> shownUpsideDownTargets = new HashMap<>();
     private final Map<String, Color> effectColorCache = new HashMap<>();
     private final Map<String, CompiledBlockTag> blockTagCache = new HashMap<>();
     private final Map<String, CompiledEntityTag> entityTagCache = new HashMap<>();
@@ -136,20 +147,27 @@ public final class EffectService implements Listener {
         this.entityReachModifierKey = new NamespacedKey(plugin, "effect_long_reach_entity");
         this.splashPreparedKey = new NamespacedKey(plugin, "thrown_drink_prepared");
         this.splashCustomEffectsKey = new NamespacedKey(plugin, "thrown_drink_custom_effects");
+        this.upsideDownViewersKey = new NamespacedKey(plugin, "upside_down_viewers");
+        this.privateEntityPackets = new PrivateEntityViewPackets(plugin);
     }
 
     public void start() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             items.refreshInventory(player);
             load(player);
+            indexUpsideDownTarget(player);
         }
         for (org.bukkit.World world : Bukkit.getWorlds()) {
             for (LivingEntity living : world.getLivingEntities()) {
+                indexUpsideDownTarget(living);
                 if (!(living instanceof Player)
                         && living.getPersistentDataContainer().has(activeKey, PersistentDataType.STRING)) {
                     load(living);
                 }
             }
+        }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            refreshPrivateClientState(player);
         }
         // Forge evaluates active effects and EffectEvent once per game tick.
         task = Bukkit.getScheduler().runTaskTimer(plugin, () -> tick(1L), 1L, 1L);
@@ -173,6 +191,29 @@ public final class EffectService implements Listener {
                 player.hideBossBar(entry.getValue());
             }
         }
+        for (UUID uuid : new ArrayList<>(privateTipsyVisual)) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                restorePrivateTipsyVisual(player);
+            }
+        }
+        for (UUID uuid : new ArrayList<>(privateVisionTargets.keySet())) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                clearPrivateVision(player);
+            }
+        }
+        for (UUID uuid : new ArrayList<>(shownUpsideDownTargets.keySet())) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                restoreShownUpsideDownTargets(player);
+            }
+        }
+        privateTipsyVisual.clear();
+        privateVisionTargets.clear();
+        upsideDownTargets.clear();
+        upsideDownViewersByTarget.clear();
+        shownUpsideDownTargets.clear();
         effectHudBars.clear();
         effectHudLines.clear();
         for (UUID uuid : new ArrayList<>(stealthHidden)) {
@@ -271,7 +312,9 @@ public final class EffectService implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         items.refreshInventory(event.getPlayer());
+        indexUpsideDownTarget(event.getPlayer());
         load(event.getPlayer());
+        Bukkit.getScheduler().runTask(plugin, () -> refreshPrivateClientState(event.getPlayer()));
     }
 
     @EventHandler
@@ -279,15 +322,52 @@ public final class EffectService implements Listener {
         save(event.getPlayer());
         hideEffectHud(event.getPlayer());
         restoreStealthVisibility(event.getPlayer());
+        privateTipsyVisual.remove(event.getPlayer().getUniqueId());
+        privateVisionTargets.remove(event.getPlayer().getUniqueId());
+        shownUpsideDownTargets.remove(event.getPlayer().getUniqueId());
         active.remove(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onTrackEntity(PlayerTrackEntityEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity target)) {
+            return;
+        }
+        Player viewer = event.getPlayer();
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (viewer.isOnline() && target.isValid() && target.isTrackedBy(viewer)) {
+                showTrackedPrivateViews(viewer, target);
+            }
+        });
+    }
+
+    @EventHandler
+    public void onUntrackEntity(PlayerUntrackEntityEvent event) {
+        UUID viewer = event.getPlayer().getUniqueId();
+        UUID target = event.getEntity().getUniqueId();
+        removeTrackedTarget(privateVisionTargets, viewer, target);
+        removeTrackedTarget(shownUpsideDownTargets, viewer, target);
+    }
+
+    @EventHandler
+    public void onChangedWorld(PlayerChangedWorldEvent event) {
+        resetPrivateClientState(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent event) {
+        resetPrivateClientState(event.getPlayer());
     }
 
     @EventHandler
     public void onEntitiesLoad(EntitiesLoadEvent event) {
         for (Entity entity : event.getEntities()) {
-            if (entity instanceof LivingEntity living
-                    && living.getPersistentDataContainer().has(activeKey, PersistentDataType.STRING)) {
-                load(living);
+            if (entity instanceof LivingEntity living) {
+                indexUpsideDownTarget(living);
+                showUpsideDownToTrackedViewers(living);
+                if (living.getPersistentDataContainer().has(activeKey, PersistentDataType.STRING)) {
+                    load(living);
+                }
             }
         }
     }
@@ -295,10 +375,13 @@ public final class EffectService implements Listener {
     @EventHandler
     public void onEntitiesUnload(EntitiesUnloadEvent event) {
         for (Entity entity : event.getEntities()) {
-            if (entity instanceof LivingEntity living && active.containsKey(living.getUniqueId())) {
-                save(living);
-                restoreStealthVisibility(living);
-                active.remove(living.getUniqueId());
+            if (entity instanceof LivingEntity living) {
+                unindexUpsideDownTarget(living);
+                if (active.containsKey(living.getUniqueId())) {
+                    save(living);
+                    restoreStealthVisibility(living);
+                    active.remove(living.getUniqueId());
+                }
             }
         }
     }
@@ -317,6 +400,7 @@ public final class EffectService implements Listener {
                 }
             }
         }
+        unindexUpsideDownTarget(target);
         clearEffects(target);
     }
 
@@ -503,6 +587,7 @@ public final class EffectService implements Listener {
         reconcileAttributes(target, effects);
         if (target instanceof Player player) {
             updateEffectHud(player, effects);
+            syncPrivateVisuals(player, effects);
         }
     }
 
@@ -557,6 +642,7 @@ public final class EffectService implements Listener {
                 reconcileAttributes(living, effects);
                 if (living instanceof Player player) {
                     updateEffectHud(player, effects);
+                    syncPrivateVisuals(player, effects);
                 }
             }
             if (effects.isEmpty()) {
@@ -634,8 +720,9 @@ public final class EffectService implements Listener {
                                Map<String, ActiveEffect> effects) {
         switch (effect.effect()) {
             case PREFIX + "vision" -> {
-                if (EffectSemantics.ticksAt(effect.remainingTicks(), 50)) {
-                    vision(living, effect.amplifier());
+                if (living instanceof Player player
+                        && EffectSemantics.ticksAt(effect.remainingTicks(), 50)) {
+                    vision(player, effect.amplifier());
                 }
             }
             case PREFIX + "xp_drain" -> {
@@ -670,25 +757,45 @@ public final class EffectService implements Listener {
         return true;
     }
 
-    private void vision(LivingEntity user, int amplifier) {
-        double radius = Math.min(amplifier + 1, 3) * 6.0;
-        boolean applied = false;
+    private void vision(Player viewer, int amplifier) {
+        // Insight belongs to its holder. A fake effect packet gives this one
+        // viewer the outline without changing the target's real effect list.
+        double radius = visionRadius(amplifier);
         PotionEffectType glowing = Registry.EFFECT.get(NamespacedKey.minecraft("glowing"));
         if (glowing == null) {
             return;
         }
-        for (Entity entity : user.getNearbyEntities(radius, radius, radius)) {
-            if (entity instanceof LivingEntity living && !living.equals(user) && !living.isDead()) {
-                if (!living.hasPotionEffect(glowing)) {
-                    applied = true;
-                }
-                living.addPotionEffect(new PotionEffect(glowing, 60, 0, false, true, true));
+        Set<UUID> previous = privateVisionTargets.computeIfAbsent(
+                viewer.getUniqueId(), ignored -> new HashSet<>());
+        Set<UUID> desired = new HashSet<>();
+        boolean applied = false;
+        for (Entity entity : viewer.getNearbyEntities(radius, radius, radius)) {
+            if (entity instanceof LivingEntity living && !living.equals(viewer)
+                    && !living.isDead() && living.isTrackedBy(viewer)) {
+                desired.add(living.getUniqueId());
+                applied |= !previous.contains(living.getUniqueId())
+                        && living.getPotionEffect(glowing) == null && !living.isGlowing();
+                sendPrivateGlowing(viewer, living, glowing);
             }
         }
+        for (UUID targetId : new HashSet<>(previous)) {
+            if (!desired.contains(targetId)) {
+                restorePrivateGlowing(viewer, targetId, glowing);
+            }
+        }
+        if (desired.isEmpty()) {
+            privateVisionTargets.remove(viewer.getUniqueId());
+        } else {
+            privateVisionTargets.put(viewer.getUniqueId(), desired);
+        }
         if (applied) {
-            user.getWorld().playSound(user.getLocation(),
+            viewer.playSound(viewer.getLocation(),
                     "kaleidoscope_tavern:effect.vision", SoundCategory.PLAYERS, 1.0F, 1.0F);
         }
+    }
+
+    private static double visionRadius(int amplifier) {
+        return Math.min(amplifier + 1, 3) * 6.0;
     }
 
     private static void xpDrain(Player player) {
@@ -871,14 +978,14 @@ public final class EffectService implements Listener {
     private void applyInstant(LivingEntity user, String effect) {
         switch (effect) {
             case PREFIX + "upside_down" -> {
-                if (user instanceof Mob self && !self.isDead()) {
-                    self.customName(Component.text("Grumm"));
-                    self.setCustomNameVisible(false);
-                }
-                for (Entity entity : user.getNearbyEntities(16, 16, 16)) {
-                    if (entity instanceof Mob mob && !mob.isDead()) {
-                        mob.customName(Component.text("Grumm"));
-                        mob.setCustomNameVisible(false);
+                // This is a drinker's visual illusion. Persist only the
+                // viewer relation; never overwrite the mob's real name.
+                if (user instanceof Player viewer) {
+                    for (Entity entity : user.getNearbyEntities(16, 16, 16)) {
+                        if (entity instanceof Mob mob && !mob.isDead()) {
+                            addUpsideDownViewer(mob, viewer);
+                            showUpsideDown(viewer, mob);
+                        }
                     }
                 }
             }
@@ -1037,6 +1144,7 @@ public final class EffectService implements Listener {
         reconcileAttributes(living, effects);
         if (living instanceof Player player) {
             updateEffectHud(player, effects);
+            syncPrivateVisuals(player, effects);
         }
     }
 
@@ -1183,6 +1291,252 @@ public final class EffectService implements Listener {
         }
     }
 
+    /**
+     * The archived Forge client applied {@code slightly_tipsy} only to its
+     * local camera. Vanilla's protocol has no camera-roll field, so a hidden
+     * nausea effect is the closest server-only approximation. Paper sends
+     * this change solely to {@code player}; it never enters the entity's real
+     * potion-effect collection and therefore cannot leak to other viewers or
+     * affect server-side mechanics.
+     */
+    private void syncPrivateVisuals(Player player, Map<String, ActiveEffect> effects) {
+        if (!effects.containsKey(PREFIX + "vision")) {
+            clearPrivateVision(player);
+        }
+        PotionEffectType nausea = Registry.EFFECT.get(NamespacedKey.minecraft("nausea"));
+        if (nausea == null) {
+            return;
+        }
+        ActiveEffect tipsy = effects.get(PREFIX + "slightly_tipsy");
+        PotionEffect realNausea = player.getPotionEffect(nausea);
+        UUID uuid = player.getUniqueId();
+        if (tipsy == null || tipsy.remainingTicks() <= 0) {
+            if (privateTipsyVisual.remove(uuid)) {
+                restorePotionEffectView(player, nausea, realNausea);
+            }
+            return;
+        }
+        if (realNausea != null) {
+            if (privateTipsyVisual.remove(uuid)) {
+                player.sendPotionEffectChange(player, realNausea);
+            }
+            return;
+        }
+        player.sendPotionEffectChange(player, new PotionEffect(
+                nausea, PotionEffect.INFINITE_DURATION, 0, false, false, false));
+        privateTipsyVisual.add(uuid);
+    }
+
+    private void restorePrivateTipsyVisual(Player player) {
+        PotionEffectType nausea = Registry.EFFECT.get(NamespacedKey.minecraft("nausea"));
+        if (nausea == null || !privateTipsyVisual.remove(player.getUniqueId())) {
+            return;
+        }
+        restorePotionEffectView(player, nausea, player.getPotionEffect(nausea));
+    }
+
+    private static void restorePotionEffectView(Player player, PotionEffectType type,
+                                                PotionEffect realEffect) {
+        if (realEffect == null) {
+            player.sendPotionEffectChangeRemove(player, type);
+        } else {
+            player.sendPotionEffectChange(player, realEffect);
+        }
+    }
+
+    private void sendPrivateGlowing(Player viewer, LivingEntity target,
+                                    PotionEffectType glowing) {
+        PotionEffect realEffect = target.getPotionEffect(glowing);
+        int amplifier = realEffect == null ? 0 : realEffect.getAmplifier();
+        boolean ambient = realEffect != null && realEffect.isAmbient();
+        boolean particles = realEffect != null && realEffect.hasParticles();
+        boolean icon = realEffect != null && realEffect.hasIcon();
+        viewer.sendPotionEffectChange(target, new PotionEffect(
+                glowing, PotionEffect.INFINITE_DURATION, amplifier, ambient, particles, icon));
+    }
+
+    private void restorePrivateGlowing(Player viewer, UUID targetId,
+                                       PotionEffectType glowing) {
+        Entity entity = Bukkit.getEntity(targetId);
+        if (!(entity instanceof LivingEntity target) || !target.isValid()
+                || (!target.equals(viewer) && !target.isTrackedBy(viewer))) {
+            return;
+        }
+        restorePotionEffectView(viewer, glowing, target.getPotionEffect(glowing));
+    }
+
+    private void clearPrivateVision(Player viewer) {
+        Set<UUID> targets = privateVisionTargets.remove(viewer.getUniqueId());
+        if (targets == null || targets.isEmpty()) {
+            return;
+        }
+        PotionEffectType glowing = Registry.EFFECT.get(NamespacedKey.minecraft("glowing"));
+        if (glowing == null) {
+            return;
+        }
+        for (UUID target : targets) {
+            restorePrivateGlowing(viewer, target, glowing);
+        }
+    }
+
+    private void showTrackedPrivateViews(Player viewer, LivingEntity target) {
+        Map<String, ActiveEffect> effects = active.getOrDefault(viewer.getUniqueId(), Map.of());
+        ActiveEffect vision = effects.get(PREFIX + "vision");
+        PotionEffectType glowing = Registry.EFFECT.get(NamespacedKey.minecraft("glowing"));
+        if (vision != null && glowing != null && !target.equals(viewer)
+                && insideVisionBox(viewer, target, vision.amplifier())) {
+            sendPrivateGlowing(viewer, target, glowing);
+            privateVisionTargets.computeIfAbsent(
+                    viewer.getUniqueId(), ignored -> new HashSet<>()).add(target.getUniqueId());
+        }
+        if (upsideDownTargets.getOrDefault(viewer.getUniqueId(), Set.of())
+                .contains(target.getUniqueId())) {
+            showUpsideDown(viewer, target);
+        }
+    }
+
+    private static boolean insideVisionBox(Player viewer, LivingEntity target, int amplifier) {
+        if (!viewer.getWorld().equals(target.getWorld())) {
+            return false;
+        }
+        double radius = visionRadius(amplifier);
+        Location viewerLocation = viewer.getLocation();
+        Location targetLocation = target.getLocation();
+        return Math.abs(viewerLocation.getX() - targetLocation.getX()) <= radius
+                && Math.abs(viewerLocation.getY() - targetLocation.getY()) <= radius
+                && Math.abs(viewerLocation.getZ() - targetLocation.getZ()) <= radius;
+    }
+
+    private void addUpsideDownViewer(LivingEntity target, Player viewer) {
+        Set<UUID> viewers = readUpsideDownViewers(target);
+        if (viewers.add(viewer.getUniqueId())) {
+            writeUpsideDownViewers(target, viewers);
+        }
+        indexUpsideDownTarget(target, viewers);
+    }
+
+    private void indexUpsideDownTarget(LivingEntity target) {
+        indexUpsideDownTarget(target, readUpsideDownViewers(target));
+    }
+
+    private void indexUpsideDownTarget(LivingEntity target, Set<UUID> viewers) {
+        UUID targetId = target.getUniqueId();
+        Set<UUID> previous = upsideDownViewersByTarget.put(targetId, Set.copyOf(viewers));
+        if (previous != null) {
+            for (UUID viewerId : previous) {
+                if (!viewers.contains(viewerId)) {
+                    removeTrackedTarget(upsideDownTargets, viewerId, targetId);
+                }
+            }
+        }
+        if (viewers.isEmpty()) {
+            upsideDownViewersByTarget.remove(targetId);
+            return;
+        }
+        for (UUID viewerId : viewers) {
+            upsideDownTargets.computeIfAbsent(viewerId, ignored -> new HashSet<>()).add(targetId);
+        }
+    }
+
+    private void unindexUpsideDownTarget(LivingEntity target) {
+        UUID targetId = target.getUniqueId();
+        Set<UUID> viewers = upsideDownViewersByTarget.remove(targetId);
+        if (viewers != null) {
+            for (UUID viewerId : viewers) {
+                removeTrackedTarget(upsideDownTargets, viewerId, targetId);
+                removeTrackedTarget(shownUpsideDownTargets, viewerId, targetId);
+            }
+        }
+    }
+
+    private Set<UUID> readUpsideDownViewers(LivingEntity target) {
+        long[] encoded = target.getPersistentDataContainer()
+                .get(upsideDownViewersKey, PersistentDataType.LONG_ARRAY);
+        return EffectSemantics.decodeViewerIds(encoded);
+    }
+
+    private void writeUpsideDownViewers(LivingEntity target, Set<UUID> viewers) {
+        if (viewers.isEmpty()) {
+            target.getPersistentDataContainer().remove(upsideDownViewersKey);
+            return;
+        }
+        target.getPersistentDataContainer().set(
+                upsideDownViewersKey, PersistentDataType.LONG_ARRAY,
+                EffectSemantics.encodeViewerIds(viewers));
+    }
+
+    private void showUpsideDownToTrackedViewers(LivingEntity target) {
+        for (UUID viewerId : upsideDownViewersByTarget.getOrDefault(
+                target.getUniqueId(), Set.of())) {
+            Player viewer = Bukkit.getPlayer(viewerId);
+            if (viewer != null && viewer.isOnline()
+                    && (target.equals(viewer) || target.isTrackedBy(viewer))) {
+                showUpsideDown(viewer, target);
+            }
+        }
+    }
+
+    private void showUpsideDown(Player viewer, LivingEntity target) {
+        if ((target.equals(viewer) || target.isTrackedBy(viewer))
+                && privateEntityPackets.showUpsideDown(viewer, target)) {
+            shownUpsideDownTargets.computeIfAbsent(
+                    viewer.getUniqueId(), ignored -> new HashSet<>()).add(target.getUniqueId());
+        }
+    }
+
+    private void restoreShownUpsideDownTargets(Player viewer) {
+        Set<UUID> targets = shownUpsideDownTargets.remove(viewer.getUniqueId());
+        if (targets == null) {
+            return;
+        }
+        for (UUID targetId : targets) {
+            Entity entity = Bukkit.getEntity(targetId);
+            if (entity instanceof LivingEntity target && target.isValid()
+                    && (target.equals(viewer) || target.isTrackedBy(viewer))) {
+                privateEntityPackets.restoreCustomName(viewer, target);
+            }
+        }
+    }
+
+    private void resetPrivateClientState(Player player) {
+        restorePrivateTipsyVisual(player);
+        privateVisionTargets.remove(player.getUniqueId());
+        shownUpsideDownTargets.remove(player.getUniqueId());
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (player.isOnline()) {
+                refreshPrivateClientState(player);
+            }
+        });
+    }
+
+    private void refreshPrivateClientState(Player player) {
+        Map<String, ActiveEffect> effects = active.getOrDefault(player.getUniqueId(), Map.of());
+        syncPrivateVisuals(player, effects);
+        ActiveEffect vision = effects.get(PREFIX + "vision");
+        if (vision != null) {
+            vision(player, vision.amplifier());
+        }
+        for (UUID targetId : upsideDownTargets.getOrDefault(player.getUniqueId(), Set.of())) {
+            Entity entity = Bukkit.getEntity(targetId);
+            if (entity instanceof LivingEntity target && target.isValid()
+                    && (target.equals(player) || target.isTrackedBy(player))) {
+                showUpsideDown(player, target);
+            }
+        }
+    }
+
+    private static void removeTrackedTarget(Map<UUID, Set<UUID>> tracked,
+                                            UUID viewer, UUID target) {
+        Set<UUID> targets = tracked.get(viewer);
+        if (targets == null) {
+            return;
+        }
+        targets.remove(target);
+        if (targets.isEmpty()) {
+            tracked.remove(viewer);
+        }
+    }
+
     private void clearEffects(LivingEntity living) {
         active.remove(living.getUniqueId());
         living.getPersistentDataContainer().remove(activeKey);
@@ -1190,6 +1544,8 @@ public final class EffectService implements Listener {
         restoreStealthVisibility(living);
         if (living instanceof Player player) {
             hideEffectHud(player);
+            clearPrivateVision(player);
+            restorePrivateTipsyVisual(player);
         }
     }
 

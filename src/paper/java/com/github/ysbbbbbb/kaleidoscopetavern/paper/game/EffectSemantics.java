@@ -1,6 +1,10 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 /** Pure drink/effect rules shared by the runtime and its parity tests. */
 final class EffectSemantics {
@@ -38,6 +42,28 @@ final class EffectSemantics {
 
     static boolean isGrassStealthPlant(boolean vanillaCropBlock, boolean mature, boolean tagged) {
         return vanillaCropBlock ? mature : tagged;
+    }
+
+    static long[] encodeViewerIds(Set<UUID> viewers) {
+        List<UUID> ordered = viewers.stream().sorted().toList();
+        long[] encoded = new long[ordered.size() * 2];
+        for (int index = 0; index < ordered.size(); index++) {
+            UUID viewer = ordered.get(index);
+            encoded[index * 2] = viewer.getMostSignificantBits();
+            encoded[index * 2 + 1] = viewer.getLeastSignificantBits();
+        }
+        return encoded;
+    }
+
+    static Set<UUID> decodeViewerIds(long[] encoded) {
+        Set<UUID> viewers = new HashSet<>();
+        if (encoded == null) {
+            return viewers;
+        }
+        for (int index = 0; index + 1 < encoded.length; index += 2) {
+            viewers.add(new UUID(encoded[index], encoded[index + 1]));
+        }
+        return viewers;
     }
 
     /**
