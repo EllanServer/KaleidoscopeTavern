@@ -2652,7 +2652,11 @@ def material_for(item_id: str, drink_ids: set[str], block_ids: set[str]) -> str:
         # JuiceBucketItem is a drinkable, effect-clearing milk-bucket analogue.
         return "milk_bucket"
     if item_id in GRAPE_ITEMS:
-        return "sweet_berries"
+        # Forge GrapeItem is a plain food item. A sweet_berries base leaks the
+        # vanilla ItemNameBlockItem planting path (right-clicking soil plants a
+        # vanilla sweet berry bush), so grapes ride on paper and declare their
+        # food/consumable components explicitly instead.
+        return "paper"
     if item_id == "shaker":
         # A real BrushItem can brush suspicious blocks and take durability
         # while StationService is driving the long use state.
@@ -2814,6 +2818,12 @@ def build_items(
                 "nutrition": 2,
                 "saturation": 2.0,
                 "can_always_eat": True,
+            }
+            # Since 1.21.2 edibility needs an explicit consumable component;
+            # the former sweet_berries base supplied it implicitly.
+            config["data"].setdefault("components", {})["minecraft:consumable"] = {
+                "consume_seconds": 1.6,
+                "animation": "eat",
             }
         if item_id in furniture_ids and not manually_placed_drink:
             furniture_behavior: dict[str, Any] = {

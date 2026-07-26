@@ -1879,7 +1879,7 @@
       }
     },
     "kaleidoscope_tavern:grape": {
-      "material": "sweet_berries",
+      "material": "paper",
       "data": {
         "item_name": "<!i><lang:item.kaleidoscope_tavern.grape>",
         "lore": [
@@ -1889,6 +1889,12 @@
           "nutrition": 2,
           "saturation": 2.0,
           "can_always_eat": true
+        },
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "eat"
+          }
         }
       },
       "model": {
@@ -1908,7 +1914,7 @@
       }
     },
     "kaleidoscope_tavern:ice_grape": {
-      "material": "sweet_berries",
+      "material": "paper",
       "data": {
         "item_name": "<!i><lang:item.kaleidoscope_tavern.ice_grape>",
         "lore": [
@@ -1918,6 +1924,12 @@
           "nutrition": 2,
           "saturation": 2.0,
           "can_always_eat": true
+        },
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "eat"
+          }
         }
       },
       "model": {
@@ -1936,7 +1948,7 @@
       }
     },
     "kaleidoscope_tavern:gold_grape": {
-      "material": "sweet_berries",
+      "material": "paper",
       "data": {
         "item_name": "<!i><lang:item.kaleidoscope_tavern.gold_grape>",
         "lore": [
@@ -1946,6 +1958,12 @@
           "nutrition": 2,
           "saturation": 2.0,
           "can_always_eat": true
+        },
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "eat"
+          }
         }
       },
       "model": {
@@ -1964,7 +1982,7 @@
       }
     },
     "kaleidoscope_tavern:green_grape": {
-      "material": "sweet_berries",
+      "material": "paper",
       "data": {
         "item_name": "<!i><lang:item.kaleidoscope_tavern.green_grape>",
         "lore": [
@@ -1974,6 +1992,12 @@
           "nutrition": 2,
           "saturation": 2.0,
           "can_always_eat": true
+        },
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "eat"
+          }
         }
       },
       "model": {

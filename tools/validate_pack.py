@@ -1113,6 +1113,35 @@ def validate() -> dict[str, int]:
                 or settings.get("craft_remainder") != "minecraft:bucket"):
             raise AssertionError(f"{item_id}: juice buckets must remain stackable drinkable items")
 
+    for grape_id in ("grape", "ice_grape", "gold_grape", "green_grape"):
+        grape_item = items[f"{NAMESPACE}:{grape_id}"]
+        if (grape_item.get("material") != "paper"
+                or grape_item.get("data", {}).get("food") != {
+                    "nutrition": 2,
+                    "saturation": 2.0,
+                    "can_always_eat": True,
+                }
+                or grape_item.get("data", {}).get("components", {}).get("minecraft:consumable") != {
+                    "consume_seconds": 1.6,
+                    "animation": "eat",
+                }):
+            raise AssertionError(
+                f"{grape_id}: grapes must stay non-placeable plain food "
+                "(paper base with explicit food/consumable components)")
+
+    placeable_materials = {
+        "sweet_berries", "glow_berries", "cocoa_beans", "wheat_seeds",
+        "melon_seeds", "pumpkin_seeds", "beetroot_seeds", "torchflower_seeds",
+        "pitcher_pod", "nether_wart", "bamboo", "sugar_cane", "kelp",
+        "sea_pickle", "redstone", "string", "carrot", "potato", "chorus_fruit",
+    }
+    for item_id, item in items.items():
+        if item.get("material") in placeable_materials:
+            raise AssertionError(
+                f"{item_id}: base material {item['material']!r} leaks the vanilla "
+                "block-placement path; use a non-placeable material and declare "
+                "components explicitly")
+
     molotov_item = items[f"{NAMESPACE}:molotov"]
     molotov_components = molotov_item.get("data", {}).get("components", {})
     if (molotov_item.get("material") != "paper"
