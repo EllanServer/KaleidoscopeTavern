@@ -1422,11 +1422,16 @@ def validate() -> dict[str, int]:
             "INTERACTION_HANDLERS.get(channel)",
             "handler.interact(bukkitFurniture, context)",
             "public void preRemove(Player player)",
-            "handler.onRemove(bukkitFurniture)"):
+            "handler.onRemove(bukkitFurniture)",
+            "case INCENSE, STORAGE -> primaryPowerBlock.isBlockIndirectlyPowered()"):
         if required_token not in redstone_behavior_source:
             raise AssertionError(
                 "CE redstone furniture must also own channel-scoped player interaction; "
                 f"missing token: {required_token}")
+    if ".isBlockPowered()" in redstone_behavior_source:
+        raise AssertionError(
+            "CE redstone furniture must sample the source mod's hasNeighborSignal "
+            "semantics once, without a duplicate direct-signal scan")
     if "registerEvents(taps, this)" in plugin_source:
         raise AssertionError(
             "TapService has no Paper events after CE interaction/removal migration")
