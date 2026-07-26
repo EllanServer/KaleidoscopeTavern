@@ -1078,8 +1078,6 @@ def source_boxes(block_id: str, anchor: str, properties: dict[str, str]) -> list
         return [(0, 0, 0, 16, 18, 16)]
     if block_id.endswith("_bar_stool"):
         return [(2, 0, 2, 14, 21, 14)]
-    if block_id == "chalkboard":
-        return [(0, 2, 15, 16, 30, 16)]
     if block_id.endswith("_sandwich_board"):
         return [(2, 0, 2, 14, 22, 14)]
     if block_id in PENDANT_LAMPS:
@@ -1479,7 +1477,7 @@ def furniture_hitboxes(
         hitbox = interaction_box(aggregate, anchor)
         hitbox["blocks_building"] = False
         return [hitbox]
-    if block_id == "chalkboard" or block_id == "glassware_holder":
+    if block_id == "glassware_holder":
         return [interaction_box(aggregate, anchor)]
     if block_id == "table":
         # Shulkers cannot be flatter than their horizontal scale. A 4x4 grid
@@ -2330,13 +2328,75 @@ def build_furniture(
         if block_id == "chalkboard":
             small_model = (f"{NAMESPACE}:furniture/chalkboard_small", 0, 0, 0, False)
             large_model = (f"{NAMESPACE}:furniture/chalkboard_large", 0, 0, 0, False)
+
+            def chalkboard_hitboxes(columns: tuple[int, ...], anchor: str) -> list[dict[str, Any]]:
+                # ChalkboardBlock occupied its placed column's two blocks (and,
+                # for the large board, the neighbouring columns), regardless of
+                # which cell edge the thin panel hugs, so every interaction box
+                # is centred on its column.  A panel-hugging box would sit on
+                # the wrong side anyway: hitbox +z is the furniture front while
+                # the model's +z panel lands on the back, so the old offset box
+                # crossed into the placer-side neighbour cell.  CE interaction
+                # boxes also have square bases, which is why the large board
+                # cannot be one width-3 box (that claims a 3x3 footprint where
+                # Forge only occupied a 3x1 row).
+                # The wall anchor's centre alignment lifts the furniture origin
+                # to n+0.5, so wall boxes drop half a block to cover the same
+                # world span as their ground counterparts.  Half of a centred
+                # wall box overlaps the supporting wall, which the placement
+                # obstruction check would reject, so wall boxes must not block
+                # building -- the paintings use the same escape hatch.
+                shift = -8 if anchor == "wall" else 0
+                hitboxes = []
+                for column in columns:
+                    box = interaction_box(
+                        (column, 2 + shift, 0, column + 16, 30 + shift, 16), "ground")
+                    if anchor == "wall":
+                        box["blocks_building"] = False
+                    hitboxes.append(box)
+                return hitboxes
+
+            def chalkboard_element(
+                label: str,
+                model: tuple[str, int, int, int, bool],
+                anchor: str,
+            ) -> dict[str, Any]:
+                if anchor == "ground":
+                    return furniture_element(render_items, block_id, label, model, "ground")
+                # Wall boards reuse the ground model.  Its panel sits at the
+                # model's +z edge, which the display rotation puts on the
+                # furniture's back -- straight into the supporting wall now
+                # that the origin lies on the wall plane -- so the translation
+                # swings the panel back out flush with the wall face and drops
+                # the model half a block to undo the centre alignment's y snap
+                # (board spans world y 0.125..1.875, identical to ground).
+                # The 0.01 entity offset keeps the display outside the wall
+                # for lighting, mirroring furniture_element's wall handling.
+                element = furniture_element(
+                    render_items, block_id, label, model, "ground", "0,-0.5,-0.49")
+                element["position"] = "0,0,0.01"
+                return element
+
             variants["ground"] = {
-                "elements": [furniture_element(render_items, block_id, "small", small_model, "ground")],
-                "hitboxes": furniture_hitboxes(block_id, "ground"),
+                "elements": [chalkboard_element("small", small_model, "ground")],
+                "hitboxes": chalkboard_hitboxes((0,), "ground"),
             }
             variants["ground_large"] = {
-                "elements": [furniture_element(render_items, block_id, "large", large_model, "ground")],
-                "hitboxes": [interaction_box((-16, 2, 15, 32, 30, 16), "ground")],
+                "elements": [chalkboard_element("large", large_model, "ground")],
+                "hitboxes": chalkboard_hitboxes((-16, 0, 16), "ground"),
+            }
+            # ChalkboardBlock.getStateForPlacement also accepts horizontal
+            # clicked faces (FACING = clickedFace, no support requirement),
+            # which maps to CE's wall anchor; without a wall variant CE fails
+            # those clicks silently.  Forge's remaining ceiling-click branch
+            # stays unsupported for now -- see the README deviations.
+            variants["wall"] = {
+                "elements": [chalkboard_element("small", small_model, "wall")],
+                "hitboxes": chalkboard_hitboxes((0,), "wall"),
+            }
+            variants["wall_large"] = {
+                "elements": [chalkboard_element("large", large_model, "wall")],
+                "hitboxes": chalkboard_hitboxes((-16, 0, 16), "wall"),
             }
         elif block_id.endswith("_sandwich_board"):
             bottom = select_record(records, {"half": "bottom", "rotation": "0", "waterlogged": "false"})[1]
@@ -2835,6 +2895,12 @@ def build_items(
                 # CE Interaction hitboxes cannot reproduce a 1/16-thick wall
                 # shape and otherwise reject placement while the player is
                 # standing close enough to click the support block.
+                furniture_behavior["ignore_placer"] = True
+            elif item_id == "chalkboard":
+                # ChalkboardBlock placed like any BlockItem, without an entity
+                # obstruction check.  The board's centred two-block interaction
+                # column would otherwise collide with the placing player, who
+                # is always standing next to the target cell.
                 furniture_behavior["ignore_placer"] = True
             behaviors.append(furniture_behavior)
         elif item_id in block_ids:
