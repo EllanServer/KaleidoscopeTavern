@@ -6,9 +6,12 @@ import net.momirealms.craftengine.core.entity.furniture.FurnitureDefinition;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehaviorTemplate;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehaviors;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureController;
+import net.momirealms.craftengine.core.entity.furniture.hitbox.FurnitureHitBox;
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.furniture.tick.FurnitureTicker;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import net.momirealms.craftengine.libraries.nbt.CompoundTag;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -30,6 +33,8 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
 
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static final ConcurrentMap<Channel, Handler> HANDLERS = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Channel, InteractionHandler> INTERACTION_HANDLERS =
+            new ConcurrentHashMap<>();
 
     private final Channel channel;
     private final int interval;
@@ -55,6 +60,16 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
 
     public static void unbind(Channel channel, Handler handler) {
         HANDLERS.remove(Objects.requireNonNull(channel, "channel"),
+                Objects.requireNonNull(handler, "handler"));
+    }
+
+    public static void bindInteraction(Channel channel, InteractionHandler handler) {
+        INTERACTION_HANDLERS.put(Objects.requireNonNull(channel, "channel"),
+                Objects.requireNonNull(handler, "handler"));
+    }
+
+    public static void unbindInteraction(Channel channel, InteractionHandler handler) {
+        INTERACTION_HANDLERS.remove(Objects.requireNonNull(channel, "channel"),
                 Objects.requireNonNull(handler, "handler"));
     }
 
@@ -92,6 +107,12 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
 
         default void onUnload(BukkitFurniture furniture, boolean isStopping) {
         }
+    }
+
+    @FunctionalInterface
+    public interface InteractionHandler {
+        InteractionResult interact(BukkitFurniture furniture,
+                                   InteractEntityContext context);
     }
 
     private static final class Controller extends FurnitureController {
@@ -144,6 +165,15 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         @Override
         public <T extends FurnitureController> FurnitureTicker<T> createFurnitureTicker() {
             return FurnitureController.createTickerHelper(TICKER);
+        }
+
+        @Override
+        public InteractionResult useOnFurniture(FurnitureHitBox hitBox,
+                                                InteractEntityContext context) {
+            InteractionHandler handler = INTERACTION_HANDLERS.get(channel);
+            return handler == null
+                    ? InteractionResult.PASS
+                    : handler.interact(bukkitFurniture, context);
         }
 
         @Override

@@ -7,10 +7,11 @@ import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -74,6 +75,8 @@ public final class TapService implements Listener {
                     cancelRunning(furniture);
                 }
             };
+    private final RedstoneFurnitureBehavior.InteractionHandler tapInteractionHandler =
+            this::interact;
 
     public TapService(JavaPlugin plugin, StationService stations, ItemService items) {
         this.plugin = plugin;
@@ -84,9 +87,13 @@ public final class TapService implements Listener {
     public void start() {
         RedstoneFurnitureBehavior.bind(
                 RedstoneFurnitureBehavior.Channel.TAP, tapRedstoneHandler);
+        RedstoneFurnitureBehavior.bindInteraction(
+                RedstoneFurnitureBehavior.Channel.TAP, tapInteractionHandler);
     }
 
     public void stop() {
+        RedstoneFurnitureBehavior.unbindInteraction(
+                RedstoneFurnitureBehavior.Channel.TAP, tapInteractionHandler);
         RedstoneFurnitureBehavior.unbind(
                 RedstoneFurnitureBehavior.Channel.TAP, tapRedstoneHandler);
         for (UUID id : new ArrayList<>(running.keySet())) {
@@ -101,19 +108,18 @@ public final class TapService implements Listener {
         running.clear();
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onInteract(FurnitureInteractEvent event) {
-        if (event.hand() != InteractionHand.MAIN_HAND
-                || !event.furniture().id().equals(TAP_KEY)) {
-            return;
+    private InteractionResult interact(BukkitFurniture furniture,
+                                       InteractEntityContext context) {
+        if (context.getHand() != InteractionHand.MAIN_HAND) {
+            return InteractionResult.PASS;
         }
-        event.setCancelled(true);
-        UUID id = event.furniture().uuid();
+        UUID id = furniture.uuid();
         if (running.containsKey(id)) {
-            closeTap(event.furniture(), true);
+            closeTap(furniture, true);
         } else {
-            openTap(event.furniture(), event.player());
+            openTap(furniture, (Player) context.getPlayer().platformPlayer());
         }
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

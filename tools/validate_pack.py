@@ -298,7 +298,9 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "TapBlock.java": (
         ("furniture/RedstoneFurnitureBehavior.java", "loadCustomData"),
+        ("furniture/RedstoneFurnitureBehavior.java", "useOnFurniture"),
         ("TapService.java", "RedstoneFurnitureBehavior.bind("),
+        ("TapService.java", "RedstoneFurnitureBehavior.bindInteraction("),
         ("TapService.java", "RedstoneFurnitureBehavior.Channel.TAP"),
         ("TapSemantics.java", "isBarrelConnection"),
     ),
@@ -1239,6 +1241,34 @@ def validate() -> dict[str, int]:
     if "findFurnitureAtBlock" in tap_source:
         raise AssertionError(
             "TapService must not rediscover indexed placed bottles through Bukkit entities")
+    for required_token in (
+            "RedstoneFurnitureBehavior.bindInteraction(",
+            "RedstoneFurnitureBehavior.unbindInteraction(",
+            "private InteractionResult interact(",
+            "context.getHand() != InteractionHand.MAIN_HAND",
+            "InteractionResult.SUCCESS_AND_CANCEL"):
+        if required_token not in tap_source:
+            raise AssertionError(
+                "Tap clicks must be dispatched by the tap's CE redstone controller; "
+                f"missing token: {required_token}")
+    for stale_token in ("FurnitureInteractEvent", "public void onInteract("):
+        if stale_token in tap_source:
+            raise AssertionError(
+                "TapService must not retain a global Paper furniture interaction listener; "
+                f"found {stale_token}")
+    redstone_behavior_source = (
+        game_package / "furniture/RedstoneFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "public static void bindInteraction(",
+            "public static void unbindInteraction(",
+            "public InteractionResult useOnFurniture(",
+            "INTERACTION_HANDLERS.get(channel)",
+            "handler.interact(bukkitFurniture, context)"):
+        if required_token not in redstone_behavior_source:
+            raise AssertionError(
+                "CE redstone furniture must also own channel-scoped player interaction; "
+                f"missing token: {required_token}")
     stale_redstone_tokens = (
         "pollRedstone", "pollIncenseRedstone", "tap_triggered",
         "storage_powered", "storage_power_initialized", "incense_powered",
