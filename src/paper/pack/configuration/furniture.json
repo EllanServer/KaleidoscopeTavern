@@ -15050,7 +15050,7 @@
           "hitboxes": [
             {
               "type": "interaction",
-              "position": "0,-0.1875,0.6875",
+              "position": "0,-0.1875,0.35",
               "width": 0.625,
               "height": 0.5,
               "can_use_item_on": true,
