@@ -2314,6 +2314,20 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
             "slots": storage_visual_slots,
         })
 
+    station_visual = {
+        # One CE element owns a bounded set of packet entity ids. The first
+        # number covers every source-renderer item copy plus one fluid plane.
+        "pressing_tub": (65, 1.25),
+        "barrel": (37, 2.5),
+    }.get(block_id)
+    if station_visual is not None:
+        max_elements, view_range = station_visual
+        behaviors.append({
+            "type": f"{NAMESPACE}:station_visual_furniture",
+            "max_elements": max_elements,
+            "view_range": view_range,
+        })
+
     if block_id in PENDANT_LAMPS:
         behaviors.append({"type": "glowing_furniture", "lights": ["0,-1,0 13"]})
     elif block_id == "glassware_holder":

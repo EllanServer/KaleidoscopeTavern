@@ -175,7 +175,7 @@ RENDERER_COVERAGE = {
     "CircularRackBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
     "GlasswareHolderBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
     "HolderBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
-    "PressingTubBlockEntityRender.java": ("StationService.java", "refreshPressVisuals"),
+    "PressingTubBlockEntityRender.java": ("StationService.java", "pressingTubVisuals"),
     "SandwichBlockEntityRender.java": ("BoardTextService.java", "sandwich"),
     "ShakerBlockEntityRender.java": ("ShakerVisualService.java", "ShakerAnimationSemantics"),
     "StorageBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
@@ -835,6 +835,9 @@ def validate() -> dict[str, int]:
     if "StorageVisualFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register storage_visual_furniture before pack loading")
+    if "StationVisualFurnitureBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register station_visual_furniture before pack loading")
 
     stale_ambient_scan_tokens = (
         "runTaskTimer", "Bukkit.getEntity", "CraftEngineFurniture",
@@ -925,6 +928,12 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "pressing_tub_furniture must own CE lifecycle and indexed lookup; "
                 f"missing token: {required_token}")
+    for stale_token in ("static volatile Handler", "public static void bind(",
+                        "public static void unbind(", "LOADED"):
+        if stale_token in pressing_behavior_source:
+            raise AssertionError(
+                "pressing_tub_furniture must only own its CE spatial index; "
+                f"station visuals no longer need lifecycle dispatch: {stale_token}")
 
     lifecycle_behavior_source = (
         game_package / "furniture" / "LifecycleFurnitureBehavior.java"
@@ -1017,15 +1026,53 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "StationService.start must not schedule an idle every-tick portable shaker task")
     for required_token in (
-            "PressingTubFurnitureBehavior.bind(pressingTubLifecycleHandler)",
-            "PressingTubFurnitureBehavior.hasPotentialBelow(living.getLocation())",
-            "PressingTubFurnitureBehavior.findBelow(living.getLocation())",
+            "StationVisualFurnitureBehavior.bind(stationVisualHandler)",
+            "StationVisualFurnitureBehavior.unbind(stationVisualHandler)",
+            "PressingTubFurnitureBehavior.hasPotentialBelow(feet)",
+            "PressingTubFurnitureBehavior.findBelow(feet)",
             "PressingTubFurnitureBehavior.occupiesBlock(block)",
-            "LifecycleFurnitureBehavior.Channel.BARREL, center, 3.0, 3.0"):
+            "LifecycleFurnitureBehavior.Channel.BARREL, center, 3.0, 3.0",
+            "PressingTubFurnitureBehavior.hasLoadedInWorld(",
+            "trackPressLanding(event.getEntity(), event.getTo())",
+            "furniture.refreshElements()"):
         if required_token not in station_source:
             raise AssertionError(
                 "StationService must retain only the source-compatible fallOn bridge; "
                 f"missing token: {required_token}")
+    for stale_station_visual_token in (
+            "org.bukkit.entity.ItemDisplay", "PersistentDataType",
+            "press_visual_owner", "press_visual_role", "press_visual_index",
+            "barrel_visual_owner", "barrel_visual_role", "barrel_visual_index",
+            "press_item_visuals", "press_fluid_visual",
+            "barrel_item_visuals", "barrel_fluid_visual",
+            "getNearbyEntities("):
+        if stale_station_visual_token in station_source:
+            raise AssertionError(
+                "Station visuals must be CE packet-only elements without Bukkit helpers; "
+                f"stale token: {stale_station_visual_token}")
+
+    station_visual_source = (
+        game_package / "furniture" / "StationVisualFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_station_element_token in (
+            "implements FurnitureElement",
+            "DisplayData.ItemDisplayData.ItemStack.addEntityData",
+            "DisplayData.LeftRotation.addEntityDataIfNotDefaultValue",
+            "DisplayData.ItemDisplayData.ItemTransform.addEntityDataIfNotDefaultValue",
+            "ClientboundAddEntityPacketProxy.INSTANCE.newInstance",
+            "ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance",
+            "player.sendPackets",
+            "public void gatherElements"):
+        if required_station_element_token not in station_visual_source:
+            raise AssertionError(
+                "station_visual_furniture must use one CE tracked packet-only element; "
+                f"missing token: {required_station_element_token}")
+    for stale_station_element_token in (
+            "org.bukkit.entity.ItemDisplay", "PersistentDataType", "World.spawn"):
+        if stale_station_element_token in station_visual_source:
+            raise AssertionError(
+                "station_visual_furniture must never create persistent Bukkit entities; "
+                f"stale token: {stale_station_element_token}")
     tap_source = (game_package / "TapService.java").read_text(
         encoding="utf-8-sig")
     for required_token in (
@@ -2322,9 +2369,38 @@ def validate() -> dict[str, int]:
     if pressing_single_behavior is not None:
         pressing_behaviors.append(pressing_single_behavior)
     expected_pressing_behavior = {"type": f"{NAMESPACE}:pressing_tub_furniture"}
-    if len(pressing_behaviors) != 2 or pressing_behaviors[1] != expected_pressing_behavior:
+    if len(pressing_behaviors) != 3 or pressing_behaviors[1] != expected_pressing_behavior:
         raise AssertionError(
             "pressing_tub must put pressing_tub_furniture after its index-zero state controller")
+
+    expected_station_visuals = {
+        "pressing_tub": ({
+            "type": f"{NAMESPACE}:station_visual_furniture",
+            "max_elements": 65,
+            "view_range": 1.25,
+        }, 2),
+        "barrel": ({
+            "type": f"{NAMESPACE}:station_visual_furniture",
+            "max_elements": 37,
+            "view_range": 2.5,
+        }, 2),
+    }
+    for block_id, (expected_visual, expected_index) in expected_station_visuals.items():
+        configured_behaviors = list(
+            furniture[f"{NAMESPACE}:{block_id}"].get("behaviors", []))
+        single_behavior = furniture[f"{NAMESPACE}:{block_id}"].get("behavior")
+        if single_behavior is not None:
+            configured_behaviors.append(single_behavior)
+        visual_behaviors = [
+            behavior for behavior in configured_behaviors
+            if behavior.get("type") == f"{NAMESPACE}:station_visual_furniture"
+        ]
+        if visual_behaviors != [expected_visual]:
+            raise AssertionError(
+                f"{block_id}: CE virtual station visual coverage drifted")
+        if configured_behaviors.index(visual_behaviors[0]) != expected_index:
+            raise AssertionError(
+                f"{block_id}: station visual controller order drifted")
 
     configured_redstone: dict[str, dict[str, Any]] = {}
     redstone_type = f"{NAMESPACE}:redstone_furniture"

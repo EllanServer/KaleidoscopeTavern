@@ -14854,6 +14854,11 @@
         },
         {
           "type": "kaleidoscope_tavern:pressing_tub_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:station_visual_furniture",
+          "max_elements": 65,
+          "view_range": 1.25
         }
       ]
     },
@@ -16892,6 +16897,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "barrel"
+        },
+        {
+          "type": "kaleidoscope_tavern:station_visual_furniture",
+          "max_elements": 37,
+          "view_range": 2.5
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",

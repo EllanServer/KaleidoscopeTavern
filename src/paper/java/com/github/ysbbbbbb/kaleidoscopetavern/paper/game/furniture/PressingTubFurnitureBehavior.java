@@ -15,7 +15,6 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -37,9 +36,6 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static final ConcurrentMap<UUID, WorldIndex> WORLD_INDEX =
             new ConcurrentHashMap<>();
-    private static final ConcurrentMap<UUID, Controller> LOADED =
-            new ConcurrentHashMap<>();
-    private static volatile Handler handler;
 
     private PressingTubFurnitureBehavior(FurnitureDefinition furniture, ConfigSection section) {
         super(furniture);
@@ -48,18 +44,6 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
     public static void register() {
         if (REGISTERED.compareAndSet(false, true)) {
             FurnitureBehaviors.register(Key.of(TYPE), PressingTubFurnitureBehavior::new);
-        }
-    }
-
-    public static void bind(Handler newHandler) {
-        handler = Objects.requireNonNull(newHandler, "newHandler");
-        LOADED.values().forEach(controller -> controller.deliver(newHandler));
-    }
-
-    public static void unbind(Handler oldHandler) {
-        if (handler == oldHandler) {
-            handler = null;
-            LOADED.values().forEach(controller -> controller.forget(oldHandler));
         }
     }
 
@@ -178,11 +162,6 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
         return new Controller(bukkitFurniture);
     }
 
-    @FunctionalInterface
-    public interface Handler {
-        void onReady(BukkitFurniture furniture);
-    }
-
     private static boolean isGround(BukkitFurniture furniture) {
         return furniture.currentVariant().name().equals("ground");
     }
@@ -200,7 +179,6 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
         private UUID worldId;
         private long column;
         private boolean indexed;
-        private Handler deliveredHandler;
 
         private Controller(BukkitFurniture furniture) {
             super(furniture);
@@ -229,7 +207,6 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
 
         private void index() {
             if (indexed) {
-                deliver(handler);
                 return;
             }
             Location location = bukkitFurniture.location();
@@ -240,11 +217,6 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
             worldIndex.columns.computeIfAbsent(column,
                     ignored -> ConcurrentHashMap.<Controller>newKeySet()).add(this);
             indexed = true;
-            Controller replaced = LOADED.put(bukkitFurniture.uuid(), this);
-            if (replaced != null && replaced != this) {
-                replaced.unindex();
-            }
-            deliver(handler);
         }
 
         private void unindex() {
@@ -264,23 +236,7 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
                     WORLD_INDEX.remove(worldId, worldIndex);
                 }
             }
-            LOADED.remove(bukkitFurniture.uuid(), this);
             indexed = false;
-            deliveredHandler = null;
-        }
-
-        private void deliver(Handler currentHandler) {
-            if (currentHandler == null || currentHandler == deliveredHandler) {
-                return;
-            }
-            deliveredHandler = currentHandler;
-            currentHandler.onReady(bukkitFurniture);
-        }
-
-        private void forget(Handler oldHandler) {
-            if (deliveredHandler == oldHandler) {
-                deliveredHandler = null;
-            }
         }
     }
 
