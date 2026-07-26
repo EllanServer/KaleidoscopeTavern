@@ -244,8 +244,12 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
                 cachePowerProbe();
             }
             return switch (channel) {
-                case INCENSE, STORAGE -> primaryPowerBlock.isBlockPowered()
-                        || primaryPowerBlock.isBlockIndirectlyPowered();
+                // Every source block calls Level#hasNeighborSignal. CraftBlock
+                // exposes that exact NMS query as isBlockIndirectlyPowered();
+                // isBlockPowered() performs a second, stronger-signal scan and
+                // would both widen the source behavior and duplicate hot-path
+                // work for every loaded incense and launcher each tick.
+                case INCENSE, STORAGE -> primaryPowerBlock.isBlockIndirectlyPowered();
                 case TAP -> primaryPowerBlock.isBlockIndirectlyPowered()
                         || secondaryPowerBlock.isBlockIndirectlyPowered();
             };
