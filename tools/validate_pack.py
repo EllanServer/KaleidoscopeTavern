@@ -506,6 +506,18 @@ def validate() -> dict[str, int]:
                 or "return InteractionResult.SUCCESS;" not in behavior_source):
             raise AssertionError(
                 f"{behavior_source_path.name}: CE bone-meal interaction must acknowledge use and swing the hand")
+    wild_behavior_source = (
+        game_package / "block/WildGrapevineBehavior.java").read_text(encoding="utf-8-sig")
+    for leaf_attachment_token in (
+            'Key.of("minecraft", "leaves")',
+            "if (!isAttachedToLeaves(args))",
+            "return isAttachedToLeaves(args)",
+            "LocationUtils.above(args[2])",
+            "BlockStateUtils.isTag(attachedState, LEAVES)",
+            "|| lifecycle().canSurvive(thisBlock, args)"):
+        if leaf_attachment_token not in wild_behavior_source:
+            raise AssertionError(
+                "Wild grapevine head/body must preserve the source leaves attachment rule")
     plugin_config = PLUGIN_CONFIG.read_text(encoding="utf-8-sig")
     if ("bottle-placement.drinks" in bottle_placement_source
             or re.search(r"(?m)^\s+drinks:\s*", plugin_config)

@@ -15,6 +15,7 @@ REQUIRED_ENTRIES = (
     "META-INF/MANIFEST.MF",
     "tavern-pack/pack.yml",
     "tavern-pack/configuration/blocks.json",
+    "tavern-pack/configuration/worldgen.json",
     "customcrops/contents/crops/kaleidoscope_tavern.yml",
     "customnameplates/bossbar-tavern-effects.yml",
     "tavern-pack/resourcepack/assets/kaleidoscope_tavern/font/custom_effects_hud.json",
@@ -73,6 +74,17 @@ def main() -> int:
         )
         if len(blocks_document.get("blocks", {})) != 41:
             raise SystemExit("Embedded CraftEngine project must contain 41 block ids")
+
+        worldgen_document = json.loads(
+            archive.read("tavern-pack/configuration/worldgen.json").decode("utf-8-sig")
+        )
+        configured_id = "kaleidoscope_tavern:wild_grapevine_chain"
+        placed_id = "kaleidoscope_tavern:wild_grapevine"
+        if configured_id not in worldgen_document.get("configured_features", {}):
+            raise SystemExit("Embedded CraftEngine project is missing wild grapevine worldgen")
+        placed_feature = worldgen_document.get("placed_features", {}).get(placed_id)
+        if not isinstance(placed_feature, dict) or placed_feature.get("feature") != configured_id:
+            raise SystemExit("Embedded wild grapevine placed feature has an invalid chain reference")
 
         custom_crops = archive.read(
             "customcrops/contents/crops/kaleidoscope_tavern.yml"

@@ -6,6 +6,7 @@ import net.momirealms.craftengine.bukkit.block.behavior.VineCropBodyBlockBehavio
 import net.momirealms.craftengine.bukkit.block.behavior.VineCropHeadBlockBehavior;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.BlockDefinition;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
@@ -25,6 +26,7 @@ import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.context.UseOnContext;
 import net.momirealms.craftengine.libraries.antigrieflib.Flag;
 import net.momirealms.craftengine.proxy.minecraft.core.Vec3iProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.level.BlockGetterProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -41,6 +43,7 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "wild_grapevine");
     private static final String HEAD = "kaleidoscope_tavern:wild_grapevine";
     private static final String BODY = "kaleidoscope_tavern:wild_grapevine_plant";
+    private static final Key LEAVES = Key.of("minecraft", "leaves");
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
 
     private final VineCropHeadBlockBehavior headDelegate;
@@ -113,7 +116,12 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior
 
     @Override
     public void tick(Object thisBlock, Object[] args) {
-        lifecycle().tick(thisBlock, args);
+        // AbstractCanSurviveBlockBehavior.tick calls the delegate's own
+        // canSurvive method, so do not enter it while the source-specific
+        // leaves attachment is valid.
+        if (!isAttachedToLeaves(args)) {
+            lifecycle().tick(thisBlock, args);
+        }
     }
 
     @Override
@@ -128,7 +136,13 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior
 
     @Override
     public boolean canSurvive(Object thisBlock, Object[] args) {
-        return lifecycle().canSurvive(thisBlock, args);
+        // Forge's WildGrapevineBlock and WildGrapevinePlantBlock explicitly
+        // accepted BlockTags.LEAVES because leaves are not SupportType.FULL.
+        // CE's native vine behavior deliberately handles only sturdy faces
+        // and other vine segments, so retain that lifecycle while restoring
+        // the source attachment exception for both the head and body.
+        return isAttachedToLeaves(args)
+                || lifecycle().canSurvive(thisBlock, args);
     }
 
     @Override
@@ -247,6 +261,18 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior
 
     private BukkitBlockBehavior lifecycle() {
         return headDelegate != null ? headDelegate : bodyDelegate;
+    }
+
+    private boolean growsUp() {
+        return headDelegate != null ? headDelegate.direction : bodyDelegate.direction;
+    }
+
+    private boolean isAttachedToLeaves(Object[] args) {
+        Object attachedPos = growsUp()
+                ? LocationUtils.below(args[2])
+                : LocationUtils.above(args[2]);
+        Object attachedState = BlockGetterProxy.INSTANCE.getBlockState(args[1], attachedPos);
+        return BlockStateUtils.isTag(attachedState, LEAVES);
     }
 
     private static boolean booleanProperty(ImmutableBlockState state, String name) {
