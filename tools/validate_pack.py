@@ -149,6 +149,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     "GrapevineItem.java": (("tools/migrate_legacy.py", '"fuel_time"'),),
     "GrapevineTrellisBlock.java": (
         ("block/BlockService.java", "interactVineTrellis"),
+        ("block/TrellisBehavior.java", "implements BonemealableBlock"),
         ("block/TrellisBehavior.java", "public static boolean grow"),
     ),
     "HolderBlock.java": (("DisplayStorageService.java", "HOLDER"),),
@@ -194,6 +195,8 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "WildGrapevineBlock.java": (
         ("block/BlockService.java", "interactWildHead"),
+        ("block/WildGrapevineBehavior.java", "implements BonemealableBlock"),
+        ("block/WildGrapevineBehavior.java", "isValidBonemealTarget"),
         ("block/WildGrapevineBehavior.java", "randomTick"),
     ),
 }
@@ -491,6 +494,18 @@ def validate() -> dict[str, int]:
             or "onRightClickWithGrapevine: clicked" in block_service_source):
         raise AssertionError(
             "Unsupported grapevine soil is an expected rejection and must not spam the server log")
+    if "Material.BONE_MEAL" in block_service_source:
+        raise AssertionError(
+            "Bone meal must use CraftEngine BonemealableBlock behavior, not a cancelled Bukkit event")
+    for behavior_source_path in (
+            game_package / "block/TrellisBehavior.java",
+            game_package / "block/WildGrapevineBehavior.java"):
+        behavior_source = behavior_source_path.read_text(encoding="utf-8-sig")
+        if ("public InteractionResult useOnBlock" not in behavior_source
+                or "player.swingHand(context.getHand())" not in behavior_source
+                or "return InteractionResult.SUCCESS;" not in behavior_source):
+            raise AssertionError(
+                f"{behavior_source_path.name}: CE bone-meal interaction must acknowledge use and swing the hand")
     plugin_config = PLUGIN_CONFIG.read_text(encoding="utf-8-sig")
     if ("bottle-placement.drinks" in bottle_placement_source
             or re.search(r"(?m)^\s+drinks:\s*", plugin_config)
@@ -532,6 +547,13 @@ def validate() -> dict[str, int]:
         raise AssertionError(f"Grid/furniture classification drift: unexpected={unexpected}, missing={missing}")
     if set(blocks) & set(furniture):
         raise AssertionError("A placeable definition cannot be both a CE block and CE furniture")
+
+    for wild_id in ("wild_grapevine", "wild_grapevine_plant"):
+        behavior = blocks[f"{NAMESPACE}:{wild_id}"].get("behavior")
+        if (not isinstance(behavior, dict)
+                or behavior.get("type") != f"{NAMESPACE}:wild_grapevine"):
+            raise AssertionError(
+                f"{wild_id}: wild-vine lifecycle and bone meal must use one CE behavior wrapper")
 
     source_ids = source_registry_ids()
     if len(source_ids) != len(set(source_ids)):
@@ -769,12 +791,22 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{block_id}: growth must have one source-compatible owner, found {behavior!r}")
 
-    wild_behaviors = blocks[f"{NAMESPACE}:wild_grapevine"].get("behavior", [])
-    if not isinstance(wild_behaviors, list) or {
-            entry.get("type") for entry in wild_behaviors} != {
-                "vine_crop_head_block", f"{NAMESPACE}:wild_grapevine"}:
-        raise AssertionError("Wild grapevine must keep native survival plus custom shearing growth")
-    if any("max_height" in entry for entry in wild_behaviors):
+    wild_behavior = blocks[f"{NAMESPACE}:wild_grapevine"].get("behavior", {})
+    if wild_behavior != {
+            "type": f"{NAMESPACE}:wild_grapevine",
+            "body": f"{NAMESPACE}:wild_grapevine_plant",
+            "direction": "down",
+            "grow_speed": 0.15}:
+        raise AssertionError(
+            "Wild grapevine must wrap CE's native lifecycle and custom shearing in one behavior")
+    wild_body_behavior = blocks[f"{NAMESPACE}:wild_grapevine_plant"].get("behavior", {})
+    if wild_body_behavior != {
+            "type": f"{NAMESPACE}:wild_grapevine",
+            "head": f"{NAMESPACE}:wild_grapevine",
+            "direction": "down",
+            "bone_meal": {"behavior": "grow", "grow_blocks": 1}}:
+        raise AssertionError("Wild grapevine body must delegate native bone meal to its head")
+    if "max_height" in wild_behavior:
         raise AssertionError("Wild grapevine must not retain the invented 16-block growth cap")
     wild_settings = blocks[f"{NAMESPACE}:wild_grapevine"]["settings"]
     if (wild_settings.get("hardness") != 0
@@ -869,6 +901,13 @@ def validate() -> dict[str, int]:
                 raise AssertionError(f"{crop_id}: missing CustomCrops model {stage_id}")
     if custom_crops_text.count("custom-bone-meal:") != 3:
         raise AssertionError("Every managed grape crop must delegate bone meal to CustomCrops")
+    bone_meal_sections = re.findall(
+        r"(?ms)^  custom-bone-meal:\n(?:(?!^[a-z0-9_]+:).)*",
+        custom_crops_text,
+    )
+    if (len(bone_meal_sections) != 3
+            or any("type: swing-hand" not in section for section in bone_meal_sections)):
+        raise AssertionError("Every managed grape bone-meal action must swing the player's hand")
     if custom_crops_text.count("ignore-random-tick: true") != 3:
         raise AssertionError(
             "Every managed grape crop must delegate vanilla random ticks to CraftEngine")

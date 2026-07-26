@@ -101,7 +101,6 @@ public final class BlockService implements Listener {
                             player, event.bukkitBlock(), state, hand, event.hand());
             case PREFIX + "wild_grapevine" -> interactWildHead(
                     player, event.bukkitBlock(), state, hand, event.hand());
-            case PREFIX + "wild_grapevine_plant" -> interactWildBody(player, event.bukkitBlock(), hand);
             default -> false;
         };
         if (handled) {
@@ -209,33 +208,7 @@ public final class BlockService implements Listener {
             }
             return true;
         }
-        if (hand.getType() == Material.BONE_MEAL && !booleanProperty(state, "sheared")) {
-            if (WildGrapevineBehavior.extend(block, state)) {
-                consumeUnlessCreative(player, hand);
-                block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER,
-                        block.getLocation().add(0.5, 0.5, 0.5), 10, 0.25, 0.25, 0.25, 0);
-            }
-            return true;
-        }
         return false;
-    }
-
-    private boolean interactWildBody(Player player, Block block, ItemStack hand) {
-        if (hand.getType() != Material.BONE_MEAL) {
-            return false;
-        }
-        Block head = WildGrapevineBehavior.findHead(block);
-        if (head == null) {
-            return true;
-        }
-        ImmutableBlockState state = CraftEngineBlocks.getCustomBlockState(head);
-        if (state != null && !booleanProperty(state, "sheared")
-                && WildGrapevineBehavior.extend(head, state)) {
-            consumeUnlessCreative(player, hand);
-            head.getWorld().spawnParticle(Particle.HAPPY_VILLAGER,
-                    head.getLocation().add(0.5, 0.5, 0.5), 10, 0.25, 0.25, 0.25, 0);
-        }
-        return true;
     }
 
     private boolean interactPlainTrellis(Player player, Block block, ImmutableBlockState state,
@@ -332,15 +305,6 @@ public final class BlockService implements Listener {
                 block.getWorld().playSound(block.getLocation(), "minecraft:block.beehive.shear", 1F, 1F);
             }
             return true;
-        }
-        if (hand.getType() == Material.BONE_MEAL) {
-            if (TrellisBehavior.grow(block.getLocation(), state)) {
-                consumeUnlessCreative(player, hand);
-                block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER,
-                        block.getLocation().add(0.5, 0.5, 0.5), 15, 0.25, 0.25, 0.25, 0);
-                return true;
-            }
-            return false;
         }
         return false;
     }

@@ -16051,18 +16051,12 @@
         },
         "tags": []
       },
-      "behavior": [
-        {
-          "type": "vine_crop_head_block",
-          "body": "kaleidoscope_tavern:wild_grapevine_plant",
-          "direction": "down",
-          "grow_speed": 0
-        },
-        {
-          "type": "kaleidoscope_tavern:wild_grapevine",
-          "grow_speed": 0.15
-        }
-      ],
+      "behavior": {
+        "type": "kaleidoscope_tavern:wild_grapevine",
+        "body": "kaleidoscope_tavern:wild_grapevine_plant",
+        "direction": "down",
+        "grow_speed": 0.15
+      },
       "loot": {
         "pools": [
           {
@@ -16116,7 +16110,7 @@
         "tags": []
       },
       "behavior": {
-        "type": "vine_crop_body_block",
+        "type": "kaleidoscope_tavern:wild_grapevine",
         "head": "kaleidoscope_tavern:wild_grapevine",
         "direction": "down",
         "bone_meal": {

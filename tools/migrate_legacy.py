@@ -619,20 +619,20 @@ def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
 
 def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | list[dict[str, Any]] | None:
     if block_id == "wild_grapevine":
-        return [{
-            "type": "vine_crop_head_block",
+        # A single Tavern behavior wraps CE's native vine-head lifecycle and
+        # adds the legacy sheared growth lock. Keeping both behaviors in a CE
+        # composite would make both BonemealableBlock implementations run.
+        return {
+            "type": f"{NAMESPACE}:wild_grapevine",
             "body": f"{NAMESPACE}:wild_grapevine_plant",
             "direction": "down",
-            # Survival/body conversion comes from the native behavior. Growth
-            # is delegated so the legacy `sheared` state can suppress it.
-            "grow_speed": 0,
-        }, {
-            "type": f"{NAMESPACE}:wild_grapevine",
             "grow_speed": 0.15,
-        }]
+        }
     if block_id == "wild_grapevine_plant":
         return {
-            "type": "vine_crop_body_block",
+            # The same Tavern behavior wraps CE's native vine-body lifecycle;
+            # native bone meal is delegated to the sheared-aware head.
+            "type": f"{NAMESPACE}:wild_grapevine",
             "head": f"{NAMESPACE}:wild_grapevine",
             "direction": "down",
             "bone_meal": {"behavior": "grow", "grow_blocks": 1},
