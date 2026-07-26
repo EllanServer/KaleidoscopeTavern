@@ -21,6 +21,7 @@ public final class StationInteractionFurnitureBehavior extends FurnitureBehavior
 
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static volatile Handler handler;
+    private static volatile PlacementHandler placementHandler;
 
     private StationInteractionFurnitureBehavior(FurnitureDefinition furniture,
                                                 ConfigSection section) {
@@ -43,6 +44,16 @@ public final class StationInteractionFurnitureBehavior extends FurnitureBehavior
         }
     }
 
+    public static void bindPlacement(PlacementHandler newHandler) {
+        placementHandler = Objects.requireNonNull(newHandler, "newHandler");
+    }
+
+    public static void unbindPlacement(PlacementHandler oldHandler) {
+        if (placementHandler == oldHandler) {
+            placementHandler = null;
+        }
+    }
+
     @Override
     public FurnitureController createController(Furniture furniture) {
         if (!(furniture instanceof BukkitFurniture bukkitFurniture)) {
@@ -55,6 +66,11 @@ public final class StationInteractionFurnitureBehavior extends FurnitureBehavior
     public interface Handler {
         InteractionResult interact(BukkitFurniture furniture,
                                    InteractEntityContext context);
+    }
+
+    @FunctionalInterface
+    public interface PlacementHandler {
+        void onPlace(BukkitFurniture furniture);
     }
 
     private static final class Controller extends FurnitureController {
@@ -72,6 +88,14 @@ public final class StationInteractionFurnitureBehavior extends FurnitureBehavior
             return current == null
                     ? InteractionResult.PASS
                     : current.interact(bukkitFurniture, context);
+        }
+
+        @Override
+        public void onPlace(net.momirealms.craftengine.core.entity.player.Player player) {
+            PlacementHandler current = placementHandler;
+            if (current != null) {
+                current.onPlace(bukkitFurniture);
+            }
         }
     }
 }

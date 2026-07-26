@@ -46,6 +46,7 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
     private static final ConcurrentMap<UUID, Controller> LOADED = new ConcurrentHashMap<>();
     private static volatile Handler handler;
     private static volatile InteractionHandler interactionHandler;
+    private static volatile PlacementHandler placementHandler;
 
     private final int maxLines;
     private final float viewRange;
@@ -84,6 +85,16 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
         }
     }
 
+    public static void bindPlacement(PlacementHandler newHandler) {
+        placementHandler = Objects.requireNonNull(newHandler, "newHandler");
+    }
+
+    public static void unbindPlacement(PlacementHandler oldHandler) {
+        if (placementHandler == oldHandler) {
+            placementHandler = null;
+        }
+    }
+
     @Override
     public FurnitureController createController(Furniture furniture) {
         if (!(furniture instanceof BukkitFurniture bukkitFurniture)) {
@@ -101,6 +112,11 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
     public interface InteractionHandler {
         InteractionResult interact(BukkitFurniture furniture,
                                    InteractEntityContext context);
+    }
+
+    @FunctionalInterface
+    public interface PlacementHandler {
+        void onPlace(BukkitFurniture furniture, Player player);
     }
 
     public record Visual(Component text, double x, double y, double z,
@@ -140,6 +156,10 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
         @Override
         public void onPlace(Player player) {
             LOADED.put(bukkitFurniture.uuid(), this);
+            PlacementHandler current = placementHandler;
+            if (current != null) {
+                current.onPlace(bukkitFurniture, player);
+            }
         }
 
         @Override

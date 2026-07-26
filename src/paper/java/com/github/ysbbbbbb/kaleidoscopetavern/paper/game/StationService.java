@@ -17,7 +17,6 @@ import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
@@ -102,6 +101,8 @@ public final class StationService implements Listener {
             this::stationVisuals;
     private final StationInteractionFurnitureBehavior.Handler stationInteractionHandler =
             this::interactStation;
+    private final StationInteractionFurnitureBehavior.PlacementHandler stationPlacementHandler =
+            this::onStationPlaced;
     private final TickingFurnitureBehavior.Handler barrelTickingHandler =
             new TickingFurnitureBehavior.Handler() {
                 @Override
@@ -126,6 +127,7 @@ public final class StationService implements Listener {
 
     public void start() {
         StationInteractionFurnitureBehavior.bind(stationInteractionHandler);
+        StationInteractionFurnitureBehavior.bindPlacement(stationPlacementHandler);
         StationVisualFurnitureBehavior.bind(stationVisualHandler);
         RedstoneFurnitureBehavior.bind(
                 RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
@@ -135,6 +137,7 @@ public final class StationService implements Listener {
     }
 
     public void stop() {
+        StationInteractionFurnitureBehavior.unbindPlacement(stationPlacementHandler);
         StationInteractionFurnitureBehavior.unbind(stationInteractionHandler);
         StationVisualFurnitureBehavior.unbind(stationVisualHandler);
         RedstoneFurnitureBehavior.unbind(
@@ -183,11 +186,10 @@ public final class StationService implements Listener {
         return handled ? InteractionResult.SUCCESS_AND_CANCEL : InteractionResult.PASS;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onFurniturePlace(FurniturePlaceEvent event) {
-        String id = event.furniture().id().toString();
-        if (id.equals(BARREL)) {
-            Bukkit.getScheduler().runTask(plugin, () -> setBarrelOpen(event.furniture(), true, false));
+    private void onStationPlaced(BukkitFurniture furniture) {
+        if (furniture.id().toString().equals(BARREL)) {
+            Bukkit.getScheduler().runTask(
+                    plugin, () -> setBarrelOpen(furniture, true, false));
         }
     }
 

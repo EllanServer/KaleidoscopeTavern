@@ -9,7 +9,6 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
@@ -91,6 +90,8 @@ public final class BoardTextService implements Listener {
             this::boardVisuals;
     private final BoardTextFurnitureBehavior.InteractionHandler boardInteractionHandler =
             this::interactBoard;
+    private final BoardTextFurnitureBehavior.PlacementHandler boardPlacementHandler =
+            this::onBoardPlaced;
     // AsyncChatEvent removes entries off the main thread.
     private final Map<UUID, EditSession> editors = new ConcurrentHashMap<>();
 
@@ -116,11 +117,13 @@ public final class BoardTextService implements Listener {
     public void start() {
         BoardTextFurnitureBehavior.bind(boardVisualHandler);
         BoardTextFurnitureBehavior.bindInteraction(boardInteractionHandler);
+        BoardTextFurnitureBehavior.bindPlacement(boardPlacementHandler);
         LifecycleFurnitureBehavior.bind(
                 LifecycleFurnitureBehavior.Channel.BOARD, lifecycleHandler);
     }
 
     public void stop() {
+        BoardTextFurnitureBehavior.unbindPlacement(boardPlacementHandler);
         BoardTextFurnitureBehavior.unbindInteraction(boardInteractionHandler);
         BoardTextFurnitureBehavior.unbind(boardVisualHandler);
         LifecycleFurnitureBehavior.unbind(
@@ -198,20 +201,20 @@ public final class BoardTextService implements Listener {
         Bukkit.getScheduler().runTask(plugin, () -> applyChatInput(event.getPlayer(), session, input));
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onFurniturePlace(FurniturePlaceEvent event) {
-        if (!isBoard(event.furniture())) {
+    private void onBoardPlaced(BukkitFurniture placed,
+                               net.momirealms.craftengine.core.entity.player.Player cePlayer) {
+        if (!isBoard(placed)) {
             return;
         }
+        Player player = (Player) cePlayer.platformPlayer();
         Bukkit.getScheduler().runTask(plugin, () -> {
-            BukkitFurniture furniture = event.furniture();
-            if (!furniture.isValid()) {
+            if (!placed.isValid()) {
                 return;
             }
-            if (furniture.id().toString().equals(CHALKBOARD) && !event.player().isSneaking()) {
-                tryMergeChalkboards(furniture);
+            if (placed.id().toString().equals(CHALKBOARD) && !player.isSneaking()) {
+                tryMergeChalkboards(placed);
             }
-            refreshDisplay(furniture);
+            refreshDisplay(placed);
         });
     }
 

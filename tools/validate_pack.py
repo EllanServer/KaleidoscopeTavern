@@ -781,7 +781,10 @@ def validate() -> dict[str, int]:
             "BoardTextFurnitureBehavior.unbind(boardVisualHandler)",
             "BoardTextFurnitureBehavior.bindInteraction(boardInteractionHandler)",
             "BoardTextFurnitureBehavior.unbindInteraction(boardInteractionHandler)",
+            "BoardTextFurnitureBehavior.bindPlacement(boardPlacementHandler)",
+            "BoardTextFurnitureBehavior.unbindPlacement(boardPlacementHandler)",
             "private InteractionResult interactBoard(",
+            "private void onBoardPlaced(",
             "context.getHand() != InteractionHand.MAIN_HAND",
             "InteractionResult.SUCCESS_AND_CANCEL",
             "private List<BoardTextFurnitureBehavior.Visual> boardVisuals",
@@ -795,7 +798,8 @@ def validate() -> dict[str, int]:
             "org.bukkit.entity.TextDisplay", "PersistentDataType", "NamespacedKey",
             "board_owner", "board_line", "board_displays", "getNearbyEntities(",
             "removeDisplay(", "TextDisplay.TextAlignment", "FurnitureInteractEvent",
-            "public void onFurnitureInteract("):
+            "public void onFurnitureInteract(", "FurniturePlaceEvent",
+            "public void onFurniturePlace("):
         if stale_token in board_text_source:
             raise AssertionError(
                 "Board text must not recreate persistent Bukkit display entities or helper "
@@ -1079,8 +1083,11 @@ def validate() -> dict[str, int]:
             "public void gatherElements",
             "public static void bindInteraction(",
             "public static void unbindInteraction(",
+            "public static void bindPlacement(",
+            "public static void unbindPlacement(",
             "public InteractionResult useOnFurniture(",
-            "current.interact(bukkitFurniture, context)"):
+            "current.interact(bukkitFurniture, context)",
+            "current.onPlace(bukkitFurniture, player)"):
         if required_token not in board_text_behavior_source:
             raise AssertionError(
                 "board_text_furniture must use CE-tracked packet-only text elements; "
@@ -1206,7 +1213,10 @@ def validate() -> dict[str, int]:
     for required_token in (
             "StationInteractionFurnitureBehavior.bind(stationInteractionHandler)",
             "StationInteractionFurnitureBehavior.unbind(stationInteractionHandler)",
+            "StationInteractionFurnitureBehavior.bindPlacement(stationPlacementHandler)",
+            "StationInteractionFurnitureBehavior.unbindPlacement(stationPlacementHandler)",
             "private InteractionResult interactStation(",
+            "private void onStationPlaced(",
             "context.getHand() != InteractionHand.MAIN_HAND",
             "Vec3d click = context.getClickLocation()",
             "InteractionResult.SUCCESS_AND_CANCEL",
@@ -1229,7 +1239,9 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "StationService must retain only the source-compatible fallOn bridge; "
                 f"missing token: {required_token}")
-    for stale_token in ("FurnitureInteractEvent", "public void onFurnitureInteract("):
+    for stale_token in (
+            "FurnitureInteractEvent", "public void onFurnitureInteract(",
+            "FurniturePlaceEvent", "public void onFurniturePlace("):
         if stale_token in station_source:
             raise AssertionError(
                 "StationService must not retain a global Paper furniture interaction listener; "
@@ -1237,8 +1249,11 @@ def validate() -> dict[str, int]:
     for required_token in (
             "extends FurnitureBehaviorTemplate",
             "FurnitureBehaviors.register(Key.of(TYPE)",
+            "public static void bindPlacement(",
+            "public static void unbindPlacement(",
             "public InteractionResult useOnFurniture(",
-            "current.interact(bukkitFurniture, context)"):
+            "current.interact(bukkitFurniture, context)",
+            "current.onPlace(bukkitFurniture)"):
         if required_token not in station_interaction_behavior_source:
             raise AssertionError(
                 "Station CE interaction adapter is incomplete; "
