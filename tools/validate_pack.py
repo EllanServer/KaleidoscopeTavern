@@ -15,6 +15,7 @@ CATALOG = ROOT / "src/paper/resources/catalog"
 CUSTOM_CROPS = ROOT / "src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml"
 PLUGIN_CONFIG = ROOT / "src/paper/resources/config.yml"
 NAMESPACE = "kaleidoscope_tavern"
+EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
 CUSTOM_EFFECT_ICON_IDS = (
     "slightly_tipsy",
     "high_heels",
@@ -148,6 +149,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     "GrapevineItem.java": (("tools/migrate_legacy.py", '"fuel_time"'),),
     "GrapevineTrellisBlock.java": (
         ("block/BlockService.java", "interactVineTrellis"),
+        ("block/TrellisBehavior.java", "implements BonemealableBlock"),
         ("block/TrellisBehavior.java", "public static boolean grow"),
     ),
     "HolderBlock.java": (("DisplayStorageService.java", "HOLDER"),),
@@ -193,6 +195,8 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "WildGrapevineBlock.java": (
         ("block/BlockService.java", "interactWildHead"),
+        ("block/WildGrapevineBehavior.java", "implements BonemealableBlock"),
+        ("block/WildGrapevineBehavior.java", "isValidBonemealTarget"),
         ("block/WildGrapevineBehavior.java", "randomTick"),
     ),
 }
@@ -490,6 +494,30 @@ def validate() -> dict[str, int]:
             or "onRightClickWithGrapevine: clicked" in block_service_source):
         raise AssertionError(
             "Unsupported grapevine soil is an expected rejection and must not spam the server log")
+    if "Material.BONE_MEAL" in block_service_source:
+        raise AssertionError(
+            "Bone meal must use CraftEngine BonemealableBlock behavior, not a cancelled Bukkit event")
+    for behavior_source_path in (
+            game_package / "block/TrellisBehavior.java",
+            game_package / "block/WildGrapevineBehavior.java"):
+        behavior_source = behavior_source_path.read_text(encoding="utf-8-sig")
+        if ("public InteractionResult useOnBlock" not in behavior_source
+                or "player.swingHand(context.getHand())" not in behavior_source
+                or "return InteractionResult.SUCCESS;" not in behavior_source):
+            raise AssertionError(
+                f"{behavior_source_path.name}: CE bone-meal interaction must acknowledge use and swing the hand")
+    wild_behavior_source = (
+        game_package / "block/WildGrapevineBehavior.java").read_text(encoding="utf-8-sig")
+    for leaf_attachment_token in (
+            'Key.of("minecraft", "leaves")',
+            "if (!isAttachedToLeaves(args))",
+            "return isAttachedToLeaves(args)",
+            "LocationUtils.above(args[2])",
+            "BlockStateUtils.isTag(attachedState, LEAVES)",
+            "|| lifecycle().canSurvive(thisBlock, args)"):
+        if leaf_attachment_token not in wild_behavior_source:
+            raise AssertionError(
+                "Wild grapevine head/body must preserve the source leaves attachment rule")
     plugin_config = PLUGIN_CONFIG.read_text(encoding="utf-8-sig")
     if ("bottle-placement.drinks" in bottle_placement_source
             or re.search(r"(?m)^\s+drinks:\s*", plugin_config)
@@ -531,6 +559,13 @@ def validate() -> dict[str, int]:
         raise AssertionError(f"Grid/furniture classification drift: unexpected={unexpected}, missing={missing}")
     if set(blocks) & set(furniture):
         raise AssertionError("A placeable definition cannot be both a CE block and CE furniture")
+
+    for wild_id in ("wild_grapevine", "wild_grapevine_plant"):
+        behavior = blocks[f"{NAMESPACE}:{wild_id}"].get("behavior")
+        if (not isinstance(behavior, dict)
+                or behavior.get("type") != f"{NAMESPACE}:wild_grapevine"):
+            raise AssertionError(
+                f"{wild_id}: wild-vine lifecycle and bone meal must use one CE behavior wrapper")
 
     source_ids = source_registry_ids()
     if len(source_ids) != len(set(source_ids)):
@@ -768,12 +803,22 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{block_id}: growth must have one source-compatible owner, found {behavior!r}")
 
-    wild_behaviors = blocks[f"{NAMESPACE}:wild_grapevine"].get("behavior", [])
-    if not isinstance(wild_behaviors, list) or {
-            entry.get("type") for entry in wild_behaviors} != {
-                "vine_crop_head_block", f"{NAMESPACE}:wild_grapevine"}:
-        raise AssertionError("Wild grapevine must keep native survival plus custom shearing growth")
-    if any("max_height" in entry for entry in wild_behaviors):
+    wild_behavior = blocks[f"{NAMESPACE}:wild_grapevine"].get("behavior", {})
+    if wild_behavior != {
+            "type": f"{NAMESPACE}:wild_grapevine",
+            "body": f"{NAMESPACE}:wild_grapevine_plant",
+            "direction": "down",
+            "grow_speed": 0.15}:
+        raise AssertionError(
+            "Wild grapevine must wrap CE's native lifecycle and custom shearing in one behavior")
+    wild_body_behavior = blocks[f"{NAMESPACE}:wild_grapevine_plant"].get("behavior", {})
+    if wild_body_behavior != {
+            "type": f"{NAMESPACE}:wild_grapevine",
+            "head": f"{NAMESPACE}:wild_grapevine",
+            "direction": "down",
+            "bone_meal": {"behavior": "grow", "grow_blocks": 1}}:
+        raise AssertionError("Wild grapevine body must delegate native bone meal to its head")
+    if "max_height" in wild_behavior:
         raise AssertionError("Wild grapevine must not retain the invented 16-block growth cap")
     wild_settings = blocks[f"{NAMESPACE}:wild_grapevine"]["settings"]
     if (wild_settings.get("hardness") != 0
@@ -868,6 +913,13 @@ def validate() -> dict[str, int]:
                 raise AssertionError(f"{crop_id}: missing CustomCrops model {stage_id}")
     if custom_crops_text.count("custom-bone-meal:") != 3:
         raise AssertionError("Every managed grape crop must delegate bone meal to CustomCrops")
+    bone_meal_sections = re.findall(
+        r"(?ms)^  custom-bone-meal:\n(?:(?!^[a-z0-9_]+:).)*",
+        custom_crops_text,
+    )
+    if (len(bone_meal_sections) != 3
+            or any("type: swing-hand" not in section for section in bone_meal_sections)):
+        raise AssertionError("Every managed grape bone-meal action must swing the player's hand")
     if custom_crops_text.count("ignore-random-tick: true") != 3:
         raise AssertionError(
             "Every managed grape crop must delegate vanilla random ticks to CraftEngine")
@@ -910,6 +962,15 @@ def validate() -> dict[str, int]:
 
     all_items = set(items) | {item_id for item_id in render_items}
     for recipe_id, recipe in recipes.items():
+        recipe_type = recipe.get("type")
+        if recipe_type not in {"shaped", "shapeless"}:
+            raise AssertionError(f"{recipe_id}: unsupported standard recipe type {recipe_type!r}")
+        if recipe.get("unlock_on_ingredient_obtained") is not True:
+            raise AssertionError(
+                f"{recipe_id}: must set unlock_on_ingredient_obtained to true"
+            )
+        if "unlock_on_join" in recipe:
+            raise AssertionError(f"{recipe_id}: must not use unlock_on_join")
         obsolete = obsolete_vanilla_ids(nested_strings(recipe))
         if obsolete:
             raise AssertionError(f"{recipe_id}: obsolete vanilla ids {obsolete}")
@@ -943,7 +1004,12 @@ def validate() -> dict[str, int]:
     if len({row[0] for row in effect_rows}) != 37:
         raise AssertionError("Expected drink effects for 37 items")
 
-    drink_ids = {row[0] for row in effect_rows}
+    effect_drink_ids = {row[0] for row in effect_rows}
+    unexpected_effects = effect_drink_ids & EFFECTLESS_DRINKS
+    if unexpected_effects:
+        raise AssertionError(
+            f"Effectless drinks unexpectedly declare drink effects: {sorted(unexpected_effects)}")
+    drink_ids = effect_drink_ids | EFFECTLESS_DRINKS
     drink_ids.add(f"{NAMESPACE}:signature_cocktail")
     for item_id in drink_ids:
         item = items[item_id]
@@ -974,6 +1040,12 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{item_id}: drink potion_contents must use the neutral water base "
                 "and may only add an integer custom_color")
+
+    for item_id in EFFECTLESS_DRINKS:
+        replacement = items[item_id].get("settings", {}).get("consume_replacement")
+        if replacement != f"{NAMESPACE}:empty_bottle":
+            raise AssertionError(
+                f"{item_id}: effectless bottle drinks must return empty_bottle after consumption")
 
     fixed_cocktails = {row[1] for row in tsv_rows("shaker.tsv")}
     fixed_cocktails.add(f"{NAMESPACE}:mystery_cocktail")
@@ -1250,16 +1322,21 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"CustomEffectHudSemantics.HUD_ROW2_EFFECTS must contain {row2_effect}")
 
-    # Drinking hands the vessel back through CE's consume_replacement.
-    for item_id, item in items.items():
-        settings = item.get("settings", {})
-        replacement = settings.get("consume_replacement")
-        if item_id in (f"{NAMESPACE}:signature_cocktail",):
-            if replacement != f"{NAMESPACE}:empty_glassware":
-                raise AssertionError(f"{item_id}: missing empty_glassware consume_replacement")
-    if not any(item.get("settings", {}).get("consume_replacement") == f"{NAMESPACE}:empty_bottle"
-               for item in items.values()):
-        raise AssertionError("No drink declares an empty_bottle consume_replacement")
+    # Drinking hands the authored vessel back through CE's consume_replacement.
+    cocktail_ids = {row[1] for row in tsv_rows("shaker.tsv")} | {
+        f"{NAMESPACE}:mystery_cocktail",
+        f"{NAMESPACE}:signature_cocktail",
+    }
+    for item_id in drink_ids:
+        replacement = items[item_id].get("settings", {}).get("consume_replacement")
+        expected = (f"{NAMESPACE}:empty_glassware" if item_id in cocktail_ids
+                    else f"{NAMESPACE}:empty_bottle")
+        if replacement != expected:
+            raise AssertionError(
+                f"{item_id}: consume_replacement must be {expected}, got {replacement!r}")
+    empty_glassware = items[f"{NAMESPACE}:empty_glassware"]
+    if "consume_replacement" in empty_glassware.get("settings", {}):
+        raise AssertionError("empty_glassware must not return itself as a consume replacement")
 
     # String-lights dyeing is expressed as CE block events.
     dye_colors = ("white", "orange", "magenta", "light_blue", "yellow", "lime",
@@ -1285,20 +1362,39 @@ def validate() -> dict[str, int]:
     worldgen = json.loads((ROOT / "src/paper/pack/configuration/worldgen.json").read_text(
         encoding="utf-8-sig"))
     chain = worldgen["configured_features"][f"{NAMESPACE}:wild_grapevine_chain"]
+    layers = chain["config"]["layers"]
     if (chain["type"] != "minecraft:block_column"
             or chain["config"]["direction"] != "down"
-            or chain["config"]["layers"][0]["provider"]["state"]["Name"]
+            or layers[0]["height"] != {
+                "type": "minecraft:uniform", "min_inclusive": 0, "max_inclusive": 6}
+            or layers[0]["provider"]["state"]["Name"]
             != f"{NAMESPACE}:wild_grapevine_plant"
-            or chain["config"]["layers"][1]["provider"]["state"]["Name"]
+            or layers[1]["height"] != 1
+            or layers[1]["provider"]["state"]["Name"]
             != f"{NAMESPACE}:wild_grapevine"):
         raise AssertionError("Wild grapevine feature must hang body segments above a head")
-    placements = {entry["type"] for entry in
-                  worldgen["placed_features"][f"{NAMESPACE}:wild_grapevine"]["placement"]}
+    placed_feature = worldgen["placed_features"][f"{NAMESPACE}:wild_grapevine"]
+    placements = {entry["type"]: entry for entry in placed_feature["placement"]}
     for required in ("minecraft:rarity_filter", "minecraft:count", "minecraft:in_square",
                      "minecraft:heightmap", "minecraft:environment_scan",
                      "minecraft:block_predicate_filter"):
         if required not in placements:
             raise AssertionError(f"Wild grapevine placed feature is missing {required}")
+    environment_scan = placements["minecraft:environment_scan"]
+    target_condition = environment_scan.get("target_condition", {})
+    target_predicates = target_condition.get("predicates", [])
+    expected_air = {"type": "minecraft:matching_blocks", "blocks": "minecraft:air"}
+    expected_leaves = {
+        "type": "minecraft:matching_blocks",
+        "offset": [0, 1, 0],
+        "blocks": ["minecraft:oak_leaves", "minecraft:birch_leaves"],
+    }
+    if (environment_scan.get("direction_of_search") != "down"
+            or target_condition.get("type") != "minecraft:all_of"
+            or expected_air not in target_predicates
+            or expected_leaves not in target_predicates):
+        raise AssertionError(
+            "Wild grapevine worldgen must anchor the head/body chain directly below oak or birch leaves")
     if (ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game"
             / "WorldgenService.java").exists():
         raise AssertionError("WorldgenService must stay deleted; CE features own worldgen")

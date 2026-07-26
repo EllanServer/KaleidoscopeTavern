@@ -273,6 +273,11 @@ COCKTAILS = {
     "mojito", "allium_garden", "depth_charge", "nether_special", "bloody_mary",
     "sculk_special",
 }
+CONSUMABLE_COCKTAILS = COCKTAILS - {"empty_glassware"}
+# DrinkBlockItem does not require a drink-effect datamap entry.  These drinks
+# still use PotionItem's consume action and return their authored container,
+# but intentionally apply no effects after consumption.
+EFFECTLESS_DRINKS = {"watermelon_juice"}
 CABINET_BOTTLES = BOTTLE_AND_GLASS_ITEMS - COCKTAILS
 STORAGE_RENDER_ITEMS = CABINET_BOTTLES | {"empty_glassware"}
 PRESS_FLUIDS = {
@@ -486,7 +491,7 @@ def convert_standard_recipes(tags: dict[str, list[str]]) -> dict[str, Any]:
                 "pattern": source["pattern"],
                 "ingredients": ingredients,
                 "result": result_entry(source["result"]),
-                "unlock_on_join": True,
+                "unlock_on_ingredient_obtained": True,
             }
         elif recipe_type == "crafting_shapeless":
             converted[recipe_id] = {
@@ -494,7 +499,7 @@ def convert_standard_recipes(tags: dict[str, list[str]]) -> dict[str, Any]:
                 "category": "misc",
                 "ingredients": [compact_ingredient(entry, tags) for entry in source["ingredients"]],
                 "result": result_entry(source["result"]),
-                "unlock_on_join": True,
+                "unlock_on_ingredient_obtained": True,
             }
         else:
             raise ValueError(f"Unsupported standard recipe type {recipe_type} in {path}")
@@ -614,20 +619,20 @@ def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
 
 def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | list[dict[str, Any]] | None:
     if block_id == "wild_grapevine":
-        return [{
-            "type": "vine_crop_head_block",
+        # A single Tavern behavior wraps CE's native vine-head lifecycle and
+        # adds the legacy sheared growth lock. Keeping both behaviors in a CE
+        # composite would make both BonemealableBlock implementations run.
+        return {
+            "type": f"{NAMESPACE}:wild_grapevine",
             "body": f"{NAMESPACE}:wild_grapevine_plant",
             "direction": "down",
-            # Survival/body conversion comes from the native behavior. Growth
-            # is delegated so the legacy `sheared` state can suppress it.
-            "grow_speed": 0,
-        }, {
-            "type": f"{NAMESPACE}:wild_grapevine",
             "grow_speed": 0.15,
-        }]
+        }
     if block_id == "wild_grapevine_plant":
         return {
-            "type": "vine_crop_body_block",
+            # The same Tavern behavior wraps CE's native vine-body lifecycle;
+            # native bone meal is delegated to the sheared-aware head.
+            "type": f"{NAMESPACE}:wild_grapevine",
             "head": f"{NAMESPACE}:wild_grapevine",
             "direction": "down",
             "bone_meal": {"behavior": "grow", "grow_blocks": 1},
@@ -2507,8 +2512,14 @@ def drink_color(item_tags: list[str]) -> int | None:
     return None
 
 
+def is_drink(item_id: str, effect_drink_ids: set[str]) -> bool:
+    return (item_id in effect_drink_ids
+            or item_id in EFFECTLESS_DRINKS
+            or item_id == "signature_cocktail")
+
+
 def material_for(item_id: str, drink_ids: set[str], block_ids: set[str]) -> str:
-    if item_id in drink_ids or item_id == "signature_cocktail":
+    if is_drink(item_id, drink_ids):
         return "potion"
     if item_id == "molotov":
         # MolotovBlockItem is a 72,000-tick spear-animation charge item, not an
@@ -2583,7 +2594,7 @@ def build_items(
         # performed by the Paper layer; attaching CE's unconditional
         # furniture_item behavior here would place a bottle on every normal
         # right-click instead of drinking it.
-        manually_placed_drink = item_id in drink_ids or item_id == "signature_cocktail"
+        manually_placed_drink = is_drink(item_id, drink_ids)
         if item_id in BOTTLE_AND_GLASS_ITEMS or item_id.endswith("_bucket"):
             # The Forge BottleBlockItem/GlasswareBlockItem hierarchy stacks to
             # 16. Potion is used as the server-side material for drinking, but
@@ -2669,7 +2680,7 @@ def build_items(
             lore_keys = [f"tooltip.{NAMESPACE}.{item_id}"]
         if lore_keys:
             config["data"]["lore"] = [f"<!i><gray><lang:{key}>" for key in lore_keys]
-        elif item_id in COCKTAILS:
+        elif item_id in CONSUMABLE_COCKTAILS:
             # Creative-menu entries bypass ItemService, so fixed cocktails
             # need a generated preview. Aged wines and signature cocktails are
             # rebuilt at runtime because their effects live on the item stack.
@@ -2722,10 +2733,10 @@ def build_items(
         # IHasContainer#returnContainerToEntity: CraftEngine's own
         # consume_replacement setting now hands back the empty vessel, so the
         # plugin no longer rewrites PlayerItemConsumeEvent replacements.
-        if item_id in COCKTAILS or item_id == "signature_cocktail":
+        if item_id in CONSUMABLE_COCKTAILS:
             config.setdefault("settings", {})["consume_replacement"] = (
                 f"{NAMESPACE}:empty_glassware")
-        elif item_id in drink_ids:
+        elif is_drink(item_id, drink_ids):
             config.setdefault("settings", {})["consume_replacement"] = (
                 f"{NAMESPACE}:empty_bottle")
         items[f"{NAMESPACE}:{item_id}"] = config

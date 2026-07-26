@@ -3,20 +3,29 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
+import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.core.block.BlockDefinition;
 import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviors;
+import net.momirealms.craftengine.core.block.behavior.BonemealableBlock;
 import net.momirealms.craftengine.core.block.behavior.RandomTickBlock;
 import net.momirealms.craftengine.core.block.property.IntegerProperty;
 import net.momirealms.craftengine.core.block.property.Property;
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
+import net.momirealms.craftengine.core.entity.player.Player;
+import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Direction;
+import net.momirealms.craftengine.core.util.ItemUtils;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.context.BlockPlaceContext;
+import net.momirealms.craftengine.core.world.context.UseOnContext;
+import net.momirealms.craftengine.libraries.antigrieflib.Flag;
 import net.momirealms.craftengine.proxy.minecraft.core.Vec3iProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
 import org.bukkit.Location;
@@ -35,7 +44,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Kaleidoscope Tavern's trellis. Fruit lifecycle is delegated to CustomCrops;
  * this behavior only models the supporting vine structure.
  */
-public final class TrellisBehavior extends BukkitBlockBehavior implements RandomTickBlock {
+public final class TrellisBehavior extends BukkitBlockBehavior
+        implements BonemealableBlock, RandomTickBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "trellis");
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String PLAIN_TRELLIS = PREFIX + "trellis";
@@ -130,6 +140,52 @@ public final class TrellisBehavior extends BukkitBlockBehavior implements Random
         }
     }
 
+    @Override
+    public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
+        Item item = context.getItem();
+        Player player = context.getPlayer();
+        if (ItemUtils.isEmpty(item) || !item.vanillaId().equals(ItemKeys.BONE_MEAL)
+                || player == null || player.isAdventureMode()) {
+            return InteractionResult.PASS;
+        }
+        BlockPos pos = context.getClickedPos();
+        Location location = new Location((World) context.getLevel().platformWorld(),
+                pos.x(), pos.y(), pos.z());
+        if (!BukkitCraftEngine.instance().antiGriefProvider().test(
+                (org.bukkit.entity.Player) player.platformPlayer(), Flag.INTERACT, location)) {
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+        if (!canGrow(location, state)) {
+            return InteractionResult.PASS;
+        }
+        // The client only sees the trellis carrier block, so mirror CE's crop
+        // behavior and acknowledge the successful use without cancelling the
+        // vanilla BoneMealItem path that performs growth and consumption.
+        player.swingHand(context.getHand());
+        return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public boolean isValidBonemealTarget(Object thisBlock, Object[] args) {
+        Optional<ImmutableBlockState> optional = BlockStateUtils.getOptionalCustomBlockState(args[2]);
+        Location location = location(args[0], args[1]);
+        return optional.isPresent() && location != null && canGrow(location, optional.get());
+    }
+
+    @Override
+    public boolean isBonemealSuccess(Object thisBlock, Object[] args) {
+        return true;
+    }
+
+    @Override
+    public void performBonemeal(Object thisBlock, Object[] args) {
+        Optional<ImmutableBlockState> optional = BlockStateUtils.getOptionalCustomBlockState(args[3]);
+        Location location = location(args[0], args[2]);
+        if (optional.isPresent() && location != null) {
+            grow(location, optional.get());
+        }
+    }
+
     /** Exact {@code GrapevineTrellisBlock.doGrow} step used by random ticks and bone meal. */
     public static boolean grow(Location location, ImmutableBlockState source) {
         Property<?> rawAge = source.getProperty("age");
@@ -164,6 +220,26 @@ public final class TrellisBehavior extends BukkitBlockBehavior implements Random
         return CustomCropsBridge.placeHangingGrapes(below.getLocation(), id(source));
     }
 
+    private static boolean canGrow(Location location, ImmutableBlockState source) {
+        Property<?> rawAge = source.getProperty("age");
+        if (!(rawAge instanceof IntegerProperty age)) {
+            return false;
+        }
+        if (source.get(age) < age.max) {
+            return true;
+        }
+        for (BlockFace direction : GROW_DIRECTIONS) {
+            ImmutableBlockState targetState = CraftEngineBlocks.getCustomBlockState(
+                    location.getBlock().getRelative(direction));
+            if (targetState != null && PLAIN_TRELLIS.equals(id(targetState))
+                    && !bool(targetState, "waxed")) {
+                return true;
+            }
+        }
+        Block below = location.getBlock().getRelative(BlockFace.DOWN);
+        return below.getY() >= location.getWorld().getMinHeight() && below.getType().isAir();
+    }
+
     /** Kept as an explicit parity marker for the source mature-growth branch. */
     public static boolean growMature(Location location, ImmutableBlockState source) {
         Property<?> rawAge = source.getProperty("age");
@@ -181,6 +257,17 @@ public final class TrellisBehavior extends BukkitBlockBehavior implements Random
             return Math.max(spreadChance, 0.8F);
         }
         return spreadChance;
+    }
+
+    private static Location location(Object level, Object position) {
+        World world = LevelProxy.INSTANCE.getWorld(level);
+        if (world == null) {
+            return null;
+        }
+        return new Location(world,
+                Vec3iProxy.INSTANCE.getX(position),
+                Vec3iProxy.INSTANCE.getY(position),
+                Vec3iProxy.INSTANCE.getZ(position));
     }
 
     private static boolean axisHasTrellis(BlockPlaceContext context, BlockPos position, Direction.Axis axis) {

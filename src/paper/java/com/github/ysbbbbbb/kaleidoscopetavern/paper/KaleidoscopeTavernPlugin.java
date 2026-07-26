@@ -1,6 +1,11 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.Selector;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.SelectorKind;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.command.RecipeCommandSemantics;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.command.RecipeCommandSemantics.PageWindow;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.command.RecipeCommandSemantics.RecipeType;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.AmbientFurnitureService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BarStoolVisualService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.EffectService;
@@ -225,6 +230,9 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (args[0].equalsIgnoreCase("give")) {
             return give(sender, args);
         }
+        if (args[0].equalsIgnoreCase("recipes")) {
+            return recipes(sender, label, args);
+        }
         if (args[0].equalsIgnoreCase("reload")) {
             reloadConfig();
             if (stations != null) {
@@ -249,8 +257,152 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
                     : "本插件配置已重载，但至少一个依赖内容重载失败，请检查日志。"));
             return true;
         }
-        sender.sendMessage(Component.text("用法：/" + label + " <status|give|reload>"));
+        sender.sendMessage(Component.text("用法：/" + label + " <status|give|reload|recipes>"));
         return true;
+    }
+
+    private boolean recipes(CommandSender sender, String label, String[] args) {
+        if (args.length < 2 || args.length > 3) {
+            sender.sendMessage(Component.text(
+                    "用法：/" + label + " recipes <barrel|pressing|shaker> [页码]"));
+            return true;
+        }
+
+        Optional<RecipeType> parsedType = RecipeCommandSemantics.parseType(args[1]);
+        if (parsedType.isEmpty()) {
+            sender.sendMessage(Component.text("未知配方类型：" + args[1]
+                    + "；可用类型：barrel、pressing、shaker。"));
+            return true;
+        }
+        RecipeType type = parsedType.get();
+        int requestedPage = 1;
+        if (args.length == 3) {
+            var parsedPage = RecipeCommandSemantics.parsePage(args[2]);
+            if (parsedPage.isEmpty()) {
+                sender.sendMessage(Component.text("页码必须是正整数。"));
+                return true;
+            }
+            requestedPage = parsedPage.getAsInt();
+        }
+
+        int entryCount = recipeCount(type);
+        Optional<PageWindow> page = RecipeCommandSemantics.pageWindow(entryCount, requestedPage);
+        if (page.isEmpty()) {
+            sender.sendMessage(Component.text("页码超出范围：该类型共有 "
+                    + RecipeCommandSemantics.pageCount(entryCount) + " 页。"));
+            return true;
+        }
+
+        Player context = sender instanceof Player player ? player : null;
+        PageWindow window = page.get();
+        sender.sendMessage(Component.text("=== ")
+                .append(recipeTitle(type))
+                .append(Component.text("配方（" + window.page() + '/' + window.totalPages() + "） ===")));
+        switch (type) {
+            case PRESSING -> catalog.pressingRecipes()
+                    .subList(window.fromInclusive(), window.toExclusive())
+                    .forEach(recipe -> sender.sendMessage(pressingRecipeLine(recipe, context)));
+            case BARREL -> catalog.barrelRecipes()
+                    .subList(window.fromInclusive(), window.toExclusive())
+                    .forEach(recipe -> sender.sendMessage(barrelRecipeLine(recipe, context)));
+            case SHAKER -> catalog.shakerRecipes()
+                    .subList(window.fromInclusive(), window.toExclusive())
+                    .forEach(recipe -> sender.sendMessage(shakerRecipeLine(recipe, context)));
+        }
+        return true;
+    }
+
+    private Component pressingRecipeLine(ContentCatalog.PressingRecipe recipe, Player context) {
+        return Component.text("• ")
+                .append(selectorName(recipe.ingredient(), context))
+                .append(Component.text(" → "))
+                .append(fluidName(recipe.fluid()))
+                .append(Component.text(" +" + recipe.amount() + " mB/次（装满后："))
+                .append(itemName(recipe.bucket(), context))
+                .append(Component.text("）"));
+    }
+
+    private Component barrelRecipeLine(ContentCatalog.BarrelRecipe recipe, Player context) {
+        List<Component> inputs = new ArrayList<>();
+        inputs.add(fluidName(recipe.fluid()));
+        recipe.ingredients().stream().map(selector -> selectorName(selector, context)).forEach(inputs::add);
+        return Component.text("• ")
+                .append(joinComponents(inputs, " + "))
+                .append(Component.text(" → "))
+                .append(itemName(recipe.result(), context))
+                .append(Component.text("（取酒容器："))
+                .append(selectorName(recipe.carrier(), context))
+                .append(Component.text("；每级："
+                        + RecipeCommandSemantics.formatTicks(recipe.unitTicks()) + "）"));
+    }
+
+    private Component shakerRecipeLine(ContentCatalog.ShakerRecipe recipe, Player context) {
+        List<Component> ingredients = recipe.ingredients().stream()
+                .map(selector -> selectorName(selector, context))
+                .toList();
+        return Component.text("• ")
+                .append(joinComponents(ingredients, " + "))
+                .append(Component.text(" → "))
+                .append(itemName(recipe.result(), context));
+    }
+
+    private Component selectorName(Selector selector, Player context) {
+        if (selector.kind() == SelectorKind.ITEM) {
+            return itemName(selector.value(), context);
+        }
+        Optional<String> color = RecipeCommandSemantics.cocktailColorSuffix(selector.value());
+        if (color.isPresent()) {
+            return Component.translatable("color.kaleidoscope_tavern." + color.get());
+        }
+        List<Component> expanded = catalog.tag(selector.value()).stream()
+                .sorted()
+                .map(id -> itemName(id, context))
+                .toList();
+        return expanded.isEmpty()
+                ? Component.text('#' + selector.value())
+                : joinComponents(expanded, " / ");
+    }
+
+    private Component itemName(String id, Player context) {
+        return items.build(id, context)
+                .map(ItemStack::effectiveName)
+                .orElse(Component.text(id));
+    }
+
+    private static Component fluidName(String id) {
+        int separator = id.indexOf(':');
+        if (separator <= 0 || separator == id.length() - 1) {
+            return Component.text(id);
+        }
+        return Component.translatable("block." + id.substring(0, separator) + '.'
+                + id.substring(separator + 1));
+    }
+
+    private static Component joinComponents(List<Component> parts, String separator) {
+        if (parts.isEmpty()) {
+            return Component.empty();
+        }
+        Component joined = parts.getFirst();
+        for (int index = 1; index < parts.size(); index++) {
+            joined = joined.append(Component.text(separator)).append(parts.get(index));
+        }
+        return joined;
+    }
+
+    private int recipeCount(RecipeType type) {
+        return switch (type) {
+            case BARREL -> catalog.barrelRecipes().size();
+            case PRESSING -> catalog.pressingRecipes().size();
+            case SHAKER -> catalog.shakerRecipes().size();
+        };
+    }
+
+    private static Component recipeTitle(RecipeType type) {
+        return Component.translatable(switch (type) {
+            case BARREL -> "block.kaleidoscope_tavern.barrel";
+            case PRESSING -> "block.kaleidoscope_tavern.pressing_tub";
+            case SHAKER -> "block.kaleidoscope_tavern.shaker";
+        });
     }
 
     private boolean give(CommandSender sender, String[] args) {
@@ -357,7 +509,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return matching(List.of("status", "give", "reload"), args[0]);
+            return matching(List.of("status", "give", "reload", "recipes"), args[0]);
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
             List<String> ids = CraftEngineItems.loadedItems().keySet().stream()
@@ -369,6 +521,21 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         }
         if (args.length == 4 && args[0].equalsIgnoreCase("give")) {
             return matching(Bukkit.getOnlinePlayers().stream().map(Player::getName).sorted().toList(), args[3]);
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("recipes")) {
+            return matching(List.of("barrel", "pressing", "shaker"), args[1]);
+        }
+        if (args.length == 3 && args[0].equalsIgnoreCase("recipes")) {
+            Optional<RecipeType> type = RecipeCommandSemantics.parseType(args[1]);
+            if (type.isEmpty()) {
+                return List.of();
+            }
+            List<String> pages = new ArrayList<>();
+            int pageCount = RecipeCommandSemantics.pageCount(recipeCount(type.get()));
+            for (int page = 1; page <= pageCount; page++) {
+                pages.add(Integer.toString(page));
+            }
+            return matching(pages, args[2]);
         }
         return List.of();
     }

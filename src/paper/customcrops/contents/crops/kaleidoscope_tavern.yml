@@ -103,6 +103,9 @@ kaleidoscope_tavern_grape:
         2: 0.5
         1: 1.0
       actions:
+        swing_hand:
+          type: swing-hand
+          value: true
         particles:
           type: particle
           value:
@@ -222,6 +225,9 @@ kaleidoscope_tavern_ice_grape:
         2: 0.5
         1: 1.0
       actions:
+        swing_hand:
+          type: swing-hand
+          value: true
         particles:
           type: particle
           value:
@@ -341,6 +347,9 @@ kaleidoscope_tavern_gold_grape:
         2: 0.5
         1: 1.0
       actions:
+        swing_hand:
+          type: swing-hand
+          value: true
         particles:
           type: particle
           value:

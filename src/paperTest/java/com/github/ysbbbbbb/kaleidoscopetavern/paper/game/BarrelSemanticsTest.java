@@ -38,6 +38,15 @@ class BarrelSemanticsTest {
     }
 
     @Test
+    void formatsRemainingTimeLikeTheArchivedMinecraftUtility() {
+        assertEquals("0:00", BarrelSemantics.formatTickDuration(-97));
+        assertEquals("0:00", BarrelSemantics.formatTickDuration(19));
+        assertEquals("0:01", BarrelSemantics.formatTickDuration(20));
+        assertEquals("2:00", BarrelSemantics.formatTickDuration(2_400));
+        assertEquals("61:01", BarrelSemantics.formatTickDuration(73_220));
+    }
+
+    @Test
     void tapFailuresUseTheSourceCheckOrder() {
         assertEquals(BarrelSemantics.TapExtractStatus.NOT_BREWING,
                 BarrelSemantics.tapExtractStatus(false, 0, false));

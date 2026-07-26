@@ -2,18 +2,33 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
+import net.momirealms.craftengine.bukkit.block.behavior.VineCropBodyBlockBehavior;
+import net.momirealms.craftengine.bukkit.block.behavior.VineCropHeadBlockBehavior;
+import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.BlockDefinition;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviorFactory;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviors;
+import net.momirealms.craftengine.core.block.behavior.BonemealableBlock;
 import net.momirealms.craftengine.core.block.behavior.RandomTickBlock;
 import net.momirealms.craftengine.core.block.property.BooleanProperty;
 import net.momirealms.craftengine.core.block.property.IntegerProperty;
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
+import net.momirealms.craftengine.core.entity.player.Player;
+import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.ItemKeys;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
+import net.momirealms.craftengine.core.util.ItemUtils;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.context.UseOnContext;
+import net.momirealms.craftengine.libraries.antigrieflib.Flag;
 import net.momirealms.craftengine.proxy.minecraft.core.Vec3iProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.level.BlockGetterProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -23,23 +38,39 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Adds the legacy sheared growth lock on top of CraftEngine's native vine survival rules. */
-public final class WildGrapevineBehavior extends BukkitBlockBehavior implements RandomTickBlock {
+public final class WildGrapevineBehavior extends BukkitBlockBehavior
+        implements BonemealableBlock, RandomTickBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "wild_grapevine");
     private static final String HEAD = "kaleidoscope_tavern:wild_grapevine";
     private static final String BODY = "kaleidoscope_tavern:wild_grapevine_plant";
+    private static final Key LEAVES = Key.of("minecraft", "leaves");
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
 
+    private final VineCropHeadBlockBehavior headDelegate;
+    private final VineCropBodyBlockBehavior bodyDelegate;
     private final IntegerProperty ageProperty;
     private final BooleanProperty shearedProperty;
     private final float growSpeed;
 
     private WildGrapevineBehavior(BlockDefinition block, ConfigSection section) {
         super(block);
-        this.ageProperty = (IntegerProperty) BlockBehaviorFactory.getProperty(
-                section.path(), block, "age", Integer.class);
-        this.shearedProperty = (BooleanProperty) BlockBehaviorFactory.getProperty(
-                section.path(), block, "sheared", Boolean.class);
-        this.growSpeed = section.getFloat("grow_speed", 0.15F);
+        String id = block.id().toString();
+        if (HEAD.equals(id)) {
+            this.headDelegate = VineCropHeadBlockBehavior.FACTORY.create(block, section);
+            this.bodyDelegate = null;
+            this.ageProperty = this.headDelegate.ageProperty;
+            this.shearedProperty = (BooleanProperty) BlockBehaviorFactory.getProperty(
+                    section.path(), block, "sheared", Boolean.class);
+            this.growSpeed = section.getFloat("grow_speed", 0.15F);
+        } else if (BODY.equals(id)) {
+            this.headDelegate = null;
+            this.bodyDelegate = VineCropBodyBlockBehavior.FACTORY.create(block, section);
+            this.ageProperty = null;
+            this.shearedProperty = null;
+            this.growSpeed = 0F;
+        } else {
+            throw new IllegalArgumentException("Unsupported wild grapevine block: " + id);
+        }
     }
 
     public static void register() {
@@ -50,11 +81,16 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior implements 
 
     @Override
     public boolean canRandomlyTick(ImmutableBlockState state) {
-        return !state.get(shearedProperty) && state.get(ageProperty) < ageProperty.max;
+        return headDelegate != null
+                && !state.get(shearedProperty)
+                && state.get(ageProperty) < ageProperty.max;
     }
 
     @Override
     public void randomTick(Object thisBlock, Object[] args) {
+        if (headDelegate == null) {
+            return;
+        }
         Optional<ImmutableBlockState> optional = BlockStateUtils.getOptionalCustomBlockState(args[0]);
         if (optional.isEmpty()) {
             return;
@@ -78,9 +114,93 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior implements 
         extend(block, state);
     }
 
+    @Override
+    public void tick(Object thisBlock, Object[] args) {
+        // AbstractCanSurviveBlockBehavior.tick calls the delegate's own
+        // canSurvive method, so do not enter it while the source-specific
+        // leaves attachment is valid.
+        if (!isAttachedToLeaves(args)) {
+            lifecycle().tick(thisBlock, args);
+        }
+    }
+
+    @Override
+    public void onPlace(Object thisBlock, Object[] args) {
+        lifecycle().onPlace(thisBlock, args);
+    }
+
+    @Override
+    public Object updateShape(Object thisBlock, Object[] args) {
+        return lifecycle().updateShape(thisBlock, args);
+    }
+
+    @Override
+    public boolean canSurvive(Object thisBlock, Object[] args) {
+        // Forge's WildGrapevineBlock and WildGrapevinePlantBlock explicitly
+        // accepted BlockTags.LEAVES because leaves are not SupportType.FULL.
+        // CE's native vine behavior deliberately handles only sturdy faces
+        // and other vine segments, so retain that lifecycle while restoring
+        // the source attachment exception for both the head and body.
+        return isAttachedToLeaves(args)
+                || lifecycle().canSurvive(thisBlock, args);
+    }
+
+    @Override
+    public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
+        Item item = context.getItem();
+        Player player = context.getPlayer();
+        if (ItemUtils.isEmpty(item) || !item.vanillaId().equals(ItemKeys.BONE_MEAL)
+                || player == null || player.isAdventureMode()) {
+            return InteractionResult.PASS;
+        }
+        BlockPos pos = context.getClickedPos();
+        Location location = new Location((World) context.getLevel().platformWorld(),
+                pos.x(), pos.y(), pos.z());
+        if (!BukkitCraftEngine.instance().antiGriefProvider().test(
+                (org.bukkit.entity.Player) player.platformPlayer(), Flag.INTERACT, location)) {
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+        Block clicked = location.getBlock();
+        Block head = headDelegate != null ? clicked : findHead(clicked);
+        ImmutableBlockState headState = head == null ? null : CraftEngineBlocks.getCustomBlockState(head);
+        if (headState == null || !canExtend(head, headState)) {
+            return InteractionResult.PASS;
+        }
+        player.swingHand(context.getHand());
+        return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public boolean isValidBonemealTarget(Object thisBlock, Object[] args) {
+        if (bodyDelegate != null) {
+            return bodyDelegate.isValidBonemealTarget(thisBlock, args);
+        }
+        Optional<ImmutableBlockState> optional = BlockStateUtils.getOptionalCustomBlockState(args[2]);
+        Block head = blockAt(args[0], args[1]);
+        return optional.isPresent() && head != null && canExtend(head, optional.get());
+    }
+
+    @Override
+    public boolean isBonemealSuccess(Object thisBlock, Object[] args) {
+        return bodyDelegate == null || bodyDelegate.isBonemealSuccess(thisBlock, args);
+    }
+
+    @Override
+    public void performBonemeal(Object thisBlock, Object[] args) {
+        if (bodyDelegate != null) {
+            bodyDelegate.performBonemeal(thisBlock, args);
+            return;
+        }
+        Optional<ImmutableBlockState> optional = BlockStateUtils.getOptionalCustomBlockState(args[3]);
+        Block head = blockAt(args[0], args[2]);
+        if (optional.isPresent() && head != null) {
+            extend(head, optional.get());
+        }
+    }
+
     /** Extends a non-sheared head by one block; also used by bone meal interaction. */
     public static boolean extend(Block headBlock, ImmutableBlockState state) {
-        if (booleanProperty(state, "sheared") || !headBlock.getRelative(BlockFace.DOWN).isEmpty()) {
+        if (!canExtend(headBlock, state)) {
             return false;
         }
         BlockDefinition headDefinition = CraftEngineBlocks.byId(Key.of(HEAD));
@@ -101,6 +221,13 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior implements 
         return true;
     }
 
+    private static boolean canExtend(Block headBlock, ImmutableBlockState state) {
+        return HEAD.equals(state.owner().value().id().toString())
+                && !booleanProperty(state, "sheared")
+                && headBlock.getY() > headBlock.getWorld().getMinHeight()
+                && headBlock.getRelative(BlockFace.DOWN).isEmpty();
+    }
+
     public static Block findHead(Block start) {
         Block cursor = start;
         int worldHeight = start.getWorld().getMaxHeight() - start.getWorld().getMinHeight();
@@ -119,6 +246,33 @@ public final class WildGrapevineBehavior extends BukkitBlockBehavior implements 
             cursor = cursor.getRelative(BlockFace.DOWN);
         }
         return null;
+    }
+
+    private static Block blockAt(Object level, Object position) {
+        World world = LevelProxy.INSTANCE.getWorld(level);
+        if (world == null) {
+            return null;
+        }
+        return world.getBlockAt(
+                Vec3iProxy.INSTANCE.getX(position),
+                Vec3iProxy.INSTANCE.getY(position),
+                Vec3iProxy.INSTANCE.getZ(position));
+    }
+
+    private BukkitBlockBehavior lifecycle() {
+        return headDelegate != null ? headDelegate : bodyDelegate;
+    }
+
+    private boolean growsUp() {
+        return headDelegate != null ? headDelegate.direction : bodyDelegate.direction;
+    }
+
+    private boolean isAttachedToLeaves(Object[] args) {
+        Object attachedPos = growsUp()
+                ? LocationUtils.below(args[2])
+                : LocationUtils.above(args[2]);
+        Object attachedState = BlockGetterProxy.INSTANCE.getBlockState(args[1], attachedPos);
+        return BlockStateUtils.isTag(attachedState, LEAVES);
     }
 
     private static boolean booleanProperty(ImmutableBlockState state, String name) {

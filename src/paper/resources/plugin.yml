@@ -10,7 +10,7 @@ softdepend: [PlaceholderAPI, CustomNameplates]
 commands:
   kaleidoscopetavern:
     description: Kaleidoscope Tavern administration command
-    usage: /<command> <status|give|reload>
+    usage: /<command> <status|give|reload|recipes>
     aliases: [kt]
     permission: kaleidoscopetavern.admin
 permissions:
