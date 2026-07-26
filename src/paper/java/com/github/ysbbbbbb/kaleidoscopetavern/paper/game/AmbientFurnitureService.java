@@ -153,9 +153,9 @@ public final class AmbientFurnitureService implements Listener {
         if (!burstTick && !particleTick) {
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
-        boolean open = state.bool("incense_active")
-                || furniture.currentVariant().name().endsWith("_open");
+        // The *_open furniture variant is the single source of truth for a
+        // lit incense; both the CE toggle events and the redstone poll set it.
+        boolean open = furniture.currentVariant().name().endsWith("_open");
         if (burstTick && open) {
             hurtNearbyUndead(furniture);
         }

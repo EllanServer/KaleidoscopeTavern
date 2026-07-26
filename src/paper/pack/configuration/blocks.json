@@ -16057,6 +16057,50 @@
         "direction": "down",
         "grow_speed": 0.15
       },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "match_item",
+              "item": "minecraft:shears"
+            },
+            {
+              "type": "match_block_property",
+              "properties": {
+                "sheared": "false"
+              }
+            },
+            {
+              "type": "hand",
+              "hand": "main_hand"
+            }
+          ],
+          "functions": [
+            {
+              "type": "update_block_property",
+              "properties": {
+                "sheared": "true"
+              }
+            },
+            {
+              "type": "damage_item",
+              "amount": 1
+            },
+            {
+              "type": "play_sound",
+              "sound": "minecraft:entity.sheep.shear",
+              "source": "block"
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ],
       "loot": {
         "pools": [
           {
@@ -16352,6 +16396,107 @@
       "behavior": {
         "type": "kaleidoscope_tavern:trellis"
       },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "match_item",
+              "item": "minecraft:honeycomb"
+            },
+            {
+              "type": "match_block_property",
+              "properties": {
+                "waxed": "false"
+              }
+            },
+            {
+              "type": "hand",
+              "hand": "main_hand"
+            }
+          ],
+          "functions": [
+            {
+              "type": "update_block_property",
+              "properties": {
+                "waxed": "true"
+              }
+            },
+            {
+              "type": "play_sound",
+              "sound": "minecraft:item.honeycomb.wax_on",
+              "source": "block"
+            },
+            {
+              "type": "particle",
+              "particle": "minecraft:wax_on",
+              "x": "<arg:position.x> + 0.5",
+              "y": "<arg:position.y> + 0.5",
+              "z": "<arg:position.z> + 0.5",
+              "count": 8,
+              "offset_x": 0.35,
+              "offset_y": 0.35,
+              "offset_z": 0.35
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        },
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "match_item",
+              "item": "minecraft:.+_axe",
+              "regex": true
+            },
+            {
+              "type": "match_block_property",
+              "properties": {
+                "waxed": "true"
+              }
+            },
+            {
+              "type": "hand",
+              "hand": "main_hand"
+            }
+          ],
+          "functions": [
+            {
+              "type": "update_block_property",
+              "properties": {
+                "waxed": "false"
+              }
+            },
+            {
+              "type": "play_sound",
+              "sound": "minecraft:item.axe.wax_off",
+              "source": "block"
+            },
+            {
+              "type": "particle",
+              "particle": "minecraft:wax_off",
+              "x": "<arg:position.x> + 0.5",
+              "y": "<arg:position.y> + 0.5",
+              "z": "<arg:position.z> + 0.5",
+              "count": 8,
+              "offset_x": 0.35,
+              "offset_y": 0.35,
+              "offset_z": 0.35
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ],
       "loot": {
         "pools": [
           {

@@ -64,7 +64,7 @@ SOURCE_STATE_OWNERS = {
     "face": "CE ground/wall/ceiling placement rules",
     "facing": "CE four-way/sixteen-way furniture rotation",
     "half": "composite multi-element furniture variants",
-    "open": "StationService and TapService",
+    "open": "furniture.json incense toggle events, StationService and TapService",
     "position": "FurnitureConnectionService",
     "powered": "StationService and DisplayStorageService redstone polling",
     "rotation": "CE sixteen-way sandwich-board rotation",
@@ -72,7 +72,7 @@ SOURCE_STATE_OWNERS = {
     "triggered": "TapService",
     "type": "CE trellis state variants",
     "waterlogged": "entity furniture / CE non-displacing carrier semantics",
-    "waxed": "CE trellis state variants",
+    "waxed": "CE trellis state variants plus blocks.json wax events",
 }
 
 # Block-entity renderers are the easiest source of an apparently valid but
@@ -154,7 +154,8 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "HolderBlock.java": (("DisplayStorageService.java", "HOLDER"),),
     "IncenseBlock.java": (
-        ("StationService.java", "interactIncense"),
+        ("src/paper/pack/configuration/furniture.json", "set_furniture_variant"),
+        ("StationService.java", "pollIncenseRedstone"),
         ("AmbientFurnitureService.java", "tickIncense"),
     ),
     "JuiceBucketItem.java": (("tools/migrate_legacy.py", "milk_bucket"),),
@@ -192,9 +193,10 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     "TrellisBlock.java": (
         ("block/BlockService.java", "interactPlainTrellis"),
         ("block/TrellisBehavior.java", "updateStateForPlacement"),
+        ("src/paper/pack/configuration/blocks.json", "item.axe.wax_off"),
     ),
     "WildGrapevineBlock.java": (
-        ("block/BlockService.java", "interactWildHead"),
+        ("src/paper/pack/configuration/blocks.json", "entity.sheep.shear"),
         ("block/WildGrapevineBehavior.java", "implements BonemealableBlock"),
         ("block/WildGrapevineBehavior.java", "isValidBonemealTarget"),
         ("block/WildGrapevineBehavior.java", "randomTick"),
@@ -622,6 +624,21 @@ def validate() -> dict[str, int]:
             raise AssertionError(f"BlockService grapevine planting evidence is missing: {evidence}")
     if '"single".equals(stringProperty(state, "type"))' in block_service_source:
         raise AssertionError("Grapevine planting must support connected trellis shapes")
+    for stale_listener in ("interactWildHead", "Material.HONEYCOMB", "WAX_ON", "WAX_OFF"):
+        if stale_listener in block_service_source:
+            raise AssertionError(
+                "Trellis waxing and wild-grapevine shearing are CE block events; "
+                f"BlockService must not reintroduce {stale_listener}")
+    station_source = (game_package / "StationService.java").read_text(encoding="utf-8-sig")
+    ambient_source = (game_package / "AmbientFurnitureService.java").read_text(
+        encoding="utf-8-sig")
+    for owner_name, owner_source in (("StationService", station_source),
+                                     ("AmbientFurnitureService", ambient_source)):
+        for stale_state in ("incense_active", "interactIncense"):
+            if stale_state in owner_source:
+                raise AssertionError(
+                    f"{owner_name}: the *_open furniture variant is the only lit-incense "
+                    f"state; {stale_state} must stay deleted")
 
     # DisplayStorageService must cancel off-hand furniture interactions to
     # prevent CraftEngine's built-in display_item_furniture behavior from
@@ -1356,6 +1373,75 @@ def validate() -> dict[str, int]:
             if {c["type"] for c in entry["conditions"]} != {"match_item", "hand"}:
                 raise AssertionError(
                     f"string_lights_{color}: dye event needs match_item plus hand")
+
+    # Trellis waxing/scraping and wild-grapevine shearing are CE block events;
+    # incense toggling is a CE furniture event. The Java listener branches for
+    # all three are deliberately gone and must not come back.
+    trellis_events = blocks[f"{NAMESPACE}:trellis"].get("events", [])
+    if len(trellis_events) != 2:
+        raise AssertionError("trellis: expected exactly wax-on plus wax-off events")
+    for entry, item_id, waxed_before, waxed_after, sound in (
+            (trellis_events[0], "minecraft:honeycomb", "false", "true",
+             "minecraft:item.honeycomb.wax_on"),
+            (trellis_events[1], "minecraft:.+_axe", "true", "false",
+             "minecraft:item.axe.wax_off")):
+        conditions = {c["type"]: c for c in entry["conditions"]}
+        functions = {f["type"]: f for f in entry["functions"]}
+        if (entry.get("on") != "right_click"
+                or conditions["match_item"].get("item") != item_id
+                or conditions["match_block_property"].get("properties") != {"waxed": waxed_before}
+                or "hand" not in conditions
+                or functions["update_block_property"].get("properties") != {"waxed": waxed_after}
+                or functions["play_sound"].get("sound") != sound
+                or "particle" not in functions
+                or "cancel_event" not in functions):
+            raise AssertionError(f"trellis: wax event drift for {item_id}")
+        if "set_count" in functions or "damage_item" in functions:
+            raise AssertionError(
+                "trellis: the source never consumes the honeycomb nor damages the axe")
+    if not trellis_events[1]["conditions"][0].get("regex"):
+        raise AssertionError("trellis: wax-off must match every axe via regex")
+
+    wild_events = blocks[f"{NAMESPACE}:wild_grapevine"].get("events", [])
+    if len(wild_events) != 1:
+        raise AssertionError("wild_grapevine: expected a single shear event")
+    shear = wild_events[0]
+    shear_conditions = {c["type"]: c for c in shear["conditions"]}
+    shear_functions = {f["type"]: f for f in shear["functions"]}
+    if (shear.get("on") != "right_click"
+            or shear_conditions["match_item"].get("item") != "minecraft:shears"
+            or shear_conditions["match_block_property"].get("properties") != {"sheared": "false"}
+            or "hand" not in shear_conditions
+            or shear_functions["update_block_property"].get("properties") != {"sheared": "true"}
+            or shear_functions["play_sound"].get("sound") != "minecraft:entity.sheep.shear"
+            or "damage_item" not in shear_functions
+            or "cancel_event" not in shear_functions):
+        raise AssertionError("wild_grapevine: shear event drift")
+
+    incense_ids = sorted(fid for fid in furniture if fid.endswith("_incense"))
+    if len(incense_ids) != 8:
+        raise AssertionError(f"Expected 8 incense furniture definitions, found {len(incense_ids)}")
+    for incense_id in incense_ids:
+        incense_events = furniture[incense_id].get("events", [])
+        if len(incense_events) != 1 or incense_events[0].get("on") != "right_click":
+            raise AssertionError(f"{incense_id}: expected one right_click toggle event")
+        toggle_functions = {f["type"]: f for f in incense_events[0]["functions"]}
+        # Two sibling events on the same trigger would both run in order (the
+        # second sees the variant the first just set and flips it straight
+        # back); only a single if_else keeps the toggle atomic.
+        if "if_else" not in toggle_functions or "cancel_event" not in toggle_functions:
+            raise AssertionError(
+                f"{incense_id}: toggle must be an atomic if_else plus cancel_event")
+        transitions = {}
+        for rule in toggle_functions["if_else"]["rules"]:
+            source = next(c for c in rule["conditions"]
+                          if c["type"] == "match_furniture_variant")["variant"]
+            rule_functions = {f["type"]: f for f in rule["functions"]}
+            transitions[source] = rule_functions["set_furniture_variant"].get("variant")
+            if "play_sound" not in rule_functions or "message" not in rule_functions:
+                raise AssertionError(f"{incense_id}: toggle branch missing sound or message")
+        if transitions != {"ground": "ground_open", "ground_open": "ground"}:
+            raise AssertionError(f"{incense_id}: toggle must swap ground and ground_open")
 
     # Wild grapevine worldgen rides CraftEngine's feature pipeline now; the
     # plugin must not re-implement a Bukkit-side generator.

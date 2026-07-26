@@ -14,7 +14,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Particle;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -99,8 +98,7 @@ public final class BlockService implements Listener {
             case PREFIX + "grapevine_trellis", PREFIX + "ice_grapevine_trellis",
                     PREFIX + "gold_grapevine_trellis" -> interactVineTrellis(
                             player, event.bukkitBlock(), state, hand, event.hand());
-            case PREFIX + "wild_grapevine" -> interactWildHead(
-                    player, event.bukkitBlock(), state, hand, event.hand());
+            // wild_grapevine shearing lives in the generated CE block events.
             default -> false;
         };
         if (handled) {
@@ -196,42 +194,10 @@ public final class BlockService implements Listener {
         }
     }
 
-    private boolean interactWildHead(Player player, Block block, ImmutableBlockState state,
-                                     ItemStack hand, InteractionHand usedHand) {
-        if (hand.getType() == Material.SHEARS) {
-            if (!booleanProperty(state, "sheared")) {
-                ImmutableBlockState changed = TrellisBehavior.withNamed(state, "sheared", "true");
-                if (CraftEngineBlocks.place(block.getLocation(), changed, false)) {
-                    damageTool(player, hand, usedHand);
-                    block.getWorld().playSound(block.getLocation(), "minecraft:entity.sheep.shear", 1F, 1F);
-                }
-            }
-            return true;
-        }
-        return false;
-    }
-
     private boolean interactPlainTrellis(Player player, Block block, ImmutableBlockState state,
                                          ItemStack hand, String handId, EquipmentSlot usedSlot) {
-        boolean waxed = booleanProperty(state, "waxed");
-        if (hand.getType() == Material.HONEYCOMB && !waxed) {
-            ImmutableBlockState changed = TrellisBehavior.withNamed(state, "waxed", "true");
-            if (CraftEngineBlocks.place(block.getLocation(), changed, false)) {
-                block.getWorld().playSound(block.getLocation(), "minecraft:item.honeycomb.wax_on", 1F, 1F);
-                block.getWorld().spawnParticle(Particle.WAX_ON, block.getLocation().add(0.5, 0.5, 0.5),
-                        8, 0.35, 0.35, 0.35, 0);
-            }
-            return true;
-        }
-        if (waxed && hand.getType().name().endsWith("_AXE")) {
-            ImmutableBlockState changed = TrellisBehavior.withNamed(state, "waxed", "false");
-            if (CraftEngineBlocks.place(block.getLocation(), changed, false)) {
-                block.getWorld().playSound(block.getLocation(), "minecraft:item.axe.wax_off", 1F, 1F);
-                block.getWorld().spawnParticle(Particle.WAX_OFF, block.getLocation().add(0.5, 0.5, 0.5),
-                        8, 0.35, 0.35, 0.35, 0);
-            }
-            return true;
-        }
+        // Waxing with honeycomb and scraping with an axe live in the
+        // generated CE block events; only grapevine planting stays here.
         if (!GRAPEVINE.equals(handId)) {
             LOGGER.fine(() -> "interactPlainTrellis: handId=" + handId + " does not match " + GRAPEVINE
                     + ", handType=" + hand.getType());

@@ -12442,7 +12442,77 @@
             ]
           }
         ]
-      }
+      },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "hand",
+              "hand": "main_hand"
+            }
+          ],
+          "functions": [
+            {
+              "type": "if_else",
+              "rules": [
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground_open"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_on",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <green>香炉已点燃。</green>"
+                    }
+                  ]
+                },
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground_open"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_off",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <gray>香炉已熄灭。</gray>"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ]
     },
     "kaleidoscope_tavern:pine_incense": {
       "settings": {
@@ -12538,7 +12608,77 @@
             ]
           }
         ]
-      }
+      },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "hand",
+              "hand": "main_hand"
+            }
+          ],
+          "functions": [
+            {
+              "type": "if_else",
+              "rules": [
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground_open"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_on",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <green>香炉已点燃。</green>"
+                    }
+                  ]
+                },
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground_open"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_off",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <gray>香炉已熄灭。</gray>"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ]
     },
     "kaleidoscope_tavern:ginkgo_incense": {
       "settings": {
@@ -12634,7 +12774,77 @@
             ]
           }
         ]
-      }
+      },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "hand",
+              "hand": "main_hand"
+            }
+          ],
+          "functions": [
+            {
+              "type": "if_else",
+              "rules": [
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground_open"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_on",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <green>香炉已点燃。</green>"
+                    }
+                  ]
+                },
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground_open"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_off",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <gray>香炉已熄灭。</gray>"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ]
     },
     "kaleidoscope_tavern:spore_incense": {
       "settings": {
@@ -12730,7 +12940,77 @@
             ]
           }
         ]
-      }
+      },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "hand",
+              "hand": "main_hand"
+            }
+          ],
+          "functions": [
+            {
+              "type": "if_else",
+              "rules": [
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground_open"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_on",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <green>香炉已点燃。</green>"
+                    }
+                  ]
+                },
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground_open"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_off",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <gray>香炉已熄灭。</gray>"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ]
     },
     "kaleidoscope_tavern:catnip_incense": {
       "settings": {
@@ -12826,7 +13106,77 @@
             ]
           }
         ]
-      }
+      },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "hand",
+              "hand": "main_hand"
+            }
+          ],
+          "functions": [
+            {
+              "type": "if_else",
+              "rules": [
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground_open"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_on",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <green>香炉已点燃。</green>"
+                    }
+                  ]
+                },
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground_open"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_off",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <gray>香炉已熄灭。</gray>"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ]
     },
     "kaleidoscope_tavern:snow_incense": {
       "settings": {
@@ -12922,7 +13272,77 @@
             ]
           }
         ]
-      }
+      },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "hand",
+              "hand": "main_hand"
+            }
+          ],
+          "functions": [
+            {
+              "type": "if_else",
+              "rules": [
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground_open"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_on",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <green>香炉已点燃。</green>"
+                    }
+                  ]
+                },
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground_open"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_off",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <gray>香炉已熄灭。</gray>"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ]
     },
     "kaleidoscope_tavern:butterfly_incense": {
       "settings": {
@@ -13018,7 +13438,77 @@
             ]
           }
         ]
-      }
+      },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "hand",
+              "hand": "main_hand"
+            }
+          ],
+          "functions": [
+            {
+              "type": "if_else",
+              "rules": [
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground_open"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_on",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <green>香炉已点燃。</green>"
+                    }
+                  ]
+                },
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground_open"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_off",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <gray>香炉已熄灭。</gray>"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ]
     },
     "kaleidoscope_tavern:firefly_incense": {
       "settings": {
@@ -13114,7 +13604,77 @@
             ]
           }
         ]
-      }
+      },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "hand",
+              "hand": "main_hand"
+            }
+          ],
+          "functions": [
+            {
+              "type": "if_else",
+              "rules": [
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground_open"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_on",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <green>香炉已点燃。</green>"
+                    }
+                  ]
+                },
+                {
+                  "conditions": [
+                    {
+                      "type": "match_furniture_variant",
+                      "variant": "ground_open"
+                    }
+                  ],
+                  "functions": [
+                    {
+                      "type": "set_furniture_variant",
+                      "variant": "ground"
+                    },
+                    {
+                      "type": "play_sound",
+                      "sound": "minecraft:block.stone_button.click_off",
+                      "source": "block"
+                    },
+                    {
+                      "type": "message",
+                      "message": "<dark_aqua>[森罗酒馆]</dark_aqua> <gray>香炉已熄灭。</gray>"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ]
     },
     "kaleidoscope_tavern:bar_counter": {
       "settings": {
