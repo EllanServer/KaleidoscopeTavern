@@ -70,6 +70,44 @@ EXPECTED_STATE_FURNITURE = {
     "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
     "watermelon_juice",
 }
+FURNITURE_COLORS = {
+    "black", "blue", "brown", "cyan", "gray", "green", "light_blue",
+    "light_gray", "lime", "magenta", "orange", "pink", "purple", "red",
+    "white", "yellow",
+}
+EXPECTED_LIFECYCLE_FURNITURE: dict[str, tuple[str, ...]] = {
+    "chalkboard": ("board",),
+    "base_sandwich_board": ("board",),
+    "grass_sandwich_board": ("board",),
+    "allium_sandwich_board": ("board",),
+    "azure_bluet_sandwich_board": ("board",),
+    "cornflower_sandwich_board": ("board",),
+    "orchid_sandwich_board": ("board",),
+    "peony_sandwich_board": ("board",),
+    "pink_petals_sandwich_board": ("board",),
+    "pitcher_plant_sandwich_board": ("board",),
+    "poppy_sandwich_board": ("board",),
+    "sunflower_sandwich_board": ("board",),
+    "torchflower_sandwich_board": ("board",),
+    "tulip_sandwich_board": ("board",),
+    "wither_rose_sandwich_board": ("board",),
+    "bar_cabinet": ("storage", "connection"),
+    "glass_bar_cabinet": ("storage", "connection"),
+    "cellar_cabinet": ("storage", "connection"),
+    "tilted_rack": ("storage",),
+    "circular_rack": ("storage",),
+    "holder": ("storage",),
+    "glassware_holder": ("storage",),
+    "shaker": ("shaker",),
+    "bar_counter": ("connection",),
+    "table": ("connection",),
+}
+EXPECTED_LIFECYCLE_FURNITURE.update({
+    f"{color}_bar_stool": ("bar_stool",) for color in FURNITURE_COLORS
+})
+EXPECTED_LIFECYCLE_FURNITURE.update({
+    f"{color}_sofa": ("connection",) for color in FURNITURE_COLORS
+})
 CUSTOM_EFFECT_ICON_IDS = (
     "slightly_tipsy",
     "high_heels",
@@ -712,6 +750,9 @@ def validate() -> dict[str, int]:
     if "StateFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register state_furniture before pack loading")
+    if "LifecycleFurnitureBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register lifecycle_furniture before pack loading")
     if "PressingTubFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register pressing_tub_furniture before pack loading")
@@ -785,6 +826,56 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "pressing_tub_furniture must own CE lifecycle and indexed lookup; "
                 f"missing token: {required_token}")
+
+    lifecycle_behavior_source = (
+        game_package / "furniture" / "LifecycleFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "public void onPlace(Player player)",
+            "public void onLoad()",
+            "public void postRemove(Player player)",
+            "public void onUnload(boolean isStopping)",
+            "handler.onReady(bukkitFurniture, readyReason)",
+            "currentHandler.onUnavailable(bukkitFurniture, removed, stopping)"):
+        if required_token not in lifecycle_behavior_source:
+            raise AssertionError(
+                "lifecycle_furniture must route CE readiness and unavailability; "
+                f"missing token: {required_token}")
+
+    lifecycle_services = {
+        "BarStoolVisualService.java": "BAR_STOOL",
+        "BoardTextService.java": "BOARD",
+        "DisplayStorageService.java": "STORAGE",
+        "FurnitureConnectionService.java": "CONNECTION",
+        "ShakerVisualService.java": "SHAKER",
+    }
+    for service_name, channel in lifecycle_services.items():
+        source = (game_package / service_name).read_text(encoding="utf-8-sig")
+        required_bind = f"LifecycleFurnitureBehavior.Channel.{channel}, lifecycleHandler"
+        if service_name == "DisplayStorageService.java":
+            required_bind = (
+                f"LifecycleFurnitureBehavior.Channel.{channel}, storageLifecycleHandler")
+        if required_bind not in source:
+            raise AssertionError(
+                f"{service_name} must bind its exact CE lifecycle channel")
+        for stale_token in ("Bukkit.getWorlds()", "private void bootstrap(",
+                            "private void bootstrapDisplays(", "FurniturePlaceEvent event"):
+            if stale_token in source and not (
+                    service_name == "BoardTextService.java"
+                    and stale_token == "FurniturePlaceEvent event"):
+                raise AssertionError(
+                    f"{service_name} retained replaced lifecycle scan/event: {stale_token}")
+        if service_name != "ShakerVisualService.java" and "EntitiesLoadEvent" in source:
+            raise AssertionError(
+                f"{service_name} must let CE deliver furniture load callbacks")
+        if (service_name == "ShakerVisualService.java"
+                and "CraftEngineFurniture.isFurniture(display)" in source):
+            raise AssertionError(
+                "ShakerVisualService may scan only helper PDC for orphan repair; "
+                "CE must deliver live shaker furniture callbacks")
+        if "EntitiesUnloadEvent" in source:
+            raise AssertionError(
+                f"{service_name} must let CE deliver furniture unload callbacks")
 
     station_source = (game_package / "StationService.java").read_text(
         encoding="utf-8-sig")
@@ -1947,6 +2038,46 @@ def validate() -> dict[str, int]:
         if index != 0 or behavior != {"type": state_type}:
             raise AssertionError(
                 f"{furniture_id}: state_furniture must be the exact index-zero behavior")
+
+    lifecycle_type = f"{NAMESPACE}:lifecycle_furniture"
+    configured_lifecycle: dict[str, list[tuple[int, dict[str, Any]]]] = {}
+    for furniture_id, definition in furniture.items():
+        all_behaviors = list(definition.get("behaviors", []))
+        single_behavior = definition.get("behavior")
+        if single_behavior is not None:
+            all_behaviors.append(single_behavior)
+        lifecycle_behaviors = [
+            (index, behavior) for index, behavior in enumerate(all_behaviors)
+            if behavior.get("type") == lifecycle_type
+        ]
+        if lifecycle_behaviors:
+            configured_lifecycle[furniture_id] = lifecycle_behaviors
+
+    expected_lifecycle_ids = {
+        f"{NAMESPACE}:{block_id}" for block_id in EXPECTED_LIFECYCLE_FURNITURE
+    }
+    if set(configured_lifecycle) != expected_lifecycle_ids:
+        missing = sorted(expected_lifecycle_ids - set(configured_lifecycle))
+        unexpected = sorted(set(configured_lifecycle) - expected_lifecycle_ids)
+        raise AssertionError(
+            "Lifecycle furniture coverage drift: "
+            f"missing={missing}, unexpected={unexpected}")
+    for block_id, expected_channels in EXPECTED_LIFECYCLE_FURNITURE.items():
+        furniture_id = f"{NAMESPACE}:{block_id}"
+        actual = configured_lifecycle[furniture_id]
+        expected_start = 1 if block_id in EXPECTED_STATE_FURNITURE else 0
+        expected_indices = list(range(expected_start,
+                                      expected_start + len(expected_channels)))
+        actual_indices = [index for index, _ in actual]
+        actual_behaviors = [behavior for _, behavior in actual]
+        expected_behaviors = [
+            {"type": lifecycle_type, "channel": channel}
+            for channel in expected_channels
+        ]
+        if actual_indices != expected_indices or actual_behaviors != expected_behaviors:
+            raise AssertionError(
+                f"{furniture_id}: lifecycle order drifted: "
+                f"indices={actual_indices}, behaviors={actual_behaviors}")
 
     pressing_id = f"{NAMESPACE}:pressing_tub"
     pressing_behaviors = list(furniture[pressing_id].get("behaviors", []))

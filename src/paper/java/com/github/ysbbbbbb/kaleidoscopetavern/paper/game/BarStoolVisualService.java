@@ -1,13 +1,12 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
@@ -18,8 +17,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDismountEvent;
 import org.bukkit.event.entity.EntityMountEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.world.EntitiesLoadEvent;
-import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.NamespacedKey;
@@ -47,18 +44,38 @@ public final class BarStoolVisualService implements Listener {
     private final Map<UUID, UUID> occupied = new HashMap<>();
     private BukkitTask rotationTask;
     private boolean missingRenderItemLogged;
+    private final LifecycleFurnitureBehavior.Handler lifecycleHandler;
 
     public BarStoolVisualService(JavaPlugin plugin, ItemService items) {
         this.plugin = plugin;
         this.items = items;
         this.ownerKey = new NamespacedKey(plugin, "bar_stool_body_owner");
+        this.lifecycleHandler = new LifecycleFurnitureBehavior.Handler() {
+            @Override
+            public void onReady(BukkitFurniture furniture,
+                                LifecycleFurnitureBehavior.ReadyReason reason) {
+                Bukkit.getScheduler().runTask(plugin, () -> refreshBody(furniture));
+            }
+
+            @Override
+            public void onUnavailable(BukkitFurniture furniture,
+                                      boolean removed, boolean stopping) {
+                UUID owner = furnitureOwner(furniture);
+                bodyVisuals.remove(owner);
+                occupied.values().removeIf(owner::equals);
+                stopRotationTaskIfIdle();
+            }
+        };
     }
 
     public void start() {
-        Bukkit.getScheduler().runTask(plugin, this::bootstrap);
+        LifecycleFurnitureBehavior.bind(
+                LifecycleFurnitureBehavior.Channel.BAR_STOOL, lifecycleHandler);
     }
 
     public void stop() {
+        LifecycleFurnitureBehavior.unbind(
+                LifecycleFurnitureBehavior.Channel.BAR_STOOL, lifecycleHandler);
         occupied.values().stream().distinct().forEach(this::resetBody);
         if (rotationTask != null) {
             rotationTask.cancel();
@@ -66,14 +83,6 @@ public final class BarStoolVisualService implements Listener {
         }
         occupied.clear();
         bodyVisuals.clear();
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlace(FurniturePlaceEvent event) {
-        BukkitFurniture furniture = event.furniture();
-        if (isBarStool(furniture)) {
-            Bukkit.getScheduler().runTask(plugin, () -> refreshBody(furniture));
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -108,46 +117,6 @@ public final class BarStoolVisualService implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         deactivate(event.getPlayer().getUniqueId());
-    }
-
-    @EventHandler
-    public void onEntitiesLoad(EntitiesLoadEvent event) {
-        List<BukkitFurniture> stools = new ArrayList<>();
-        for (Entity entity : event.getEntities()) {
-            if (entity instanceof ItemDisplay display) {
-                UUID owner = bodyOwner(display);
-                if (owner != null) {
-                    bodyVisuals.putIfAbsent(owner, display.getUniqueId());
-                }
-                if (CraftEngineFurniture.isFurniture(display)) {
-                    BukkitFurniture furniture =
-                            CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                    if (isBarStool(furniture)) {
-                        stools.add(furniture);
-                    }
-                }
-            }
-        }
-        if (!stools.isEmpty()) {
-            Bukkit.getScheduler().runTask(plugin, () -> stools.forEach(this::refreshBody));
-        }
-    }
-
-    @EventHandler
-    public void onEntitiesUnload(EntitiesUnloadEvent event) {
-        for (Entity entity : event.getEntities()) {
-            if (!(entity instanceof ItemDisplay display)) {
-                continue;
-            }
-            UUID owner = bodyOwner(display);
-            if (owner != null) {
-                bodyVisuals.remove(owner, display.getUniqueId());
-            }
-            if (CraftEngineFurniture.isFurniture(display)) {
-                occupied.values().removeIf(display.getUniqueId()::equals);
-            }
-        }
-        stopRotationTaskIfIdle();
     }
 
     private void activate(UUID riderId, Location mount) {
@@ -380,26 +349,8 @@ public final class BarStoolVisualService implements Listener {
                 && furniture.id().toString().endsWith(SUFFIX);
     }
 
-    private void bootstrap() {
-        for (World world : Bukkit.getWorlds()) {
-            for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
-                UUID owner = bodyOwner(display);
-                if (owner != null) {
-                    bodyVisuals.putIfAbsent(owner, display.getUniqueId());
-                }
-            }
-        }
-        for (World world : Bukkit.getWorlds()) {
-            for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
-                if (!CraftEngineFurniture.isFurniture(display)) {
-                    continue;
-                }
-                BukkitFurniture furniture =
-                        CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                if (isBarStool(furniture)) {
-                    refreshBody(furniture);
-                }
-            }
-        }
+    private static UUID furnitureOwner(BukkitFurniture furniture) {
+        Entity entity = furniture.bukkitEntity();
+        return entity == null ? furniture.uuid() : entity.getUniqueId();
     }
 }

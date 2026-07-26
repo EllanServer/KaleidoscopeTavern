@@ -1,14 +1,13 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.World;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
@@ -16,7 +15,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.EntitiesLoadEvent;
-import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -48,19 +46,39 @@ public final class ShakerVisualService implements Listener {
     private final Map<UUID, Float> animations = new HashMap<>();
     private BukkitTask animationTask;
     private boolean missingRenderItemLogged;
+    private final LifecycleFurnitureBehavior.Handler lifecycleHandler;
 
     public ShakerVisualService(JavaPlugin plugin, ItemService items) {
         this.plugin = plugin;
         this.items = items;
         this.ownerKey = new NamespacedKey(plugin, "shaker_visual_owner");
         this.roleKey = new NamespacedKey(plugin, "shaker_visual_role");
+        this.lifecycleHandler = new LifecycleFurnitureBehavior.Handler() {
+            @Override
+            public void onReady(BukkitFurniture furniture,
+                                LifecycleFurnitureBehavior.ReadyReason reason) {
+                Bukkit.getScheduler().runTask(plugin, () -> refreshVisuals(furniture));
+            }
+
+            @Override
+            public void onUnavailable(BukkitFurniture furniture,
+                                      boolean removed, boolean stopping) {
+                UUID owner = furnitureOwner(furniture);
+                animations.remove(owner);
+                visuals.remove(owner);
+                stopAnimationTaskIfIdle();
+            }
+        };
     }
 
     public void start() {
-        Bukkit.getScheduler().runTask(plugin, this::bootstrap);
+        LifecycleFurnitureBehavior.bind(
+                LifecycleFurnitureBehavior.Channel.SHAKER, lifecycleHandler);
     }
 
     public void stop() {
+        LifecycleFurnitureBehavior.unbind(
+                LifecycleFurnitureBehavior.Channel.SHAKER, lifecycleHandler);
         animations.keySet().stream().toList().forEach(this::reset);
         animations.clear();
         if (animationTask != null) {
@@ -96,13 +114,6 @@ public final class ShakerVisualService implements Listener {
                 furniture.bukkitEntity().getUniqueId(), furniture.location().clone());
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlace(FurniturePlaceEvent event) {
-        if (isShaker(event.furniture())) {
-            Bukkit.getScheduler().runTask(plugin, () -> refreshVisuals(event.furniture()));
-        }
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBreak(FurnitureBreakEvent event) {
         BukkitFurniture furniture = event.furniture();
@@ -121,40 +132,21 @@ public final class ShakerVisualService implements Listener {
 
     @EventHandler
     public void onEntitiesLoad(EntitiesLoadEvent event) {
-        List<BukkitFurniture> shakers = new ArrayList<>();
         List<ItemDisplay> orphanCandidates = new ArrayList<>();
         for (Entity entity : event.getEntities()) {
-            if (entity instanceof ItemDisplay display && CraftEngineFurniture.isFurniture(display)) {
-                BukkitFurniture furniture =
-                        CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                if (isShaker(furniture)) {
-                    shakers.add(furniture);
-                }
-            } else if (entity instanceof ItemDisplay display && owner(display) != null) {
+            if (entity instanceof ItemDisplay display && owner(display) != null) {
                 orphanCandidates.add(display);
             }
         }
-        if (!shakers.isEmpty() || !orphanCandidates.isEmpty()) {
+        if (!orphanCandidates.isEmpty()) {
             // Wait until CraftEngine has registered all furniture entities in
-            // this chunk, then repair live models and discard pickup ghosts.
+            // this chunk, then discard pickup ghosts. Live shaker refresh is
+            // delivered directly by its CE lifecycle controller.
             Bukkit.getScheduler().runTask(plugin, () -> {
-                shakers.forEach(this::refreshVisuals);
                 orphanCandidates.forEach(this::removeIfOrphan);
                 stopAnimationTaskIfIdle();
             });
         }
-    }
-
-    @EventHandler
-    public void onEntitiesUnload(EntitiesUnloadEvent event) {
-        for (Entity entity : event.getEntities()) {
-            UUID entityId = entity.getUniqueId();
-            visuals.entrySet().removeIf(entry -> entry.getValue().contains(entityId));
-            if (entity instanceof ItemDisplay display && CraftEngineFurniture.isFurniture(display)) {
-                animations.remove(entityId);
-            }
-        }
-        stopAnimationTaskIfIdle();
     }
 
     private void ensureAnimationTask() {
@@ -395,31 +387,12 @@ public final class ShakerVisualService implements Listener {
         return furniture != null && furniture.id().toString().equals(SHAKER);
     }
 
-    private void bootstrap() {
-        List<ItemDisplay> orphanCandidates = new ArrayList<>();
-        for (World world : Bukkit.getWorlds()) {
-            for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
-                if (!CraftEngineFurniture.isFurniture(display)) {
-                    if (owner(display) != null) {
-                        orphanCandidates.add(display);
-                    }
-                    continue;
-                }
-                BukkitFurniture furniture =
-                        CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                if (isShaker(furniture)) {
-                    refreshVisuals(furniture);
-                }
-            }
-        }
-        orphanCandidates.forEach(this::removeIfOrphan);
-        stopAnimationTaskIfIdle();
+    private static UUID furnitureOwner(BukkitFurniture furniture) {
+        Entity entity = furniture.bukkitEntity();
+        return entity == null ? furniture.uuid() : entity.getUniqueId();
     }
 
     private record VisualIds(UUID base, UUID lid) {
-        boolean contains(UUID id) {
-            return base.equals(id) || lid.equals(id);
-        }
     }
 
     private record VisualPair(ItemDisplay base, ItemDisplay lid) {

@@ -1,5 +1,6 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
@@ -32,8 +33,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.world.EntitiesLoadEvent;
-import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.MinecraftFont;
 import org.bukkit.persistence.PersistentDataType;
@@ -49,7 +48,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -99,6 +97,7 @@ public final class BoardTextService implements Listener {
     private final ItemService items;
     private final NamespacedKey boardOwnerKey;
     private final NamespacedKey boardLineKey;
+    private final LifecycleFurnitureBehavior.Handler lifecycleHandler;
     // AsyncChatEvent removes entries off the main thread.
     private final Map<UUID, EditSession> editors = new ConcurrentHashMap<>();
 
@@ -107,13 +106,33 @@ public final class BoardTextService implements Listener {
         this.items = items;
         this.boardOwnerKey = new NamespacedKey(plugin, "board_owner");
         this.boardLineKey = new NamespacedKey(plugin, "board_line");
+        this.lifecycleHandler = new LifecycleFurnitureBehavior.Handler() {
+            @Override
+            public void onReady(BukkitFurniture furniture,
+                                LifecycleFurnitureBehavior.ReadyReason reason) {
+                if (reason == LifecycleFurnitureBehavior.ReadyReason.LOAD) {
+                    Bukkit.getScheduler().runTask(plugin, () -> refreshDisplay(furniture));
+                }
+            }
+
+            @Override
+            public void onUnavailable(BukkitFurniture furniture,
+                                      boolean removed, boolean stopping) {
+                UUID owner = furnitureOwner(furniture);
+                editors.entrySet().removeIf(
+                        entry -> entry.getValue().furniture().equals(owner));
+            }
+        };
     }
 
     public void start() {
-        Bukkit.getScheduler().runTask(plugin, this::bootstrapDisplays);
+        LifecycleFurnitureBehavior.bind(
+                LifecycleFurnitureBehavior.Channel.BOARD, lifecycleHandler);
     }
 
     public void stop() {
+        LifecycleFurnitureBehavior.unbind(
+                LifecycleFurnitureBehavior.Channel.BOARD, lifecycleHandler);
         editors.clear();
     }
 
@@ -231,20 +250,6 @@ public final class BoardTextService implements Listener {
     }
 
     @EventHandler
-    public void onEntitiesLoad(EntitiesLoadEvent event) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            for (Entity entity : event.getEntities()) {
-                if (entity instanceof ItemDisplay && CraftEngineFurniture.isFurniture(entity)) {
-                    BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-                    if (furniture != null && isBoard(furniture)) {
-                        refreshDisplay(furniture);
-                    }
-                }
-            }
-        });
-    }
-
-    @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         editors.remove(event.getPlayer().getUniqueId());
     }
@@ -303,14 +308,6 @@ public final class BoardTextService implements Listener {
         state.putString("board_text", input);
         refreshDisplay(furniture);
         player.sendMessage(Component.text(input.isBlank() ? "已清空写字板。" : "写字板文字已更新。"));
-    }
-
-    @EventHandler
-    public void onEntitiesUnload(EntitiesUnloadEvent event) {
-        Set<UUID> unloading = event.getEntities().stream()
-                .map(Entity::getUniqueId)
-                .collect(java.util.stream.Collectors.toSet());
-        editors.entrySet().removeIf(entry -> unloading.contains(entry.getValue().furniture()));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -581,20 +578,6 @@ public final class BoardTextService implements Listener {
         state.clear("board_displays");
     }
 
-    private void bootstrapDisplays() {
-        for (World world : Bukkit.getWorlds()) {
-            for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
-                if (!CraftEngineFurniture.isFurniture(display)) {
-                    continue;
-                }
-                BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                if (furniture != null && isBoard(furniture)) {
-                    refreshDisplay(furniture);
-                }
-            }
-        }
-    }
-
     private List<BukkitFurniture> nearbyFurniture(Location center, double radius) {
         List<BukkitFurniture> result = new ArrayList<>();
         for (Entity entity : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
@@ -607,6 +590,11 @@ public final class BoardTextService implements Listener {
             }
         }
         return result;
+    }
+
+    private static UUID furnitureOwner(BukkitFurniture furniture) {
+        Entity entity = furniture.bukkitEntity();
+        return entity == null ? furniture.uuid() : entity.getUniqueId();
     }
 
     private static Location textLineLocation(BukkitFurniture furniture, int lineIndex,

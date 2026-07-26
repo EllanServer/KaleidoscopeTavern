@@ -2215,6 +2215,30 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         # Paper only supplies the block-style fallOn event CE does not expose.
         behaviors.append({"type": f"{NAMESPACE}:pressing_tub_furniture"})
 
+    lifecycle_channels: list[str] = []
+    if block_id == "chalkboard" or block_id.endswith("_sandwich_board"):
+        lifecycle_channels.append("board")
+    if block_id in {
+        "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
+        "tilted_rack", "circular_rack", "holder", "glassware_holder",
+    }:
+        lifecycle_channels.append("storage")
+    if block_id.endswith("_bar_stool"):
+        lifecycle_channels.append("bar_stool")
+    if block_id == "shaker":
+        lifecycle_channels.append("shaker")
+    if (block_id.endswith("_sofa")
+            or block_id in {
+                "bar_counter", "table", "bar_cabinet",
+                "glass_bar_cabinet", "cellar_cabinet",
+            }):
+        lifecycle_channels.append("connection")
+    for channel in lifecycle_channels:
+        behaviors.append({
+            "type": f"{NAMESPACE}:lifecycle_furniture",
+            "channel": channel,
+        })
+
     def display_slots(
         positions: list[str],
         width: float,

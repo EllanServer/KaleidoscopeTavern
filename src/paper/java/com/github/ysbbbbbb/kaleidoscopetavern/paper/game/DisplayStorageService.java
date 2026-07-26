@@ -1,14 +1,13 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
-import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.entity.furniture.behavior.DisplayItemFurnitureBehaviorTemplate.DisplayItemFurnitureController;
 import net.momirealms.craftengine.bukkit.item.BukkitItem;
@@ -22,7 +21,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.SoundCategory;
 import org.bukkit.NamespacedKey;
-import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.ItemDisplay;
@@ -31,7 +29,6 @@ import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -82,6 +79,7 @@ public final class DisplayStorageService implements Listener {
     private final NamespacedKey cabinetVisualSlotKey;
     private final Field savedItemField;
     private final Method saveDisplayItemMethod;
+    private final LifecycleFurnitureBehavior.Handler storageLifecycleHandler;
     private boolean reflectionWarningLogged;
     private final RedstoneFurnitureBehavior.Handler storageRedstoneHandler =
             (furniture, powered, initial) -> {
@@ -114,15 +112,21 @@ public final class DisplayStorageService implements Listener {
         }
         this.savedItemField = itemField;
         this.saveDisplayItemMethod = saveMethod;
+        this.storageLifecycleHandler = (furniture, reason) ->
+                Bukkit.getScheduler().runTask(plugin,
+                        () -> refreshStorageVisuals(furniture));
     }
 
     public void start() {
+        LifecycleFurnitureBehavior.bind(
+                LifecycleFurnitureBehavior.Channel.STORAGE, storageLifecycleHandler);
         RedstoneFurnitureBehavior.bind(
                 RedstoneFurnitureBehavior.Channel.STORAGE, storageRedstoneHandler);
-        Bukkit.getScheduler().runTask(plugin, this::bootstrap);
     }
 
     public void stop() {
+        LifecycleFurnitureBehavior.unbind(
+                LifecycleFurnitureBehavior.Channel.STORAGE, storageLifecycleHandler);
         RedstoneFurnitureBehavior.unbind(
                 RedstoneFurnitureBehavior.Channel.STORAGE, storageRedstoneHandler);
     }
@@ -157,31 +161,11 @@ public final class DisplayStorageService implements Listener {
         interactStorage(player, furniture, spec, hand, selected);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlace(FurniturePlaceEvent event) {
-        if (isStorage(event.furniture())) {
-            Bukkit.getScheduler().runTask(plugin, () -> refreshStorageVisuals(event.furniture()));
-        }
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBreak(FurnitureBreakEvent event) {
         if (isStorage(event.furniture())) {
             dropAndClearStorage(event);
             removeStorageVisuals(event.furniture());
-        }
-    }
-
-    @EventHandler
-    public void onEntitiesLoad(EntitiesLoadEvent event) {
-        for (Entity entity : event.getEntities()) {
-            if (!(entity instanceof ItemDisplay) || !CraftEngineFurniture.isFurniture(entity)) {
-                continue;
-            }
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (isStorage(furniture)) {
-                Bukkit.getScheduler().runTask(plugin, () -> refreshStorageVisuals(furniture));
-            }
         }
     }
 
@@ -715,19 +699,6 @@ public final class DisplayStorageService implements Listener {
 
     private static StorageSpec storageSpec(BukkitFurniture furniture) {
         return furniture == null ? null : STORAGE.get(furniture.id());
-    }
-
-    private void bootstrap() {
-        for (World world : Bukkit.getWorlds()) {
-            for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
-                if (CraftEngineFurniture.isFurniture(display)) {
-                    BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                    if (isStorage(furniture)) {
-                        refreshStorageVisuals(furniture);
-                    }
-                }
-            }
-        }
     }
 
     private void warnReflectionBridge() {

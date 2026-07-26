@@ -1,19 +1,13 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.ItemDisplay;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -22,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Keeps connected sofas, counters, tables and cabinets in their legacy variants. */
-public final class FurnitureConnectionService implements Listener {
+public final class FurnitureConnectionService {
     private static final String BAR_COUNTER = "kaleidoscope_tavern:bar_counter";
     private static final String TABLE = "kaleidoscope_tavern:table";
     private static final List<String> LINEAR_FURNITURE = List.of(
@@ -31,55 +25,35 @@ public final class FurnitureConnectionService implements Listener {
             "kaleidoscope_tavern:glass_bar_cabinet",
             "kaleidoscope_tavern:cellar_cabinet");
     private final JavaPlugin plugin;
+    private final LifecycleFurnitureBehavior.Handler lifecycleHandler;
 
     public FurnitureConnectionService(JavaPlugin plugin) {
         this.plugin = plugin;
-    }
-
-    /** Re-evaluates furniture already present when a replacement JAR is installed. */
-    public void start() {
-        Bukkit.getScheduler().runTask(plugin, this::bootstrap);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlace(FurniturePlaceEvent event) {
-        if (isManaged(event.furniture())) {
-            scheduleRefresh(event.location());
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBreak(FurnitureBreakEvent event) {
-        if (isManaged(event.furniture())) {
-            scheduleRefresh(event.location());
-        }
-    }
-
-    @EventHandler
-    public void onEntitiesLoad(EntitiesLoadEvent event) {
-        for (Entity entity : event.getEntities()) {
-            if (!(entity instanceof ItemDisplay) || !CraftEngineFurniture.isFurniture(entity)) {
-                continue;
-            }
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (furniture != null && isManaged(furniture)) {
+        this.lifecycleHandler = new LifecycleFurnitureBehavior.Handler() {
+            @Override
+            public void onReady(BukkitFurniture furniture,
+                                LifecycleFurnitureBehavior.ReadyReason reason) {
                 scheduleRefresh(furniture.location());
             }
-        }
-    }
 
-    private void bootstrap() {
-        for (World world : Bukkit.getWorlds()) {
-            for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
-                if (!CraftEngineFurniture.isFurniture(display)) {
-                    continue;
-                }
-                BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                if (furniture != null && isManaged(furniture)) {
+            @Override
+            public void onUnavailable(BukkitFurniture furniture,
+                                      boolean removed, boolean stopping) {
+                if (removed) {
                     scheduleRefresh(furniture.location());
                 }
             }
-        }
+        };
+    }
+
+    public void start() {
+        LifecycleFurnitureBehavior.bind(
+                LifecycleFurnitureBehavior.Channel.CONNECTION, lifecycleHandler);
+    }
+
+    public void stop() {
+        LifecycleFurnitureBehavior.unbind(
+                LifecycleFurnitureBehavior.Channel.CONNECTION, lifecycleHandler);
     }
 
     private void scheduleRefresh(Location center) {
