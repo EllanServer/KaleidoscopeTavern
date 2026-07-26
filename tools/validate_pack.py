@@ -16,6 +16,21 @@ CUSTOM_CROPS = ROOT / "src/paper/customcrops/contents/crops/kaleidoscope_tavern.
 PLUGIN_CONFIG = ROOT / "src/paper/resources/config.yml"
 NAMESPACE = "kaleidoscope_tavern"
 EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
+EXPECTED_REDSTONE_FURNITURE = {
+    "tap": ("tap", 2),
+    "sakura_incense": ("incense", 1),
+    "pine_incense": ("incense", 1),
+    "ginkgo_incense": ("incense", 1),
+    "snow_incense": ("incense", 1),
+    "spore_incense": ("incense", 1),
+    "catnip_incense": ("incense", 1),
+    "butterfly_incense": ("incense", 1),
+    "firefly_incense": ("incense", 1),
+    "cellar_cabinet": ("storage", 1),
+    "tilted_rack": ("storage", 1),
+    "circular_rack": ("storage", 1),
+    "holder": ("storage", 1),
+}
 CUSTOM_EFFECT_ICON_IDS = (
     "slightly_tipsy",
     "high_heels",
@@ -66,10 +81,10 @@ SOURCE_STATE_OWNERS = {
     "half": "composite multi-element furniture variants",
     "open": "furniture.json incense toggle events, StationService and TapService",
     "position": "FurnitureConnectionService",
-    "powered": "StationService and DisplayStorageService redstone polling",
+    "powered": "RedstoneFurnitureBehavior CE controller state and service callbacks",
     "rotation": "CE sixteen-way sandwich-board rotation",
     "tilt": "ground/wall pressing-tub placement variants",
-    "triggered": "TapService",
+    "triggered": "RedstoneFurnitureBehavior tap edge latch",
     "type": "CE trellis state variants",
     "waterlogged": "entity furniture / CE non-displacing carrier semantics",
     "waxed": "CE trellis state variants plus blocks.json wax events",
@@ -108,7 +123,11 @@ RUNTIME_METHODS = (
     "getBurnTime", "getEquipmentSlot",
 )
 RUNTIME_BEHAVIOR_COVERAGE = {
-    "AbstractStorageBlock.java": (("DisplayStorageService.java", "pollRedstone"),),
+    "AbstractStorageBlock.java": (
+        ("furniture/RedstoneFurnitureBehavior.java", "createFurnitureTicker"),
+        ("DisplayStorageService.java", "RedstoneFurnitureBehavior.bind("),
+        ("DisplayStorageService.java", "RedstoneFurnitureBehavior.Channel.STORAGE"),
+    ),
     "BarCabinetBlock.java": (
         ("DisplayStorageService.java", "BAR_CABINET"),
         ("FurnitureConnectionService.java", "bar_cabinet"),
@@ -155,7 +174,9 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     "HolderBlock.java": (("DisplayStorageService.java", "HOLDER"),),
     "IncenseBlock.java": (
         ("src/paper/pack/configuration/furniture.json", "set_furniture_variant"),
-        ("StationService.java", "pollIncenseRedstone"),
+        ("furniture/RedstoneFurnitureBehavior.java", "onPowerState"),
+        ("StationService.java", "RedstoneFurnitureBehavior.bind("),
+        ("StationService.java", "RedstoneFurnitureBehavior.Channel.INCENSE"),
         ("AmbientFurnitureService.java", "tickIncense"),
     ),
     "JuiceBucketItem.java": (("tools/migrate_legacy.py", "milk_bucket"),),
@@ -186,7 +207,9 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("src/paper/resources/catalog/tags.tsv", "curios:charm"),
     ),
     "TapBlock.java": (
-        ("TapService.java", "openTap"),
+        ("furniture/RedstoneFurnitureBehavior.java", "loadCustomData"),
+        ("TapService.java", "RedstoneFurnitureBehavior.bind("),
+        ("TapService.java", "RedstoneFurnitureBehavior.Channel.TAP"),
         ("TapSemantics.java", "isBarrelConnection"),
     ),
     "TiltedRackBlock.java": (("DisplayStorageService.java", "TILTED_RACK"),),
@@ -277,10 +300,7 @@ BLOCK_ENTITY_COVERAGE = {
     ),
     "GlasswareHolderBlockEntity.java": (("DisplayStorageService.java", "GLASSWARE_HOLDER"),),
     "HolderBlockEntity.java": (("DisplayStorageService.java", "HOLDER"),),
-    "IncenseBlockEntity.java": (
-        ("StationService.java", "pulseIncense"),
-        ("AmbientFurnitureService.java", "tickIncense"),
-    ),
+    "IncenseBlockEntity.java": (("AmbientFurnitureService.java", "tickIncense"),),
     "SandwichBlockEntity.java": (("BoardTextService.java", "isSandwichBoard"),),
     "StorageBlockEntity.java": (("DisplayStorageService.java", "StorageSpec"),),
     "TextBlockEntity.java": (("BoardTextService.java", "board_text"),),
@@ -630,6 +650,8 @@ def validate() -> dict[str, int]:
                 "Trellis waxing and wild-grapevine shearing are CE block events; "
                 f"BlockService must not reintroduce {stale_listener}")
     station_source = (game_package / "StationService.java").read_text(encoding="utf-8-sig")
+    storage_source = (game_package / "DisplayStorageService.java").read_text(
+        encoding="utf-8-sig")
     ambient_source = (game_package / "AmbientFurnitureService.java").read_text(
         encoding="utf-8-sig")
     for owner_name, owner_source in (("StationService", station_source),
@@ -640,11 +662,29 @@ def validate() -> dict[str, int]:
                     f"{owner_name}: the *_open furniture variant is the only lit-incense "
                     f"state; {stale_state} must stay deleted")
 
+    plugin_source = (game_package.parent / "KaleidoscopeTavernPlugin.java").read_text(
+        encoding="utf-8-sig")
+    if "RedstoneFurnitureBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register redstone_furniture before pack loading")
+    all_paper_java = "\n".join(
+        path.read_text(encoding="utf-8-sig")
+        for path in sorted((ROOT / "src/paper/java").rglob("*.java"))
+    )
+    stale_redstone_tokens = (
+        "pollRedstone", "pollIncenseRedstone", "tap_triggered",
+        "storage_powered", "storage_power_initialized", "incense_powered",
+        "incense_initialized", "barrel_initialized", "barrel_open",
+    )
+    for stale_token in stale_redstone_tokens:
+        if stale_token in all_paper_java:
+            raise AssertionError(
+                "CE furniture controllers own redstone/variant state throughout Paper; "
+                f"{stale_token} must stay deleted")
+
     # DisplayStorageService must cancel off-hand furniture interactions to
     # prevent CraftEngine's built-in display_item_furniture behavior from
     # duplicating items and desyncing storage visuals.
-    storage_source = (game_package / "DisplayStorageService.java").read_text(
-        encoding="utf-8-sig")
     if "event.hand() != InteractionHand.MAIN_HAND" not in storage_source \
             or "event.setCancelled(true)" not in storage_source:
         raise AssertionError(
@@ -1745,6 +1785,44 @@ def validate() -> dict[str, int]:
         if (wall_element.get("position") != "0,0,0.19"
                 or wall_element.get("translation") != "0,0,-0.627"):
             raise AssertionError(f"{painting_id}: wall display depth drifted")
+
+    configured_redstone: dict[str, dict[str, Any]] = {}
+    redstone_type = f"{NAMESPACE}:redstone_furniture"
+    for furniture_id, definition in furniture.items():
+        all_behaviors = list(definition.get("behaviors", []))
+        single_behavior = definition.get("behavior")
+        if single_behavior is not None:
+            all_behaviors.append(single_behavior)
+        redstone_behaviors = [
+            behavior for behavior in all_behaviors
+            if behavior.get("type") == redstone_type
+        ]
+        if len(redstone_behaviors) > 1:
+            raise AssertionError(
+                f"{furniture_id}: duplicate redstone_furniture behaviors")
+        if redstone_behaviors:
+            configured_redstone[furniture_id] = redstone_behaviors[0]
+
+    expected_redstone_ids = {
+        f"{NAMESPACE}:{block_id}" for block_id in EXPECTED_REDSTONE_FURNITURE
+    }
+    if set(configured_redstone) != expected_redstone_ids:
+        missing = sorted(expected_redstone_ids - set(configured_redstone))
+        unexpected = sorted(set(configured_redstone) - expected_redstone_ids)
+        raise AssertionError(
+            "Redstone furniture coverage drift: "
+            f"missing={missing}, unexpected={unexpected}")
+    for block_id, (channel, interval) in EXPECTED_REDSTONE_FURNITURE.items():
+        furniture_id = f"{NAMESPACE}:{block_id}"
+        expected_behavior = {
+            "type": redstone_type,
+            "channel": channel,
+            "interval": interval,
+            "data_key": f"{NAMESPACE}:redstone_{block_id}",
+        }
+        if configured_redstone[furniture_id] != expected_behavior:
+            raise AssertionError(
+                f"{furniture_id}: redstone behavior must be exactly {expected_behavior!r}")
 
     storage_slot_counts = {
         "bar_cabinet": 2,

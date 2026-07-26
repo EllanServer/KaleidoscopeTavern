@@ -5,6 +5,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.BarrelRecipe;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.PressingRecipe;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import io.papermc.paper.event.entity.EntityMoveEvent;
 import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
@@ -28,18 +29,13 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.SoundCategory;
-import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.damage.DamageSource;
-import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.ZombieVillager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -78,7 +74,6 @@ import java.util.concurrent.ThreadLocalRandom;
 /** Implements the former Forge block-entity gameplay on CraftEngine furniture entities. */
 public final class StationService implements Listener {
     private static final String NAMESPACE = "kaleidoscope_tavern:";
-    private static final String KEY_NAMESPACE = "kaleidoscope_tavern";
     private static final String PRESSING_TUB = NAMESPACE + "pressing_tub";
     private static final String BARREL = NAMESPACE + "barrel";
     private static final String SHAKER = NAMESPACE + "shaker";
@@ -105,14 +100,12 @@ public final class StationService implements Listener {
     private long barrelTickCounter;
     private final Map<UUID, Boolean> recentLandings = new HashMap<>();
     private final Map<UUID, PortableShakerUse> portableShakers = new HashMap<>();
-    private final Set<UUID> loadedIncense = new HashSet<>();
-    private final Map<UUID, Boolean> incensePowered = new HashMap<>();
     private final Set<UUID> loadedBarrels = new HashSet<>();
     private final Set<UUID> pendingVanillaBucketEmpty = new HashSet<>();
-    private BukkitTask incenseTask;
-    private BukkitTask incenseRedstoneTask;
     private BukkitTask portableShakerTask;
     private BukkitTask barrelTask;
+    private final RedstoneFurnitureBehavior.Handler incenseRedstoneHandler =
+            (furniture, powered, initial) -> setIncenseActive(furniture, powered, !initial);
 
     public StationService(JavaPlugin plugin, ContentCatalog catalog, ItemService items,
                           Messages messages, ShakerVisualService shakerVisuals) {
@@ -130,24 +123,17 @@ public final class StationService implements Listener {
     }
 
     public void start() {
-        incenseTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pulseIncense, 120L, 120L);
-        incenseRedstoneTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pollIncenseRedstone, 1L, 1L);
+        RedstoneFurnitureBehavior.bind(
+                RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
         portableShakerTask = Bukkit.getScheduler().runTaskTimer(plugin, this::tickPortableShakers, 1L, 1L);
         barrelTask = Bukkit.getScheduler().runTaskTimer(plugin, this::tickBarrels, 1L, 1L);
-        Bukkit.getScheduler().runTask(plugin, this::bootstrapIncense);
         Bukkit.getScheduler().runTask(plugin, this::bootstrapPressVisuals);
         Bukkit.getScheduler().runTask(plugin, this::bootstrapBarrels);
     }
 
     public void stop() {
-        if (incenseTask != null) {
-            incenseTask.cancel();
-            incenseTask = null;
-        }
-        if (incenseRedstoneTask != null) {
-            incenseRedstoneTask.cancel();
-            incenseRedstoneTask = null;
-        }
+        RedstoneFurnitureBehavior.unbind(
+                RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
         if (portableShakerTask != null) {
             portableShakerTask.cancel();
             portableShakerTask = null;
@@ -159,8 +145,6 @@ public final class StationService implements Listener {
         falling.clear();
         recentLandings.clear();
         portableShakers.clear();
-        loadedIncense.clear();
-        incensePowered.clear();
         loadedBarrels.clear();
         pendingVanillaBucketEmpty.clear();
     }
@@ -191,14 +175,8 @@ public final class StationService implements Listener {
         if (id.equals(PRESSING_TUB)) {
             Bukkit.getScheduler().runTask(plugin, () -> refreshPressVisuals(event.furniture()));
         } else if (id.equals(BARREL)) {
-            FurnitureState state = new FurnitureState(plugin, event.furniture());
-            state.bool("barrel_initialized", true);
-            state.bool("barrel_open", true);
             loadedBarrels.add(event.furniture().bukkitEntity().getUniqueId());
             Bukkit.getScheduler().runTask(plugin, () -> setBarrelOpen(event.furniture(), true, false));
-        } else if (id.startsWith(NAMESPACE) && id.endsWith("_incense")) {
-            loadedIncense.add(event.furniture().bukkitEntity().getUniqueId());
-            initializeIncense(event.furniture());
         } else if (id.equals(SHAKER)) {
             loadPortableShaker(event.furniture());
         }
@@ -254,16 +232,6 @@ public final class StationService implements Listener {
                 }
             }
             default -> {
-                if (id.startsWith(NAMESPACE) && id.endsWith("_incense")) {
-                    Entity entity = furniture.bukkitEntity();
-                    if (entity != null) {
-                        UUID furnitureId = entity.getUniqueId();
-                        deferFurnitureBreak(event, () -> {
-                            loadedIncense.remove(furnitureId);
-                            incensePowered.remove(furnitureId);
-                        });
-                    }
-                }
             }
         }
     }
@@ -541,9 +509,6 @@ public final class StationService implements Listener {
             } else if (furniture != null && furniture.id().toString().equals(BARREL)) {
                 loadedBarrels.add(entity.getUniqueId());
                 Bukkit.getScheduler().runTask(plugin, () -> syncBarrelState(furniture));
-            } else if (isIncense(furniture)) {
-                loadedIncense.add(entity.getUniqueId());
-                initializeIncense(furniture);
             }
         }
     }
@@ -552,9 +517,6 @@ public final class StationService implements Listener {
     public void onEntitiesUnload(EntitiesUnloadEvent event) {
         for (Entity entity : event.getEntities()) {
             UUID id = entity.getUniqueId();
-            if (loadedIncense.remove(id)) {
-                incensePowered.remove(id);
-            }
             loadedBarrels.remove(id);
         }
     }
@@ -782,7 +744,7 @@ public final class StationService implements Listener {
 
     private boolean interactBarrel(Player player, BukkitFurniture furniture, Location interactionPoint) {
         FurnitureState state = new FurnitureState(plugin, furniture);
-        boolean open = initializeBarrelState(furniture, state);
+        boolean open = isBarrelOpen(furniture);
         BarrelSemantics.Hit hit = barrelHit(furniture, interactionPoint);
         ItemStack hand = player.getInventory().getItemInMainHand();
         String handId = items.id(hand);
@@ -974,40 +936,21 @@ public final class StationService implements Listener {
                 () -> pendingVanillaBucketEmpty.remove(playerId));
     }
 
-    private boolean initializeBarrelState(BukkitFurniture furniture, FurnitureState state) {
-        if (!state.bool("barrel_initialized")) {
-            // BarrelBlockEntity.open defaults to true; an already-started
-            // brewing state is closed when first observed.
-            boolean open = !isBarrelBrewing(state);
-            state.bool("barrel_initialized", true);
-            state.bool("barrel_open", open);
-            setBarrelOpen(furniture, open, false);
-        }
-        return state.bool("barrel_open");
-    }
-
     private void syncBarrelState(BukkitFurniture furniture) {
         if (furniture == null || !furniture.isValid() || furniture.bukkitEntity() == null) {
             return;
         }
         FurnitureState state = new FurnitureState(plugin, furniture);
-        boolean open = initializeBarrelState(furniture, state);
-        if (isBarrelBrewing(state) && open) {
-            open = false;
-            state.bool("barrel_open", false);
+        if (isBarrelBrewing(state) && isBarrelOpen(furniture)) {
+            setBarrelOpen(furniture, false, false);
         }
-        setBarrelOpen(furniture, open, false);
     }
 
     private void setBarrelOpen(BukkitFurniture furniture, boolean open, boolean playSound) {
         if (furniture == null || !furniture.isValid() || furniture.bukkitEntity() == null) {
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
-        state.bool("barrel_initialized", true);
-        state.bool("barrel_open", open);
         furniture.setVariant(open ? "ground_open" : "ground", true);
-        furniture.setUnsaved();
         if (playSound) {
             // The Forge implementation intentionally uses BARREL_OPEN for
             // both transitions and plays it at the lid, two blocks above.
@@ -1016,6 +959,10 @@ public final class StationService implements Listener {
                     "minecraft:block.barrel.open", SoundCategory.BLOCKS, 1.0F, 1.0F);
         }
         refreshBarrelVisuals(furniture);
+    }
+
+    private static boolean isBarrelOpen(BukkitFurniture furniture) {
+        return furniture.currentVariant().name().endsWith("_open");
     }
 
     private static BarrelSemantics.Hit barrelHit(BukkitFurniture furniture, Location point) {
@@ -1326,134 +1273,17 @@ public final class StationService implements Listener {
      */
     private void setIncenseActive(BukkitFurniture furniture, boolean active, boolean playSound) {
         String current = furniture.currentVariant().name();
-        String base = current.endsWith("_open") ? current.substring(0, current.length() - 5) : current;
-        furniture.setVariant(active ? base + "_open" : base, true);
-        furniture.setUnsaved();
-        if (playSound) {
+        boolean wasActive = current.endsWith("_open");
+        if (wasActive != active) {
+            String base = wasActive ? current.substring(0, current.length() - 5) : current;
+            furniture.setVariant(active ? base + "_open" : base, true);
+        }
+        if (playSound && wasActive != active) {
             furniture.location().getWorld().playSound(furniture.location(),
                     active ? "minecraft:block.stone_button.click_on"
                             : "minecraft:block.stone_button.click_off",
                     1.0F, 1.0F);
         }
-    }
-
-    private static boolean isIncenseLit(BukkitFurniture furniture) {
-        return furniture.currentVariant().name().endsWith("_open");
-    }
-
-    private void pulseIncense() {
-        List<UUID> invalid = null;
-        for (UUID uuid : loadedIncense) {
-            Entity entity = Bukkit.getEntity(uuid);
-            if (entity == null || !entity.isValid()) {
-                invalid = addInvalid(invalid, uuid);
-                continue;
-            }
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (!isIncense(furniture)) {
-                invalid = addInvalid(invalid, uuid);
-                continue;
-            }
-            if (!isIncenseLit(furniture)) {
-                continue;
-            }
-            Location center = furniture.location();
-            DamageSource source = DamageSource.builder(DamageType.MAGIC)
-                    .withDamageLocation(center)
-                    .build();
-            for (Entity nearby : center.getWorld().getNearbyEntities(center, 32, 32, 32,
-                    candidate -> candidate instanceof LivingEntity)) {
-                LivingEntity living = (LivingEntity) nearby;
-                if (living.isValid() && !living.isDead()
-                        && Tag.ENTITY_TYPES_UNDEAD.isTagged(living.getType())) {
-                    living.damage(1.0, source);
-                    if (living instanceof ZombieVillager zombie && zombie.getHealth() <= 1.0) {
-                        zombie.setConversionPlayer(null);
-                        zombie.setConversionTime(60);
-                    }
-                }
-            }
-        }
-        if (invalid != null) {
-            loadedIncense.removeAll(invalid);
-            invalid.forEach(incensePowered::remove);
-        }
-    }
-
-    private void pollIncenseRedstone() {
-        List<UUID> invalid = null;
-        for (UUID uuid : loadedIncense) {
-            Entity entity = Bukkit.getEntity(uuid);
-            if (entity == null || !entity.isValid()) {
-                invalid = addInvalid(invalid, uuid);
-                continue;
-            }
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (!isIncense(furniture)) {
-                invalid = addInvalid(invalid, uuid);
-                continue;
-            }
-            boolean powered = isIncensePowered(furniture);
-            Boolean cached = incensePowered.get(uuid);
-            boolean wasPowered;
-            if (cached == null) {
-                wasPowered = new FurnitureState(plugin, furniture).bool("incense_powered");
-                incensePowered.put(uuid, wasPowered);
-            } else {
-                wasPowered = cached;
-            }
-            if (powered != wasPowered) {
-                incensePowered.put(uuid, powered);
-                new FurnitureState(plugin, furniture).bool("incense_powered", powered);
-                setIncenseActive(furniture, powered, true);
-            }
-        }
-        if (invalid != null) {
-            loadedIncense.removeAll(invalid);
-            invalid.forEach(incensePowered::remove);
-        }
-    }
-
-    private void bootstrapIncense() {
-        for (World world : Bukkit.getWorlds()) {
-            for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
-                if (!CraftEngineFurniture.isFurniture(display)) {
-                    continue;
-                }
-                BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                if (isIncense(furniture)) {
-                    loadedIncense.add(display.getUniqueId());
-                    initializeIncense(furniture);
-                }
-            }
-        }
-    }
-
-    /** IncenseBlock.getStateForPlacement copies redstone power without playing a toggle sound. */
-    private void initializeIncense(BukkitFurniture furniture) {
-        if (!isIncense(furniture)) {
-            return;
-        }
-        FurnitureState state = new FurnitureState(plugin, furniture);
-        Entity entity = furniture.bukkitEntity();
-        if (state.bool("incense_initialized")) {
-            if (entity != null) {
-                incensePowered.put(entity.getUniqueId(), state.bool("incense_powered"));
-            }
-            return;
-        }
-        boolean powered = isIncensePowered(furniture);
-        state.bool("incense_initialized", true);
-        state.bool("incense_powered", powered);
-        if (entity != null) {
-            incensePowered.put(entity.getUniqueId(), powered);
-        }
-        setIncenseActive(furniture, powered, false);
-    }
-
-    private static boolean isIncensePowered(BukkitFurniture furniture) {
-        Block block = furniture.location().getBlock();
-        return block.isBlockPowered() || block.isBlockIndirectlyPowered();
     }
 
     /** Restores the source default/open lid variant after plugin or CE reload. */
@@ -1513,7 +1343,7 @@ public final class StationService implements Listener {
 
     private void tickBarrel(BukkitFurniture furniture) {
         FurnitureState state = new FurnitureState(plugin, furniture);
-        if (state.bool("barrel_open")) {
+        if (isBarrelOpen(furniture)) {
             return;
         }
         int level = state.integer("barrel_level");
@@ -1536,7 +1366,7 @@ public final class StationService implements Listener {
             return;
         }
         FurnitureState state = new FurnitureState(plugin, furniture);
-        if (!state.bool("barrel_open")) {
+        if (!isBarrelOpen(furniture)) {
             removeBarrelVisuals(furniture);
             return;
         }
@@ -1922,11 +1752,6 @@ public final class StationService implements Listener {
         hash = (hash ^ hash >>> 27) * 0x94d049bb133111ebL;
         hash ^= hash >>> 31;
         return (float) (int) hash / (float) Integer.MAX_VALUE;
-    }
-
-    private static boolean isIncense(BukkitFurniture furniture) {
-        return furniture != null && furniture.id().namespace().equals(KEY_NAMESPACE)
-                && furniture.id().value().endsWith("_incense");
     }
 
     private static List<UUID> addInvalid(List<UUID> invalid, UUID uuid) {

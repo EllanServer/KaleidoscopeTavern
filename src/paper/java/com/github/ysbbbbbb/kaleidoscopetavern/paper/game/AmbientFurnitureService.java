@@ -154,7 +154,7 @@ public final class AmbientFurnitureService implements Listener {
             return;
         }
         // The *_open furniture variant is the single source of truth for a
-        // lit incense; both the CE toggle events and the redstone poll set it.
+        // lit incense; both CE toggle events and the CE redstone behavior set it.
         boolean open = furniture.currentVariant().name().endsWith("_open");
         if (burstTick && open) {
             hurtNearbyUndead(furniture);
@@ -202,6 +202,7 @@ public final class AmbientFurnitureService implements Listener {
             living.damage(1.0, magic);
             if (living instanceof ZombieVillager zombieVillager
                     && zombieVillager.getHealth() <= 1.0) {
+                zombieVillager.setConversionPlayer(null);
                 zombieVillager.setConversionTime(60);
             }
         }

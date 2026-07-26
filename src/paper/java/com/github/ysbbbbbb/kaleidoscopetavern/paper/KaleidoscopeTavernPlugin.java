@@ -24,6 +24,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropB
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBlockShape;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.WildGrapevineBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.EffectHudPlaceholder;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
@@ -84,6 +85,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             TrellisBehavior.register();
             HangingGrapeCropBehavior.register();
             WildGrapevineBehavior.register();
+            RedstoneFurnitureBehavior.register();
             if (getConfig().getBoolean("pack.install-on-startup", true)) {
                 packResult = PackInstaller.install(this);
             }

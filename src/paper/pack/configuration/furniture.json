@@ -12573,6 +12573,12 @@
           }
         ]
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:redstone_furniture",
+        "channel": "incense",
+        "interval": 1,
+        "data_key": "kaleidoscope_tavern:redstone_sakura_incense"
+      },
       "events": [
         {
           "on": "right_click",
@@ -12738,6 +12744,12 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:redstone_furniture",
+        "channel": "incense",
+        "interval": 1,
+        "data_key": "kaleidoscope_tavern:redstone_pine_incense"
       },
       "events": [
         {
@@ -12905,6 +12917,12 @@
           }
         ]
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:redstone_furniture",
+        "channel": "incense",
+        "interval": 1,
+        "data_key": "kaleidoscope_tavern:redstone_ginkgo_incense"
+      },
       "events": [
         {
           "on": "right_click",
@@ -13070,6 +13088,12 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:redstone_furniture",
+        "channel": "incense",
+        "interval": 1,
+        "data_key": "kaleidoscope_tavern:redstone_spore_incense"
       },
       "events": [
         {
@@ -13237,6 +13261,12 @@
           }
         ]
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:redstone_furniture",
+        "channel": "incense",
+        "interval": 1,
+        "data_key": "kaleidoscope_tavern:redstone_catnip_incense"
+      },
       "events": [
         {
           "on": "right_click",
@@ -13402,6 +13432,12 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:redstone_furniture",
+        "channel": "incense",
+        "interval": 1,
+        "data_key": "kaleidoscope_tavern:redstone_snow_incense"
       },
       "events": [
         {
@@ -13569,6 +13605,12 @@
           }
         ]
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:redstone_furniture",
+        "channel": "incense",
+        "interval": 1,
+        "data_key": "kaleidoscope_tavern:redstone_butterfly_incense"
+      },
       "events": [
         {
           "on": "right_click",
@@ -13734,6 +13776,12 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:redstone_furniture",
+        "channel": "incense",
+        "interval": 1,
+        "data_key": "kaleidoscope_tavern:redstone_firefly_incense"
       },
       "events": [
         {
@@ -14490,6 +14538,12 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:redstone_furniture",
+        "channel": "tap",
+        "interval": 2,
+        "data_key": "kaleidoscope_tavern:redstone_tap"
       }
     },
     "kaleidoscope_tavern:glassware_holder": {
@@ -17002,6 +17056,12 @@
               "item_position": "0,-4096,0"
             }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "storage",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_cellar_cabinet"
         }
       ]
     },
@@ -17104,6 +17164,12 @@
               "item_position": "0,-4096,0"
             }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "storage",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_tilted_rack"
         }
       ]
     },
@@ -17240,6 +17306,12 @@
           "lights": [
             "0,0,0 14"
           ]
+        },
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "storage",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_circular_rack"
         }
       ]
     },
@@ -17336,19 +17408,27 @@
           }
         ]
       },
-      "behavior": {
-        "type": "display_item_furniture",
-        "data_key": "kaleidoscope_tavern:display_slot_0",
-        "sounds": {
-          "put": "minecraft:block.decorated_pot.insert",
-          "take": "minecraft:block.decorated_pot.insert_fail"
-        },
-        "variants": {
-          "ground": {
-            "item_position": "0,-4096,0"
+      "behaviors": [
+        {
+          "type": "display_item_furniture",
+          "data_key": "kaleidoscope_tavern:display_slot_0",
+          "sounds": {
+            "put": "minecraft:block.decorated_pot.insert",
+            "take": "minecraft:block.decorated_pot.insert_fail"
+          },
+          "variants": {
+            "ground": {
+              "item_position": "0,-4096,0"
+            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "storage",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_holder"
         }
-      }
+      ]
     },
     "kaleidoscope_tavern:water_bottle": {
       "settings": {

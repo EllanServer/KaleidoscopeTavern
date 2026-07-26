@@ -1,6 +1,7 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
@@ -22,8 +23,6 @@ import org.bukkit.Material;
 import org.bukkit.SoundCategory;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.ItemDisplay;
@@ -33,12 +32,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.EntitiesLoadEvent;
-import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
 import org.joml.Quaternionf;
@@ -48,13 +45,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -86,12 +80,19 @@ public final class DisplayStorageService implements Listener {
     private final ItemService items;
     private final NamespacedKey cabinetVisualOwnerKey;
     private final NamespacedKey cabinetVisualSlotKey;
-    private final Set<UUID> loadedLaunchers = new HashSet<>();
-    private final Map<UUID, Boolean> launcherPowered = new HashMap<>();
     private final Field savedItemField;
     private final Method saveDisplayItemMethod;
-    private BukkitTask redstoneTask;
     private boolean reflectionWarningLogged;
+    private final RedstoneFurnitureBehavior.Handler storageRedstoneHandler =
+            (furniture, powered, initial) -> {
+                if (initial || !powered) {
+                    return;
+                }
+                StorageSpec spec = STORAGE.get(furniture.id());
+                if (spec != null && spec.redstoneLauncher()) {
+                    launchRandomBottle(furniture, spec);
+                }
+            };
 
     public DisplayStorageService(JavaPlugin plugin, ContentCatalog catalog, ItemService items) {
         this.plugin = plugin;
@@ -116,17 +117,14 @@ public final class DisplayStorageService implements Listener {
     }
 
     public void start() {
-        redstoneTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pollRedstone, 1L, 1L);
+        RedstoneFurnitureBehavior.bind(
+                RedstoneFurnitureBehavior.Channel.STORAGE, storageRedstoneHandler);
         Bukkit.getScheduler().runTask(plugin, this::bootstrap);
     }
 
     public void stop() {
-        if (redstoneTask != null) {
-            redstoneTask.cancel();
-            redstoneTask = null;
-        }
-        loadedLaunchers.clear();
-        launcherPowered.clear();
+        RedstoneFurnitureBehavior.unbind(
+                RedstoneFurnitureBehavior.Channel.STORAGE, storageRedstoneHandler);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -161,7 +159,6 @@ public final class DisplayStorageService implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlace(FurniturePlaceEvent event) {
-        track(event.furniture());
         if (isStorage(event.furniture())) {
             Bukkit.getScheduler().runTask(plugin, () -> refreshStorageVisuals(event.furniture()));
         }
@@ -173,12 +170,6 @@ public final class DisplayStorageService implements Listener {
             dropAndClearStorage(event);
             removeStorageVisuals(event.furniture());
         }
-        Entity entity = event.furniture().bukkitEntity();
-        if (entity != null) {
-            UUID id = entity.getUniqueId();
-            loadedLaunchers.remove(id);
-            launcherPowered.remove(id);
-        }
     }
 
     @EventHandler
@@ -188,19 +179,8 @@ public final class DisplayStorageService implements Listener {
                 continue;
             }
             BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            track(furniture);
             if (isStorage(furniture)) {
                 Bukkit.getScheduler().runTask(plugin, () -> refreshStorageVisuals(furniture));
-            }
-        }
-    }
-
-    @EventHandler
-    public void onEntitiesUnload(EntitiesUnloadEvent event) {
-        for (Entity entity : event.getEntities()) {
-            UUID id = entity.getUniqueId();
-            if (loadedLaunchers.remove(id)) {
-                launcherPowered.remove(id);
             }
         }
     }
@@ -372,49 +352,6 @@ public final class DisplayStorageService implements Listener {
                 "minecraft:block.glass.place", SoundCategory.BLOCKS, volume, pitch);
     }
 
-    private void pollRedstone() {
-        List<UUID> invalid = null;
-        for (UUID uuid : loadedLaunchers) {
-            Entity entity = Bukkit.getEntity(uuid);
-            if (entity == null || !entity.isValid()) {
-                if (invalid == null) {
-                    invalid = new ArrayList<>();
-                }
-                invalid.add(uuid);
-                continue;
-            }
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            StorageSpec spec = furniture == null ? null : STORAGE.get(furniture.id());
-            if (spec == null || !spec.redstoneLauncher()) {
-                if (invalid == null) {
-                    invalid = new ArrayList<>();
-                }
-                invalid.add(uuid);
-                continue;
-            }
-            boolean powered = isPowered(furniture);
-            Boolean cached = launcherPowered.get(uuid);
-            boolean wasPowered;
-            if (cached == null) {
-                wasPowered = new FurnitureState(plugin, furniture).bool("storage_powered");
-                launcherPowered.put(uuid, wasPowered);
-            } else {
-                wasPowered = cached;
-            }
-            if (powered != wasPowered) {
-                launcherPowered.put(uuid, powered);
-                new FurnitureState(plugin, furniture).bool("storage_powered", powered);
-                if (powered) {
-                    launchRandomBottle(furniture, spec);
-                }
-            }
-        }
-        if (invalid != null) {
-            loadedLaunchers.removeAll(invalid);
-            invalid.forEach(launcherPowered::remove);
-        }
-    }
-
     private void launchRandomBottle(BukkitFurniture furniture, StorageSpec spec) {
         List<Integer> launchable = new ArrayList<>();
         for (int slot = 0; slot < spec.slots(); slot++) {
@@ -489,13 +426,6 @@ public final class DisplayStorageService implements Listener {
     private static Vector horizontalDirection(Location location) {
         Vector direction = location.getDirection().setY(0);
         return direction.lengthSquared() < 1.0E-6 ? new Vector(0, 0, 1) : direction.normalize();
-    }
-
-    private static boolean isPowered(BukkitFurniture furniture) {
-        // AbstractStorageBlock#neighborChanged samples hasNeighborSignal at
-        // the block's own position only.
-        Block block = furniture.location().getBlock();
-        return block.isBlockPowered() || block.isBlockIndirectlyPowered();
     }
 
     boolean hasAnyStoredItem(BukkitFurniture furniture) {
@@ -787,33 +717,11 @@ public final class DisplayStorageService implements Listener {
         return furniture == null ? null : STORAGE.get(furniture.id());
     }
 
-    private void track(BukkitFurniture furniture) {
-        if (furniture == null) {
-            return;
-        }
-        StorageSpec spec = STORAGE.get(furniture.id());
-        Entity entity = furniture.bukkitEntity();
-        if (spec != null && spec.redstoneLauncher() && entity != null) {
-            UUID id = entity.getUniqueId();
-            loadedLaunchers.add(id);
-            FurnitureState state = new FurnitureState(plugin, furniture);
-            if (!state.bool("storage_power_initialized")) {
-                // getStateForPlacement copied the current signal into POWERED;
-                // it did not fire popBottle merely because placement happened
-                // in an already-powered position.
-                state.bool("storage_power_initialized", true);
-                state.bool("storage_powered", isPowered(furniture));
-            }
-            launcherPowered.put(id, state.bool("storage_powered"));
-        }
-    }
-
     private void bootstrap() {
         for (World world : Bukkit.getWorlds()) {
             for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
                 if (CraftEngineFurniture.isFurniture(display)) {
                     BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                    track(furniture);
                     if (isStorage(furniture)) {
                         refreshStorageVisuals(furniture);
                     }

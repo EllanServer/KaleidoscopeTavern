@@ -1,12 +1,12 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.util.Key;
@@ -16,19 +16,16 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Levelled;
 import org.bukkit.block.data.Waterlogged;
 import org.bukkit.block.data.type.Beehive;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -38,11 +35,9 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 /** Restores the tap's source/destination pipeline while keeping bottles and barrels as furniture. */
@@ -56,10 +51,29 @@ public final class TapService implements Listener {
     private final JavaPlugin plugin;
     private final StationService stations;
     private final ItemService items;
-    private final Set<UUID> loadedTaps = new HashSet<>();
     private final Map<UUID, BukkitTask> running = new HashMap<>();
-    private final Map<UUID, Boolean> tapTriggered = new HashMap<>();
-    private BukkitTask redstoneTask;
+    private final RedstoneFurnitureBehavior.Handler tapRedstoneHandler =
+            new RedstoneFurnitureBehavior.Handler() {
+                @Override
+                public void onReady(BukkitFurniture furniture) {
+                    if (!running.containsKey(furniture.uuid())
+                            && furniture.currentVariant().name().endsWith("_open")) {
+                        setOpen(furniture, false);
+                    }
+                }
+
+                @Override
+                public void onPowerState(BukkitFurniture furniture, boolean powered, boolean initial) {
+                    if (powered) {
+                        openTap(furniture, null);
+                    }
+                }
+
+                @Override
+                public void onUnload(BukkitFurniture furniture, boolean isStopping) {
+                    cancelRunning(furniture);
+                }
+            };
 
     public TapService(JavaPlugin plugin, StationService stations, ItemService items) {
         this.plugin = plugin;
@@ -68,17 +82,13 @@ public final class TapService implements Listener {
     }
 
     public void start() {
-        Bukkit.getScheduler().runTask(plugin, this::bootstrapTaps);
-        // This is the same 1,3,5... tick phase previously produced by an
-        // every-tick task plus a parity guard, without scheduling empty calls.
-        redstoneTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pollRedstone, 1L, 2L);
+        RedstoneFurnitureBehavior.bind(
+                RedstoneFurnitureBehavior.Channel.TAP, tapRedstoneHandler);
     }
 
     public void stop() {
-        if (redstoneTask != null) {
-            redstoneTask.cancel();
-            redstoneTask = null;
-        }
+        RedstoneFurnitureBehavior.unbind(
+                RedstoneFurnitureBehavior.Channel.TAP, tapRedstoneHandler);
         for (UUID id : new ArrayList<>(running.keySet())) {
             if (Bukkit.getEntity(id) instanceof ItemDisplay display) {
                 BukkitFurniture tap = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
@@ -89,8 +99,6 @@ public final class TapService implements Listener {
         }
         new ArrayList<>(running.values()).forEach(BukkitTask::cancel);
         running.clear();
-        loadedTaps.clear();
-        tapTriggered.clear();
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -109,30 +117,9 @@ public final class TapService implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlace(FurniturePlaceEvent event) {
-        if (event.furniture().id().equals(TAP_KEY)) {
-            loadedTaps.add(event.furniture().uuid());
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBreak(FurnitureBreakEvent event) {
         if (event.furniture().id().equals(TAP_KEY)) {
             closeTap(event.furniture(), false);
-            loadedTaps.remove(event.furniture().uuid());
-        }
-    }
-
-    @EventHandler
-    public void onEntitiesLoad(EntitiesLoadEvent event) {
-        for (Entity entity : event.getEntities()) {
-            if (!(entity instanceof ItemDisplay) || !CraftEngineFurniture.isFurniture(entity)) {
-                continue;
-            }
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (furniture != null && furniture.id().equals(TAP_KEY)) {
-                loadedTaps.add(entity.getUniqueId());
-            }
         }
     }
 
@@ -442,14 +429,18 @@ public final class TapService implements Listener {
     }
 
     private void closeTap(BukkitFurniture tap, boolean sound) {
-        BukkitTask task = running.remove(tap.uuid());
-        if (task != null) {
-            task.cancel();
-        }
+        cancelRunning(tap);
         setOpen(tap, false);
         if (sound && tap.isValid()) {
             tap.location().getWorld().playSound(tap.location(), Sound.BLOCK_IRON_TRAPDOOR_CLOSE,
                     SoundCategory.BLOCKS, 1F, 0.8F);
+        }
+    }
+
+    private void cancelRunning(BukkitFurniture tap) {
+        BukkitTask task = running.remove(tap.uuid());
+        if (task != null) {
+            task.cancel();
         }
     }
 
@@ -492,63 +483,6 @@ public final class TapService implements Listener {
         Particle particle = hot
                 ? Particle.FALLING_DRIPSTONE_LAVA : Particle.FALLING_DRIPSTONE_WATER;
         location.getWorld().spawnParticle(particle, location, 1, 0, 0, 0, 0);
-    }
-
-    private void pollRedstone() {
-        List<UUID> invalid = null;
-        for (UUID id : loadedTaps) {
-            Entity entity = Bukkit.getEntity(id);
-            if (entity == null || !entity.isValid()) {
-                if (invalid == null) {
-                    invalid = new ArrayList<>();
-                }
-                invalid.add(id);
-                continue;
-            }
-            BukkitFurniture tap = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (tap == null || !tap.id().equals(TAP_KEY)) {
-                if (invalid == null) {
-                    invalid = new ArrayList<>();
-                }
-                invalid.add(id);
-                continue;
-            }
-            Block block = tapBlock(tap);
-            // TapBlock#neighborChanged uses hasNeighborSignal - weak power.
-            boolean powered = block.isBlockIndirectlyPowered()
-                    || block.getRelative(BlockFace.UP).isBlockIndirectlyPowered();
-            Boolean cached = tapTriggered.get(id);
-            boolean triggered = cached != null
-                    ? cached : new FurnitureState(plugin, tap).bool("tap_triggered");
-            if (powered && !triggered) {
-                tapTriggered.put(id, true);
-                new FurnitureState(plugin, tap).bool("tap_triggered", true);
-                openTap(tap, null);
-            } else if (!powered && triggered) {
-                tapTriggered.put(id, false);
-                new FurnitureState(plugin, tap).bool("tap_triggered", false);
-            } else if (cached == null) {
-                tapTriggered.put(id, triggered);
-            }
-        }
-        if (invalid != null) {
-            loadedTaps.removeAll(invalid);
-            invalid.forEach(tapTriggered::remove);
-        }
-    }
-
-    private void bootstrapTaps() {
-        for (World world : Bukkit.getWorlds()) {
-            for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
-                if (!CraftEngineFurniture.isFurniture(display)) {
-                    continue;
-                }
-                BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                if (furniture != null && furniture.id().equals(TAP_KEY)) {
-                    loadedTaps.add(display.getUniqueId());
-                }
-            }
-        }
     }
 
     private static TapGeometry geometry(BukkitFurniture tap) {

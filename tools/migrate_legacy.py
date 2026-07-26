@@ -2264,6 +2264,26 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         behaviors.append({"type": "glowing_furniture", "lights": ["0,0,0 8"]})
     elif block_id in {"circular_rack", "molotov"}:
         behaviors.append({"type": "glowing_furniture", "lights": ["0,0,0 14"]})
+
+    redstone_channel: str | None = None
+    redstone_interval = 1
+    if block_id == "tap":
+        redstone_channel = "tap"
+        redstone_interval = 2
+    elif block_id.endswith("_incense"):
+        redstone_channel = "incense"
+    elif block_id in {"cellar_cabinet", "tilted_rack", "circular_rack", "holder"}:
+        redstone_channel = "storage"
+    if redstone_channel is not None:
+        behaviors.append({
+            "type": f"{NAMESPACE}:redstone_furniture",
+            "channel": redstone_channel,
+            "interval": redstone_interval,
+            # The controller owns one persistent edge latch per furniture
+            # instance.  Keep the key deterministic and independent from
+            # behavior ordering so future native CE behaviors cannot alias it.
+            "data_key": f"{NAMESPACE}:redstone_{block_id}",
+        })
     return behaviors
 
 
