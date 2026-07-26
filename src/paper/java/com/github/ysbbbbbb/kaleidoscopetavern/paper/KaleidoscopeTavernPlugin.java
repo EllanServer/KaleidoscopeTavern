@@ -9,6 +9,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BottlePlacementService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BottleFurnitureService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.DisplayStorageService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.FurnitureConnectionService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.FurnitureNameService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.MolotovService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.ShakerVisualService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.StationService;
@@ -123,11 +124,13 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         ambientFurniture = new AmbientFurnitureService(this, displayStorage);
         barStoolVisuals = new BarStoolVisualService(this, items);
         FurnitureConnectionService furnitureConnections = new FurnitureConnectionService(this);
+        FurnitureNameService furnitureNames = new FurnitureNameService(items);
 
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(items, this);
         getServer().getPluginManager().registerEvents(new BlockService(this, catalog, items), this);
         getServer().getPluginManager().registerEvents(furnitureConnections, this);
+        getServer().getPluginManager().registerEvents(furnitureNames, this);
         getServer().getPluginManager().registerEvents(new MolotovService(this, items), this);
         getServer().getPluginManager().registerEvents(new BottlePlacementService(this, catalog, items), this);
         getServer().getPluginManager().registerEvents(new BottleFurnitureService(this, catalog, items, effects), this);
@@ -148,6 +151,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         barStoolVisuals.start();
         shakerVisuals.start();
         furnitureConnections.start();
+        Bukkit.getScheduler().runTask(this, furnitureNames::start);
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             effectHudPlaceholder = new EffectHudPlaceholder(this, effects);
