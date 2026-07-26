@@ -7361,11 +7361,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -7434,11 +7437,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -7507,11 +7513,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -7580,11 +7589,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -7653,11 +7665,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -7726,11 +7741,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -7799,11 +7817,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -7872,11 +7893,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -7945,11 +7969,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -8018,11 +8045,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -8091,11 +8121,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -8164,11 +8197,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -8237,11 +8273,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -8310,11 +8349,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -8383,11 +8425,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -8456,11 +8501,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
         }
       ]
     },
@@ -16261,11 +16309,14 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "shaker"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "shaker",
+          "max_elements": 2,
+          "view_range": 1.25
         }
       ]
     },

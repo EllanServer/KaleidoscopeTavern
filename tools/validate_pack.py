@@ -53,7 +53,7 @@ EXPECTED_STATE_FURNITURE = {
     "poppy_sandwich_board", "sunflower_sandwich_board",
     "torchflower_sandwich_board", "tulip_sandwich_board",
     "wither_rose_sandwich_board",
-    "pressing_tub", "shaker", "barrel",
+    "pressing_tub", "barrel",
     "wine", "champagne", "vodka", "brandy", "carignan", "sakura_wine",
     "plum_wine", "whiskey", "ice_wine", "polaris_sweet_white",
     "honey_wine", "red_queen", "miners_star", "rum",
@@ -61,11 +61,6 @@ EXPECTED_STATE_FURNITURE = {
     "sweet_berry_wine", "sherry", "mother_snow", "luminous_bride",
     "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
     "watermelon_juice",
-    "black_bar_stool", "blue_bar_stool", "brown_bar_stool", "cyan_bar_stool",
-    "gray_bar_stool", "green_bar_stool", "light_blue_bar_stool",
-    "light_gray_bar_stool", "lime_bar_stool", "magenta_bar_stool",
-    "orange_bar_stool", "pink_bar_stool", "purple_bar_stool", "red_bar_stool",
-    "white_bar_stool", "yellow_bar_stool",
 }
 FURNITURE_COLORS = {
     "black", "blue", "brown", "cyan", "gray", "green", "light_blue",
@@ -369,7 +364,9 @@ BLOCK_ENTITY_COVERAGE = {
     "PotionBottleBlockEntity.java": (("BottleFurnitureService.java", "sourceItem"),),
     "PressingTubBlockEntity.java": (("StationService.java", "press_count"),),
     "TapBlockEntity.java": (("TapService.java", "running"),),
-    "BarStoolBlockEntity.java": (("BarStoolVisualService.java", "refreshBody"),),
+    "BarStoolBlockEntity.java": (
+        ("BarStoolVisualService.java", "AnimatedItemFurnitureBehavior.updatePosition"),
+    ),
     "ChalkboardBlockEntity.java": (("BoardTextService.java", "CHALKBOARD"),),
     "CircularRackBlockEntity.java": (
         ("DisplayStorageService.java", "CIRCULAR_RACK"),
@@ -859,6 +856,9 @@ def validate() -> dict[str, int]:
     if "BoardTextFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register board_text_furniture before pack loading")
+    if "AnimatedItemFurnitureBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register animated_item_furniture before pack loading")
 
     stale_ambient_scan_tokens = (
         "runTaskTimer", "Bukkit.getEntity", "CraftEngineFurniture",
@@ -1020,14 +1020,9 @@ def validate() -> dict[str, int]:
                     and stale_token == "FurniturePlaceEvent event"):
                 raise AssertionError(
                     f"{service_name} retained replaced lifecycle scan/event: {stale_token}")
-        if service_name != "ShakerVisualService.java" and "EntitiesLoadEvent" in source:
+        if "EntitiesLoadEvent" in source:
             raise AssertionError(
                 f"{service_name} must let CE deliver furniture load callbacks")
-        if (service_name == "ShakerVisualService.java"
-                and "CraftEngineFurniture.isFurniture(display)" in source):
-            raise AssertionError(
-                "ShakerVisualService may scan only helper PDC for orphan repair; "
-                "CE must deliver live shaker furniture callbacks")
         if "EntitiesUnloadEvent" in source:
             raise AssertionError(
                 f"{service_name} must let CE deliver furniture unload callbacks")
@@ -1050,6 +1045,48 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "FurnitureConnectionService must not rediscover indexed CE furniture; "
                 f"stale token found: {stale_token}")
+
+    animated_visual_source = (
+        game_package / "furniture" / "AnimatedItemFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "implements FurnitureElement",
+            "EntityTypesProxy.ITEM_DISPLAY",
+            "DisplayData.ItemDisplayData.ItemStack.addEntityData",
+            "DisplayData.Translation.addEntityData",
+            "DisplayData.LeftRotation.addEntityData",
+            "EntityUtils.createUpdatePosPacket",
+            "furniture.trackedBy()",
+            "public static void updateTransforms",
+            "public static void updatePosition"):
+        if required_token not in animated_visual_source:
+            raise AssertionError(
+                "animated_item_furniture must use CE tracking and transform-only packets; "
+                f"missing token: {required_token}")
+    for stale_token in (
+            "org.bukkit.entity.ItemDisplay", "PersistentDataType", "World.spawn"):
+        if stale_token in animated_visual_source:
+            raise AssertionError(
+                "animated_item_furniture must never create persistent Bukkit entities; "
+                f"stale token found: {stale_token}")
+    for service_name in ("ShakerVisualService.java", "BarStoolVisualService.java"):
+        source = (game_package / service_name).read_text(encoding="utf-8-sig")
+        for required_token in (
+                "AnimatedItemFurnitureBehavior.bind(",
+                "AnimatedItemFurnitureBehavior.unbind("):
+            if required_token not in source:
+                raise AssertionError(
+                    f"{service_name} must feed its CE animated visual controller")
+        for stale_token in (
+                "org.bukkit.entity.ItemDisplay", "PersistentDataType", "NamespacedKey",
+                "getNearbyEntities(", "Bukkit.getEntity(owner)",
+                "shaker_visual_owner", "shaker_visual_role",
+                "bar_stool_body_owner", "shaker_base_visual",
+                "shaker_lid_visual", "bar_stool_body_visual"):
+            if stale_token in source:
+                raise AssertionError(
+                    "Animated furniture visuals must not retain Bukkit helper entities or "
+                    f"recovery state; {service_name} contains {stale_token}")
 
     station_source = (game_package / "StationService.java").read_text(
         encoding="utf-8-sig")
@@ -2453,6 +2490,52 @@ def validate() -> dict[str, int]:
         if index != 2 or behavior != expected_behavior:
             raise AssertionError(
                 f"{furniture_id}: board_text_furniture order/config drifted: "
+                f"index={index}, behavior={behavior}")
+
+    animated_visual_type = f"{NAMESPACE}:animated_item_furniture"
+    expected_animated_visuals = {
+        "shaker": ("shaker", 2),
+        **{
+            f"{color}_bar_stool": ("bar_stool", 1)
+            for color in FURNITURE_COLORS
+        },
+    }
+    configured_animated_visuals: dict[str, tuple[int, dict[str, Any]]] = {}
+    for furniture_id, definition in furniture.items():
+        all_behaviors = list(definition.get("behaviors", []))
+        single_behavior = definition.get("behavior")
+        if single_behavior is not None:
+            all_behaviors.append(single_behavior)
+        matches = [
+            (index, behavior) for index, behavior in enumerate(all_behaviors)
+            if behavior.get("type") == animated_visual_type
+        ]
+        if len(matches) > 1:
+            raise AssertionError(
+                f"{furniture_id}: duplicate animated_item_furniture behaviors")
+        if matches:
+            configured_animated_visuals[furniture_id] = matches[0]
+    expected_animated_ids = {
+        f"{NAMESPACE}:{block_id}" for block_id in expected_animated_visuals
+    }
+    if set(configured_animated_visuals) != expected_animated_ids:
+        missing = sorted(expected_animated_ids - set(configured_animated_visuals))
+        unexpected = sorted(set(configured_animated_visuals) - expected_animated_ids)
+        raise AssertionError(
+            "Animated visual furniture coverage drift: "
+            f"missing={missing}, unexpected={unexpected}")
+    for block_id, (channel, max_elements) in expected_animated_visuals.items():
+        furniture_id = f"{NAMESPACE}:{block_id}"
+        index, behavior = configured_animated_visuals[furniture_id]
+        expected_behavior = {
+            "type": animated_visual_type,
+            "channel": channel,
+            "max_elements": max_elements,
+            "view_range": 1.25,
+        }
+        if index != 1 or behavior != expected_behavior:
+            raise AssertionError(
+                f"{furniture_id}: animated_item_furniture order/config drifted: "
                 f"index={index}, behavior={behavior}")
 
     pressing_id = f"{NAMESPACE}:pressing_tub"

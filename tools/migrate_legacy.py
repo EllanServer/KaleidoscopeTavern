@@ -2200,11 +2200,8 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         # CE sourceItem is the complete state for a single placed bottle.
         # Only count variants can contain additional, non-identical bottles.
         (block_id in BOTTLE_AND_GLASS_ITEMS and "ground_count_2" in variants)
-        or block_id in {
-            "pressing_tub", "barrel", "shaker", "chalkboard",
-        }
+        or block_id in {"pressing_tub", "barrel", "chalkboard"}
         or block_id.endswith("_sandwich_board")
-        or block_id.endswith("_bar_stool")
     )
     if uses_tavern_state:
         # Index zero is intentional: the remaining custom-data consumers
@@ -2249,6 +2246,20 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
             "type": f"{NAMESPACE}:board_text_furniture",
             "max_lines": board_text_max_lines,
             "view_range": 0.75,
+        })
+
+    animated_visual: tuple[str, int] | None = None
+    if block_id == "shaker":
+        animated_visual = ("shaker", 2)
+    elif block_id.endswith("_bar_stool"):
+        animated_visual = ("bar_stool", 1)
+    if animated_visual is not None:
+        channel, max_elements = animated_visual
+        behaviors.append({
+            "type": f"{NAMESPACE}:animated_item_furniture",
+            "channel": channel,
+            "max_elements": max_elements,
+            "view_range": 1.25,
         })
 
     def display_slots(
