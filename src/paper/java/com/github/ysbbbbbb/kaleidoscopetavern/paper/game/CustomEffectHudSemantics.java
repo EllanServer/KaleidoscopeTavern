@@ -33,6 +33,27 @@ final class CustomEffectHudSemantics {
             "kaleidoscope_tavern:slightly_tipsy",
             "kaleidoscope_tavern:upside_down");
 
+    // The exact particle colours registered in the archived ModEffects: a
+    // vanilla client only swirls for real registry effects, so the server
+    // replays ENTITY_EFFECT particles with the original colours instead.
+    private static final Map<String, Integer> COLORS = Map.ofEntries(
+            Map.entry("kaleidoscope_tavern:slightly_tipsy", 0xFFD94A),
+            Map.entry("kaleidoscope_tavern:high_heels", 0xE85BAA),
+            Map.entry("kaleidoscope_tavern:grass_stealth", 0x71BDE7),
+            Map.entry("kaleidoscope_tavern:vision", 0x408997),
+            Map.entry("kaleidoscope_tavern:bloody_mary", 0xF73A36),
+            Map.entry("kaleidoscope_tavern:ardent_heat", 0xFF6B35),
+            Map.entry("kaleidoscope_tavern:long_reach", 0x8B6914),
+            Map.entry("kaleidoscope_tavern:tomb_raider", 0xDAA520),
+            Map.entry("kaleidoscope_tavern:xp_drain", 0x7CFC00),
+            Map.entry("kaleidoscope_tavern:upside_down", 0x9B59B6),
+            Map.entry("kaleidoscope_tavern:zenith", 0x87CEEB),
+            Map.entry("kaleidoscope_tavern:shriek_attack", 0x0D4C4A));
+
+    static Integer color(String effectId) {
+        return COLORS.get(effectId);
+    }
+
     private static final Map<String, String> ICONS = Map.ofEntries(
             Map.entry("kaleidoscope_tavern:slightly_tipsy", "\uE100"),
             Map.entry("kaleidoscope_tavern:high_heels", "\uE101"),
@@ -92,8 +113,11 @@ final class CustomEffectHudSemantics {
                     + "':'<lang:" + display.potencyKey() + ">'>";
         }
         name = "<lang:potion.withDuration:\"" + name + "\":\"" + display.duration() + "\">";
-        String color = "kaleidoscope_tavern:slightly_tipsy".equals(entry.effectId())
-                ? "gray" : "blue";
+        // Tint each entry with the colour the original mod registered for the
+        // effect, expressed as a MiniMessage hex tag; the swirl particles use
+        // the same table.
+        Integer rgb = COLORS.get(entry.effectId());
+        String color = rgb == null ? "blue" : String.format(Locale.ROOT, "#%06X", rgb);
         StringBuilder text = new StringBuilder();
         if (display.icon() != null) {
             text.append("<white><font:").append(FONT_KEY).append('>')

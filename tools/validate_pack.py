@@ -1226,6 +1226,18 @@ def validate() -> dict[str, int]:
             f"Corner HUD row-two set drifted from the Forge registrations: {sorted(neutral_effects)}")
     hud_semantics_source = (game_package / "CustomEffectHudSemantics.java").read_text(
         encoding="utf-8-sig")
+    # The ambient swirl colours must stay byte-identical to the archived
+    # Forge registrations.
+    registered_colors = dict(re.findall(
+        r'EFFECTS\.register\("(\w+)",[^\n]*?0x([0-9A-Fa-f]{6})\)', mod_effects_source))
+    if set(registered_colors) != set(CUSTOM_EFFECT_ICON_IDS):
+        raise AssertionError(
+            f"ModEffects colour extraction drifted: {sorted(registered_colors)}")
+    for effect_id, color in registered_colors.items():
+        entry = f'Map.entry("{NAMESPACE}:{effect_id}", 0x{color.upper()})'
+        if entry not in hud_semantics_source:
+            raise AssertionError(
+                f"CustomEffectHudSemantics colour table is missing {entry}")
     for row2_effect in ("slightly_tipsy", "upside_down"):
         if f'"{NAMESPACE}:{row2_effect}"' not in hud_semantics_source.split("HUD_ROW2_EFFECTS")[1].split(";")[0]:
             raise AssertionError(

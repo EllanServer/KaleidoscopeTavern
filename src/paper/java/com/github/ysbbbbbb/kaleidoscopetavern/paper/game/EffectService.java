@@ -10,6 +10,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
@@ -63,6 +64,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -542,6 +544,7 @@ public final class EffectService implements Listener {
                 }
             }
             reconcileAttributes(living, effects);
+            spawnEffectParticles(living, effects);
             if (changed || persistThisTick) {
                 save(living);
                 if (living instanceof Player player) {
@@ -552,6 +555,31 @@ public final class EffectService implements Listener {
                 active.remove(uuid);
             }
         }
+    }
+
+    /**
+     * Replays the vanilla ambient effect swirls with the colours registered by
+     * the original mod. The custom effects never reach the client's effect
+     * registry, so the server spawns the ENTITY_EFFECT particles itself: one
+     * randomly-coloured swirl roughly every three ticks, throttled the same
+     * way vanilla throttles invisible entities.
+     */
+    private void spawnEffectParticles(LivingEntity living, Map<String, ActiveEffect> effects) {
+        if (effects.isEmpty() || elapsedTicks % (living.isInvisible() ? 15L : 3L) != 0) {
+            return;
+        }
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        List<String> ids = List.copyOf(effects.keySet());
+        Integer rgb = CustomEffectHudSemantics.color(ids.get(random.nextInt(ids.size())));
+        if (rgb == null) {
+            return;
+        }
+        BoundingBox box = living.getBoundingBox();
+        living.getWorld().spawnParticle(Particle.ENTITY_EFFECT,
+                box.getMinX() + random.nextDouble() * box.getWidthX(),
+                box.getMinY() + random.nextDouble() * box.getHeight(),
+                box.getMinZ() + random.nextDouble() * box.getWidthZ(),
+                1, 0.0, 0.0, 0.0, 0.0, Color.fromRGB(rgb));
     }
 
     private boolean tickEffect(LivingEntity living, ActiveEffect effect,

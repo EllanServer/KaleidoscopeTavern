@@ -63,6 +63,9 @@ class CustomEffectHudSemanticsTest {
                 new CustomEffectHudSemantics.EffectEntry(
                         "kaleidoscope_tavern:slightly_tipsy", 72_000, 0)));
         assertTrue(line.startsWith("<!i>"));
+        // Effect names carry the registered mod colours as MiniMessage hex tags.
+        assertTrue(line.contains("<#408997>"), line);
+        assertTrue(line.contains("<#FFD94A>"), line);
 
         Component parsed = MiniMessage.miniMessage().deserialize(line);
         Set<String> translationKeys = new HashSet<>();
@@ -87,6 +90,16 @@ class CustomEffectHudSemanticsTest {
         // Icons render through the resource-pack bitmap font.
         assertTrue(texts.stream().anyMatch(text -> "".equals(text.content())
                 && Key.key(CustomEffectHudSemantics.FONT_KEY).equals(text.font())));
+    }
+
+    @Test
+    void ambientSwirlColorsMatchTheForgeRegistrations() {
+        assertEquals(0x408997, CustomEffectHudSemantics.color("kaleidoscope_tavern:vision"));
+        assertEquals(0xFFD94A,
+                CustomEffectHudSemantics.color("kaleidoscope_tavern:slightly_tipsy"));
+        assertEquals(0x0D4C4A,
+                CustomEffectHudSemantics.color("kaleidoscope_tavern:shriek_attack"));
+        assertNull(CustomEffectHudSemantics.color("example:future_effect"));
     }
 
     @Test
