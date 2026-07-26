@@ -2079,16 +2079,14 @@ def build_items(
             # explicitly for both drink and place-only bottle items.
             config["data"]["components"] = {"minecraft:max_stack_size": 16}
         if config["material"] == "potion":
-            # Without potion_contents, Minecraft 1.21+ shows potion-material
-            # items as "Uncraftable Potion" regardless of item_name. A neutral
-            # water type avoids that, and custom_color tints the liquid to
-            # match the drink's cocktail_ingredient color tag.
+            # In 26.2+, a potion_contents component with potion="minecraft:water"
+            # makes the item show as "Water Bottle", overriding item_name.  Using
+            # only custom_color (no potion field) tints the liquid without
+            # clobbering the display name, and avoids "Uncraftable Potion" too.
             components = config["data"].setdefault("components", {})
-            potion_contents: dict[str, Any] = {"potion": "minecraft:water"}
             color = drink_color(memberships.get(item_id, []))
             if color is not None:
-                potion_contents["custom_color"] = color
-            components["minecraft:potion_contents"] = potion_contents
+                components["minecraft:potion_contents"] = {"custom_color": color}
         if item_id == "molotov":
             config["data"].setdefault("components", {})["minecraft:consumable"] = {
                 "consume_seconds": 3_600.0,
