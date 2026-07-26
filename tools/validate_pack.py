@@ -547,7 +547,7 @@ def validate() -> dict[str, int]:
             "String planted = grapevineFor(soil);",
             'withNamed(replacement, "type", stringProperty(trellisState, "type"))',
             "void plantGrapevineOnTrellis(",
-            "onRightClickSoilBelowTrellis"):
+            "onRightClickWithGrapevine"):
         if evidence not in block_service_source:
             raise AssertionError(f"BlockService grapevine planting evidence is missing: {evidence}")
     if '"single".equals(stringProperty(state, "type"))' in block_service_source:
