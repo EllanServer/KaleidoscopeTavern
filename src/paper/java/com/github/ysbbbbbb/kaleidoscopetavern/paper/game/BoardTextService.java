@@ -123,7 +123,7 @@ public final class BoardTextService implements Listener {
             return;
         }
         BukkitFurniture furniture = event.furniture();
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         Player player = event.player();
         ItemStack hand = player.getInventory().getItemInMainHand();
 
@@ -216,7 +216,7 @@ public final class BoardTextService implements Listener {
         if (!isBoard(event.furniture())) {
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, event.furniture());
+        FurnitureState state = new FurnitureState(event.furniture());
         removeDisplay(state);
         Entity entity = event.furniture().bukkitEntity();
         if (entity != null) {
@@ -266,7 +266,7 @@ public final class BoardTextService implements Listener {
             player.sendMessage(Component.text("你离写字板太远，编辑已取消。"));
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         if (state.bool("board_waxed")) {
             player.sendMessage(Component.text("写字板已打蜡，不能修改。"));
             return;
@@ -356,12 +356,12 @@ public final class BoardTextService implements Listener {
             replacement = CraftEngineFurniture.place(location, Key.of(BASE_SANDWICH_BOARD), "ground", false);
             player.sendMessage(Component.text("展板样式切换失败，已恢复为基础展板。"));
             if (replacement != null) {
-                snapshot.apply(new FurnitureState(plugin, replacement));
+                snapshot.apply(new FurnitureState(replacement));
                 refreshDisplay(replacement);
             }
             return true;
         }
-        snapshot.apply(new FurnitureState(plugin, replacement));
+        snapshot.apply(new FurnitureState(replacement));
         consumeUnlessCreative(player, hand);
         location.getWorld().playSound(location, Sound.BLOCK_GRASS_PLACE, 1F, 1F);
         refreshDisplay(replacement);
@@ -371,7 +371,7 @@ public final class BoardTextService implements Listener {
     private void tryMergeChalkboards(BukkitFurniture placed) {
         String variant = placed.currentVariant().name();
         if (!placed.isValid() || !(variant.equals("ground") || variant.equals("wall"))
-                || !new FurnitureState(plugin, placed).string("board_text", "").isBlank()) {
+                || !new FurnitureState(placed).string("board_text", "").isBlank()) {
             return;
         }
         List<BukkitFurniture> candidates = nearbyFurniture(placed.location(), 2.25).stream()
@@ -380,7 +380,7 @@ public final class BoardTextService implements Listener {
                     String candidateVariant = furniture.currentVariant().name();
                     return candidateVariant.equals("ground") || candidateVariant.equals("wall");
                 })
-                .filter(furniture -> new FurnitureState(plugin, furniture).string("board_text", "").isBlank())
+                .filter(furniture -> new FurnitureState(furniture).string("board_text", "").isBlank())
                 .filter(furniture -> yawDistance(furniture.location().getYaw(), placed.location().getYaw()) < 1F)
                 .toList();
         if (candidates.size() < 3) {
@@ -393,12 +393,12 @@ public final class BoardTextService implements Listener {
             if (left == null || rightBoard == null || left == rightBoard) {
                 continue;
             }
-            removeDisplay(new FurnitureState(plugin, left));
-            removeDisplay(new FurnitureState(plugin, rightBoard));
+            removeDisplay(new FurnitureState(left));
+            removeDisplay(new FurnitureState(rightBoard));
             CraftEngineFurniture.remove(left, false, false);
             CraftEngineFurniture.remove(rightBoard, false, false);
             center.setVariant(center.currentVariant().name() + "_large", true);
-            new FurnitureState(plugin, center).integer("board_large_count", 3);
+            new FurnitureState(center).integer("board_large_count", 3);
             refreshDisplay(center);
             center.location().getWorld().playSound(center.location(), Sound.BLOCK_WOOD_PLACE, 1F, 0.9F);
             return;
@@ -445,7 +445,7 @@ public final class BoardTextService implements Listener {
         if (!furniture.isValid()) {
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         String text = state.string("board_text", "");
         if (text.isBlank()) {
             removeDisplay(state);

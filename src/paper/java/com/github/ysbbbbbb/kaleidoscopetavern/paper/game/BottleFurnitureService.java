@@ -69,7 +69,7 @@ public final class BottleFurnitureService implements Listener {
         }
         ItemStack source = sourceItem(furniture);
         if (source != null) {
-            new FurnitureState(plugin, furniture).items("bottle_items", List.of(source));
+            new FurnitureState(furniture).items("bottle_items", List.of(source));
         }
     }
 
@@ -222,7 +222,7 @@ public final class BottleFurnitureService implements Listener {
             // break sound (glass shatter) must stay muted here.
             CraftEngineFurniture.remove(furniture, event.player(), false, false);
         } else {
-            new FurnitureState(plugin, furniture).items("bottle_items", stored);
+            new FurnitureState(furniture).items("bottle_items", stored);
             setBottleCount(furniture, stored.size());
             furniture.setUnsaved();
         }
@@ -251,7 +251,7 @@ public final class BottleFurnitureService implements Listener {
             hand.subtract(1);
         }
         stored.add(addition);
-        new FurnitureState(plugin, furniture).items("bottle_items", stored);
+        new FurnitureState(furniture).items("bottle_items", stored);
         setBottleCount(furniture, stored.size());
         furniture.setUnsaved();
         event.setCancelled(true);
@@ -261,7 +261,7 @@ public final class BottleFurnitureService implements Listener {
     }
 
     private List<ItemStack> storedItems(BukkitFurniture furniture) {
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         List<ItemStack> stored = new ArrayList<>(state.items("bottle_items"));
         if (!stored.isEmpty()) {
             return stored;

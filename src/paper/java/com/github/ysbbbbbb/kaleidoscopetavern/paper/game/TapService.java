@@ -384,7 +384,7 @@ public final class TapService implements Listener {
         bottle.setSourceItem(BukkitAdaptor.adapt(source));
         bottle.refreshElements();
         bottle.setUnsaved();
-        new FurnitureState(plugin, bottle).items("bottle_items", List.of(source));
+        new FurnitureState(bottle).items("bottle_items", List.of(source));
     }
 
     private static void consumeDroppedBottle(org.bukkit.entity.Item bottle) {

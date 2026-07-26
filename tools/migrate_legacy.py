@@ -2196,6 +2196,20 @@ def semantic_variant_name(anchor: str, properties: tuple[tuple[str, str], ...], 
 def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, Any]]:
     behaviors: list[dict[str, Any]] = []
 
+    uses_tavern_state = (
+        block_id in BOTTLE_AND_GLASS_ITEMS
+        or block_id in {
+            "pressing_tub", "barrel", "shaker", "chalkboard",
+            "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
+            "tilted_rack", "circular_rack", "holder", "glassware_holder",
+        }
+        or block_id.endswith("_sandwich_board")
+    )
+    if uses_tavern_state:
+        # Index zero is intentional: FurnitureState resolves this controller
+        # directly instead of touching one Bukkit PDC key per business field.
+        behaviors.append({"type": f"{NAMESPACE}:state_furniture"})
+
     def display_slots(
         positions: list[str],
         width: float,

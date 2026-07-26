@@ -536,7 +536,7 @@ public final class DisplayStorageService implements Listener {
         if (spec == null || !furniture.isValid() || furniture.bukkitEntity() == null) {
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         Map<Integer, ItemDisplay> displays = storageVisuals(furniture, state, spec);
         List<String> active = new ArrayList<>();
         boolean irregular = false;
@@ -704,7 +704,7 @@ public final class DisplayStorageService implements Listener {
         if (spec == null) {
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         storageVisuals(furniture, state, spec).values().forEach(Entity::remove);
         state.clear("cabinet_visuals");
     }

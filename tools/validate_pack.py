@@ -44,6 +44,32 @@ EXPECTED_TICKING_FURNITURE = {
     "circular_rack": ("ambient", 1),
     "barrel": ("barrel", 97),
 }
+EXPECTED_STATE_FURNITURE = {
+    "chalkboard",
+    "base_sandwich_board", "grass_sandwich_board", "allium_sandwich_board",
+    "azure_bluet_sandwich_board", "cornflower_sandwich_board",
+    "orchid_sandwich_board", "peony_sandwich_board",
+    "pink_petals_sandwich_board", "pitcher_plant_sandwich_board",
+    "poppy_sandwich_board", "sunflower_sandwich_board",
+    "torchflower_sandwich_board", "tulip_sandwich_board",
+    "wither_rose_sandwich_board",
+    "pressing_tub", "glassware_holder", "shaker", "barrel",
+    "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
+    "tilted_rack", "circular_rack", "holder",
+    "empty_bottle", "empty_glassware", "signature_cocktail",
+    "mystery_cocktail", "white_lady", "emerald", "brass_heart",
+    "godfather", "grasshopper", "screwdriver", "mojito",
+    "allium_garden", "depth_charge", "nether_special", "bloody_mary",
+    "sculk_special", "molotov", "water_bottle", "honey_bottle",
+    "dragon_breath_bottle", "potion_bottle", "xp_bottle",
+    "wine", "champagne", "vodka", "brandy", "carignan", "sakura_wine",
+    "plum_wine", "whiskey", "ice_wine", "polaris_sweet_white",
+    "honey_wine", "red_queen", "miners_star", "rum",
+    "riesling_dry_white", "sunset_glow", "madame_shexiang",
+    "sweet_berry_wine", "sherry", "mother_snow", "luminous_bride",
+    "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
+    "watermelon_juice",
+}
 CUSTOM_EFFECT_ICON_IDS = (
     "slightly_tipsy",
     "high_heels",
@@ -683,6 +709,9 @@ def validate() -> dict[str, int]:
 
     plugin_source = (game_package.parent / "KaleidoscopeTavernPlugin.java").read_text(
         encoding="utf-8-sig")
+    if "StateFurnitureBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register state_furniture before pack loading")
     if "RedstoneFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register redstone_furniture before pack loading")
@@ -710,10 +739,34 @@ def validate() -> dict[str, int]:
                 "CE furniture tickers own barrel lifecycle; "
                 f"StationService must not reintroduce {stale_token}")
 
+    furniture_state_source = (game_package / "FurnitureState.java").read_text(
+        encoding="utf-8-sig")
+    for stale_token in (
+            "PersistentDataContainer", "PersistentDataType", "NamespacedKey", "JavaPlugin"):
+        if stale_token in furniture_state_source:
+            raise AssertionError(
+                "Tavern business state must use CE controller CompoundTag data; "
+                f"stale token found: {stale_token}")
+
     all_paper_java = "\n".join(
         path.read_text(encoding="utf-8-sig")
         for path in sorted((ROOT / "src/paper/java").rglob("*.java"))
     )
+    if "new FurnitureState(plugin," in all_paper_java:
+        raise AssertionError(
+            "FurnitureState construction must not retain the obsolete Bukkit PDC owner")
+
+    state_behavior_source = (
+        game_package / "furniture" / "StateFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "loadCustomData(CompoundTag data)",
+            "saveCustomData(CompoundTag data)",
+            "bukkitFurniture.setUnsaved()"):
+        if required_token not in state_behavior_source:
+            raise AssertionError(
+                "state_furniture must persist through CE's dirty custom-data lifecycle; "
+                f"missing token: {required_token}")
     stale_redstone_tokens = (
         "pollRedstone", "pollIncenseRedstone", "tap_triggered",
         "storage_powered", "storage_power_initialized", "incense_powered",
@@ -1828,6 +1881,36 @@ def validate() -> dict[str, int]:
         if (wall_element.get("position") != "0,0,0.19"
                 or wall_element.get("translation") != "0,0,-0.627"):
             raise AssertionError(f"{painting_id}: wall display depth drifted")
+
+    configured_state: dict[str, tuple[int, dict[str, Any]]] = {}
+    state_type = f"{NAMESPACE}:state_furniture"
+    for furniture_id, definition in furniture.items():
+        all_behaviors = list(definition.get("behaviors", []))
+        single_behavior = definition.get("behavior")
+        if single_behavior is not None:
+            all_behaviors.append(single_behavior)
+        state_behaviors = [
+            (index, behavior) for index, behavior in enumerate(all_behaviors)
+            if behavior.get("type") == state_type
+        ]
+        if len(state_behaviors) > 1:
+            raise AssertionError(f"{furniture_id}: duplicate state_furniture behaviors")
+        if state_behaviors:
+            configured_state[furniture_id] = state_behaviors[0]
+
+    expected_state_ids = {
+        f"{NAMESPACE}:{block_id}" for block_id in EXPECTED_STATE_FURNITURE
+    }
+    if set(configured_state) != expected_state_ids:
+        missing = sorted(expected_state_ids - set(configured_state))
+        unexpected = sorted(set(configured_state) - expected_state_ids)
+        raise AssertionError(
+            "State furniture coverage drift: "
+            f"missing={missing}, unexpected={unexpected}")
+    for furniture_id, (index, behavior) in configured_state.items():
+        if index != 0 or behavior != {"type": state_type}:
+            raise AssertionError(
+                f"{furniture_id}: state_furniture must be the exact index-zero behavior")
 
     configured_redstone: dict[str, dict[str, Any]] = {}
     redstone_type = f"{NAMESPACE}:redstone_furniture"

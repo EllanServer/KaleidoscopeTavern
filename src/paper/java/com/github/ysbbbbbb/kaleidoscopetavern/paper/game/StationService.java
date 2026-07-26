@@ -200,7 +200,7 @@ public final class StationService implements Listener {
         Location dropLocation = event.location().clone();
         switch (id) {
             case PRESSING_TUB -> {
-                FurnitureState state = new FurnitureState(plugin, furniture);
+                FurnitureState state = new FurnitureState(furniture);
                 List<ItemDisplay> visuals = currentPressVisuals(furniture, state);
                 ItemStack storedIngredient = pressingItem(state);
                 ItemStack ingredient = storedIngredient == null ? null : storedIngredient.clone();
@@ -215,7 +215,7 @@ public final class StationService implements Listener {
                 // finished tank fluid is deliberately lost on break.
             }
             case BARREL -> {
-                FurnitureState state = new FurnitureState(plugin, furniture);
+                FurnitureState state = new FurnitureState(furniture);
                 List<ItemDisplay> visuals = currentBarrelVisuals(furniture, state);
                 deferFurnitureBreak(event, () -> visuals.forEach(Entity::remove));
                 // Forge only drops the barrel itself. Its internal ingredients, fluid and
@@ -223,7 +223,7 @@ public final class StationService implements Listener {
             }
             case SHAKER -> {
                 Optional<ItemStack> shaker = event.dropItems()
-                        ? buildShakerItem(new FurnitureState(plugin, furniture), event.player())
+                        ? buildShakerItem(new FurnitureState(furniture), event.player())
                         : Optional.empty();
                 if (shaker.isPresent()) {
                     event.setDropItems(false);
@@ -515,7 +515,7 @@ public final class StationService implements Listener {
     }
 
     private boolean interactPress(Player player, BukkitFurniture furniture, InteractionHand usedHand) {
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         ItemStack hand = usedHand == InteractionHand.MAIN_HAND
                 ? player.getInventory().getItemInMainHand()
                 : player.getInventory().getItemInOffHand();
@@ -582,7 +582,7 @@ public final class StationService implements Listener {
         if (!furniture.currentVariant().name().equals("ground")) {
             return false;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         int count = state.integer("press_count");
         ItemStack ingredient = pressingItem(state);
         if (ingredient == null || count <= 0) {
@@ -736,7 +736,7 @@ public final class StationService implements Listener {
     }
 
     private boolean interactBarrel(Player player, BukkitFurniture furniture, Location interactionPoint) {
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         boolean open = isBarrelOpen(furniture);
         BarrelSemantics.Hit hit = barrelHit(furniture, interactionPoint);
         ItemStack hand = player.getInventory().getItemInMainHand();
@@ -933,7 +933,7 @@ public final class StationService implements Listener {
         if (furniture == null || !furniture.isValid() || furniture.bukkitEntity() == null) {
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         if (isBarrelBrewing(state) && isBarrelOpen(furniture)) {
             setBarrelOpen(furniture, false, false);
         }
@@ -1023,7 +1023,7 @@ public final class StationService implements Listener {
     }
 
     private boolean interactShaker(Player player, BukkitFurniture furniture) {
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         ItemStack hand = player.getInventory().getItemInMainHand();
         String handId = items.id(hand);
         // ShakerBlock only accepts ingredients while placed. Empty hand picks
@@ -1143,7 +1143,7 @@ public final class StationService implements Listener {
         if (ingredients.isEmpty() && result == null) {
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         state.items("shaker_ingredients", ingredients);
         state.item("shaker_result", result);
     }
@@ -1178,7 +1178,7 @@ public final class StationService implements Listener {
         ItemStack source = result.clone();
         source.setAmount(1);
         placed.setSourceItem(BukkitAdaptor.adapt(source));
-        new FurnitureState(plugin, placed).items("bottle_items", List.of(source));
+        new FurnitureState(placed).items("bottle_items", List.of(source));
         placed.refreshElements();
         placed.setUnsaved();
         items.withShakerState(shaker, List.of(), null);
@@ -1222,7 +1222,7 @@ public final class StationService implements Listener {
         if (barrel == null || !barrel.isValid() || !barrel.id().equals(BARREL_KEY)) {
             return BarrelSemantics.TapExtractStatus.INVALID_CONTAINER;
         }
-        FurnitureState state = new FurnitureState(plugin, barrel);
+        FurnitureState state = new FurnitureState(barrel);
         String recipeId = state.string("barrel_recipe");
         boolean carrierRecipeValid = state.string("barrel_result") != null
                 && (recipeId == null || recipeId.equals(NAMESPACE + "empty")
@@ -1234,7 +1234,7 @@ public final class StationService implements Listener {
     boolean isTapOutputHot(BukkitFurniture barrel) {
         return barrel != null && barrel.isValid() && barrel.id().equals(BARREL_KEY)
                 && TapSemantics.isHotBarrelOutput(
-                        new FurnitureState(plugin, barrel).string("barrel_result"));
+                        new FurnitureState(barrel).string("barrel_result"));
     }
 
     boolean transferTapOutput(BukkitFurniture barrel, Player context,
@@ -1242,7 +1242,7 @@ public final class StationService implements Listener {
         if (!canTapExtract(barrel)) {
             return false;
         }
-        FurnitureState state = new FurnitureState(plugin, barrel);
+        FurnitureState state = new FurnitureState(barrel);
         String resultId = state.string("barrel_result");
         int remaining = state.integer("barrel_output");
         Optional<ItemStack> built = items.build(resultId, context)
@@ -1286,7 +1286,7 @@ public final class StationService implements Listener {
     }
 
     private void tickBarrel(BukkitFurniture furniture) {
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         if (isBarrelOpen(furniture)) {
             return;
         }
@@ -1309,7 +1309,7 @@ public final class StationService implements Listener {
         if (furniture == null || !furniture.isValid() || furniture.bukkitEntity() == null) {
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         if (!isBarrelOpen(furniture)) {
             removeBarrelVisuals(furniture);
             return;
@@ -1474,7 +1474,7 @@ public final class StationService implements Listener {
         if (furniture == null || furniture.bukkitEntity() == null) {
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         List<ItemDisplay> displays = new ArrayList<>();
         displays.addAll(barrelVisuals(furniture, state, "item", "barrel_item_visuals"));
         displays.addAll(barrelVisuals(furniture, state, "fluid", "barrel_fluid_visual"));
@@ -1501,7 +1501,7 @@ public final class StationService implements Listener {
         if (furniture == null || !furniture.isValid() || furniture.bukkitEntity() == null) {
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         ItemStack ingredient = pressingItem(state);
         int count = ingredient == null ? 0 : Math.max(0, state.integer("press_count"));
         List<ItemDisplay> itemDisplays = pressVisuals(furniture, state, "item", "press_item_visuals");
@@ -1663,7 +1663,7 @@ public final class StationService implements Listener {
         if (furniture.bukkitEntity() == null) {
             return;
         }
-        FurnitureState state = new FurnitureState(plugin, furniture);
+        FurnitureState state = new FurnitureState(furniture);
         List<ItemDisplay> displays = new ArrayList<>();
         displays.addAll(pressVisuals(furniture, state, "item", "press_item_visuals"));
         displays.addAll(pressVisuals(furniture, state, "fluid", "press_fluid_visual"));

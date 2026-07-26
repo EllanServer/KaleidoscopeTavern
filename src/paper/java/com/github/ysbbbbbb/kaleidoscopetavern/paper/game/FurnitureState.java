@@ -1,108 +1,112 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StateFurnitureBehavior;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
-import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Entity;
+import net.momirealms.craftengine.libraries.nbt.ByteArrayTag;
+import net.momirealms.craftengine.libraries.nbt.CompoundTag;
+import net.momirealms.craftengine.libraries.nbt.ListTag;
+import net.momirealms.craftengine.libraries.nbt.StringTag;
+import net.momirealms.craftengine.libraries.nbt.Tag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.ListPersistentDataType;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-/** Namespaced persistent state stored directly on CraftEngine's furniture meta entity. */
+/** Typed access to state persisted by CraftEngine's furniture controller. */
 final class FurnitureState {
-    private static final Map<String, NamespacedKey> KEY_CACHE = new ConcurrentHashMap<>();
-    private static final ListPersistentDataType<String, String> STRING_LIST = PersistentDataType.LIST.strings();
-    private static final ListPersistentDataType<byte[], byte[]> BYTE_ARRAY_LIST =
-            PersistentDataType.LIST.byteArrays();
+    private final StateFurnitureBehavior.StateController controller;
+    private final CompoundTag data;
 
-    private final JavaPlugin plugin;
-    private final PersistentDataContainer data;
-
-    FurnitureState(JavaPlugin plugin, BukkitFurniture furniture) {
-        this.plugin = plugin;
-        Entity entity = furniture.bukkitEntity();
-        if (entity == null) {
-            throw new IllegalStateException("Furniture meta entity is unavailable");
-        }
-        this.data = entity.getPersistentDataContainer();
+    FurnitureState(BukkitFurniture furniture) {
+        this.controller = StateFurnitureBehavior.state(furniture);
+        this.data = controller.data();
     }
 
     String string(String name) {
-        return data.get(key(name), PersistentDataType.STRING);
+        return data.containsKey(name) ? data.getString(name) : null;
     }
 
     String string(String name, String fallback) {
-        return data.getOrDefault(key(name), PersistentDataType.STRING, fallback);
+        return data.getString(name, fallback);
     }
 
     void putString(String name, String value) {
         if (value == null || value.isEmpty()) {
-            data.remove(key(name));
+            remove(name);
         } else {
-            data.set(key(name), PersistentDataType.STRING, value);
+            put(name, new StringTag(value));
         }
     }
 
     int integer(String name) {
-        return data.getOrDefault(key(name), PersistentDataType.INTEGER, 0);
+        return data.getInt(name, 0);
     }
 
     void integer(String name, int value) {
         if (value == 0) {
-            data.remove(key(name));
+            remove(name);
         } else {
-            data.set(key(name), PersistentDataType.INTEGER, value);
+            int previous = data.getInt(name, 0);
+            if (!data.containsKey(name) || previous != value) {
+                data.putInt(name, value);
+                controller.markChanged();
+            }
         }
     }
 
     boolean bool(String name) {
-        return data.getOrDefault(key(name), PersistentDataType.BOOLEAN, false);
+        return data.getBoolean(name, false);
     }
 
     void bool(String name, boolean value) {
         if (value) {
-            data.set(key(name), PersistentDataType.BOOLEAN, true);
+            if (!data.getBoolean(name, false)) {
+                data.putBoolean(name, true);
+                controller.markChanged();
+            }
         } else {
-            data.remove(key(name));
+            remove(name);
         }
     }
 
     List<String> strings(String name) {
-        NamespacedKey stateKey = key(name);
-        if (!data.has(stateKey, STRING_LIST)) {
+        ListTag stored = data.getList(name);
+        if (stored == null) {
             return new ArrayList<>();
         }
-        List<String> stored = data.get(stateKey, STRING_LIST);
-        return stored == null ? new ArrayList<>() : new ArrayList<>(stored);
+        List<String> result = new ArrayList<>(stored.size());
+        for (int index = 0; index < stored.size(); index++) {
+            String value = stored.getString(index);
+            if (value != null) {
+                result.add(value);
+            }
+        }
+        return result;
     }
 
     void strings(String name, List<String> values) {
         if (values.isEmpty()) {
-            data.remove(key(name));
-        } else {
-            data.set(key(name), STRING_LIST, values);
+            remove(name);
+            return;
         }
+        ListTag stored = new ListTag();
+        values.forEach(value -> stored.addTag(stored.size(), new StringTag(value)));
+        put(name, stored);
     }
 
     List<ItemStack> items(String name) {
         List<ItemStack> result = new ArrayList<>();
-        NamespacedKey stateKey = key(name);
-        if (!data.has(stateKey, BYTE_ARRAY_LIST)) {
-            return result;
-        }
-        List<byte[]> encodedItems = data.get(stateKey, BYTE_ARRAY_LIST);
+        ListTag encodedItems = data.getList(name);
         if (encodedItems == null) {
             return result;
         }
-        for (byte[] encoded : encodedItems) {
+        for (int index = 0; index < encodedItems.size(); index++) {
+            Tag encodedTag = encodedItems.get(index);
+            if (!(encodedTag instanceof ByteArrayTag encodedItem)) {
+                continue;
+            }
             try {
-                ItemStack item = ItemStack.deserializeBytes(encoded);
+                ItemStack item = ItemStack.deserializeBytes(encodedItem.getAsByteArray());
                 if (!item.isEmpty()) {
                     result.add(item);
                 }
@@ -115,26 +119,24 @@ final class FurnitureState {
 
     void items(String name, List<ItemStack> items) {
         if (items.isEmpty()) {
-            data.remove(key(name));
+            remove(name);
             return;
         }
-        List<byte[]> encoded = items.stream()
+        ListTag encoded = new ListTag();
+        items.stream()
                 .filter(item -> item != null && !item.isEmpty())
                 .map(ItemStack::serializeAsBytes)
-                .toList();
+                .map(ByteArrayTag::new)
+                .forEach(tag -> encoded.addTag(encoded.size(), tag));
         if (encoded.isEmpty()) {
-            data.remove(key(name));
+            remove(name);
         } else {
-            data.set(key(name), BYTE_ARRAY_LIST, encoded);
+            put(name, encoded);
         }
     }
 
     ItemStack item(String name) {
-        NamespacedKey stateKey = key(name);
-        if (!data.has(stateKey, PersistentDataType.BYTE_ARRAY)) {
-            return null;
-        }
-        byte[] encoded = data.get(stateKey, PersistentDataType.BYTE_ARRAY);
+        byte[] encoded = data.getByteArray(name);
         if (encoded == null) {
             return null;
         }
@@ -148,25 +150,36 @@ final class FurnitureState {
 
     void item(String name, ItemStack item) {
         if (item == null || item.isEmpty()) {
-            data.remove(key(name));
+            remove(name);
         } else {
-            data.set(key(name), PersistentDataType.BYTE_ARRAY, item.serializeAsBytes());
+            put(name, new ByteArrayTag(item.serializeAsBytes()));
         }
     }
 
     void clear(String... names) {
+        boolean changed = false;
         for (String name : names) {
-            data.remove(key(name));
+            if (data.containsKey(name)) {
+                data.remove(name);
+                changed = true;
+            }
+        }
+        if (changed) {
+            controller.markChanged();
         }
     }
 
-    private NamespacedKey key(String name) {
-        NamespacedKey cached = KEY_CACHE.get(name);
-        if (cached != null) {
-            return cached;
+    private void put(String name, Tag value) {
+        if (!value.equals(data.get(name))) {
+            data.put(name, value);
+            controller.markChanged();
         }
-        NamespacedKey created = new NamespacedKey(plugin, name);
-        NamespacedKey existing = KEY_CACHE.putIfAbsent(name, created);
-        return existing == null ? created : existing;
+    }
+
+    private void remove(String name) {
+        if (data.containsKey(name)) {
+            data.remove(name);
+            controller.markChanged();
+        }
     }
 }
