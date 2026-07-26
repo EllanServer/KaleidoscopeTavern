@@ -579,17 +579,8 @@ public final class BoardTextService implements Listener {
     }
 
     private List<BukkitFurniture> nearbyFurniture(Location center, double radius) {
-        List<BukkitFurniture> result = new ArrayList<>();
-        for (Entity entity : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
-            if (!CraftEngineFurniture.isFurniture(entity)) {
-                continue;
-            }
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (furniture != null) {
-                result.add(furniture);
-            }
-        }
-        return result;
+        return LifecycleFurnitureBehavior.nearby(
+                LifecycleFurnitureBehavior.Channel.BOARD, center, radius, radius);
     }
 
     private static UUID furnitureOwner(BukkitFurniture furniture) {

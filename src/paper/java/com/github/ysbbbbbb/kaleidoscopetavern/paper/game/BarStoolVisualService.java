@@ -196,14 +196,8 @@ public final class BarStoolVisualService implements Listener {
     private BukkitFurniture findBarStool(Location mount) {
         BukkitFurniture closest = null;
         double closestDistance = Double.MAX_VALUE;
-        for (Entity entity : mount.getWorld().getNearbyEntities(
-                mount, 1.5, 1.5, 1.5,
-                candidate -> candidate instanceof ItemDisplay
-                        && CraftEngineFurniture.isFurniture(candidate))) {
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (!isBarStool(furniture)) {
-                continue;
-            }
+        for (BukkitFurniture furniture : LifecycleFurnitureBehavior.nearby(
+                LifecycleFurnitureBehavior.Channel.BAR_STOOL, mount, 1.5, 1.5)) {
             double distance = furniture.location().distanceSquared(mount);
             if (distance < closestDistance) {
                 closest = furniture;

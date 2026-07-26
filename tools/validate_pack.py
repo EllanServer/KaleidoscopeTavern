@@ -836,7 +836,10 @@ def validate() -> dict[str, int]:
             "public void postRemove(Player player)",
             "public void onUnload(boolean isStopping)",
             "handler.onReady(bukkitFurniture, readyReason)",
-            "currentHandler.onUnavailable(bukkitFurniture, removed, stopping)"):
+            "currentHandler.onUnavailable(bukkitFurniture, removed, stopping)",
+            "public static List<BukkitFurniture> nearby(",
+            "FurnitureSpatialSemantics.minimumColumn(",
+            "FurnitureSpatialSemantics.insideBox("):
         if required_token not in lifecycle_behavior_source:
             raise AssertionError(
                 "lifecycle_furniture must route CE readiness and unavailability; "
@@ -876,6 +879,25 @@ def validate() -> dict[str, int]:
         if "EntitiesUnloadEvent" in source:
             raise AssertionError(
                 f"{service_name} must let CE deliver furniture unload callbacks")
+
+    indexed_query_services = {
+        "BarStoolVisualService.java": "Channel.BAR_STOOL, mount, 1.5, 1.5",
+        "BoardTextService.java": "Channel.BOARD, center, radius, radius",
+        "FurnitureConnectionService.java": "Channel.CONNECTION, center, 3.25, 1.25",
+    }
+    for service_name, required_query in indexed_query_services.items():
+        source = (game_package / service_name).read_text(encoding="utf-8-sig")
+        if required_query not in source:
+            raise AssertionError(
+                f"{service_name} must query its CE lifecycle spatial index")
+    connection_source = (
+        game_package / "FurnitureConnectionService.java"
+    ).read_text(encoding="utf-8-sig")
+    for stale_token in ("getNearbyEntities", "CraftEngineFurniture"):
+        if stale_token in connection_source:
+            raise AssertionError(
+                "FurnitureConnectionService must not rediscover indexed CE furniture; "
+                f"stale token found: {stale_token}")
 
     station_source = (game_package / "StationService.java").read_text(
         encoding="utf-8-sig")

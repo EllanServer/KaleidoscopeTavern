@@ -1,16 +1,12 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
-import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,17 +58,8 @@ public final class FurnitureConnectionService {
     }
 
     private static void refresh(Location center) {
-        World world = center.getWorld();
-        List<BukkitFurniture> furniture = new ArrayList<>();
-        for (Entity entity : world.getNearbyEntities(center, 3.25, 1.25, 3.25)) {
-            if (!CraftEngineFurniture.isFurniture(entity)) {
-                continue;
-            }
-            BukkitFurniture found = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (found != null && found.isValid() && isManaged(found)) {
-                furniture.add(found);
-            }
-        }
+        List<BukkitFurniture> furniture = LifecycleFurnitureBehavior.nearby(
+                LifecycleFurnitureBehavior.Channel.CONNECTION, center, 3.25, 1.25);
 
         Map<GridPosition, BukkitFurniture> byPosition = new HashMap<>();
         furniture.forEach(entry -> byPosition.put(GridPosition.of(entry.location()), entry));
@@ -250,11 +237,6 @@ public final class FurnitureConnectionService {
         String secondId = second.id().toString();
         return firstId.endsWith("_sofa") && secondId.endsWith("_sofa")
                 || firstId.equals(BAR_COUNTER) && secondId.equals(BAR_COUNTER);
-    }
-
-    private static boolean isManaged(BukkitFurniture furniture) {
-        String id = furniture.id().toString();
-        return id.endsWith("_sofa") || id.equals(BAR_COUNTER) || LINEAR_FURNITURE.contains(id);
     }
 
     private static boolean isLinear(BukkitFurniture furniture) {
