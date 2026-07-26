@@ -25,6 +25,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -94,6 +95,8 @@ public final class BoardTextService implements Listener {
             this::onBoardPlaced;
     // AsyncChatEvent removes entries off the main thread.
     private final Map<UUID, EditSession> editors = new ConcurrentHashMap<>();
+    private final EditMoveListener editMoveListener = new EditMoveListener();
+    private boolean editMoveListenerRegistered;
 
     public BoardTextService(JavaPlugin plugin, ItemService items) {
         this.plugin = plugin;
@@ -110,6 +113,7 @@ public final class BoardTextService implements Listener {
                 UUID owner = furnitureOwner(furniture);
                 editors.entrySet().removeIf(
                         entry -> entry.getValue().furniture().equals(owner));
+                stopEditMoveListenerIfIdle();
             }
         };
     }
@@ -123,6 +127,8 @@ public final class BoardTextService implements Listener {
     }
 
     public void stop() {
+        HandlerList.unregisterAll(editMoveListener);
+        editMoveListenerRegistered = false;
         BoardTextFurnitureBehavior.unbindPlacement(boardPlacementHandler);
         BoardTextFurnitureBehavior.unbindInteraction(boardInteractionHandler);
         BoardTextFurnitureBehavior.unbind(boardVisualHandler);
@@ -185,6 +191,7 @@ public final class BoardTextService implements Listener {
         Entity entity = furniture.bukkitEntity();
         if (entity != null) {
             editors.put(player.getUniqueId(), new EditSession(entity.getUniqueId()));
+            ensureEditMoveListener();
             player.sendMessage(Component.text("请在聊天栏输入文字（\\n 换行；[left]/[center]/[right] 设置对齐；!clear 清空；!cancel 取消）。"));
         }
         return InteractionResult.SUCCESS_AND_CANCEL;
@@ -198,7 +205,10 @@ public final class BoardTextService implements Listener {
         }
         event.setCancelled(true);
         String input = PlainTextComponentSerializer.plainText().serialize(event.message());
-        Bukkit.getScheduler().runTask(plugin, () -> applyChatInput(event.getPlayer(), session, input));
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            stopEditMoveListenerIfIdle();
+            applyChatInput(event.getPlayer(), session, input);
+        });
     }
 
     private void onBoardPlaced(BukkitFurniture placed,
@@ -227,6 +237,7 @@ public final class BoardTextService implements Listener {
         Entity entity = event.furniture().bukkitEntity();
         if (entity != null) {
             editors.entrySet().removeIf(entry -> entry.getValue().furniture().equals(entity.getUniqueId()));
+            stopEditMoveListenerIfIdle();
         }
         if (event.dropItems() && state.integer("board_large_count") == 3) {
             items.build(CHALKBOARD, event.player()).ifPresent(stack -> {
@@ -239,6 +250,7 @@ public final class BoardTextService implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         editors.remove(event.getPlayer().getUniqueId());
+        stopEditMoveListenerIfIdle();
     }
 
     private void applyChatInput(Player player, EditSession session, String rawInput) {
@@ -297,17 +309,6 @@ public final class BoardTextService implements Listener {
         player.sendMessage(Component.text(input.isBlank() ? "已清空写字板。" : "写字板文字已更新。"));
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onMove(PlayerMoveEvent event) {
-        if (event.getTo() == null || !editors.containsKey(event.getPlayer().getUniqueId())
-                || event.getFrom().getX() == event.getTo().getX()
-                && event.getFrom().getY() == event.getTo().getY()
-                && event.getFrom().getZ() == event.getTo().getZ()) {
-            return;
-        }
-        validateEditDistance(event.getPlayer());
-    }
-
     /** Event-driven equivalent of TextBlockEntity.tick's eight-block editor check. */
     private void validateEditDistance(Player player) {
         EditSession session = editors.get(player.getUniqueId());
@@ -318,6 +319,37 @@ public final class BoardTextService implements Listener {
         if (entity == null || !entity.isValid() || !player.getWorld().equals(entity.getWorld())
                 || player.getLocation().distanceSquared(entity.getLocation()) > 64) {
             editors.remove(player.getUniqueId());
+            stopEditMoveListenerIfIdle();
+        }
+    }
+
+    private void ensureEditMoveListener() {
+        if (editMoveListenerRegistered) {
+            return;
+        }
+        plugin.getServer().getPluginManager().registerEvents(editMoveListener, plugin);
+        editMoveListenerRegistered = true;
+    }
+
+    private void stopEditMoveListenerIfIdle() {
+        if (!editMoveListenerRegistered || !editors.isEmpty()) {
+            return;
+        }
+        HandlerList.unregisterAll(editMoveListener);
+        editMoveListenerRegistered = false;
+    }
+
+    private final class EditMoveListener implements Listener {
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        public void onMove(PlayerMoveEvent event) {
+            if (event.getTo() == null
+                    || !editors.containsKey(event.getPlayer().getUniqueId())
+                    || event.getFrom().getX() == event.getTo().getX()
+                    && event.getFrom().getY() == event.getTo().getY()
+                    && event.getFrom().getZ() == event.getTo().getZ()) {
+                return;
+            }
+            validateEditDistance(event.getPlayer());
         }
     }
 

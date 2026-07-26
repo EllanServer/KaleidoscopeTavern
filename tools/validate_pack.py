@@ -777,6 +777,21 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Board edit distance must be event-driven, not a global per-tick player scan")
     for required_token in (
+            "private final class EditMoveListener implements Listener",
+            "registerEvents(editMoveListener, plugin)",
+            "HandlerList.unregisterAll(editMoveListener)",
+            "private void ensureEditMoveListener()",
+            "private void stopEditMoveListenerIfIdle()"):
+        if required_token not in board_text_source:
+            raise AssertionError(
+                "Board movement checks must be registered only while an edit session exists; "
+                f"missing token: {required_token}")
+    board_start = board_text_source.partition("public void start() {")[2].partition(
+        "public void stop() {")[0]
+    if "editMoveListener" in board_start:
+        raise AssertionError(
+            "BoardTextService.start must not register an idle global PlayerMoveEvent listener")
+    for required_token in (
             "BoardTextFurnitureBehavior.bind(boardVisualHandler)",
             "BoardTextFurnitureBehavior.unbind(boardVisualHandler)",
             "BoardTextFurnitureBehavior.bindInteraction(boardInteractionHandler)",
