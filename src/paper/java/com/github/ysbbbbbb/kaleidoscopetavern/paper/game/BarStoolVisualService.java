@@ -212,26 +212,47 @@ public final class BarStoolVisualService implements Listener {
             return null;
         }
         UUID owner = furniture.bukkitEntity().getUniqueId();
-        ItemDisplay body = null;
-        for (Entity entity : furniture.location().getWorld().getNearbyEntities(
-                furniture.location(), 2, 2, 2,
-                candidate -> candidate instanceof ItemDisplay)) {
-            ItemDisplay candidate = (ItemDisplay) entity;
-            if (!owner.equals(bodyOwner(candidate))) {
-                continue;
+        FurnitureState state = new FurnitureState(furniture);
+        String stored = state.string("bar_stool_body_visual");
+        ItemDisplay body = storedBody(stored, owner);
+        boolean recover = !state.bool("bar_stool_body_resolved")
+                || stored != null && body == null;
+        if (recover) {
+            for (Entity entity : furniture.location().getWorld().getNearbyEntities(
+                    furniture.location(), 2, 2, 2,
+                    candidate -> candidate instanceof ItemDisplay)) {
+                ItemDisplay candidate = (ItemDisplay) entity;
+                if (!owner.equals(bodyOwner(candidate))) {
+                    continue;
+                }
+                if (body == null) {
+                    body = candidate;
+                } else if (body != candidate) {
+                    candidate.remove();
+                }
             }
-            if (body == null) {
-                body = candidate;
-            } else {
-                candidate.remove();
-            }
+            state.bool("bar_stool_body_resolved", true);
         }
         if (body == null) {
             body = spawnBody(furniture, owner);
         }
         bodyVisuals.put(owner, body.getUniqueId());
+        state.putString("bar_stool_body_visual", body.getUniqueId().toString());
         configureBody(furniture, body);
         return body;
+    }
+
+    private ItemDisplay storedBody(String token, UUID owner) {
+        if (token == null) {
+            return null;
+        }
+        try {
+            Entity entity = Bukkit.getEntity(UUID.fromString(token));
+            return entity instanceof ItemDisplay display && display.isValid()
+                    && owner.equals(bodyOwner(display)) ? display : null;
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     private ItemDisplay spawnBody(BukkitFurniture furniture, UUID owner) {

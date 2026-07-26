@@ -69,6 +69,11 @@ EXPECTED_STATE_FURNITURE = {
     "sweet_berry_wine", "sherry", "mother_snow", "luminous_bride",
     "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
     "watermelon_juice",
+    "black_bar_stool", "blue_bar_stool", "brown_bar_stool", "cyan_bar_stool",
+    "gray_bar_stool", "green_bar_stool", "light_blue_bar_stool",
+    "light_gray_bar_stool", "lime_bar_stool", "magenta_bar_stool",
+    "orange_bar_stool", "pink_bar_stool", "purple_bar_stool", "red_bar_stool",
+    "white_bar_stool", "yellow_bar_stool",
 }
 FURNITURE_COLORS = {
     "black", "blue", "brown", "cyan", "gray", "green", "light_blue",

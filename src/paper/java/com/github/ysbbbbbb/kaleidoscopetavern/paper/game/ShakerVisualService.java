@@ -197,31 +197,40 @@ public final class ShakerVisualService implements Listener {
             return null;
         }
         UUID owner = furniture.bukkitEntity().getUniqueId();
-        ItemDisplay base = null;
-        ItemDisplay lid = null;
-        for (Entity entity : furniture.location().getWorld().getNearbyEntities(
-                furniture.location(), 2, 2, 2,
-                candidate -> candidate instanceof ItemDisplay)) {
-            ItemDisplay candidate = (ItemDisplay) entity;
-            if (!owner.equals(owner(candidate))) {
-                continue;
-            }
-            String role = role(candidate);
-            if (BASE_ROLE.equals(role)) {
-                if (base == null) {
-                    base = candidate;
+        FurnitureState state = new FurnitureState(furniture);
+        String storedBase = state.string("shaker_base_visual");
+        String storedLid = state.string("shaker_lid_visual");
+        ItemDisplay base = storedVisual(storedBase, owner, BASE_ROLE);
+        ItemDisplay lid = storedVisual(storedLid, owner, LID_ROLE);
+        boolean recover = !state.bool("shaker_visuals_resolved")
+                || storedBase != null && base == null
+                || storedLid != null && lid == null;
+        if (recover) {
+            for (Entity entity : furniture.location().getWorld().getNearbyEntities(
+                    furniture.location(), 2, 2, 2,
+                    candidate -> candidate instanceof ItemDisplay)) {
+                ItemDisplay candidate = (ItemDisplay) entity;
+                if (!owner.equals(owner(candidate))) {
+                    continue;
+                }
+                String role = role(candidate);
+                if (BASE_ROLE.equals(role)) {
+                    if (base == null) {
+                        base = candidate;
+                    } else if (base != candidate) {
+                        candidate.remove();
+                    }
+                } else if (LID_ROLE.equals(role)) {
+                    if (lid == null) {
+                        lid = candidate;
+                    } else if (lid != candidate) {
+                        candidate.remove();
+                    }
                 } else {
                     candidate.remove();
                 }
-            } else if (LID_ROLE.equals(role)) {
-                if (lid == null) {
-                    lid = candidate;
-                } else {
-                    candidate.remove();
-                }
-            } else {
-                candidate.remove();
             }
+            state.bool("shaker_visuals_resolved", true);
         }
         if (base == null) {
             base = spawnVisual(furniture, owner, BASE_ROLE);
@@ -238,9 +247,25 @@ public final class ShakerVisualService implements Listener {
         lid.teleport(location);
         VisualIds ids = new VisualIds(base.getUniqueId(), lid.getUniqueId());
         visuals.put(owner, ids);
+        state.putString("shaker_base_visual", ids.base().toString());
+        state.putString("shaker_lid_visual", ids.lid().toString());
         VisualPair pair = new VisualPair(base, lid);
         applyPose(pair, ShakerAnimationSemantics.pose(0F));
         return pair;
+    }
+
+    private ItemDisplay storedVisual(String token, UUID owner, String role) {
+        if (token == null) {
+            return null;
+        }
+        try {
+            Entity entity = Bukkit.getEntity(UUID.fromString(token));
+            return entity instanceof ItemDisplay display && display.isValid()
+                    && owner.equals(owner(display)) && role.equals(role(display))
+                    ? display : null;
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     private ItemDisplay spawnVisual(BukkitFurniture furniture, UUID owner, String role) {

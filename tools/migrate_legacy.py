@@ -2204,6 +2204,7 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
             "tilted_rack", "circular_rack", "holder", "glassware_holder",
         }
         or block_id.endswith("_sandwich_board")
+        or block_id.endswith("_bar_stool")
     )
     if uses_tavern_state:
         # Index zero is intentional: FurnitureState resolves this controller
