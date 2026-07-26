@@ -84,6 +84,37 @@ LEGACY_MODEL_TEXTURE_RENAMES: dict[str, str] = {
 }
 
 
+_LANGUAGE_KEYS: set[str] | None = None
+
+
+def render_item_name(reference_id: str) -> str:
+    """Localised hover name for internal render helpers.
+
+    Waila-style mods (Jade) show the displayed item's name when hovering the
+    furniture's ItemDisplay, so every render helper carries the real block or
+    item translation instead of a debug label.
+    """
+    global _LANGUAGE_KEYS
+    if _LANGUAGE_KEYS is None:
+        _LANGUAGE_KEYS = set(read_json(EN_US))
+    # Variant blocks (base_/grass_/rose_ sandwich boards etc.) fall back to
+    # the base block's name by progressively dropping leading words.
+    parts = reference_id.split("_")
+    names = ["_".join(parts[start:]) for start in range(len(parts))]
+    for name in names:
+        for prefix in ("block", "item"):
+            candidate = f"{prefix}.{NAMESPACE}.{name}"
+            if candidate in _LANGUAGE_KEYS:
+                return f"<!i><lang:{candidate}>"
+    raise KeyError(f"No display-name translation for render item {reference_id}")
+
+
+def fluid_render_name(fluid: str) -> str:
+    if fluid in ("water", "lava"):
+        return f"<!i><lang:block.minecraft.{fluid}>"
+    return render_item_name(fluid)
+
+
 def normalize_legacy_resource_id(resource_id: str) -> str:
     tag_prefix = "#" if resource_id.startswith("#") else ""
     bare_id = resource_id[1:] if tag_prefix else resource_id
@@ -763,7 +794,7 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 render_id = f"{NAMESPACE}:{render_path}"
                 render_items[render_id] = {
                     "material": "paper",
-                    "data": {"item_name": f"<!i>{block_id} render"},
+                    "data": {"item_name": render_item_name(block_id)},
                     "model": {"type": "minecraft:model", "path": model[0]},
                     "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
                 }
@@ -907,7 +938,7 @@ def ensure_render_item(
     render_id = f"{NAMESPACE}:_render/{block_id}/{digest}"
     render_items.setdefault(render_id, {
         "material": "paper",
-        "data": {"item_name": f"<!i>{block_id} {label} render"},
+        "data": {"item_name": render_item_name(block_id)},
         "model": {"type": "minecraft:model", "path": model[0]},
         "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
     })
@@ -1964,7 +1995,7 @@ def add_runtime_render_items(render_items: dict[str, Any]) -> None:
         model = min(blockstate_records(block_id), key=record_score)[1]
         definition: dict[str, Any] = {
             "material": "paper",
-            "data": {"item_name": f"<!i>{block_id} storage render"},
+            "data": {"item_name": render_item_name(block_id)},
             "model": {"type": "minecraft:model", "path": model[0]},
             "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
         }
@@ -1977,7 +2008,7 @@ def add_runtime_render_items(render_items: dict[str, Any]) -> None:
     for fluid in sorted(PRESS_FLUIDS):
         render_items[f"{NAMESPACE}:_render/pressing_fluid/{fluid}"] = {
             "material": "paper",
-            "data": {"item_name": f"<!i>{fluid} pressing fluid render"},
+            "data": {"item_name": fluid_render_name(fluid)},
             "model": {
                 "type": "minecraft:model",
                 "path": f"{NAMESPACE}:furniture/pressing_fluid/{fluid}",
@@ -1987,7 +2018,7 @@ def add_runtime_render_items(render_items: dict[str, Any]) -> None:
     for fluid in sorted(BARREL_FLUIDS):
         definition: dict[str, Any] = {
             "material": "paper",
-            "data": {"item_name": f"<!i>{fluid} barrel fluid render"},
+            "data": {"item_name": fluid_render_name(fluid)},
             "model": {
                 "type": "minecraft:model",
                 "path": f"{NAMESPACE}:furniture/barrel_fluid/{fluid}",
@@ -2003,7 +2034,7 @@ def add_runtime_render_items(render_items: dict[str, Any]) -> None:
     for color in BAR_STOOL_COLORS:
         render_items[f"{NAMESPACE}:_render/bar_stool_body/{color}"] = {
             "material": "paper",
-            "data": {"item_name": f"<!i>{color} bar stool body render"},
+            "data": {"item_name": render_item_name(f"{color}_bar_stool")},
             "model": {
                 "type": "minecraft:model",
                 "path": f"{NAMESPACE}:furniture/bar_stool_body/{color}",
@@ -2013,7 +2044,7 @@ def add_runtime_render_items(render_items: dict[str, Any]) -> None:
     for part in ("base", "lid"):
         render_items[f"{NAMESPACE}:_render/shaker_{part}"] = {
             "material": "paper",
-            "data": {"item_name": f"<!i>shaker {part} render"},
+            "data": {"item_name": render_item_name("shaker")},
             "model": {
                 "type": "minecraft:model",
                 "path": f"{NAMESPACE}:furniture/shaker_{part}",
