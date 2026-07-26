@@ -53,9 +53,7 @@ EXPECTED_STATE_FURNITURE = {
     "poppy_sandwich_board", "sunflower_sandwich_board",
     "torchflower_sandwich_board", "tulip_sandwich_board",
     "wither_rose_sandwich_board",
-    "pressing_tub", "glassware_holder", "shaker", "barrel",
-    "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
-    "tilted_rack", "circular_rack", "holder",
+    "pressing_tub", "shaker", "barrel",
     "wine", "champagne", "vodka", "brandy", "carignan", "sakura_wine",
     "plum_wine", "whiskey", "ice_wine", "polaris_sweet_white",
     "honey_wine", "red_queen", "miners_star", "rum",
@@ -90,13 +88,9 @@ EXPECTED_LIFECYCLE_FURNITURE: dict[str, tuple[str, ...]] = {
     "torchflower_sandwich_board": ("board",),
     "tulip_sandwich_board": ("board",),
     "wither_rose_sandwich_board": ("board",),
-    "bar_cabinet": ("storage", "connection"),
-    "glass_bar_cabinet": ("storage", "connection"),
-    "cellar_cabinet": ("storage", "connection"),
-    "tilted_rack": ("storage",),
-    "circular_rack": ("storage",),
-    "holder": ("storage",),
-    "glassware_holder": ("storage",),
+    "bar_cabinet": ("connection",),
+    "glass_bar_cabinet": ("connection",),
+    "cellar_cabinet": ("connection",),
     "shaker": ("shaker",),
     "barrel": ("barrel",),
     "empty_bottle": ("tap_bottle",),
@@ -838,6 +832,9 @@ def validate() -> dict[str, int]:
     if "TickingFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register ticking_furniture before pack loading")
+    if "StorageVisualFurnitureBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register storage_visual_furniture before pack loading")
 
     stale_ambient_scan_tokens = (
         "runTaskTimer", "Bukkit.getEntity", "CraftEngineFurniture",
@@ -951,16 +948,12 @@ def validate() -> dict[str, int]:
     lifecycle_services = {
         "BarStoolVisualService.java": "BAR_STOOL",
         "BoardTextService.java": "BOARD",
-        "DisplayStorageService.java": "STORAGE",
         "FurnitureConnectionService.java": "CONNECTION",
         "ShakerVisualService.java": "SHAKER",
     }
     for service_name, channel in lifecycle_services.items():
         source = (game_package / service_name).read_text(encoding="utf-8-sig")
         required_bind = f"LifecycleFurnitureBehavior.Channel.{channel}, lifecycleHandler"
-        if service_name == "DisplayStorageService.java":
-            required_bind = (
-                f"LifecycleFurnitureBehavior.Channel.{channel}, storageLifecycleHandler")
         if required_bind not in source:
             raise AssertionError(
                 f"{service_name} must bind its exact CE lifecycle channel")
@@ -1064,6 +1057,42 @@ def validate() -> dict[str, int]:
             or "event.setCancelled(true)" not in storage_source:
         raise AssertionError(
             "DisplayStorageService must cancel off-hand interactions to prevent item duplication")
+    for stale_storage_visual_token in (
+            "ItemDisplay", "cabinet_visual", "PersistentDataType",
+            "getNearbyEntities", "new FurnitureState", "Channel.STORAGE, storageLifecycle"):
+        if stale_storage_visual_token in storage_source:
+            raise AssertionError(
+                "Storage visuals must be CE packet-only elements without Bukkit helper state; "
+                f"stale token: {stale_storage_visual_token}")
+    for required_storage_visual_token in (
+            "StorageVisualFurnitureBehavior.bind(storageVisualHandler)",
+            "StorageVisualFurnitureBehavior.unbind(storageVisualHandler)",
+            "furniture.refreshElements()",
+            "private StorageVisualFurnitureBehavior.Visual storageVisual"):
+        if required_storage_visual_token not in storage_source:
+            raise AssertionError(
+                "Display storage must feed the CE virtual visual controller; "
+                f"missing token: {required_storage_visual_token}")
+
+    storage_visual_source = (
+        game_package / "furniture" / "StorageVisualFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_storage_element_token in (
+            "implements FurnitureElement",
+            "DisplayData.ItemDisplayData.ItemStack.addEntityData",
+            "ClientboundAddEntityPacketProxy.INSTANCE.newInstance",
+            "player.sendPackets",
+            "public void gatherElements"):
+        if required_storage_element_token not in storage_visual_source:
+            raise AssertionError(
+                "storage_visual_furniture must use CE tracked packet-only elements; "
+                f"missing token: {required_storage_element_token}")
+    for stale_storage_element_token in (
+            "org.bukkit.entity.ItemDisplay", "PersistentDataType", "World.spawn"):
+        if stale_storage_element_token in storage_visual_source:
+            raise AssertionError(
+                "storage_visual_furniture must never create persistent Bukkit entities; "
+                f"stale token: {stale_storage_element_token}")
 
     tap_behavior_files = {
         path.name for path in SOURCE_TAP_BEHAVIORS.glob("*Behavior.java")
@@ -2392,13 +2421,36 @@ def validate() -> dict[str, int]:
             for behavior in configured_behaviors
             if behavior.get("type") == "display_item_furniture"
         ]
-        if len(behaviors) != slot_count or any(
-                rule.get("item_position") != "0,-4096,0" or "hitboxes" in rule
-                for behavior in behaviors
-                for rule in behavior.get("variants", {}).values()
-        ):
+        expected_display_behaviors = [{
+            "type": "display_item_furniture",
+            "data_key": f"{NAMESPACE}:display_slot_{slot}",
+            "sounds": {
+                "put": "minecraft:block.decorated_pot.insert",
+                "take": "minecraft:block.decorated_pot.insert_fail",
+            },
+        } for slot in range(slot_count)]
+        if behaviors != expected_display_behaviors:
             raise AssertionError(
-                f"{storage_id}: CE sprites must be hidden behind source-compatible Paper visuals")
+                f"{storage_id}: native CE controllers must own storage without duplicate sprites")
+        visual_behaviors = [
+            behavior for behavior in configured_behaviors
+            if behavior.get("type") == f"{NAMESPACE}:storage_visual_furniture"
+        ]
+        expected_visual = {
+            "type": f"{NAMESPACE}:storage_visual_furniture",
+            "slots": slot_count,
+        }
+        if visual_behaviors != [expected_visual]:
+            raise AssertionError(
+                f"{storage_id}: CE virtual storage visual coverage drifted")
+        display_indices = [
+            index for index, behavior in enumerate(configured_behaviors)
+            if behavior.get("type") == "display_item_furniture"
+        ]
+        visual_index = configured_behaviors.index(visual_behaviors[0])
+        if not display_indices or visual_index != display_indices[-1] + 1:
+            raise AssertionError(
+                f"{storage_id}: storage visual controller must follow its native slot controllers")
     storage_helpers = {
         item_id for item_id in render_items
         if item_id.startswith(f"{NAMESPACE}:_render/storage/")

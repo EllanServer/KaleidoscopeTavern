@@ -15013,23 +15013,11 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
-          "type": "kaleidoscope_tavern:lifecycle_furniture",
-          "channel": "storage"
-        },
-        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ceiling": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -15038,11 +15026,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ceiling": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -15051,11 +15034,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ceiling": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -15064,12 +15042,11 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ceiling": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 4
         },
         {
           "type": "glowing_furniture",
@@ -17046,13 +17023,6 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
-          "type": "kaleidoscope_tavern:lifecycle_furniture",
-          "channel": "storage"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "connection"
         },
@@ -17062,20 +17032,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17084,21 +17040,11 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 2
         }
       ]
     },
@@ -17225,13 +17171,6 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
-          "type": "kaleidoscope_tavern:lifecycle_furniture",
-          "channel": "storage"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "connection"
         },
@@ -17241,20 +17180,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17263,21 +17188,11 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 2
         }
       ]
     },
@@ -17404,13 +17319,6 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
-          "type": "kaleidoscope_tavern:lifecycle_furniture",
-          "channel": "storage"
-        },
-        {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "connection"
         },
@@ -17420,20 +17328,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17442,20 +17336,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17464,20 +17344,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17486,20 +17352,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17508,20 +17360,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17530,20 +17368,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17552,20 +17376,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17574,20 +17384,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17596,21 +17392,11 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 9
         },
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
@@ -17682,23 +17468,11 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
-          "type": "kaleidoscope_tavern:lifecycle_furniture",
-          "channel": "storage"
-        },
-        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17707,11 +17481,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17720,12 +17489,11 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 3
         },
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
@@ -17786,23 +17554,11 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
-          "type": "kaleidoscope_tavern:lifecycle_furniture",
-          "channel": "storage"
-        },
-        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17811,11 +17567,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17824,11 +17575,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17837,11 +17583,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17850,11 +17591,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17863,12 +17599,11 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 6
         },
         {
           "type": "glowing_furniture",
@@ -17984,24 +17719,16 @@
       },
       "behaviors": [
         {
-          "type": "kaleidoscope_tavern:state_furniture"
-        },
-        {
-          "type": "kaleidoscope_tavern:lifecycle_furniture",
-          "channel": "storage"
-        },
-        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 1
         },
         {
           "type": "kaleidoscope_tavern:redstone_furniture",

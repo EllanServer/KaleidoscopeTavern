@@ -2202,8 +2202,6 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         (block_id in BOTTLE_AND_GLASS_ITEMS and "ground_count_2" in variants)
         or block_id in {
             "pressing_tub", "barrel", "shaker", "chalkboard",
-            "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
-            "tilted_rack", "circular_rack", "holder", "glassware_holder",
         }
         or block_id.endswith("_sandwich_board")
         or block_id.endswith("_bar_stool")
@@ -2221,11 +2219,6 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     lifecycle_channels: list[str] = []
     if block_id == "chalkboard" or block_id.endswith("_sandwich_board"):
         lifecycle_channels.append("board")
-    if block_id in {
-        "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
-        "tilted_rack", "circular_rack", "holder", "glassware_holder",
-    }:
-        lifecycle_channels.append("storage")
     if block_id.endswith("_bar_stool"):
         lifecycle_channels.append("bar_stool")
     if block_id == "shaker":
@@ -2255,15 +2248,9 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     ) -> None:
         for index, position in enumerate(positions):
             variant_rules: dict[str, Any] = {}
-            for variant in variants:
-                rule: dict[str, Any] = {
-                    # Paper recreates every Forge storage renderer with its
-                    # exact block-model transform and slot-selection math.
-                    # Keep CE's controller solely as persistent storage and
-                    # move its packet-only inventory sprite out of view.
-                    "item_position": "0,-4096,0" if paper_visual else position,
-                }
-                if not paper_visual:
+            if not paper_visual:
+                for variant in variants:
+                    rule: dict[str, Any] = {"item_position": position}
                     rule["hitboxes"] = [{
                         "type": "interaction",
                         "position": position,
@@ -2272,16 +2259,18 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
                         "interactive": True,
                         "blocks_building": False,
                     }]
-                variant_rules[variant] = rule
-            behaviors.append({
+                    variant_rules[variant] = rule
+            behavior: dict[str, Any] = {
                 "type": "display_item_furniture",
                 "data_key": f"{NAMESPACE}:display_slot_{index}",
                 "sounds": {
                     "put": "minecraft:block.decorated_pot.insert",
                     "take": "minecraft:block.decorated_pot.insert_fail",
                 },
-                "variants": variant_rules,
-            })
+            }
+            if variant_rules:
+                behavior["variants"] = variant_rules
+            behaviors.append(behavior)
 
     if block_id in {"bar_cabinet", "glass_bar_cabinet"}:
         display_slots(["-0.25,0.5,0", "0.25,0.5,0"], 0.5, 1.0, paper_visual=True)
@@ -2307,6 +2296,23 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
             "-0.25,-0.24,-0.25", "0.25,-0.24,-0.25",
             "-0.25,-0.24,0.25", "0.25,-0.24,0.25",
         ], 0.35, 0.35, paper_visual=True)
+
+    storage_visual_slots = {
+        "bar_cabinet": 2,
+        "glass_bar_cabinet": 2,
+        "cellar_cabinet": 9,
+        "tilted_rack": 3,
+        "circular_rack": 6,
+        "holder": 1,
+        "glassware_holder": 4,
+    }.get(block_id)
+    if storage_visual_slots is not None:
+        # Native display controllers remain the inventory owner. Tavern adds
+        # only exact Forge transforms as CE packet-only furniture elements.
+        behaviors.append({
+            "type": f"{NAMESPACE}:storage_visual_furniture",
+            "slots": storage_visual_slots,
+        })
 
     if block_id in PENDANT_LAMPS:
         behaviors.append({"type": "glowing_furniture", "lights": ["0,-1,0 13"]})
