@@ -9,6 +9,14 @@ public final class PressingTubSemantics {
     private PressingTubSemantics() {
     }
 
+    /**
+     * Movement events only matter while this entity is falling or while its
+     * own earlier fall still needs the landing edge observed.
+     */
+    static boolean needsMovementInspection(float fallDistance, boolean trackingEntity) {
+        return fallDistance > 0 || trackingEntity;
+    }
+
     /** Horizontal ownership plus the source ground-tub landing height. */
     public static boolean isLandingPosition(double feetX, double feetY, double feetZ,
                                             double baseX, double baseY, double baseZ) {
