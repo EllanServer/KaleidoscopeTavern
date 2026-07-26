@@ -108,6 +108,8 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         private int tickCounter;
         private boolean initialized;
         private boolean powered;
+        private Block primaryPowerBlock;
+        private Block secondaryPowerBlock;
         private Handler deliveredHandler;
 
         private Controller(BukkitFurniture furniture, Channel channel, int interval, String dataKey) {
@@ -151,6 +153,8 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
                 handler.onUnload(bukkitFurniture, isStopping);
             }
             deliveredHandler = null;
+            primaryPowerBlock = null;
+            secondaryPowerBlock = null;
         }
 
         private void tickRedstone() {
@@ -194,20 +198,22 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
 
         private boolean samplePower() {
+            if (primaryPowerBlock == null) {
+                cachePowerProbe();
+            }
             return switch (channel) {
-                case INCENSE, STORAGE -> {
-                    Block block = bukkitFurniture.location().getBlock();
-                    yield block.isBlockPowered() || block.isBlockIndirectlyPowered();
-                }
-                case TAP -> {
-                    Block block = tapBlock();
-                    yield block.isBlockIndirectlyPowered()
-                            || block.getRelative(BlockFace.UP).isBlockIndirectlyPowered();
-                }
+                case INCENSE, STORAGE -> primaryPowerBlock.isBlockPowered()
+                        || primaryPowerBlock.isBlockIndirectlyPowered();
+                case TAP -> primaryPowerBlock.isBlockIndirectlyPowered()
+                        || secondaryPowerBlock.isBlockIndirectlyPowered();
             };
         }
 
-        private Block tapBlock() {
+        private void cachePowerProbe() {
+            if (channel != Channel.TAP) {
+                primaryPowerBlock = bukkitFurniture.location().getBlock();
+                return;
+            }
             Location origin = bukkitFurniture.location().clone();
             Vector outward = origin.getDirection().setY(0);
             if (outward.lengthSquared() < 0.001) {
@@ -215,7 +221,8 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
             } else {
                 outward.normalize();
             }
-            return origin.add(outward.multiply(0.05)).getBlock();
+            primaryPowerBlock = origin.add(outward.multiply(0.05)).getBlock();
+            secondaryPowerBlock = primaryPowerBlock.getRelative(BlockFace.UP);
         }
     }
 }

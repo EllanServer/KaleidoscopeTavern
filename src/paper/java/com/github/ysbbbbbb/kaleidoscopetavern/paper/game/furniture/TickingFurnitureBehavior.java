@@ -90,6 +90,7 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         private final BukkitFurniture bukkitFurniture;
         private final Channel channel;
         private final int interval;
+        private int ticksUntilRun = -1;
         private Handler deliveredHandler;
 
         private Controller(BukkitFurniture furniture, Channel channel, int interval) {
@@ -111,12 +112,14 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
                 handler.onUnload(bukkitFurniture, isStopping);
             }
             deliveredHandler = null;
+            ticksUntilRun = -1;
         }
 
         private void tickManagedFurniture() {
             Handler handler = HANDLERS.get(channel);
             if (handler == null) {
                 deliveredHandler = null;
+                ticksUntilRun = -1;
                 return;
             }
             if (handler != deliveredHandler) {
@@ -124,13 +127,32 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
                 deliveredHandler = handler;
             }
             if (interval > 1) {
-                long phase = Math.floorMod(bukkitFurniture.uuid().hashCode(), interval);
-                long gameTime = bukkitFurniture.location().getWorld().getGameTime();
-                if (Math.floorMod(gameTime + phase, interval) != 0) {
+                if (ticksUntilRun < 0) {
+                    ticksUntilRun = initialDelay(
+                            bukkitFurniture.location().getWorld().getGameTime(),
+                            bukkitFurniture.uuid().hashCode(), interval);
+                }
+                if (ticksUntilRun > 0) {
+                    ticksUntilRun--;
                     return;
                 }
+                ticksUntilRun = interval - 1;
             }
             handler.tick(bukkitFurniture);
         }
+    }
+
+    /**
+     * Reconstructs the source block entity's globally phased interval once.
+     * Subsequent ticks use a decrementing counter instead of two floorMod
+     * operations, a UUID hash and a world-time lookup per furniture per tick.
+     */
+    static int initialDelay(long gameTime, int identityHash, int interval) {
+        if (interval <= 1) {
+            return 0;
+        }
+        long phase = Math.floorMod(identityHash, interval);
+        long remainder = Math.floorMod(gameTime + phase, interval);
+        return (int) Math.floorMod(-remainder, interval);
     }
 }
