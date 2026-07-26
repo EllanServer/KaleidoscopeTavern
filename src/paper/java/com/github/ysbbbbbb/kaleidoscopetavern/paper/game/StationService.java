@@ -1362,7 +1362,8 @@ public final class StationService implements Listener {
                 fluidDisplay = spawnBarrelVisual(furniture, "fluid", 0);
             }
             configureBarrelFluid(furniture, fluidDisplay, fluidItem.get(), amount);
-            state.putString("barrel_fluid_visual", fluidDisplay.getUniqueId().toString());
+            state.strings("barrel_fluid_visual",
+                    List.of(fluidDisplay.getUniqueId().toString()));
         }
     }
 
@@ -1370,24 +1371,32 @@ public final class StationService implements Listener {
                                              String role, String stateKey) {
         String ownerId = furniture.bukkitEntity().getUniqueId().toString();
         Map<UUID, ItemDisplay> result = new LinkedHashMap<>();
+        boolean recover = !state.bool(stateKey + "_resolved");
         for (String stored : state.strings(stateKey)) {
             try {
                 Entity entity = Bukkit.getEntity(UUID.fromString(stored));
                 if (entity instanceof ItemDisplay display && display.isValid()
                         && isBarrelVisual(display, ownerId, role)) {
                     result.put(display.getUniqueId(), display);
+                } else {
+                    recover = true;
                 }
             } catch (IllegalArgumentException ignored) {
-                // Recover stale UUID state via the owner scan below.
+                recover = true;
             }
         }
-        for (Entity entity : furniture.location().getWorld().getNearbyEntities(
-                furniture.location().clone().add(0, 1.5, 0), 4, 3, 4,
-                nearby -> nearby instanceof ItemDisplay)) {
-            ItemDisplay display = (ItemDisplay) entity;
-            if (isBarrelVisual(display, ownerId, role)) {
-                result.putIfAbsent(display.getUniqueId(), display);
+        if (recover) {
+            // CE state is the primary index. The owner scan is only a one-time
+            // recovery path for pre-indexed or externally removed helpers.
+            for (Entity entity : furniture.location().getWorld().getNearbyEntities(
+                    furniture.location().clone().add(0, 1.5, 0), 4, 3, 4,
+                    nearby -> nearby instanceof ItemDisplay)) {
+                ItemDisplay display = (ItemDisplay) entity;
+                if (isBarrelVisual(display, ownerId, role)) {
+                    result.putIfAbsent(display.getUniqueId(), display);
+                }
             }
+            state.bool(stateKey + "_resolved", true);
         }
         return new ArrayList<>(result.values().stream()
                 .sorted(Comparator.comparingInt(display -> display.getPersistentDataContainer()
@@ -1529,7 +1538,8 @@ public final class StationService implements Listener {
                 fluidDisplay = spawnPressVisual(furniture, "fluid", 0);
             }
             configurePressFluid(furniture, fluidDisplay, fluidItem.get(), amount);
-            state.putString("press_fluid_visual", fluidDisplay.getUniqueId().toString());
+            state.strings("press_fluid_visual",
+                    List.of(fluidDisplay.getUniqueId().toString()));
         }
     }
 
@@ -1537,23 +1547,31 @@ public final class StationService implements Listener {
                                            String role, String stateKey) {
         String ownerId = furniture.bukkitEntity().getUniqueId().toString();
         Map<UUID, ItemDisplay> result = new LinkedHashMap<>();
+        boolean recover = !state.bool(stateKey + "_resolved");
         for (String stored : state.strings(stateKey)) {
             try {
                 Entity entity = Bukkit.getEntity(UUID.fromString(stored));
                 if (entity instanceof ItemDisplay display && display.isValid()
                         && isPressVisual(display, ownerId, role)) {
                     result.put(display.getUniqueId(), display);
+                } else {
+                    recover = true;
                 }
             } catch (IllegalArgumentException ignored) {
-                // A stale UUID is recovered by the owner scan below.
+                recover = true;
             }
         }
-        for (Entity entity : furniture.location().getWorld().getNearbyEntities(
-                furniture.location(), 3, 3, 3, nearby -> nearby instanceof ItemDisplay)) {
-            ItemDisplay display = (ItemDisplay) entity;
-            if (isPressVisual(display, ownerId, role)) {
-                result.putIfAbsent(display.getUniqueId(), display);
+        if (recover) {
+            // CE state is the primary index. The owner scan is only a one-time
+            // recovery path for pre-indexed or externally removed helpers.
+            for (Entity entity : furniture.location().getWorld().getNearbyEntities(
+                    furniture.location(), 3, 3, 3, nearby -> nearby instanceof ItemDisplay)) {
+                ItemDisplay display = (ItemDisplay) entity;
+                if (isPressVisual(display, ownerId, role)) {
+                    result.putIfAbsent(display.getUniqueId(), display);
+                }
             }
+            state.bool(stateKey + "_resolved", true);
         }
         return new ArrayList<>(result.values().stream()
                 .sorted(Comparator.comparingInt(display -> display.getPersistentDataContainer()

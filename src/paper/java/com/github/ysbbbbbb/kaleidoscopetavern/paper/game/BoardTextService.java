@@ -236,7 +236,7 @@ public final class BoardTextService implements Listener {
             return;
         }
         FurnitureState state = new FurnitureState(event.furniture());
-        removeDisplay(state);
+        removeDisplay(event.furniture(), state);
         Entity entity = event.furniture().bukkitEntity();
         if (entity != null) {
             editors.entrySet().removeIf(entry -> entry.getValue().furniture().equals(entity.getUniqueId()));
@@ -346,7 +346,7 @@ public final class BoardTextService implements Listener {
         }
         BoardStateSnapshot snapshot = BoardStateSnapshot.capture(oldState);
         Location location = furniture.location().clone();
-        removeDisplay(oldState);
+        removeDisplay(furniture, oldState);
         CraftEngineFurniture.remove(furniture, false, false);
         BukkitFurniture replacement = CraftEngineFurniture.place(location, Key.of(targetId), "ground", false);
         if (replacement == null) {
@@ -390,8 +390,8 @@ public final class BoardTextService implements Listener {
             if (left == null || rightBoard == null || left == rightBoard) {
                 continue;
             }
-            removeDisplay(new FurnitureState(left));
-            removeDisplay(new FurnitureState(rightBoard));
+            removeDisplay(left, new FurnitureState(left));
+            removeDisplay(rightBoard, new FurnitureState(rightBoard));
             CraftEngineFurniture.remove(left, false, false);
             CraftEngineFurniture.remove(rightBoard, false, false);
             center.setVariant(center.currentVariant().name() + "_large", true);
@@ -445,7 +445,7 @@ public final class BoardTextService implements Listener {
         FurnitureState state = new FurnitureState(furniture);
         String text = state.string("board_text", "");
         if (text.isBlank()) {
-            removeDisplay(state);
+            removeDisplay(furniture, state);
             return;
         }
         Entity owner = furniture.bukkitEntity();
@@ -541,40 +541,51 @@ public final class BoardTextService implements Listener {
 
     private List<TextDisplay> findDisplays(BukkitFurniture furniture, FurnitureState state) {
         Map<UUID, TextDisplay> displays = new LinkedHashMap<>();
-        addStoredDisplays(state.strings("board_displays"), displays);
         Entity owner = furniture.bukkitEntity();
         if (owner == null) {
-            return new ArrayList<>(displays.values());
+            return List.of();
         }
         String ownerId = owner.getUniqueId().toString();
-        for (Entity entity : furniture.location().getWorld().getNearbyEntities(
-                furniture.location(), 3, 3, 3, nearby -> nearby instanceof TextDisplay)) {
-            String candidate = entity.getPersistentDataContainer().get(
-                    boardOwnerKey, PersistentDataType.STRING);
-            if (ownerId.equals(candidate) && entity.isValid()) {
-                displays.putIfAbsent(entity.getUniqueId(), (TextDisplay) entity);
+        boolean storedComplete = addStoredDisplays(
+                state.strings("board_displays"), ownerId, displays);
+        boolean recover = !state.bool("board_displays_resolved") || !storedComplete;
+        if (recover) {
+            for (Entity entity : furniture.location().getWorld().getNearbyEntities(
+                    furniture.location(), 3, 3, 3,
+                    nearby -> nearby instanceof TextDisplay)) {
+                String candidate = entity.getPersistentDataContainer().get(
+                        boardOwnerKey, PersistentDataType.STRING);
+                if (ownerId.equals(candidate) && entity.isValid()) {
+                    displays.putIfAbsent(entity.getUniqueId(), (TextDisplay) entity);
+                }
             }
+            state.bool("board_displays_resolved", true);
         }
         return new ArrayList<>(displays.values());
     }
 
-    private static void addStoredDisplays(List<String> stored, Map<UUID, TextDisplay> displays) {
+    private boolean addStoredDisplays(List<String> stored, String ownerId,
+                                      Map<UUID, TextDisplay> displays) {
+        boolean complete = true;
         for (String token : stored) {
             try {
                 Entity entity = Bukkit.getEntity(UUID.fromString(token));
-                if (entity instanceof TextDisplay textDisplay && entity.isValid()) {
+                if (entity instanceof TextDisplay textDisplay && entity.isValid()
+                        && ownerId.equals(entity.getPersistentDataContainer().get(
+                        boardOwnerKey, PersistentDataType.STRING))) {
                     displays.putIfAbsent(entity.getUniqueId(), textDisplay);
+                } else {
+                    complete = false;
                 }
             } catch (IllegalArgumentException ignored) {
-                // Ignore malformed state; the caller rewrites it after refresh.
+                complete = false;
             }
         }
+        return complete;
     }
 
-    private void removeDisplay(FurnitureState state) {
-        Map<UUID, TextDisplay> displays = new LinkedHashMap<>();
-        addStoredDisplays(state.strings("board_displays"), displays);
-        displays.values().forEach(Entity::remove);
+    private void removeDisplay(BukkitFurniture furniture, FurnitureState state) {
+        findDisplays(furniture, state).forEach(Entity::remove);
         state.clear("board_displays");
     }
 

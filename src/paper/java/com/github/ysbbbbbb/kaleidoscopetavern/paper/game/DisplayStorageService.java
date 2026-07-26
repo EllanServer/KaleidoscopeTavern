@@ -553,6 +553,7 @@ public final class DisplayStorageService implements Listener {
                                                      StorageSpec spec) {
         String ownerId = furniture.bukkitEntity().getUniqueId().toString();
         Map<Integer, ItemDisplay> result = new LinkedHashMap<>();
+        boolean recover = !state.bool("cabinet_visuals_resolved");
         for (String stored : state.strings("cabinet_visuals")) {
             try {
                 Entity entity = Bukkit.getEntity(UUID.fromString(stored));
@@ -560,18 +561,26 @@ public final class DisplayStorageService implements Listener {
                         && ownerId.equals(display.getPersistentDataContainer().get(
                         cabinetVisualOwnerKey, PersistentDataType.STRING))) {
                     putStorageVisual(result, display, spec);
+                } else {
+                    recover = true;
                 }
             } catch (IllegalArgumentException ignored) {
-                // Recover stale state from the owner scan below.
+                recover = true;
             }
         }
-        for (Entity entity : furniture.location().getWorld().getNearbyEntities(
-                furniture.location(), 3, 3, 3, nearby -> nearby instanceof ItemDisplay)) {
-            ItemDisplay display = (ItemDisplay) entity;
-            if (ownerId.equals(display.getPersistentDataContainer().get(
-                    cabinetVisualOwnerKey, PersistentDataType.STRING))) {
-                putStorageVisual(result, display, spec);
+        if (recover) {
+            // CE state is the primary slot index. Scan only once for recovery,
+            // or again after a stored helper UUID becomes invalid.
+            for (Entity entity : furniture.location().getWorld().getNearbyEntities(
+                    furniture.location(), 3, 3, 3,
+                    nearby -> nearby instanceof ItemDisplay)) {
+                ItemDisplay display = (ItemDisplay) entity;
+                if (ownerId.equals(display.getPersistentDataContainer().get(
+                        cabinetVisualOwnerKey, PersistentDataType.STRING))) {
+                    putStorageVisual(result, display, spec);
+                }
             }
+            state.bool("cabinet_visuals_resolved", true);
         }
         return result;
     }
