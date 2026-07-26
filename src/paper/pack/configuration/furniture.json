@@ -15141,6 +15141,9 @@
       },
       "behaviors": [
         {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
+        },
+        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
@@ -17220,6 +17223,9 @@
           "channel": "connection"
         },
         {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
+        },
+        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
@@ -17366,6 +17372,9 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "connection"
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
         },
         {
           "type": "display_item_furniture",
@@ -17516,6 +17525,9 @@
           "channel": "connection"
         },
         {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
+        },
+        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
@@ -17661,6 +17673,9 @@
       },
       "behaviors": [
         {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
+        },
+        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
@@ -17746,6 +17761,9 @@
         ]
       },
       "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
+        },
         {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
@@ -17911,6 +17929,9 @@
         ]
       },
       "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
+        },
         {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",

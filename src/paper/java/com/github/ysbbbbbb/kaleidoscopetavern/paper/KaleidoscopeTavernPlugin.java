@@ -32,6 +32,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.PressingTubFu
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StateFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageVisualFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
@@ -106,6 +107,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             RedstoneFurnitureBehavior.register();
             TickingFurnitureBehavior.register();
             StationVisualFurnitureBehavior.register();
+            StorageInteractionFurnitureBehavior.register();
             StorageVisualFurnitureBehavior.register();
             SneakPlaceDrinkItemBehavior.register();
             if (getConfig().getBoolean("pack.install-on-startup", true)) {

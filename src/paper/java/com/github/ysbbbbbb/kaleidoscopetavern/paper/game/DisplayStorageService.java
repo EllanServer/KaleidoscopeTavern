@@ -2,19 +2,21 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageVisualFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.entity.furniture.behavior.DisplayItemFurnitureBehaviorTemplate.DisplayItemFurnitureController;
 import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -71,6 +73,8 @@ public final class DisplayStorageService implements Listener {
     private boolean reflectionWarningLogged;
     private final StorageVisualFurnitureBehavior.Handler storageVisualHandler =
             this::storageVisual;
+    private final StorageInteractionFurnitureBehavior.Handler storageInteractionHandler =
+            this::interact;
     private final RedstoneFurnitureBehavior.Handler storageRedstoneHandler =
             (furniture, powered, initial) -> {
                 if (initial || !powered) {
@@ -103,45 +107,47 @@ public final class DisplayStorageService implements Listener {
     }
 
     public void start() {
+        StorageInteractionFurnitureBehavior.bind(storageInteractionHandler);
         StorageVisualFurnitureBehavior.bind(storageVisualHandler);
         RedstoneFurnitureBehavior.bind(
                 RedstoneFurnitureBehavior.Channel.STORAGE, storageRedstoneHandler);
     }
 
     public void stop() {
+        StorageInteractionFurnitureBehavior.unbind(storageInteractionHandler);
         StorageVisualFurnitureBehavior.unbind(storageVisualHandler);
         RedstoneFurnitureBehavior.unbind(
                 RedstoneFurnitureBehavior.Channel.STORAGE, storageRedstoneHandler);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onInteract(FurnitureInteractEvent event) {
-        BukkitFurniture furniture = event.furniture();
+    private InteractionResult interact(BukkitFurniture furniture,
+                                       InteractEntityContext context) {
         StorageSpec spec = STORAGE.get(furniture.id());
         if (spec == null) {
-            return;
+            return InteractionResult.PASS;
         }
-        if (event.hand() != InteractionHand.MAIN_HAND) {
-            // Cancel off-hand interactions on storage furniture only, so
-            // CraftEngine's built-in display_item behavior cannot duplicate
-            // items; every other furniture keeps its vanilla off-hand pass.
-            event.setCancelled(true);
-            return;
+        if (context.getHand() != InteractionHand.MAIN_HAND) {
+            // Consume the off-hand use before CE's following native slot
+            // controllers, preventing duplicate insertion/removal.
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
-        Player player = event.player();
+        Player player = (Player) context.getPlayer().platformPlayer();
         ItemStack hand = player.getInventory().getItemInMainHand();
+        Vec3d click = context.getClickLocation();
+        Location interactionPoint = new Location(
+                furniture.location().getWorld(), click.x, click.y, click.z);
 
-        int selected = clickedSlot(furniture, spec, event.interactionPoint());
-        event.setCancelled(true);
+        int selected = clickedSlot(furniture, spec, interactionPoint);
         if (selected < 0) {
-            return;
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
 
         if (spec.kind() == StorageSemantics.Kind.BAR_CABINET) {
-            interactBarCabinet(event, spec, hand, selected);
-            return;
+            interactBarCabinet(player, furniture, spec, hand, selected);
+        } else {
+            interactStorage(player, furniture, spec, hand, selected);
         }
-        interactStorage(player, furniture, spec, hand, selected);
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -151,10 +157,8 @@ public final class DisplayStorageService implements Listener {
         }
     }
 
-    private void interactBarCabinet(FurnitureInteractEvent event, StorageSpec spec,
-                                    ItemStack hand, int selected) {
-        Player player = event.player();
-        BukkitFurniture furniture = event.furniture();
+    private void interactBarCabinet(Player player, BukkitFurniture furniture,
+                                    StorageSpec spec, ItemStack hand, int selected) {
         List<Item> stored = controllerItems(furniture, spec.slots());
         if (hand.isEmpty()) {
             if (stored.get(selected) == null || stored.get(selected).isEmpty()) {

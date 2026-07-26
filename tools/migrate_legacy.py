@@ -2265,6 +2265,15 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     if block_id in BOTTLE_AND_GLASS_ITEMS:
         behaviors.append({"type": f"{NAMESPACE}:bottle_furniture"})
 
+    if block_id in {
+            "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
+            "tilted_rack", "circular_rack", "holder", "glassware_holder",
+    }:
+        # This must precede CE's native display_item controllers. It preserves
+        # the source furniture's multi-slot hit selection and restrictions;
+        # the following native controllers remain the only inventory owner.
+        behaviors.append({"type": f"{NAMESPACE}:storage_interaction_furniture"})
+
     def display_slots(
         positions: list[str],
         width: float,

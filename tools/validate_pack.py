@@ -77,6 +77,10 @@ EXPECTED_BOTTLE_FURNITURE = {
     "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
     "watermelon_juice",
 }
+EXPECTED_STORAGE_INTERACTION_FURNITURE = {
+    "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet", "tilted_rack",
+    "circular_rack", "holder", "glassware_holder",
+}
 FURNITURE_COLORS = {
     "black", "blue", "brown", "cyan", "gray", "green", "light_blue",
     "light_gray", "lime", "magenta", "orange", "pink", "purple", "red",
@@ -886,6 +890,9 @@ def validate() -> dict[str, int]:
     station_source = (game_package / "StationService.java").read_text(encoding="utf-8-sig")
     storage_source = (game_package / "DisplayStorageService.java").read_text(
         encoding="utf-8-sig")
+    storage_interaction_behavior_source = (
+        game_package / "furniture/StorageInteractionFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
     ambient_source = (game_package / "AmbientFurnitureService.java").read_text(
         encoding="utf-8-sig")
     for owner_name, owner_source in (("StationService", station_source),
@@ -916,6 +923,9 @@ def validate() -> dict[str, int]:
     if "StorageVisualFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register storage_visual_furniture before pack loading")
+    if "StorageInteractionFurnitureBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register storage_interaction_furniture before pack loading")
     if "StationVisualFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register station_visual_furniture before pack loading")
@@ -1290,13 +1300,38 @@ def validate() -> dict[str, int]:
                 "CE furniture controllers own redstone/variant state throughout Paper; "
                 f"{stale_token} must stay deleted")
 
-    # DisplayStorageService must cancel off-hand furniture interactions to
-    # prevent CraftEngine's built-in display_item_furniture behavior from
-    # duplicating items and desyncing storage visuals.
-    if "event.hand() != InteractionHand.MAIN_HAND" not in storage_source \
-            or "event.setCancelled(true)" not in storage_source:
-        raise AssertionError(
-            "DisplayStorageService must cancel off-hand interactions to prevent item duplication")
+    for required_token in (
+            "StorageInteractionFurnitureBehavior.bind(storageInteractionHandler)",
+            "StorageInteractionFurnitureBehavior.unbind(storageInteractionHandler)",
+            "private InteractionResult interact(",
+            "context.getHand() != InteractionHand.MAIN_HAND",
+            "Vec3d click = context.getClickLocation()",
+            "InteractionResult.SUCCESS_AND_CANCEL"):
+        if required_token not in storage_source:
+            raise AssertionError(
+                "Display storage interaction must run before native CE slot controllers; "
+                f"missing token: {required_token}")
+    for stale_token in ("FurnitureInteractEvent", "public void onInteract("):
+        if stale_token in storage_source:
+            raise AssertionError(
+                "DisplayStorageService must not retain a global Paper furniture interaction listener; "
+                f"found {stale_token}")
+    for required_token in (
+            "extends FurnitureBehaviorTemplate",
+            "FurnitureBehaviors.register(Key.of(TYPE)",
+            "public InteractionResult useOnFurniture(",
+            "current.interact(bukkitFurniture, context)"):
+        if required_token not in storage_interaction_behavior_source:
+            raise AssertionError(
+                "Storage CE interaction adapter is incomplete; "
+                f"missing token: {required_token}")
+    for forbidden_token in (
+            "org.bukkit.event", "PersistentDataType", "NamespacedKey",
+            "getNearbyEntities(", "runTaskTimer"):
+        if forbidden_token in storage_interaction_behavior_source:
+            raise AssertionError(
+                "Storage CE interaction adapter must not own Paper polling/PDC; "
+                f"found {forbidden_token}")
     for stale_storage_visual_token in (
             "ItemDisplay", "cabinet_visual", "PersistentDataType",
             "getNearbyEntities", "new FurnitureState", "Channel.STORAGE, storageLifecycle"):
@@ -2806,6 +2841,34 @@ def validate() -> dict[str, int]:
         "holder": 1,
         "glassware_holder": 4,
     }
+    storage_interaction_type = f"{NAMESPACE}:storage_interaction_furniture"
+    configured_storage_interactions: dict[str, tuple[int, dict[str, Any]]] = {}
+    for furniture_id, definition in furniture.items():
+        all_behaviors = list(definition.get("behaviors", []))
+        single_behavior = definition.get("behavior")
+        if single_behavior is not None:
+            all_behaviors.append(single_behavior)
+        matches = [
+            (index, behavior) for index, behavior in enumerate(all_behaviors)
+            if behavior.get("type") == storage_interaction_type
+        ]
+        if len(matches) > 1:
+            raise AssertionError(
+                f"{furniture_id}: duplicate storage_interaction_furniture behaviors")
+        if matches:
+            configured_storage_interactions[furniture_id] = matches[0]
+    expected_storage_interaction_ids = {
+        f"{NAMESPACE}:{block_id}"
+        for block_id in EXPECTED_STORAGE_INTERACTION_FURNITURE
+    }
+    if set(configured_storage_interactions) != expected_storage_interaction_ids:
+        missing = sorted(expected_storage_interaction_ids
+                         - set(configured_storage_interactions))
+        unexpected = sorted(set(configured_storage_interactions)
+                            - expected_storage_interaction_ids)
+        raise AssertionError(
+            "Storage CE interaction coverage drift: "
+            f"missing={missing}, unexpected={unexpected}")
     for storage_id, slot_count in storage_slot_counts.items():
         configured_behaviors = list(
             furniture[f"{NAMESPACE}:{storage_id}"].get("behaviors", []))
@@ -2843,6 +2906,13 @@ def validate() -> dict[str, int]:
             index for index, behavior in enumerate(configured_behaviors)
             if behavior.get("type") == "display_item_furniture"
         ]
+        interaction_index, interaction_behavior = configured_storage_interactions[
+            f"{NAMESPACE}:{storage_id}"]
+        if (not display_indices
+                or interaction_index != display_indices[0] - 1
+                or interaction_behavior != {"type": storage_interaction_type}):
+            raise AssertionError(
+                f"{storage_id}: CE storage interaction must immediately precede native slots")
         visual_index = configured_behaviors.index(visual_behaviors[0])
         if not display_indices or visual_index != display_indices[-1] + 1:
             raise AssertionError(
