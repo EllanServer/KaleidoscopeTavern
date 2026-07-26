@@ -32,6 +32,6 @@ class FurnitureSpatialSemanticsTest {
         assertFalse(FurnitureSpatialSemantics.insideBlock(
                 0.0, -64.0, 2.999, -1, -64, 2));
         assertFalse(FurnitureSpatialSemantics.insideBlock(
-                -0.01, -63.999, 2.999, -1, -64, 2));
+                -0.01, -63.0, 2.999, -1, -64, 2));
     }
 }
