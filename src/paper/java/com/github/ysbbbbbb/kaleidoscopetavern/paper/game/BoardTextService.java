@@ -534,8 +534,8 @@ public final class BoardTextService implements Listener {
 
         indexed.values().forEach(Entity::remove);
         reusable.forEach(Entity::remove);
-        state.strings("board_displays", active.stream()
-                .map(display -> display.getUniqueId().toString())
+        state.uuids("board_displays", active.stream()
+                .map(Entity::getUniqueId)
                 .toList());
     }
 
@@ -547,7 +547,7 @@ public final class BoardTextService implements Listener {
         }
         String ownerId = owner.getUniqueId().toString();
         boolean storedComplete = addStoredDisplays(
-                state.strings("board_displays"), ownerId, displays);
+                state.uuids("board_displays"), ownerId, displays);
         boolean recover = !state.bool("board_displays_resolved") || !storedComplete;
         if (recover) {
             for (Entity entity : furniture.location().getWorld().getNearbyEntities(
@@ -564,20 +564,16 @@ public final class BoardTextService implements Listener {
         return new ArrayList<>(displays.values());
     }
 
-    private boolean addStoredDisplays(List<String> stored, String ownerId,
+    private boolean addStoredDisplays(List<UUID> stored, String ownerId,
                                       Map<UUID, TextDisplay> displays) {
         boolean complete = true;
-        for (String token : stored) {
-            try {
-                Entity entity = Bukkit.getEntity(UUID.fromString(token));
-                if (entity instanceof TextDisplay textDisplay && entity.isValid()
-                        && ownerId.equals(entity.getPersistentDataContainer().get(
-                        boardOwnerKey, PersistentDataType.STRING))) {
-                    displays.putIfAbsent(entity.getUniqueId(), textDisplay);
-                } else {
-                    complete = false;
-                }
-            } catch (IllegalArgumentException ignored) {
+        for (UUID id : stored) {
+            Entity entity = Bukkit.getEntity(id);
+            if (entity instanceof TextDisplay textDisplay && entity.isValid()
+                    && ownerId.equals(entity.getPersistentDataContainer().get(
+                    boardOwnerKey, PersistentDataType.STRING))) {
+                displays.putIfAbsent(entity.getUniqueId(), textDisplay);
+            } else {
                 complete = false;
             }
         }

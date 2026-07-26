@@ -213,7 +213,7 @@ public final class BarStoolVisualService implements Listener {
         }
         UUID owner = furniture.bukkitEntity().getUniqueId();
         FurnitureState state = new FurnitureState(furniture);
-        String stored = state.string("bar_stool_body_visual");
+        UUID stored = state.uuid("bar_stool_body_visual");
         ItemDisplay body = storedBody(stored, owner);
         boolean recover = !state.bool("bar_stool_body_resolved")
                 || stored != null && body == null;
@@ -237,22 +237,18 @@ public final class BarStoolVisualService implements Listener {
             body = spawnBody(furniture, owner);
         }
         bodyVisuals.put(owner, body.getUniqueId());
-        state.putString("bar_stool_body_visual", body.getUniqueId().toString());
+        state.uuid("bar_stool_body_visual", body.getUniqueId());
         configureBody(furniture, body);
         return body;
     }
 
-    private ItemDisplay storedBody(String token, UUID owner) {
-        if (token == null) {
+    private ItemDisplay storedBody(UUID id, UUID owner) {
+        if (id == null) {
             return null;
         }
-        try {
-            Entity entity = Bukkit.getEntity(UUID.fromString(token));
-            return entity instanceof ItemDisplay display && display.isValid()
-                    && owner.equals(bodyOwner(display)) ? display : null;
-        } catch (IllegalArgumentException ignored) {
-            return null;
-        }
+        Entity entity = Bukkit.getEntity(id);
+        return entity instanceof ItemDisplay display && display.isValid()
+                && owner.equals(bodyOwner(display)) ? display : null;
     }
 
     private ItemDisplay spawnBody(BukkitFurniture furniture, UUID owner) {

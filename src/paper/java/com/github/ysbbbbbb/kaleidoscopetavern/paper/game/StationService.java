@@ -1340,8 +1340,8 @@ public final class StationService implements Listener {
             configureBarrelItem(furniture, itemDisplays.get(index), renderedItems.get(index),
                     seed, index, renderedSlots.get(index));
         }
-        state.strings("barrel_item_visuals", itemDisplays.stream()
-                .map(display -> display.getUniqueId().toString()).toList());
+        state.uuids("barrel_item_visuals", itemDisplays.stream()
+                .map(Entity::getUniqueId).toList());
 
         int amount = Math.max(0, state.integer("barrel_amount"));
         String fluid = state.string("barrel_fluid");
@@ -1362,8 +1362,7 @@ public final class StationService implements Listener {
                 fluidDisplay = spawnBarrelVisual(furniture, "fluid", 0);
             }
             configureBarrelFluid(furniture, fluidDisplay, fluidItem.get(), amount);
-            state.strings("barrel_fluid_visual",
-                    List.of(fluidDisplay.getUniqueId().toString()));
+            state.uuids("barrel_fluid_visual", List.of(fluidDisplay.getUniqueId()));
         }
     }
 
@@ -1372,16 +1371,12 @@ public final class StationService implements Listener {
         String ownerId = furniture.bukkitEntity().getUniqueId().toString();
         Map<UUID, ItemDisplay> result = new LinkedHashMap<>();
         boolean recover = !state.bool(stateKey + "_resolved");
-        for (String stored : state.strings(stateKey)) {
-            try {
-                Entity entity = Bukkit.getEntity(UUID.fromString(stored));
-                if (entity instanceof ItemDisplay display && display.isValid()
-                        && isBarrelVisual(display, ownerId, role)) {
-                    result.put(display.getUniqueId(), display);
-                } else {
-                    recover = true;
-                }
-            } catch (IllegalArgumentException ignored) {
+        for (UUID stored : state.uuids(stateKey)) {
+            Entity entity = Bukkit.getEntity(stored);
+            if (entity instanceof ItemDisplay display && display.isValid()
+                    && isBarrelVisual(display, ownerId, role)) {
+                result.put(display.getUniqueId(), display);
+            } else {
                 recover = true;
             }
         }
@@ -1516,8 +1511,8 @@ public final class StationService implements Listener {
                 configurePressItem(furniture, itemDisplays.get(index), ingredient, seed, index, count);
             }
         }
-        state.strings("press_item_visuals", itemDisplays.stream()
-                .map(display -> display.getUniqueId().toString()).toList());
+        state.uuids("press_item_visuals", itemDisplays.stream()
+                .map(Entity::getUniqueId).toList());
 
         int amount = Math.max(0, state.integer("press_amount"));
         String fluid = state.string("press_fluid");
@@ -1538,8 +1533,7 @@ public final class StationService implements Listener {
                 fluidDisplay = spawnPressVisual(furniture, "fluid", 0);
             }
             configurePressFluid(furniture, fluidDisplay, fluidItem.get(), amount);
-            state.strings("press_fluid_visual",
-                    List.of(fluidDisplay.getUniqueId().toString()));
+            state.uuids("press_fluid_visual", List.of(fluidDisplay.getUniqueId()));
         }
     }
 
@@ -1548,16 +1542,12 @@ public final class StationService implements Listener {
         String ownerId = furniture.bukkitEntity().getUniqueId().toString();
         Map<UUID, ItemDisplay> result = new LinkedHashMap<>();
         boolean recover = !state.bool(stateKey + "_resolved");
-        for (String stored : state.strings(stateKey)) {
-            try {
-                Entity entity = Bukkit.getEntity(UUID.fromString(stored));
-                if (entity instanceof ItemDisplay display && display.isValid()
-                        && isPressVisual(display, ownerId, role)) {
-                    result.put(display.getUniqueId(), display);
-                } else {
-                    recover = true;
-                }
-            } catch (IllegalArgumentException ignored) {
+        for (UUID stored : state.uuids(stateKey)) {
+            Entity entity = Bukkit.getEntity(stored);
+            if (entity instanceof ItemDisplay display && display.isValid()
+                    && isPressVisual(display, ownerId, role)) {
+                result.put(display.getUniqueId(), display);
+            } else {
                 recover = true;
             }
         }

@@ -4,13 +4,16 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StateFurnitur
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.libraries.nbt.ByteArrayTag;
 import net.momirealms.craftengine.libraries.nbt.CompoundTag;
+import net.momirealms.craftengine.libraries.nbt.IntArrayTag;
 import net.momirealms.craftengine.libraries.nbt.ListTag;
+import net.momirealms.craftengine.libraries.nbt.NBT;
 import net.momirealms.craftengine.libraries.nbt.StringTag;
 import net.momirealms.craftengine.libraries.nbt.Tag;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /** Typed access to state persisted by CraftEngine's furniture controller. */
 final class FurnitureState {
@@ -69,28 +72,43 @@ final class FurnitureState {
         }
     }
 
-    List<String> strings(String name) {
+    UUID uuid(String name) {
+        return data.getUUID(name);
+    }
+
+    void uuid(String name, UUID value) {
+        if (value == null) {
+            remove(name);
+        } else {
+            put(name, NBT.createUUID(value));
+        }
+    }
+
+    List<UUID> uuids(String name) {
         ListTag stored = data.getList(name);
         if (stored == null) {
             return new ArrayList<>();
         }
-        List<String> result = new ArrayList<>(stored.size());
+        List<UUID> result = new ArrayList<>(stored.size());
         for (int index = 0; index < stored.size(); index++) {
-            String value = stored.getString(index);
-            if (value != null) {
-                result.add(value);
+            if (stored.get(index) instanceof IntArrayTag encoded) {
+                try {
+                    result.add(encoded.getAsUUID());
+                } catch (IllegalArgumentException ignored) {
+                    // A malformed helper UUID is recovered by the owning service.
+                }
             }
         }
         return result;
     }
 
-    void strings(String name, List<String> values) {
+    void uuids(String name, List<UUID> values) {
         if (values.isEmpty()) {
             remove(name);
             return;
         }
         ListTag stored = new ListTag();
-        values.forEach(value -> stored.addTag(stored.size(), new StringTag(value)));
+        values.forEach(value -> stored.addTag(stored.size(), NBT.createUUID(value)));
         put(name, stored);
     }
 

@@ -198,8 +198,8 @@ public final class ShakerVisualService implements Listener {
         }
         UUID owner = furniture.bukkitEntity().getUniqueId();
         FurnitureState state = new FurnitureState(furniture);
-        String storedBase = state.string("shaker_base_visual");
-        String storedLid = state.string("shaker_lid_visual");
+        UUID storedBase = state.uuid("shaker_base_visual");
+        UUID storedLid = state.uuid("shaker_lid_visual");
         ItemDisplay base = storedVisual(storedBase, owner, BASE_ROLE);
         ItemDisplay lid = storedVisual(storedLid, owner, LID_ROLE);
         boolean recover = !state.bool("shaker_visuals_resolved")
@@ -247,25 +247,21 @@ public final class ShakerVisualService implements Listener {
         lid.teleport(location);
         VisualIds ids = new VisualIds(base.getUniqueId(), lid.getUniqueId());
         visuals.put(owner, ids);
-        state.putString("shaker_base_visual", ids.base().toString());
-        state.putString("shaker_lid_visual", ids.lid().toString());
+        state.uuid("shaker_base_visual", ids.base());
+        state.uuid("shaker_lid_visual", ids.lid());
         VisualPair pair = new VisualPair(base, lid);
         applyPose(pair, ShakerAnimationSemantics.pose(0F));
         return pair;
     }
 
-    private ItemDisplay storedVisual(String token, UUID owner, String role) {
-        if (token == null) {
+    private ItemDisplay storedVisual(UUID id, UUID owner, String role) {
+        if (id == null) {
             return null;
         }
-        try {
-            Entity entity = Bukkit.getEntity(UUID.fromString(token));
-            return entity instanceof ItemDisplay display && display.isValid()
-                    && owner.equals(owner(display)) && role.equals(role(display))
-                    ? display : null;
-        } catch (IllegalArgumentException ignored) {
-            return null;
-        }
+        Entity entity = Bukkit.getEntity(id);
+        return entity instanceof ItemDisplay display && display.isValid()
+                && owner.equals(owner(display)) && role.equals(role(display))
+                ? display : null;
     }
 
     private ItemDisplay spawnVisual(BukkitFurniture furniture, UUID owner, String role) {

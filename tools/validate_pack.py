@@ -798,6 +798,14 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Tavern business state must use CE controller CompoundTag data; "
                 f"stale token found: {stale_token}")
+    for required_token in ("UUID uuid(String name)", "List<UUID> uuids(String name)",
+                           "NBT.createUUID(value)"):
+        if required_token not in furniture_state_source:
+            raise AssertionError(
+                "CE furniture helper indexes must use typed NBT UUIDs; "
+                f"missing token: {required_token}")
+    if "List<String> strings(String name)" in furniture_state_source:
+        raise AssertionError("CE furniture helper UUID indexes must not regress to strings")
 
     all_paper_java = "\n".join(
         path.read_text(encoding="utf-8-sig")

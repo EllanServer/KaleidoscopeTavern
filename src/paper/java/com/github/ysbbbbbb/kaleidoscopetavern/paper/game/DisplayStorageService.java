@@ -522,7 +522,7 @@ public final class DisplayStorageService implements Listener {
         }
         FurnitureState state = new FurnitureState(furniture);
         Map<Integer, ItemDisplay> displays = storageVisuals(furniture, state, spec);
-        List<String> active = new ArrayList<>();
+        List<UUID> active = new ArrayList<>();
         boolean irregular = false;
         Item first = spec.kind() == StorageSemantics.Kind.BAR_CABINET
                 ? controllerItem(furniture, 0) : null;
@@ -543,10 +543,10 @@ public final class DisplayStorageService implements Listener {
                 display = spawnStorageVisual(furniture, slot);
             }
             configureStorageVisual(furniture, spec, display, bukkitItem(stored), slot, irregular);
-            active.add(display.getUniqueId().toString());
+            active.add(display.getUniqueId());
         }
         displays.values().forEach(Entity::remove);
-        state.strings("cabinet_visuals", active);
+        state.uuids("cabinet_visuals", active);
     }
 
     private Map<Integer, ItemDisplay> storageVisuals(BukkitFurniture furniture, FurnitureState state,
@@ -554,17 +554,13 @@ public final class DisplayStorageService implements Listener {
         String ownerId = furniture.bukkitEntity().getUniqueId().toString();
         Map<Integer, ItemDisplay> result = new LinkedHashMap<>();
         boolean recover = !state.bool("cabinet_visuals_resolved");
-        for (String stored : state.strings("cabinet_visuals")) {
-            try {
-                Entity entity = Bukkit.getEntity(UUID.fromString(stored));
-                if (entity instanceof ItemDisplay display && display.isValid()
-                        && ownerId.equals(display.getPersistentDataContainer().get(
-                        cabinetVisualOwnerKey, PersistentDataType.STRING))) {
-                    putStorageVisual(result, display, spec);
-                } else {
-                    recover = true;
-                }
-            } catch (IllegalArgumentException ignored) {
+        for (UUID stored : state.uuids("cabinet_visuals")) {
+            Entity entity = Bukkit.getEntity(stored);
+            if (entity instanceof ItemDisplay display && display.isValid()
+                    && ownerId.equals(display.getPersistentDataContainer().get(
+                    cabinetVisualOwnerKey, PersistentDataType.STRING))) {
+                putStorageVisual(result, display, spec);
+            } else {
                 recover = true;
             }
         }
