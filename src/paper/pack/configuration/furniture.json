@@ -13051,8 +13051,14 @@
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -13229,8 +13235,14 @@
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -13407,8 +13419,14 @@
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -13585,8 +13603,14 @@
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -13763,8 +13787,14 @@
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -13941,8 +13971,14 @@
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -14119,8 +14155,14 @@
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -14297,8 +14339,14 @@
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -15480,8 +15528,8 @@
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "mystery_particle",
+          "chance": 49
         }
       ]
     },
@@ -17097,7 +17145,8 @@
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
           "channel": "barrel",
-          "interval": 97
+          "interval": 97,
+          "phase": "identity"
         }
       ]
     },
@@ -17832,8 +17881,8 @@
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "rack_particle",
+          "chance": 392
         }
       ]
     },
