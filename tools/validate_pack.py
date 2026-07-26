@@ -802,6 +802,24 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "FurnitureState construction must not retain the obsolete Bukkit PDC owner")
 
+    catalog_source = (
+        game_package.parent / "catalog" / "ContentCatalog.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "barrelByIngredients.get(fluid)",
+            "barrelPartialAnyFluid.contains(key)",
+            "shakerByIngredients.get(IngredientKey.of(ingredients))",
+            "shakerPartial.contains(IngredientKey.of(proposed))"):
+        if required_token not in catalog_source:
+            raise AssertionError(
+                "Custom station recipes must use immutable precomputed indexes; "
+                f"missing token: {required_token}")
+    for stale_token in ("barrelRecipes.stream()", "shakerRecipes.stream()"):
+        if stale_token in catalog_source:
+            raise AssertionError(
+                "Runtime station recipe lookup must not linearly scan recipe lists; "
+                f"stale token found: {stale_token}")
+
     state_behavior_source = (
         game_package / "furniture" / "StateFurnitureBehavior.java"
     ).read_text(encoding="utf-8-sig")
