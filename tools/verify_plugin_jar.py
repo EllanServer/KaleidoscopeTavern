@@ -16,8 +16,14 @@ REQUIRED_ENTRIES = (
     "tavern-pack/pack.yml",
     "tavern-pack/configuration/blocks.json",
     "customcrops/contents/crops/kaleidoscope_tavern.yml",
+    "customnameplates/bossbar-tavern-effects.yml",
+    "tavern-pack/resourcepack/assets/kaleidoscope_tavern/font/custom_effects_hud.json",
+    "tavern-pack/resourcepack/assets/kaleidoscope_tavern/textures/font/hud_effect/slightly_tipsy.png",
+    "tavern-pack/resourcepack/assets/minecraft/textures/gui/sprites/boss_bar/yellow_background.png",
+    "tavern-pack/resourcepack/assets/minecraft/textures/gui/sprites/boss_bar/yellow_progress.png",
     "com/github/ysbbbbbb/kaleidoscopetavern/paper/pack/PackInstaller.class",
     "com/github/ysbbbbbb/kaleidoscopetavern/paper/pack/CustomCropsInstaller.class",
+    "com/github/ysbbbbbb/kaleidoscopetavern/paper/integration/EffectHudPlaceholder.class",
 )
 
 

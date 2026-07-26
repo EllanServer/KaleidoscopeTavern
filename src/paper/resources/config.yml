@@ -8,6 +8,24 @@ custom-crops:
 stations:
   press-eject-invalid: true
 
+# 自定义酒效 HUD 的渲染方式。
+#   mode:
+#     auto:     检测到 CustomNameplates 时停用内置 BossBar，改由外部通过
+#               %kaleidoscopetavern_effect_hud% 占位符渲染；否则使用内置 BossBar。
+#     builtin:  始终使用内置 BossBar。
+#     external: 始终停用内置 BossBar，仅提供 PlaceholderAPI 占位符。
+#   style:
+#     corner: 原版药水 HUD 位置——右上角 24x24 效果框，增益第一行、
+#             其余第二行，从右向左每 25px 一格，无文字（与原版一致）。
+#     line:   顶部居中一行：图标 + 本地化名称 + 等级 + 倒计时。
+#   gui-half-width: corner 风格的右缘基准 = 客户端 GUI 宽度的一半（像素）。
+#     1920x1080 且 GUI 比例 4（自动）时为 240；GUI 比例 3 → 320；2 → 480。
+#     其他分辨率的玩家 HUD 仍在顶部同一行，只是水平位置略有偏移。
+effect-hud:
+  mode: auto
+  style: corner
+  gui-half-width: 240
+
 gameplay:
   infinite-lava-from-tap: true
 

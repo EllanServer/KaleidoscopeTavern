@@ -15,6 +15,20 @@ CATALOG = ROOT / "src/paper/resources/catalog"
 CUSTOM_CROPS = ROOT / "src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml"
 PLUGIN_CONFIG = ROOT / "src/paper/resources/config.yml"
 NAMESPACE = "kaleidoscope_tavern"
+CUSTOM_EFFECT_ICON_IDS = (
+    "slightly_tipsy",
+    "high_heels",
+    "grass_stealth",
+    "vision",
+    "bloody_mary",
+    "ardent_heat",
+    "long_reach",
+    "tomb_raider",
+    "xp_drain",
+    "upside_down",
+    "zenith",
+    "shriek_attack",
+)
 EN_US = ROOT / f"src/main/resources/assets/{NAMESPACE}/lang/en_us.json"
 ZH_CN = ROOT / f"src/main/resources/assets/{NAMESPACE}/lang/zh_cn.json"
 MOD_BLOCKS = ROOT / f"src/main/java/com/github/ysbbbbbb/kaleidoscopetavern/init/ModBlocks.java"
@@ -470,6 +484,12 @@ def validate() -> dict[str, int]:
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game")
     bottle_placement_source = (game_package / "BottlePlacementService.java").read_text(
         encoding="utf-8-sig")
+    block_service_source = (game_package / "block/BlockService.java").read_text(
+        encoding="utf-8-sig")
+    if ("grapevineFor returned null" in block_service_source
+            or "onRightClickWithGrapevine: clicked" in block_service_source):
+        raise AssertionError(
+            "Unsupported grapevine soil is an expected rejection and must not spam the server log")
     plugin_config = PLUGIN_CONFIG.read_text(encoding="utf-8-sig")
     if ("bottle-placement.drinks" in bottle_placement_source
             or re.search(r"(?m)^\s+drinks:\s*", plugin_config)
@@ -968,6 +988,32 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{item_id}: fixed cocktail creative preview is missing real effect lore")
 
+    legacy_attribute_keys = {
+        "attribute.name.generic.step_height",
+        "attribute.name.player.block_interaction_range",
+        "attribute.name.player.entity_interaction_range",
+    }
+    generated_lore = {
+        line
+        for item in items.values()
+        for line in item.get("data", {}).get("lore", [])
+    }
+    if any(key in line for key in legacy_attribute_keys for line in generated_lore):
+        raise AssertionError("Drink lore still contains pre-26.2 attribute translation keys")
+    expected_attribute_lore = {
+        f"{NAMESPACE}:white_lady": {"attribute.name.step_height"},
+        f"{NAMESPACE}:emerald": {
+            "attribute.name.block_interaction_range",
+            "attribute.name.entity_interaction_range",
+        },
+    }
+    for item_id, attribute_keys in expected_attribute_lore.items():
+        lore = items[item_id].get("data", {}).get("lore", [])
+        missing = {key for key in attribute_keys if not any(key in line for line in lore)}
+        if missing:
+            raise AssertionError(
+                f"{item_id}: missing canonical 26.2 attribute lore keys {sorted(missing)}")
+
     for item_id, item in items.items():
         if not item_id.endswith("_bucket"):
             continue
@@ -1105,6 +1151,127 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Shaker inventory model must remain vanilla-compatible instead of using Forge loaders")
     paper_asset_roots = (ROOT / "src/paper/pack/resourcepack/assets",)
+    custom_effect_font = asset_json(
+        f"{NAMESPACE}:custom_effects", "font", paper_asset_roots)
+    expected_effect_providers = [{
+        "type": "bitmap",
+        "file": f"{NAMESPACE}:mob_effect/{effect_id}.png",
+        "ascent": 8,
+        "height": 9,
+        "chars": [chr(0xE100 + index)],
+    } for index, effect_id in enumerate(CUSTOM_EFFECT_ICON_IDS)]
+    if (custom_effect_font is None
+            or custom_effect_font.get("providers") != expected_effect_providers):
+        raise AssertionError(
+            "Custom drink-effect HUD font must map all archived icons deterministically")
+    for effect_id in CUSTOM_EFFECT_ICON_IDS:
+        if not asset_exists(f"{NAMESPACE}:mob_effect/{effect_id}", "textures", ".png"):
+            raise AssertionError(f"Missing custom drink-effect HUD icon: {effect_id}")
+
+    # The corner HUD font must mirror tools/migrate_legacy.py and the glyph
+    # tables hard-coded in CustomEffectHudSemantics exactly.
+    hud_offset_powers = (1, 2, 4, 8, 16, 32, 64, 128, 256)
+    expected_hud_providers: list[dict] = [{
+        "type": "space",
+        "advances": {
+            **{chr(0xE300 + index): power for index, power in enumerate(hud_offset_powers)},
+            **{chr(0xE310 + index): -power for index, power in enumerate(hud_offset_powers)},
+        },
+    }]
+    for bg_char, bg_ascent, icon_base, icon_ascent in (
+            (0xE320, 9, 0xE330, 6), (0xE321, -16, 0xE340, -19)):
+        expected_hud_providers.append({
+            "type": "bitmap",
+            "file": "minecraft:gui/sprites/hud/effect_background.png",
+            "ascent": bg_ascent,
+            "height": 24,
+            "chars": [chr(bg_char)],
+        })
+        expected_hud_providers.extend({
+            "type": "bitmap",
+            "file": f"{NAMESPACE}:font/hud_effect/{effect_id}.png",
+            "ascent": icon_ascent,
+            "height": 18,
+            "chars": [chr(icon_base + index)],
+        } for index, effect_id in enumerate(CUSTOM_EFFECT_ICON_IDS))
+    hud_font = asset_json(f"{NAMESPACE}:custom_effects_hud", "font", paper_asset_roots)
+    if hud_font is None or hud_font.get("providers") != expected_hud_providers:
+        raise AssertionError(
+            "Corner HUD font must keep the deterministic space/frame/icon glyph layout")
+    for effect_id in CUSTOM_EFFECT_ICON_IDS:
+        if not asset_exists(f"{NAMESPACE}:font/hud_effect/{effect_id}", "textures", ".png"):
+            raise AssertionError(f"Missing padded corner HUD icon: {effect_id}")
+    for sprite in ("yellow_background", "yellow_progress"):
+        if not (ROOT / "src/paper/pack/resourcepack/assets/minecraft/textures"
+                / f"gui/sprites/boss_bar/{sprite}.png").is_file():
+            raise AssertionError(
+                f"Corner HUD needs the transparent YELLOW boss bar sprite: {sprite}")
+    # The vanilla overlay splits rows by MobEffectCategory; the archived Forge
+    # registrations are the source of truth for which effects are beneficial.
+    forge_effect_root = ROOT / "src/main/java/com/github/ysbbbbbb/kaleidoscopetavern/effect"
+    mod_effects_source = (MOD_BLOCKS.parent / "ModEffects.java").read_text(encoding="utf-8-sig")
+    neutral_effects = set()
+    if "SLIGHTLY_TIPSY = EFFECTS.register(\"slightly_tipsy\", () -> new BaseEffect(MobEffectCategory.NEUTRAL" in mod_effects_source:
+        neutral_effects.add("slightly_tipsy")
+    for source_file in sorted(forge_effect_root.glob("*Effect.java")):
+        body = source_file.read_text(encoding="utf-8-sig")
+        if "MobEffectCategory.NEUTRAL" in body and source_file.name != "BaseEffect.java":
+            neutral_effects.add(re.sub(
+                r"(?<!^)(?=[A-Z])", "_", source_file.stem.removesuffix("Effect")).lower())
+        if "MobEffectCategory.HARMFUL" in body:
+            raise AssertionError(
+                f"{source_file.name}: harmful category is new; update the corner HUD row split")
+    if neutral_effects != {"slightly_tipsy", "upside_down"}:
+        raise AssertionError(
+            f"Corner HUD row-two set drifted from the Forge registrations: {sorted(neutral_effects)}")
+    hud_semantics_source = (game_package / "CustomEffectHudSemantics.java").read_text(
+        encoding="utf-8-sig")
+    # The ambient swirl colours must stay byte-identical to the archived
+    # Forge registrations.
+    registered_colors = dict(re.findall(
+        r'EFFECTS\.register\("(\w+)",[^\n]*?0x([0-9A-Fa-f]{6})\)', mod_effects_source))
+    if set(registered_colors) != set(CUSTOM_EFFECT_ICON_IDS):
+        raise AssertionError(
+            f"ModEffects colour extraction drifted: {sorted(registered_colors)}")
+    for effect_id, color in registered_colors.items():
+        entry = f'Map.entry("{NAMESPACE}:{effect_id}", 0x{color.upper()})'
+        if entry not in hud_semantics_source:
+            raise AssertionError(
+                f"CustomEffectHudSemantics colour table is missing {entry}")
+    for row2_effect in ("slightly_tipsy", "upside_down"):
+        if f'"{NAMESPACE}:{row2_effect}"' not in hud_semantics_source.split("HUD_ROW2_EFFECTS")[1].split(";")[0]:
+            raise AssertionError(
+                f"CustomEffectHudSemantics.HUD_ROW2_EFFECTS must contain {row2_effect}")
+
+    # The CustomNameplates hand-off: the bundled reference config, the
+    # PlaceholderAPI expansion and the soft dependencies must stay consistent.
+    hud_placeholder_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper"
+        "/integration/EffectHudPlaceholder.java").read_text(encoding="utf-8-sig")
+    for token in ('return "kaleidoscopetavern";', '"effect_hud"', '"effect_count"'):
+        if token not in hud_placeholder_source:
+            raise AssertionError(
+                f"EffectHudPlaceholder must keep the documented placeholder API: {token}")
+    nameplates_snippet = (
+        ROOT / "src/paper/customnameplates/bossbar-tavern-effects.yml").read_text(
+        encoding="utf-8-sig")
+    for token in ("%kaleidoscopetavern_effect_hud%",
+                  "%kaleidoscopetavern_effect_count%",
+                  "'!equals':"):
+        if token not in nameplates_snippet:
+            raise AssertionError(
+                f"CustomNameplates reference bossbar config is missing {token}")
+    paper_plugin_yml = (ROOT / "src/paper/resources/plugin.yml").read_text(
+        encoding="utf-8-sig")
+    if "softdepend: [PlaceholderAPI, CustomNameplates]" not in paper_plugin_yml:
+        raise AssertionError(
+            "plugin.yml must soft-depend on PlaceholderAPI and CustomNameplates for load order")
+    if "mode: auto" not in plugin_config or "effect-hud:" not in plugin_config:
+        raise AssertionError(
+            "config.yml must document the effect-hud mode switch and default to auto")
+    if "style: corner" not in plugin_config or "gui-half-width: 240" not in plugin_config:
+        raise AssertionError(
+            "config.yml must default the effect HUD to the vanilla-position corner style")
     shaker_3d_model = asset_json(
         f"{NAMESPACE}:item/shaker_3d", "models", paper_asset_roots)
     source_shaker_3d = asset_json(
@@ -1182,6 +1349,17 @@ def validate() -> dict[str, int]:
     pendant = furniture[f"{NAMESPACE}:bell_pendant_lamp"]["variants"]["ceiling"]
     if [element.get("translation") for element in pendant["elements"]] != ["0,-0.49,0", "0,-1.49,0"]:
         raise AssertionError("Ceiling pendant model halves are vertically misaligned")
+    for pendant_id in ("bell_pendant_lamp", "blue_pendant_lamp", "yellow_pendant_lamp"):
+        for half in ("top", "bottom"):
+            model = asset_json(
+                f"{NAMESPACE}:block/deco/{pendant_id}/{half}",
+                "models",
+                paper_asset_roots,
+            )
+            particle = None if model is None else model.get("textures", {}).get("particle")
+            if particle != "minecraft:block/iron_chain":
+                raise AssertionError(
+                    f"{pendant_id}/{half}: Paper 26.2 requires the iron_chain particle texture")
     tap = furniture[f"{NAMESPACE}:tap"]["variants"]["wall"]["elements"][0]
     if tap.get("position") != "0,0,0.01" or tap.get("translation") != "0,0,0.49":
         raise AssertionError("Wall model must retain its target-block offset after anti-blackening compensation")

@@ -3,7 +3,7 @@
 
 The Forge source tree is intentionally kept as the auditable migration input.  It
 is not part of the Paper source set.  Running this script is deterministic and
-only rewrites files under ``src/paper/pack/configuration`` and
+only rewrites generated files under ``src/paper/pack`` and
 ``src/paper/resources/catalog``.
 """
 
@@ -23,6 +23,20 @@ from typing import Any, Iterable
 ROOT = Path(__file__).resolve().parents[1]
 NAMESPACE = "kaleidoscope_tavern"
 HANGING_GRAPE_CROPS = {"grape_crop", "ice_grape_crop", "gold_grape_crop"}
+CUSTOM_EFFECT_ICON_IDS = (
+    "slightly_tipsy",
+    "high_heels",
+    "grass_stealth",
+    "vision",
+    "bloody_mary",
+    "ardent_heat",
+    "long_reach",
+    "tomb_raider",
+    "xp_drain",
+    "upside_down",
+    "zenith",
+    "shriek_attack",
+)
 JAVA_INIT = ROOT / "src/main/java/com/github/ysbbbbbb/kaleidoscopetavern/init"
 GENERATED = ROOT / "src/generated/resources"
 MAIN_RESOURCES = ROOT / "src/main/resources"
@@ -49,6 +63,14 @@ EN_US = MAIN_RESOURCES / f"assets/{NAMESPACE}/lang/en_us.json"
 LEGACY_RESOURCE_RENAMES: dict[str, str] = {
     "minecraft:chain": "minecraft:iron_chain",
     "minecraft:grass": "minecraft:short_grass",
+}
+
+# The same 26.2 rename also affects model texture paths.  These values are
+# deliberately normalized in Paper-only model overrides so the archived Forge
+# assets remain an auditable migration input.
+LEGACY_MODEL_TEXTURE_RENAMES: dict[str, str] = {
+    "block/chain": "minecraft:block/iron_chain",
+    "minecraft:block/chain": "minecraft:block/iron_chain",
 }
 
 
@@ -1465,6 +1487,140 @@ def create_chalkboard_models() -> None:
     write_json(model_root / "chalkboard_large.json", large)
 
 
+def create_pendant_lamp_models() -> None:
+    """Override the six pendant halves with their Paper 26.2 particle texture.
+
+    Vanilla renamed the chain texture to ``iron_chain``.  The particle entry is
+    still resolved by CraftEngine even though every visible face uses the
+    tavern's own lamp texture, so leaving the archived id emits a missing-texture
+    warning while loading the pack.
+    """
+    source_root = MAIN_RESOURCES / f"assets/{NAMESPACE}/models/block/deco"
+    target_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/block/deco"
+    for block_id in sorted(PENDANT_LAMPS):
+        for half in ("top", "bottom"):
+            model = read_json(source_root / block_id / f"{half}.json")
+            textures = model.get("textures")
+            if not isinstance(textures, dict):
+                raise AssertionError(f"{block_id}/{half}: missing model textures")
+            particle = textures.get("particle")
+            normalized = LEGACY_MODEL_TEXTURE_RENAMES.get(particle, particle)
+            if normalized != "minecraft:block/iron_chain":
+                raise AssertionError(
+                    f"{block_id}/{half}: unexpected particle texture {particle!r}")
+            textures["particle"] = normalized
+            write_json(target_root / block_id / f"{half}.json", model)
+
+
+def create_custom_effect_font() -> None:
+    """Expose the archived 18x18 MobEffect icons to the Paper-side HUD.
+
+    A vanilla client cannot register the Tavern's custom mob-effect registry
+    entries, but a resource-pack bitmap font can render the original icons in
+    an Adventure component without replacing any vanilla effect.
+    """
+    providers: list[dict[str, Any]] = []
+    texture_root = MAIN_RESOURCES / f"assets/{NAMESPACE}/textures/mob_effect"
+    for index, effect_id in enumerate(CUSTOM_EFFECT_ICON_IDS):
+        texture = texture_root / f"{effect_id}.png"
+        if not texture.is_file():
+            raise AssertionError(f"Missing custom effect icon: {texture}")
+        providers.append({
+            "type": "bitmap",
+            "file": f"{NAMESPACE}:mob_effect/{effect_id}.png",
+            "ascent": 8,
+            "height": 9,
+            "chars": [chr(0xE100 + index)],
+        })
+    write_json(
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/font/custom_effects.json",
+        {"providers": providers},
+    )
+
+
+# The corner HUD mirrors the vanilla effect overlay: a 24x24 frame per effect,
+# advancing 25 GUI pixels right-to-left, beneficial effects on row one and the
+# remaining categories on row two.  The layout is composed from exact glyph
+# advances, so every icon is padded to a deterministic 19px advance and every
+# horizontal move uses the space provider below.
+HUD_OFFSET_POWERS = (1, 2, 4, 8, 16, 32, 64, 128, 256)
+HUD_BG_ROW1 = 0xE320
+HUD_BG_ROW2 = 0xE321
+HUD_ICON_ROW1 = 0xE330
+HUD_ICON_ROW2 = 0xE340
+
+
+def create_custom_effect_hud_assets() -> None:
+    """Generate the vanilla-position corner HUD font, icons and bar sprites.
+
+    Boss bar text is centre-anchored, so the line is composed as a zero-advance
+    string: absolute offsets from the screen centre place each 25px slot at the
+    same coordinates the vanilla effect overlay uses, assuming the configured
+    GUI half-width.  The built-in renderer and CustomNameplates both display it
+    through a YELLOW boss bar whose sprites are overridden to be transparent.
+    """
+    try:
+        from PIL import Image
+    except ImportError as error:  # pragma: no cover - developer machine setup
+        raise AssertionError(
+            "Pillow is required to regenerate the corner HUD assets (pip install pillow)"
+        ) from error
+
+    texture_root = MAIN_RESOURCES / f"assets/{NAMESPACE}/textures/mob_effect"
+    padded_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/textures/font/hud_effect"
+    padded_root.mkdir(parents=True, exist_ok=True)
+    for effect_id in CUSTOM_EFFECT_ICON_IDS:
+        with Image.open(texture_root / f"{effect_id}.png") as source:
+            icon = source.convert("RGBA")
+        if icon.size != (18, 18):
+            raise AssertionError(f"{effect_id}: expected an 18x18 icon, got {icon.size}")
+        # The font renderer trims fully-transparent columns when measuring a
+        # glyph.  A nearly invisible pixel on both vertical edges keeps every
+        # icon at the full 18px width, so the advance is always 18 + 1.
+        for x in (0, 17):
+            if all(icon.getpixel((x, y))[3] == 0 for y in range(18)):
+                icon.putpixel((x, 9), (255, 255, 255, 2))
+        icon.save(padded_root / f"{effect_id}.png")
+
+    sprite_root = ROOT / "src/paper/pack/resourcepack/assets/minecraft/textures/gui/sprites/boss_bar"
+    sprite_root.mkdir(parents=True, exist_ok=True)
+    transparent_bar = Image.new("RGBA", (182, 5), (0, 0, 0, 0))
+    for sprite in ("yellow_background", "yellow_progress"):
+        transparent_bar.save(sprite_root / f"{sprite}.png")
+
+    advances: dict[str, int] = {}
+    for index, power in enumerate(HUD_OFFSET_POWERS):
+        advances[chr(0xE300 + index)] = power
+        advances[chr(0xE310 + index)] = -power
+    providers: list[dict[str, Any]] = [{"type": "space", "advances": advances}]
+    # Boss bar text starts at y=3 with its baseline at y=10, so an ascent of
+    # (10 - target_y) puts a glyph's top edge at the vanilla HUD coordinates:
+    # frames at y=1/26 and their 18x18 icons inset by 3px.
+    for bg_char, bg_ascent, icon_base, icon_ascent in (
+            (HUD_BG_ROW1, 9, HUD_ICON_ROW1, 6),
+            (HUD_BG_ROW2, -16, HUD_ICON_ROW2, -19),
+    ):
+        providers.append({
+            "type": "bitmap",
+            "file": "minecraft:gui/sprites/hud/effect_background.png",
+            "ascent": bg_ascent,
+            "height": 24,
+            "chars": [chr(bg_char)],
+        })
+        for index, effect_id in enumerate(CUSTOM_EFFECT_ICON_IDS):
+            providers.append({
+                "type": "bitmap",
+                "file": f"{NAMESPACE}:font/hud_effect/{effect_id}.png",
+                "ascent": icon_ascent,
+                "height": 18,
+                "chars": [chr(icon_base + index)],
+            })
+    write_json(
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/font/custom_effects_hud.json",
+        {"providers": providers},
+    )
+
+
 def create_pressing_fluid_models() -> None:
     """Create the six horizontal fluid surfaces rendered inside the tub."""
     model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture/pressing_fluid"
@@ -2010,14 +2166,14 @@ MANAGED_LORE_INSERTION = "kaleidoscope_tavern_managed_lore"
 # Operation 0 is an absolute addition and operation 1 is a percentage, matching
 # the vanilla attribute.modifier translation keys used by PotionUtils.
 DRINK_EFFECT_ATTRIBUTES: dict[str, list[tuple[str, float, int]]] = {
-    "minecraft:speed": [("attribute.name.generic.movement_speed", 0.2, 1)],
-    "minecraft:strength": [("attribute.name.generic.attack_damage", 3.0, 0)],
+    "minecraft:speed": [("attribute.name.movement_speed", 0.2, 1)],
+    "minecraft:strength": [("attribute.name.attack_damage", 3.0, 0)],
     f"{NAMESPACE}:high_heels": [
-        ("attribute.name.generic.step_height", 0.5, 0),
+        ("attribute.name.step_height", 0.5, 0),
     ],
     f"{NAMESPACE}:long_reach": [
-        ("attribute.name.player.block_interaction_range", 3.0, 0),
-        ("attribute.name.player.entity_interaction_range", 3.0, 0),
+        ("attribute.name.block_interaction_range", 3.0, 0),
+        ("attribute.name.entity_interaction_range", 3.0, 0),
     ],
 }
 
@@ -2421,6 +2577,9 @@ def main() -> None:
     render_items = {**block_render_items, **furniture_render_items}
     create_pressing_fluid_models()
     create_barrel_fluid_models()
+    create_pendant_lamp_models()
+    create_custom_effect_font()
+    create_custom_effect_hud_assets()
     create_bar_stool_body_models()
     create_shaker_models()
     add_runtime_render_items(render_items)

@@ -378,14 +378,14 @@ public final class ItemService implements Listener {
             double level = spec.amplifier() + 1.0;
             if ((PREFIX + "high_heels").equals(spec.effect())) {
                 attributes.add(DrinkEffectLoreSemantics.attribute(
-                        "attribute.name.generic.step_height", 0.5 * level,
+                        Attribute.STEP_HEIGHT.translationKey(), 0.5 * level,
                         DrinkEffectLoreSemantics.ModifierOperation.ADD_NUMBER));
             } else if ((PREFIX + "long_reach").equals(spec.effect())) {
                 attributes.add(DrinkEffectLoreSemantics.attribute(
-                        "attribute.name.player.block_interaction_range", 3.0 * level,
+                        Attribute.BLOCK_INTERACTION_RANGE.translationKey(), 3.0 * level,
                         DrinkEffectLoreSemantics.ModifierOperation.ADD_NUMBER));
                 attributes.add(DrinkEffectLoreSemantics.attribute(
-                        "attribute.name.player.entity_interaction_range", 3.0 * level,
+                        Attribute.ENTITY_INTERACTION_RANGE.translationKey(), 3.0 * level,
                         DrinkEffectLoreSemantics.ModifierOperation.ADD_NUMBER));
             }
         }

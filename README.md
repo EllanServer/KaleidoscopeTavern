@@ -52,6 +52,22 @@
 
 插件只删除自己清单中记录的过期文件，不会清理 CraftEngine 的其他项目。若关闭 `pack.install-on-startup`，则需要自行把 JAR 内的 `tavern-pack/` 放入 CraftEngine 资源目录。
 
+### 酒效 HUD（可选：CustomNameplates）
+
+纯原版客户端无法注册自定义状态效果，插件通过隐形 BossBar 文本渲染持续型酒效。默认 `effect-hud.style: corner` 会把效果图标排到**原版药水 HUD 的位置**：右上角 24x24 原版效果框、增益第一行、其余第二行、从右向左每 25px 一格，与原版视觉一致（原版 HUD 同样不显示文字）。`style: line` 则退回顶部居中一行（图标 + 名称 + 等级 + 倒计时）。
+
+效果行为与视觉均复刻自归档 Forge 源码：属性修改（步高、交互距离）、击杀回血、缴械、经验流失、灵视脉冲、音爆等逻辑此前已迁移；环境粒子按 ModEffects 注册的原色由服务端补发 `ENTITY_EFFECT` 漩涡（隐身实体按原版规则降频）。两处原版客户端协议内的近似/限制：穿草隐身时原模组在客户端取消整个玩家渲染，服务端以 invisible 标志近似（装备仍可见）；微醺的镜头摇晃属于客户端渲染事件，无法在原版客户端复刻。
+
+corner 排版基于零和偏移：BossBar 文本以屏幕中心为锚，按 `effect-hud.gui-half-width`（默认 240，对应 1920x1080 + GUI 比例 4）推算右上角坐标。其他分辨率/GUI 比例的玩家图标仍在顶行，只是水平位置偏移；若服上另有 BossBar（末影龙、其他插件），整行会随原版堆叠规则下移一格。corner 风格占用 YELLOW BossBar 颜色（tavern 资源包把 `boss_bar/yellow_*` 覆盖为全透明），服务器上其他黄色 BossBar 也会因此隐形。
+
+如果服务端装有 PlaceholderAPI 与 CustomNameplates，可以把显示层交给 CustomNameplates：
+
+1. 安装 PlaceholderAPI 与 CustomNameplates。
+2. 把 JAR 内 `customnameplates/bossbar-tavern-effects.yml` 中的 `tavern_effects` 一节合并进 `plugins/CustomNameplates/configs/bossbar.yml`，然后 `/nameplates reload`（`color` 保持 `YELLOW` 以隐藏条本体）。
+3. 本插件 `config.yml` 的 `effect-hud.mode` 默认为 `auto`：检测到 CustomNameplates 时自动停用内置 BossBar，避免重复显示；也可强制 `builtin` / `external`。
+
+占位符：`%kaleidoscopetavern_effect_hud%`（完整 MiniMessage 行，随 `style` 输出 corner 或 line 排版，与内置 BossBar 内容一致）、`%kaleidoscopetavern_effect_count%`（酒效数量，用于隐藏条件）。字形来自 CraftEngine 分发的 `kaleidoscope_tavern:custom_effects`（line）与 `kaleidoscope_tavern:custom_effects_hud`（corner）位图字体，无需在 CustomNameplates 中另行注册 image。
+
 ### 命令
 
 - `/kt status`：显示 CE 物品、方块、家具和玩法目录的加载数量；

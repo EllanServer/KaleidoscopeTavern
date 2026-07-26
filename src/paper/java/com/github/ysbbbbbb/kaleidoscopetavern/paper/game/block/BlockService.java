@@ -153,15 +153,10 @@ public final class BlockService implements Listener {
 
         // Case 1: player right-clicked a plain trellis directly.
         if (clickedState != null && TRELLIS.equals(clickedState.owner().value().id().toString())) {
-            LOGGER.info(() -> "onRightClickWithGrapevine: clicked trellis at " + clicked.getLocation());
             Block soil = clicked.getRelative(BlockFace.DOWN);
             String planted = grapevineFor(soil);
             if (planted != null) {
-                LOGGER.info(() -> "onRightClickWithGrapevine: planting " + planted + " on trellis");
                 plantGrapevineOnTrellis(player, clicked, clickedState, hand, soil, planted, usedSlot);
-            } else {
-                LOGGER.warning(() -> "onRightClickWithGrapevine: grapevineFor returned null for soil="
-                        + soil.getType() + " at " + soil.getLocation());
             }
             // Always cancel to prevent block_item from placing wild_grapevine,
             // even when planting fails (wrong soil).
@@ -176,14 +171,9 @@ public final class BlockService implements Listener {
             Block above = clicked.getRelative(BlockFace.UP);
             ImmutableBlockState aboveState = CraftEngineBlocks.getCustomBlockState(above);
             if (aboveState != null && TRELLIS.equals(aboveState.owner().value().id().toString())) {
-                LOGGER.info(() -> "onRightClickWithGrapevine: clicked soil below trellis at " + clicked.getLocation());
                 String planted = grapevineFor(clicked);
                 if (planted != null) {
-                    LOGGER.info(() -> "onRightClickWithGrapevine: planting " + planted + " on trellis above");
                     plantGrapevineOnTrellis(player, above, aboveState, hand, clicked, planted, usedSlot);
-                } else {
-                    LOGGER.warning(() -> "onRightClickWithGrapevine: grapevineFor returned null for soil="
-                            + clicked.getType() + " at " + clicked.getLocation());
                 }
                 event.setCancelled(true);
             }
@@ -303,8 +293,6 @@ public final class BlockService implements Listener {
         Block soil = block.getRelative(BlockFace.DOWN);
         String planted = grapevineFor(soil);
         if (planted == null) {
-            LOGGER.warning(() -> "interactPlainTrellis: grapevineFor returned null for soil="
-                    + soil.getType() + " at " + soil.getLocation());
             return true; // still cancel to prevent block_item from placing wild_grapevine
         }
         plantGrapevineOnTrellis(player, block, state, hand, soil, planted, usedSlot);
