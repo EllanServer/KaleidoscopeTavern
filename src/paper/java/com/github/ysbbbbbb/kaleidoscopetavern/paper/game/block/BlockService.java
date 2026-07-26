@@ -90,7 +90,9 @@ public final class BlockService implements Listener {
                 + " at " + event.bukkitBlock().getLocation());
 
         boolean handled = blockId.startsWith(PREFIX + "string_lights_")
-                ? interactStringLights(player, event.bukkitBlock(), state, hand)
+                // String-lights dyeing now lives in the generated CE block
+                // events (transform_block); nothing to do here.
+                ? false
                 : switch (blockId) {
             case TRELLIS -> interactPlainTrellis(
                     player, event.bukkitBlock(), state, hand, handId, usedSlot);
@@ -193,34 +195,6 @@ public final class BlockService implements Listener {
                 }
             });
         }
-    }
-
-    private boolean interactStringLights(Player player, Block block, ImmutableBlockState state, ItemStack hand) {
-        String material = hand.getType().name();
-        if (!material.endsWith("_DYE")) {
-            return false;
-        }
-        String color = material.substring(0, material.length() - "_DYE".length())
-                .toLowerCase(java.util.Locale.ROOT);
-        String targetId = PREFIX + "string_lights_" + color;
-        if (state.owner().value().id().toString().equals(targetId)) {
-            return false;
-        }
-        net.momirealms.craftengine.core.block.BlockDefinition definition =
-                CraftEngineBlocks.byId(net.momirealms.craftengine.core.util.Key.of(targetId));
-        if (definition == null) {
-            return false;
-        }
-        ImmutableBlockState replacement = definition.defaultState();
-        replacement = copyNamed(state, replacement, "facing");
-        replacement = copyNamed(state, replacement, "waterlogged");
-        if (CraftEngineBlocks.place(block.getLocation(), replacement, false)) {
-            consumeUnlessCreative(player, hand);
-            block.getWorld().playSound(block.getLocation(), "minecraft:item.dye.use", 1F, 1F);
-            block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER,
-                    block.getLocation().add(0.5, 0.5, 0.5), 8, 0.25, 0.25, 0.25, 0);
-        }
-        return true;
     }
 
     private boolean interactWildHead(Player player, Block block, ImmutableBlockState state,

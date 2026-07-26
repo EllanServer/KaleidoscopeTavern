@@ -814,6 +814,8 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
         behavior = behavior_for(block_id, set(property_values))
         if behavior is not None:
             config["behavior"] = behavior
+        if block_id.startswith("string_lights_"):
+            config["events"] = string_lights_dye_events(block_id)
         if block_id in item_ids:
             config["loot"] = {
                 "pools": [{
@@ -1637,6 +1639,57 @@ def create_custom_effect_hud_assets() -> None:
         ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/font/custom_effects_hud.json",
         {"providers": providers},
     )
+
+
+DYE_COLORS = (
+    "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink",
+    "gray", "light_gray", "cyan", "purple", "blue", "brown", "green", "red",
+    "black",
+)
+
+
+def string_lights_dye_events(block_id: str) -> list[dict[str, Any]]:
+    """StringLightsBlock#use as CraftEngine block events.
+
+    Each foreign dye recolours the lights in place (transform_block copies
+    facing/waterlogged from the existing state), plays the dye-use sound,
+    pops the growth particles and consumes one dye outside creative mode.
+    The hand condition stops the duplicate off-hand interact event and
+    cancel_event suppresses the vanilla item use afterwards; dyeing the
+    current colour is intentionally absent, matching the source's no-op.
+    """
+    current = block_id.removeprefix("string_lights_")
+    events: list[dict[str, Any]] = []
+    for color in DYE_COLORS:
+        if color == current:
+            continue
+        events.append({
+            "on": "right_click",
+            "conditions": [
+                {"type": "match_item", "item": f"minecraft:{color}_dye"},
+                {"type": "hand", "hand": "main_hand"},
+            ],
+            "functions": [
+                {"type": "transform_block",
+                 "block": f"{NAMESPACE}:string_lights_{color}"},
+                {"type": "play_sound", "sound": "minecraft:item.dye.use",
+                 "source": "block"},
+                {"type": "particle", "particle": "minecraft:happy_villager",
+                 "x": "<arg:position.x> + 0.5",
+                 "y": "<arg:position.y> + 0.5",
+                 "z": "<arg:position.z> + 0.5",
+                 "count": 8,
+                 "offset_x": 0.25, "offset_y": 0.25, "offset_z": 0.25},
+                {"type": "set_count", "add": True, "count": -1,
+                 "conditions": [{
+                     "type": "expression",
+                     "expression": "'<arg:player.gamemode>' != 'CREATIVE'",
+                 }]},
+                {"type": "swing_hand"},
+                {"type": "cancel_event"},
+            ],
+        })
+    return events
 
 
 def create_worldgen_features() -> None:

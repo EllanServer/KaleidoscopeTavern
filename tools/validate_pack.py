@@ -178,7 +178,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("tools/migrate_legacy.py", "_sofa"),
         ("FurnitureConnectionService.java", "connectionFor"),
     ),
-    "StringLightsBlock.java": (("block/BlockService.java", "interactStringLights"),),
+    "StringLightsBlock.java": (("src/paper/pack/configuration/blocks.json", "item.dye.use"),),
     "StringLightsBlockItem.java": (
         ("src/paper/resources/catalog/tags.tsv", "curios:charm"),
     ),
@@ -1253,6 +1253,25 @@ def validate() -> dict[str, int]:
     if not any(item.get("settings", {}).get("consume_replacement") == f"{NAMESPACE}:empty_bottle"
                for item in items.values()):
         raise AssertionError("No drink declares an empty_bottle consume_replacement")
+
+    # String-lights dyeing is expressed as CE block events.
+    dye_colors = ("white", "orange", "magenta", "light_blue", "yellow", "lime",
+                  "pink", "gray", "light_gray", "cyan", "purple", "blue",
+                  "brown", "green", "red", "black")
+    for color in dye_colors:
+        lights = blocks[f"{NAMESPACE}:string_lights_{color}"]
+        light_events = lights.get("events", [])
+        if len(light_events) != len(dye_colors) - 1:
+            raise AssertionError(
+                f"string_lights_{color}: expected {len(dye_colors) - 1} dye events")
+        for entry in light_events:
+            functions = {f["type"] for f in entry["functions"]}
+            if not {"transform_block", "cancel_event", "set_count"} <= functions:
+                raise AssertionError(
+                    f"string_lights_{color}: dye event missing core functions")
+            if {c["type"] for c in entry["conditions"]} != {"match_item", "hand"}:
+                raise AssertionError(
+                    f"string_lights_{color}: dye event needs match_item plus hand")
 
     # Wild grapevine worldgen rides CraftEngine's feature pipeline now; the
     # plugin must not re-implement a Bukkit-side generator.
