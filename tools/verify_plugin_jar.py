@@ -16,8 +16,10 @@ REQUIRED_ENTRIES = (
     "tavern-pack/pack.yml",
     "tavern-pack/configuration/blocks.json",
     "customcrops/contents/crops/kaleidoscope_tavern.yml",
+    "customnameplates/bossbar-tavern-effects.yml",
     "com/github/ysbbbbbb/kaleidoscopetavern/paper/pack/PackInstaller.class",
     "com/github/ysbbbbbb/kaleidoscopetavern/paper/pack/CustomCropsInstaller.class",
+    "com/github/ysbbbbbb/kaleidoscopetavern/paper/integration/EffectHudPlaceholder.class",
 )
 
 

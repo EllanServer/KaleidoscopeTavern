@@ -52,6 +52,16 @@
 
 插件只删除自己清单中记录的过期文件，不会清理 CraftEngine 的其他项目。若关闭 `pack.install-on-startup`，则需要自行把 JAR 内的 `tavern-pack/` 放入 CraftEngine 资源目录。
 
+### 酒效 HUD（可选：CustomNameplates）
+
+纯原版客户端无法注册自定义状态效果，插件默认用内置 BossBar 显示持续型酒效（图标 + 本地化名称 + 倒计时）。如果服务端装有 PlaceholderAPI 与 CustomNameplates，可以把显示层交给 CustomNameplates：
+
+1. 安装 PlaceholderAPI 与 CustomNameplates。
+2. 把 JAR 内 `customnameplates/bossbar-tavern-effects.yml` 中的 `tavern_effects` 一节合并进 `plugins/CustomNameplates/configs/bossbar.yml`，然后 `/nameplates reload`。
+3. 本插件 `config.yml` 的 `effect-hud.mode` 默认为 `auto`：检测到 CustomNameplates 时自动停用内置 BossBar，避免重复显示；也可强制 `builtin` / `external`。
+
+占位符：`%kaleidoscopetavern_effect_hud%`（完整 MiniMessage 行，与内置 BossBar 内容一致）、`%kaleidoscopetavern_effect_count%`（酒效数量，用于隐藏条件）。图标字形来自 CraftEngine 分发的 `kaleidoscope_tavern:custom_effects` 位图字体，无需在 CustomNameplates 中另行注册 image。
+
 ### 命令
 
 - `/kt status`：显示 CE 物品、方块、家具和玩法目录的加载数量；

@@ -1,0 +1,28 @@
+# Kaleidoscope Tavern 酒效 HUD —— CustomNameplates 参考配置
+#
+# 用法：把下方的 tavern_effects 一节合并进
+#   plugins/CustomNameplates/configs/bossbar.yml
+# 然后执行 /nameplates reload。
+#
+# 说明：
+# - 图标与文字全部来自 PlaceholderAPI 占位符 %kaleidoscopetavern_effect_hud%，
+#   图标字形由 CraftEngine 分发的 tavern 资源包提供
+#   （kaleidoscope_tavern:custom_effects 字体），无需在 CN 中注册 image。
+# - %kaleidoscopetavern_effect_count% 在没有酒效时为 0，用于隐藏整条 BossBar。
+# - 本插件 config.yml 的 effect-hud.mode 默认为 auto：检测到 CustomNameplates
+#   时会自动停用内置 BossBar，避免重复显示。
+# - 条形本体的颜色/透明化、垂直偏移等显示细节由 CustomNameplates 负责，
+#   请参考其文档调整。
+tavern_effects:
+  color: YELLOW
+  overlay: PROGRESS
+  conditions:
+    '!equals':
+      value1: '%kaleidoscopetavern_effect_count%'
+      value2: '0'
+      refresh-interval: 10
+  text-display-order:
+    1:
+      duration: 100
+      text: '%kaleidoscopetavern_effect_hud%'
+      refresh-frequency: 10

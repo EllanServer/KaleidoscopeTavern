@@ -8,6 +8,14 @@ custom-crops:
 stations:
   press-eject-invalid: true
 
+# 自定义酒效 HUD 的渲染方式。
+#   auto:     检测到 CustomNameplates 时停用内置 BossBar，改由外部通过
+#             %kaleidoscopetavern_effect_hud% 占位符渲染；否则使用内置 BossBar。
+#   builtin:  始终使用内置 BossBar。
+#   external: 始终停用内置 BossBar，仅提供 PlaceholderAPI 占位符。
+effect-hud:
+  mode: auto
+
 gameplay:
   infinite-lava-from-tap: true
 

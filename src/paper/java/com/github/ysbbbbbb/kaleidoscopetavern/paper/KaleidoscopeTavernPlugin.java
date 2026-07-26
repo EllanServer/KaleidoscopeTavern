@@ -20,6 +20,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBlockShape;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.WildGrapevineBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.EffectHudPlaceholder;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.pack.CustomCropsInstaller;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.pack.PackInstaller;
@@ -69,6 +70,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     private AmbientFurnitureService ambientFurniture;
     private BarStoolVisualService barStoolVisuals;
     private ShakerVisualService shakerVisuals;
+    private EffectHudPlaceholder effectHudPlaceholder;
 
     @Override
     public void onLoad() {
@@ -149,6 +151,11 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         shakerVisuals.start();
         furnitureConnections.start();
 
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            effectHudPlaceholder = new EffectHudPlaceholder(this, effects);
+            effectHudPlaceholder.register();
+        }
+
         PluginCommand command = Objects.requireNonNull(getCommand("kaleidoscopetavern"),
                 "plugin.yml command kaleidoscopetavern");
         command.setExecutor(this);
@@ -168,6 +175,10 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
 
     @Override
     public void onDisable() {
+        if (effectHudPlaceholder != null) {
+            effectHudPlaceholder.unregister();
+            effectHudPlaceholder = null;
+        }
         if (stations != null) {
             stations.stop();
         }

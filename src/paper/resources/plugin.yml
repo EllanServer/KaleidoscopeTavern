@@ -6,6 +6,7 @@ api-version: '26.2'
 authors: [ysbbbbbb, tartaric_acid]
 website: https://github.com/EllanServer/KaleidoscopeTavern
 depend: [CraftEngine, CustomCrops]
+softdepend: [PlaceholderAPI, CustomNameplates]
 commands:
   kaleidoscopetavern:
     description: Kaleidoscope Tavern administration command

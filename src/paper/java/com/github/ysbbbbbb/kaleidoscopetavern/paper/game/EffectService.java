@@ -5,10 +5,8 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import org.bukkit.Bukkit;
@@ -80,7 +78,6 @@ import java.util.concurrent.ThreadLocalRandom;
 /** Applies migrated drink data, including the twelve custom Forge effects. */
 public final class EffectService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
-    private static final Key CUSTOM_EFFECT_FONT = Key.key(CustomEffectHudSemantics.FONT_KEY);
     private static final Set<String> INSTANT_EFFECTS = Set.of(
             PREFIX + "shriek_attack", PREFIX + "upside_down", PREFIX + "zenith");
     private static final Set<Material> VANILLA_CROP_BLOCKS = Set.of(
@@ -102,6 +99,7 @@ public final class EffectService implements Listener {
     private final NamespacedKey splashCustomEffectsKey;
     private final Map<UUID, Map<String, ActiveEffect>> active = new HashMap<>();
     private final Map<UUID, BossBar> effectHudBars = new HashMap<>();
+    private final boolean builtinHud;
     private long elapsedTicks;
     private BukkitTask task;
 
@@ -109,6 +107,15 @@ public final class EffectService implements Listener {
         this.plugin = plugin;
         this.catalog = catalog;
         this.items = items;
+        // auto: an installed CustomNameplates is expected to render the
+        // %kaleidoscopetavern_effect_hud% placeholder instead of the built-in
+        // boss bar. builtin/external force one side regardless.
+        String hudMode = plugin.getConfig().getString("effect-hud.mode", "auto");
+        this.builtinHud = switch (hudMode) {
+            case "builtin" -> true;
+            case "external" -> false;
+            default -> Bukkit.getPluginManager().getPlugin("CustomNameplates") == null;
+        };
         this.activeKey = new NamespacedKey(plugin, "active_drink_effects");
         this.collisionKey = new NamespacedKey(plugin, "ardent_heat_collisions");
         this.heelsModifierKey = new NamespacedKey(plugin, "effect_high_heels");
@@ -988,12 +995,33 @@ public final class EffectService implements Listener {
         }
     }
 
+    /**
+     * The MiniMessage HUD line for PlaceholderAPI consumers such as
+     * CustomNameplates. Empty when the player has no tavern effects.
+     */
+    public String effectHudMiniMessage(Player player) {
+        Map<String, ActiveEffect> effects = active.get(player.getUniqueId());
+        if (effects == null) {
+            return "";
+        }
+        return CustomEffectHudSemantics.miniMessageLine(hudEntries(effects));
+    }
+
+    public int activeEffectCount(Player player) {
+        Map<String, ActiveEffect> effects = active.get(player.getUniqueId());
+        return effects == null ? 0 : effects.size();
+    }
+
     private void updateEffectHud(Player player, Map<String, ActiveEffect> effects) {
+        if (!builtinHud) {
+            return;
+        }
         if (effects.isEmpty()) {
             hideEffectHud(player);
             return;
         }
-        Component title = effectHudTitle(effects);
+        Component title = MiniMessage.miniMessage().deserialize(
+                CustomEffectHudSemantics.miniMessageLine(hudEntries(effects)));
         BossBar bar = effectHudBars.get(player.getUniqueId());
         if (bar == null) {
             bar = BossBar.bossBar(
@@ -1005,37 +1033,12 @@ public final class EffectService implements Listener {
         }
     }
 
-    private static Component effectHudTitle(Map<String, ActiveEffect> effects) {
-        Component title = Component.empty();
-        boolean first = true;
-        for (ActiveEffect effect : effects.values()) {
-            CustomEffectHudSemantics.Display display = CustomEffectHudSemantics.describe(
-                    effect.effect(), effect.remainingTicks(), effect.amplifier());
-            Component name = Component.translatable(display.effectKey());
-            if (display.potencyKey() != null) {
-                name = Component.translatable("potion.withAmplifier", name,
-                        Component.translatable(display.potencyKey()));
-            }
-            name = Component.translatable("potion.withDuration", name,
-                    Component.text(display.duration()));
-
-            Component entry = Component.empty();
-            if (display.icon() != null) {
-                entry = entry.append(Component.text(display.icon())
-                                .font(CUSTOM_EFFECT_FONT)
-                                .color(NamedTextColor.WHITE))
-                        .append(Component.space());
-            }
-            NamedTextColor color = (PREFIX + "slightly_tipsy").equals(effect.effect())
-                    ? NamedTextColor.GRAY : NamedTextColor.BLUE;
-            entry = entry.append(name.color(color));
-            if (!first) {
-                title = title.append(Component.text("  |  ", NamedTextColor.DARK_GRAY));
-            }
-            title = title.append(entry);
-            first = false;
-        }
-        return title.decoration(TextDecoration.ITALIC, false);
+    private static List<CustomEffectHudSemantics.EffectEntry> hudEntries(
+            Map<String, ActiveEffect> effects) {
+        return effects.values().stream()
+                .map(effect -> new CustomEffectHudSemantics.EffectEntry(
+                        effect.effect(), effect.remainingTicks(), effect.amplifier()))
+                .toList();
     }
 
     private void hideEffectHud(Player player) {

@@ -1167,6 +1167,33 @@ def validate() -> dict[str, int]:
     for effect_id in CUSTOM_EFFECT_ICON_IDS:
         if not asset_exists(f"{NAMESPACE}:mob_effect/{effect_id}", "textures", ".png"):
             raise AssertionError(f"Missing custom drink-effect HUD icon: {effect_id}")
+
+    # The CustomNameplates hand-off: the bundled reference config, the
+    # PlaceholderAPI expansion and the soft dependencies must stay consistent.
+    hud_placeholder_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper"
+        "/integration/EffectHudPlaceholder.java").read_text(encoding="utf-8-sig")
+    for token in ('return "kaleidoscopetavern";', '"effect_hud"', '"effect_count"'):
+        if token not in hud_placeholder_source:
+            raise AssertionError(
+                f"EffectHudPlaceholder must keep the documented placeholder API: {token}")
+    nameplates_snippet = (
+        ROOT / "src/paper/customnameplates/bossbar-tavern-effects.yml").read_text(
+        encoding="utf-8-sig")
+    for token in ("%kaleidoscopetavern_effect_hud%",
+                  "%kaleidoscopetavern_effect_count%",
+                  "'!equals':"):
+        if token not in nameplates_snippet:
+            raise AssertionError(
+                f"CustomNameplates reference bossbar config is missing {token}")
+    paper_plugin_yml = (ROOT / "src/paper/resources/plugin.yml").read_text(
+        encoding="utf-8-sig")
+    if "softdepend: [PlaceholderAPI, CustomNameplates]" not in paper_plugin_yml:
+        raise AssertionError(
+            "plugin.yml must soft-depend on PlaceholderAPI and CustomNameplates for load order")
+    if "mode: auto" not in plugin_config or "effect-hud:" not in plugin_config:
+        raise AssertionError(
+            "config.yml must document the effect-hud mode switch and default to auto")
     shaker_3d_model = asset_json(
         f"{NAMESPACE}:item/shaker_3d", "models", paper_asset_roots)
     source_shaker_3d = asset_json(

@@ -11,6 +11,7 @@ repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.momirealms.net/releases/")
+    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
 }
 
 dependencies {
@@ -21,10 +22,15 @@ dependencies {
     // CraftEngine's custom BlockBehavior hooks expose NMS arguments through
     // this companion module. It is supplied by CraftEngine at runtime.
     compileOnly("net.momirealms:craft-engine-bukkit-proxy:${providers.gradleProperty("craft_engine_proxy_version").get()}")
+    // The HUD placeholder for CustomNameplates and other PlaceholderAPI users.
+    compileOnly("me.clip:placeholderapi:${providers.gradleProperty("placeholder_api_version").get()}")
 
     testImplementation(platform("org.junit:junit-bom:5.14.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("net.momirealms:craft-engine-core:${providers.gradleProperty("craft_engine_version").get()}")
+    // MiniMessage round-trips in CustomEffectHudSemanticsTest use the same
+    // adventure version Paper ships at runtime.
+    testImplementation("io.papermc.paper:paper-api:${providers.gradleProperty("paper_version").get()}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -56,6 +62,9 @@ tasks.processResources {
     }
     from("src/paper/customcrops") {
         into("customcrops")
+    }
+    from("src/paper/customnameplates") {
+        into("customnameplates")
     }
     from("src/main/resources") {
         include("assets/**")
