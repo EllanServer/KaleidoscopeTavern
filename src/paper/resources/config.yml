@@ -47,8 +47,6 @@ messages:
   pack-missing: '<red>CraftEngine 内容包尚未加载，请执行 /ce reload all。</red>'
   press-filled: '<green>压榨完成：<amount>/1000 mB。</green>'
   barrel-started: '<green>酒桶已开始酿造。</green>'
-  barrel-progress: '<gray>当前陈酿等级：<level>/6。</gray>'
-  barrel-not-brewing: '<gray>酿造尚未开始。</gray>'
   barrel-brewing-cannot-open: '<red>无法在酿造过程中打开酒桶！</red>'
   barrel-fluid-not-full: '<yellow>需要先把酒桶装满流体，才能添加原料！</yellow>'
   barrel-no-space: '<yellow>酒桶已满，无法添加更多原料！</yellow>'

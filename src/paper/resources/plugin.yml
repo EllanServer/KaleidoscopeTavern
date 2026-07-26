@@ -9,11 +9,15 @@ depend: [CraftEngine, CustomCrops]
 softdepend: [PlaceholderAPI, CustomNameplates]
 commands:
   kaleidoscopetavern:
-    description: Kaleidoscope Tavern administration command
+    description: Kaleidoscope Tavern command
     usage: /<command> <status|give|reload|recipes>
     aliases: [kt]
-    permission: kaleidoscopetavern.admin
 permissions:
   kaleidoscopetavern.admin:
     description: Allows administration of Kaleidoscope Tavern
     default: op
+    children:
+      kaleidoscopetavern.recipes: true
+  kaleidoscopetavern.recipes:
+    description: Allows viewing tavern recipes via /kt recipes
+    default: true
