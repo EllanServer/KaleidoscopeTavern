@@ -693,6 +693,21 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"Placed shaker CE sourceItem lifecycle is missing {shaker_source_token}")
 
+    display_storage_source = (game_package / "DisplayStorageService.java").read_text(
+        encoding="utf-8-sig")
+    if ("controller.get(DisplayItemFurnitureController.class, slot)"
+            in display_storage_source):
+        raise AssertionError(
+            "CE furniture controller indexes are absolute behavior indexes, not storage slots")
+    for display_controller_token in (
+            "private static DisplayItemFurnitureController displayController",
+            "furniture.config.behaviors().size()",
+            "DisplayItemFurnitureController.class, index",
+            "ordinal++ == slot"):
+        if display_controller_token not in display_storage_source:
+            raise AssertionError(
+                "Storage must resolve CE display controllers by behavior ordinal")
+
     board_text_source = (game_package / "BoardTextService.java").read_text(
         encoding="utf-8-sig")
     if ("runTaskTimer" in board_text_source

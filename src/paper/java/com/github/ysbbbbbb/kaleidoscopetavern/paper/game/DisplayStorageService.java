@@ -435,7 +435,7 @@ public final class DisplayStorageService implements Listener {
     }
 
     private Item controllerItem(BukkitFurniture furniture, int slot) {
-        DisplayItemFurnitureController controller = furniture.controller.get(DisplayItemFurnitureController.class, slot);
+        DisplayItemFurnitureController controller = displayController(furniture, slot);
         if (controller == null || savedItemField == null) {
             warnReflectionBridge();
             return null;
@@ -449,7 +449,7 @@ public final class DisplayStorageService implements Listener {
     }
 
     private boolean setControllerItem(BukkitFurniture furniture, int slot, Item item) {
-        DisplayItemFurnitureController controller = furniture.controller.get(DisplayItemFurnitureController.class, slot);
+        DisplayItemFurnitureController controller = displayController(furniture, slot);
         if (controller == null || saveDisplayItemMethod == null) {
             warnReflectionBridge();
             return false;
@@ -466,6 +466,25 @@ public final class DisplayStorageService implements Listener {
             warnReflectionBridge();
             return false;
         }
+    }
+
+    private static DisplayItemFurnitureController displayController(
+            BukkitFurniture furniture, int slot) {
+        if (slot < 0) {
+            return null;
+        }
+        int ordinal = 0;
+        // FurnitureController#get uses the absolute index in the complete
+        // behavior array. State/lifecycle controllers precede CE display
+        // slots, so a storage slot number cannot be passed through directly.
+        for (int index = 0; index < furniture.config.behaviors().size(); index++) {
+            DisplayItemFurnitureController candidate = furniture.controller.get(
+                    DisplayItemFurnitureController.class, index);
+            if (candidate != null && ordinal++ == slot) {
+                return candidate;
+            }
+        }
+        return null;
     }
 
     private ItemStack bukkitItem(Item item) {
