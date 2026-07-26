@@ -10,6 +10,7 @@ import org.bukkit.Location;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Container;
@@ -90,7 +91,9 @@ public final class BottlePlacementService implements Listener {
         event.setCancelled(true);
         event.setUseInteractedBlock(Event.Result.DENY);
         event.setUseItemInHand(Event.Result.DENY);
-        target.getWorld().playSound(location, Sound.BLOCK_GLASS_PLACE, 1F, 1F);
+        // BlockItem#place: (glass volume 1.0 + 1) / 2 and pitch * 0.8.
+        target.getWorld().playSound(location, Sound.BLOCK_GLASS_PLACE,
+                SoundCategory.BLOCKS, 1F, 0.8F);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -127,7 +130,9 @@ public final class BottlePlacementService implements Listener {
             CraftEngineFurniture.remove(furniture, false, false);
             return;
         }
-        target.getWorld().playSound(location, Sound.BLOCK_GLASS_PLACE, 1F, 1F);
+        // BlockItem#place: (glass volume 1.0 + 1) / 2 and pitch * 0.8.
+        target.getWorld().playSound(location, Sound.BLOCK_GLASS_PLACE,
+                SoundCategory.BLOCKS, 1F, 0.8F);
     }
 
     private Placement placementFor(ItemStack stack) {
@@ -194,7 +199,10 @@ public final class BottlePlacementService implements Listener {
             case NORTH -> 180F;
             case WEST -> 90F;
             case EAST -> -90F;
-            default -> 0F;
+            case SOUTH -> 0F;
+            // Vertical dispensers hand BottleBlock a NORTH placement context,
+            // which getStateForPlacement's opposite turns into FACING=SOUTH.
+            default -> 180F;
         };
     }
 

@@ -42,6 +42,8 @@ public final class BottleFurnitureService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String POTION_BOTTLE = PREFIX + "potion_bottle";
     private static final String MOLOTOV = PREFIX + "molotov";
+    // A DrinkBlockItem with no drink-effects entry: still a stackable drink.
+    private static final String WATERMELON_JUICE = PREFIX + "watermelon_juice";
     private static final Set<String> SIMPLE_BOTTLES = Set.of(
             PREFIX + "empty_bottle", PREFIX + "water_bottle", PREFIX + "honey_bottle",
             PREFIX + "dragon_breath_bottle", PREFIX + "xp_bottle", POTION_BOTTLE, MOLOTOV);
@@ -222,11 +224,16 @@ public final class BottleFurnitureService implements Listener {
             furniture.setUnsaved();
         }
         event.setCancelled(true);
-        // DrinkBlock uses GLASS_PLACE; BottleBlock and GlasswareBlock retain
-        // the source's slightly surprising STONE placement sound on pickup.
-        Sound pickupSound = isDrinkBlock(furniture.id().toString())
-                ? Sound.BLOCK_GLASS_PLACE : Sound.BLOCK_STONE_PLACE;
-        location.getWorld().playSound(location, pickupSound, 1.0F, 1.0F);
+        // DrinkBlock uses GLASS_PLACE on the BLOCKS channel; BottleBlock and
+        // GlasswareBlock retain the source's slightly surprising STONE
+        // placement sound played through the interacting player's channel.
+        if (isDrinkBlock(furniture.id().toString())) {
+            location.getWorld().playSound(location, Sound.BLOCK_GLASS_PLACE,
+                    SoundCategory.BLOCKS, 1.0F, 1.0F);
+        } else {
+            location.getWorld().playSound(location, Sound.BLOCK_STONE_PLACE,
+                    SoundCategory.PLAYERS, 1.0F, 1.0F);
+        }
     }
 
     private void stackBottle(FurnitureInteractEvent event, BukkitFurniture furniture, ItemStack hand) {
@@ -245,7 +252,9 @@ public final class BottleFurnitureService implements Listener {
         setBottleCount(furniture, stored.size());
         furniture.setUnsaved();
         event.setCancelled(true);
-        event.player().getWorld().playSound(furniture.location(), Sound.BLOCK_GLASS_PLACE, 1.0F, 1.2F);
+        // BlockItem#place volume (glass 1.0 + 1) / 2 and pitch * 0.8.
+        event.player().getWorld().playSound(furniture.location(), Sound.BLOCK_GLASS_PLACE,
+                SoundCategory.BLOCKS, 1.0F, 0.8F);
     }
 
     private List<ItemStack> storedItems(BukkitFurniture furniture) {
@@ -273,11 +282,13 @@ public final class BottleFurnitureService implements Listener {
 
     private boolean isBottleOrGlass(String id) {
         return SIMPLE_BOTTLES.contains(id) || id.equals(PREFIX + "empty_glassware")
+                || id.equals(WATERMELON_JUICE)
                 || catalog.hasDrinkEffects(id) || catalog.isCocktail(id);
     }
 
     private boolean isDrinkBlock(String id) {
-        return catalog.hasDrinkEffects(id) && !catalog.isCocktail(id);
+        return id.equals(WATERMELON_JUICE)
+                || catalog.hasDrinkEffects(id) && !catalog.isCocktail(id);
     }
 
     private static int maxBottleCount(BukkitFurniture furniture) {

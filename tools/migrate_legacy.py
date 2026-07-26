@@ -23,6 +23,16 @@ from typing import Any, Iterable
 ROOT = Path(__file__).resolve().parents[1]
 NAMESPACE = "kaleidoscope_tavern"
 HANGING_GRAPE_CROPS = {"grape_crop", "ice_grape_crop", "gold_grape_crop"}
+# BlockLootTables: blocks without an item form still drop their recoverable
+# parts — grapevine trellises return the trellis plus the vine, and wild
+# grapevine segments drop one grapevine each.
+ITEMLESS_BLOCK_LOOT: dict[str, tuple[str, ...]] = {
+    "grapevine_trellis": ("trellis", "grapevine"),
+    "ice_grapevine_trellis": ("trellis", "grapevine"),
+    "gold_grapevine_trellis": ("trellis", "grapevine"),
+    "wild_grapevine": ("grapevine",),
+    "wild_grapevine_plant": ("grapevine",),
+}
 CUSTOM_EFFECT_ICON_IDS = (
     "slightly_tipsy",
     "high_heels",
@@ -811,6 +821,14 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                     "conditions": [{"type": "survives_explosion"}],
                     "entries": [{"type": "item", "item": f"{NAMESPACE}:{block_id}"}],
                 }]
+            }
+        elif block_id in ITEMLESS_BLOCK_LOOT:
+            config["loot"] = {
+                "pools": [{
+                    "rolls": 1,
+                    "conditions": [{"type": "survives_explosion"}],
+                    "entries": [{"type": "item", "item": f"{NAMESPACE}:{drop}"}],
+                } for drop in ITEMLESS_BLOCK_LOOT[block_id]]
             }
         if block_id in HANGING_GRAPE_CROPS:
             blocks.update(split_hanging_crop_stages(block_id, config))

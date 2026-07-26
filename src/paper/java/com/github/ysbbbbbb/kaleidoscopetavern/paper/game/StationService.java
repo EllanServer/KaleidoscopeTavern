@@ -20,6 +20,7 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.Vec3d;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
@@ -100,6 +101,7 @@ public final class StationService implements Listener {
     private final NamespacedKey barrelVisualRoleKey;
     private final NamespacedKey barrelVisualIndexKey;
     private final Map<UUID, Float> falling = new HashMap<>();
+    private long barrelTickCounter;
     private final Map<UUID, Boolean> recentLandings = new HashMap<>();
     private final Map<UUID, PortableShakerUse> portableShakers = new HashMap<>();
     private final Set<UUID> loadedIncense = new HashSet<>();
@@ -404,6 +406,24 @@ public final class StationService implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onClearPortableShaker(PlayerInteractEvent event) {
+        // ClearShakerC2SMessage: sneaking and swinging at the air dumps the
+        // shaker's ingredients and result outright with the bottle-fill blip.
+        if (event.getAction() != Action.LEFT_CLICK_AIR || event.getHand() == null
+                || event.getItem() == null || !items.id(event.getItem()).equals(SHAKER)
+                || !event.getPlayer().isSneaking()) {
+            return;
+        }
+        ItemStack shaker = event.getItem();
+        if (items.shakerIngredients(shaker).isEmpty() && items.shakerResult(shaker) == null) {
+            return;
+        }
+        items.withShakerState(shaker, List.of(), null);
+        event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(),
+                "minecraft:item.bottle.fill", SoundCategory.PLAYERS, 1.0F, 1.0F);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onUsePortableShaker(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_AIR || event.getHand() == null
                 || event.getItem() == null || !items.id(event.getItem()).equals(SHAKER)) {
@@ -477,6 +497,9 @@ public final class StationService implements Listener {
     }
 
     private void tickPortableShakers() {
+        if (portableShakers.isEmpty()) {
+            return;
+        }
         for (UUID playerId : new ArrayList<>(portableShakers.keySet())) {
             PortableShakerUse use = portableShakers.get(playerId);
             Player player = Bukkit.getPlayer(playerId);
@@ -798,9 +821,9 @@ public final class StationService implements Listener {
                 items.give(player, removed);
                 state.items("barrel_items", stored);
                 refreshBarrelVisuals(furniture);
-                furniture.location().getWorld().playSound(furniture.location(),
+                player.getWorld().playSound(player.getLocation(),
                         "minecraft:entity.item_frame.remove_item",
-                        SoundCategory.BLOCKS, 0.75F, 1.0F);
+                        SoundCategory.PLAYERS, 1.0F, 1.0F);
                 return true;
             }
             return false;
@@ -837,6 +860,9 @@ public final class StationService implements Listener {
                     hand.subtract(1);
                 }
                 items.build(bucketId.get(), player).ifPresent(result -> items.give(player, result));
+                // FluidUtils#fillItem plays the fluid's bucket-fill sound.
+                player.getWorld().playSound(player.getLocation(),
+                        "minecraft:item.bucket.fill", SoundCategory.PLAYERS, 1.0F, 1.0F);
                 int remaining = state.integer("barrel_amount") - 1_000;
                 state.integer("barrel_amount", remaining);
                 if (remaining == 0) {
@@ -864,15 +890,18 @@ public final class StationService implements Listener {
         // (up to sixteen), and deliberately accepts non-recipe ingredients;
         // an unmatched closed barrel becomes vinegar.
         List<ItemStack> stored = barrelIngredients(state);
+        // addIngredientOnce: try every slot that can still merge, then fall
+        // back to an empty slot; the slot cap is min(16, item max stack).
+        int stackLimit = Math.min(MAX_BARREL_STACK, hand.getMaxStackSize());
         int matching = -1;
         for (int index = 0; index < stored.size(); index++) {
-            if (stored.get(index).isSimilar(hand)) {
+            if (stored.get(index).isSimilar(hand) && stored.get(index).getAmount() < stackLimit) {
                 matching = index;
                 break;
             }
         }
-        int room = matching >= 0 ? MAX_BARREL_STACK - stored.get(matching).getAmount()
-                : stored.size() < MAX_BARREL_SLOTS ? MAX_BARREL_STACK : 0;
+        int room = matching >= 0 ? stackLimit - stored.get(matching).getAmount()
+                : stored.size() < MAX_BARREL_SLOTS ? stackLimit : 0;
         int inserted = Math.min(room, hand.getAmount());
         if (inserted <= 0) {
             messages.send(player, "barrel-no-space");
@@ -889,8 +918,8 @@ public final class StationService implements Listener {
         hand.subtract(inserted);
         state.items("barrel_items", stored);
         refreshBarrelVisuals(furniture);
-        furniture.location().getWorld().playSound(furniture.location(),
-                "minecraft:entity.item_frame.add_item", SoundCategory.BLOCKS, 0.75F, 0.9F);
+        player.getWorld().playSound(player.getLocation(),
+                "minecraft:entity.item_frame.add_item", SoundCategory.PLAYERS, 1.0F, 1.0F);
         return true;
     }
 
@@ -1395,22 +1424,34 @@ public final class StationService implements Listener {
 
     /** Runs the retained Forge barrel state machine only while its chunk/entity is loaded. */
     private void tickBarrels() {
+        barrelTickCounter++;
+        if (barrelTickCounter % 600 == 0) {
+            // Entities despawned mid-air never fire a landing; sweep the
+            // fall-tracking map so it cannot accumulate dead UUIDs.
+            falling.keySet().removeIf(id -> Bukkit.getEntity(id) == null);
+        }
         List<UUID> invalid = null;
         for (UUID uuid : loadedBarrels) {
+            // The 97-tick phase gate runs before any entity resolution so the
+            // 96 quiet ticks per barrel cost a hash and a modulo only.
+            long offset = uuid.hashCode() % BarrelSemantics.CHECK_INTERVAL
+                    + BarrelSemantics.CHECK_INTERVAL;
+            if ((barrelTickCounter + offset) % BarrelSemantics.CHECK_INTERVAL != 0) {
+                continue;
+            }
             Entity entity = Bukkit.getEntity(uuid);
             if (!(entity instanceof ItemDisplay) || !entity.isValid()
                     || !CraftEngineFurniture.isFurniture(entity)) {
                 invalid = addInvalid(invalid, uuid);
                 continue;
             }
+            // BlockEntityTicker pauses in lazy chunks; brewing does the same.
+            if (entity.getChunk().getLoadLevel() != Chunk.LoadLevel.ENTITY_TICKING) {
+                continue;
+            }
             BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
             if (furniture == null || !furniture.id().equals(BARREL_KEY)) {
                 invalid = addInvalid(invalid, uuid);
-                continue;
-            }
-            long offset = entity.getUniqueId().hashCode() % BarrelSemantics.CHECK_INTERVAL
-                    + BarrelSemantics.CHECK_INTERVAL;
-            if ((entity.getWorld().getFullTime() + offset) % BarrelSemantics.CHECK_INTERVAL != 0) {
                 continue;
             }
             tickBarrel(furniture);

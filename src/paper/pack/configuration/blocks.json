@@ -2716,7 +2716,25 @@
           "type": "kaleidoscope_tavern:wild_grapevine",
           "grow_speed": 0.15
         }
-      ]
+      ],
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:grapevine"
+              }
+            ]
+          }
+        ]
+      }
     },
     "kaleidoscope_tavern:wild_grapevine_plant": {
       "state": {
@@ -2759,6 +2777,24 @@
           "behavior": "grow",
           "grow_blocks": 1
         }
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:grapevine"
+              }
+            ]
+          }
+        ]
       }
     },
     "kaleidoscope_tavern:trellis": {
@@ -3327,6 +3363,38 @@
       "behavior": {
         "type": "kaleidoscope_tavern:trellis",
         "spread_chance": 0.25
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:trellis"
+              }
+            ]
+          },
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:grapevine"
+              }
+            ]
+          }
+        ]
       }
     },
     "kaleidoscope_tavern:ice_grapevine_trellis": {
@@ -3661,6 +3729,38 @@
       "behavior": {
         "type": "kaleidoscope_tavern:trellis",
         "spread_chance": 0.25
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:trellis"
+              }
+            ]
+          },
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:grapevine"
+              }
+            ]
+          }
+        ]
       }
     },
     "kaleidoscope_tavern:gold_grapevine_trellis": {
@@ -3995,6 +4095,38 @@
       "behavior": {
         "type": "kaleidoscope_tavern:trellis",
         "spread_chance": 0.25
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:trellis"
+              }
+            ]
+          },
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:grapevine"
+              }
+            ]
+          }
+        ]
       }
     },
     "kaleidoscope_tavern:grape_crop": {

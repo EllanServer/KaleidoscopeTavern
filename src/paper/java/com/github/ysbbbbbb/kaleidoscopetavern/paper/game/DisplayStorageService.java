@@ -19,6 +19,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.SoundCategory;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -125,17 +126,16 @@ public final class DisplayStorageService implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onInteract(FurnitureInteractEvent event) {
-        if (event.hand() != InteractionHand.MAIN_HAND) {
-            // Cancel off-hand interactions so CraftEngine's built-in
-            // display_item_furniture behavior does not fire. Without this,
-            // the off-hand take/put duplicates items and skips the visual
-            // refresh, causing bottles to visually disappear.
-            event.setCancelled(true);
-            return;
-        }
         BukkitFurniture furniture = event.furniture();
         StorageSpec spec = STORAGE.get(furniture.id());
         if (spec == null) {
+            return;
+        }
+        if (event.hand() != InteractionHand.MAIN_HAND) {
+            // Cancel off-hand interactions on storage furniture only, so
+            // CraftEngine's built-in display_item behavior cannot duplicate
+            // items; every other furniture keeps its vanilla off-hand pass.
+            event.setCancelled(true);
             return;
         }
         Player player = event.player();
@@ -344,14 +344,15 @@ public final class DisplayStorageService implements Listener {
         } else {
             sound = taking ? "minecraft:entity.item_frame.remove_item" : "minecraft:block.stone.place";
         }
-        furniture.location().getWorld().playSound(furniture.location(), sound, 1.0F, 1.0F);
+        furniture.location().getWorld().playSound(furniture.location(),
+                sound, SoundCategory.BLOCKS, 1.0F, 1.0F);
     }
 
     private static void playCabinetSound(BukkitFurniture furniture, boolean taking) {
         float volume = ThreadLocalRandom.current().nextFloat() * 0.2F + 0.8F;
         float pitch = ThreadLocalRandom.current().nextFloat() * 0.2F + (taking ? 0.8F : 0.2F);
-        furniture.location().getWorld().playSound(
-                furniture.location(), "minecraft:block.glass.place", volume, pitch);
+        furniture.location().getWorld().playSound(furniture.location(),
+                "minecraft:block.glass.place", SoundCategory.BLOCKS, volume, pitch);
     }
 
     private void pollRedstone() {
@@ -430,7 +431,7 @@ public final class DisplayStorageService implements Listener {
         });
         if (drink) {
             origin.getWorld().playSound(origin,
-                    "kaleidoscope_tavern:block.holder.pop", 0.9F, 1.0F);
+                    "kaleidoscope_tavern:block.holder.pop", SoundCategory.BLOCKS, 0.9F, 1.0F);
         }
     }
 
@@ -466,10 +467,10 @@ public final class DisplayStorageService implements Listener {
     }
 
     private static boolean isPowered(BukkitFurniture furniture) {
+        // AbstractStorageBlock#neighborChanged samples hasNeighborSignal at
+        // the block's own position only.
         Block block = furniture.location().getBlock();
-        Block below = block.getRelative(BlockFace.DOWN);
-        return block.isBlockPowered() || block.isBlockIndirectlyPowered()
-                || below.isBlockPowered() || below.isBlockIndirectlyPowered();
+        return block.isBlockPowered() || block.isBlockIndirectlyPowered();
     }
 
     boolean hasAnyStoredItem(BukkitFurniture furniture) {
@@ -543,6 +544,7 @@ public final class DisplayStorageService implements Listener {
         return id.equals(PREFIX + "empty_bottle") || id.equals(PREFIX + "water_bottle")
                 || id.equals(PREFIX + "honey_bottle") || id.equals(PREFIX + "dragon_breath_bottle")
                 || id.equals(PREFIX + "xp_bottle") || id.equals(MOLOTOV)
+                || id.equals(PREFIX + "watermelon_juice")
                 || catalog.hasDrinkEffects(id) && !catalog.isCocktail(id);
     }
 
@@ -704,16 +706,35 @@ public final class DisplayStorageService implements Listener {
         if (spec == null) {
             return;
         }
+        List<ItemStack> drops = new ArrayList<>();
         for (int slot = 0; slot < spec.slots(); slot++) {
             Item stored = controllerItem(furniture, slot);
-            if (stored == null || stored.isEmpty()) {
-                continue;
-            }
-            ItemStack dropped = bukkitItem(stored);
-            if (setControllerItem(furniture, slot, null) && event.dropItems()) {
-                event.location().getWorld().dropItemNaturally(event.location(), dropped);
+            if (stored != null && !stored.isEmpty()) {
+                drops.add(bukkitItem(stored));
             }
         }
+        if (drops.isEmpty()) {
+            return;
+        }
+        // A later HIGHEST/MONITOR listener may still cancel the break; defer
+        // the clear and the drops so cancellation cannot wipe or duplicate
+        // the stored bottles (same pattern as BottleFurnitureService).
+        Location dropLocation = event.location().clone();
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (event.isCancelled()) {
+                return;
+            }
+            if (furniture.isValid()) {
+                for (int slot = 0; slot < spec.slots(); slot++) {
+                    setControllerItem(furniture, slot, null);
+                }
+            }
+            removeStorageVisuals(furniture);
+            if (event.dropItems()) {
+                drops.forEach(stack ->
+                        dropLocation.getWorld().dropItemNaturally(dropLocation, stack));
+            }
+        });
     }
 
     private void removeStorageVisuals(BukkitFurniture furniture) {

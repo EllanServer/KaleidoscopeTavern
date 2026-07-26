@@ -308,6 +308,11 @@ public final class BlockService implements Listener {
                                           ImmutableBlockState trellisState,
                                           ItemStack hand, Block soil, String planted,
                                           EquipmentSlot usedSlot) {
+        // TrellisBlock#use only accepts a grapevine on the SINGLE shape;
+        // cross/six-way trellises reject planting without consuming the item.
+        if (!"single".equals(stringProperty(trellisState, "type"))) {
+            return;
+        }
         net.momirealms.craftengine.core.block.BlockDefinition definition =
                 CraftEngineBlocks.byId(net.momirealms.craftengine.core.util.Key.of(planted));
         if (definition == null) {

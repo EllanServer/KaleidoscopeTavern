@@ -70,10 +70,16 @@ public final class HangingGrapeCropBehavior extends BukkitBlockBehavior implemen
             return args[0];
         }
         Object position = args[updateShape$blockPos];
-        return hasMatureVineAbove(world,
-                Vec3iProxy.INSTANCE.getX(position),
-                Vec3iProxy.INSTANCE.getY(position),
-                Vec3iProxy.INSTANCE.getZ(position)) ? args[0] : BlocksProxy.AIR$defaultState;
+        int x = Vec3iProxy.INSTANCE.getX(position);
+        int y = Vec3iProxy.INSTANCE.getY(position);
+        int z = Vec3iProxy.INSTANCE.getZ(position);
+        if (hasMatureVineAbove(world, x, y, z)) {
+            return args[0];
+        }
+        // The visible block self-destructs here, so the CustomCrops record
+        // must go with it or explosions/pistons leave orphaned crop data.
+        CustomCropsBridge.removeCrop(world.getBlockAt(x, y, z).getLocation());
+        return BlocksProxy.AIR$defaultState;
     }
 
     @Override

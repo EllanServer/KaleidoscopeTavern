@@ -41,8 +41,11 @@ final class TapSemantics {
                 && sourceZ == barrelZ + barrelFacingZ;
     }
 
-    /** EMPTY_OPEN_STATE emits cloud particles on ticks 2 and 4 only. */
+    /**
+     * EMPTY_OPEN_STATE emits cloud particles on ticks 2, 4 and 6: the source
+     * spawns the cloud before the same-tick close check.
+     */
     static boolean emitsEmptyCloud(int tick) {
-        return tick <= TAKE_PARTICLE_TICKS && tick % 2 == 0;
+        return tick <= EMPTY_OPEN_TICKS && tick % 2 == 0;
     }
 }
