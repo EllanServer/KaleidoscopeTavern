@@ -22,9 +22,13 @@ import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.item.behavior.FurnitureItem;
+import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.context.InteractEntityContext;
+import net.momirealms.craftengine.core.world.context.UseOnContext;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
@@ -171,11 +175,8 @@ public final class StationService implements Listener {
         Player player = (Player) context.getPlayer().platformPlayer();
         if (id.equals(BARREL) && TapSemantics.shouldDelegateBarrelTapPlacement(
                 context.isSecondaryUseActive(),
-                items.id(player.getInventory().getItemInMainHand()))) {
-            // Yield to CE's furniture_item behavior.  The barrel hitboxes have
-            // can_use_item_on enabled, so CE keeps ownership of collision,
-            // placement events, item consumption, hand swing and place sound.
-            return InteractionResult.PASS;
+                context.getItem().id().toString())) {
+            return placeHeldFurnitureWithCraftEngine(context);
         }
         boolean handled = switch (id) {
             case PRESSING_TUB -> interactPress(player, furniture, context.getHand());
@@ -192,6 +193,30 @@ public final class StationService implements Listener {
             default -> false;
         };
         return handled ? InteractionResult.SUCCESS_AND_CANCEL : InteractionResult.PASS;
+    }
+
+    /**
+     * Invokes the held item's CE furniture behavior while the exact barrel
+     * hitbox and hand are still available. Returning PASS and waiting for
+     * CE's later generic entity-item fallback loses that reliable dispatch
+     * point (and CE 26.7.4's fallback reads the main hand unconditionally).
+     */
+    private static InteractionResult placeHeldFurnitureWithCraftEngine(
+            InteractEntityContext context) {
+        ItemBehavior behavior = context.getItem().getBehavior().orElse(null);
+        FurnitureItem furnitureItem = behavior == null
+                ? null : behavior.getFirst(FurnitureItem.class);
+        if (!(furnitureItem instanceof ItemBehavior placementBehavior)) {
+            return InteractionResult.FAIL;
+        }
+        BlockHitResult hit = new BlockHitResult(
+                context.getClickLocation(), context.getClickedFace(),
+                context.getClickedPos(), false);
+        InteractionResult result = placementBehavior.useOnBlock(new UseOnContext(
+                context.getPlayer(), context.getHand(), context.getItem(), hit));
+        // Sneaking skipped BarrelBlock.use in Forge. A rejected placement must
+        // therefore not fall back to opening or querying the barrel.
+        return result == InteractionResult.PASS ? InteractionResult.FAIL : result;
     }
 
     private void onStationPlaced(BukkitFurniture furniture) {

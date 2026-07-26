@@ -1418,10 +1418,13 @@ def validate() -> dict[str, int]:
     for required_token in (
             "TapSemantics.shouldDelegateBarrelTapPlacement(",
             "context.isSecondaryUseActive()",
-            "items.id(player.getInventory().getItemInMainHand())"):
+            "context.getItem().id().toString()",
+            "placeHeldFurnitureWithCraftEngine(context)",
+            "behavior.getFirst(FurnitureItem.class)",
+            "placementBehavior.useOnBlock(new UseOnContext("):
         if required_token not in station_source:
             raise AssertionError(
-                "Sneaking with a tap on barrel furniture must yield to CE placement; "
+                "Sneaking with a tap on barrel furniture must directly invoke CE placement; "
                 f"missing token: {required_token}")
     if 'secondaryUse && TAP_ITEM.equals(heldItemId)' not in tap_semantics_source:
         raise AssertionError(
@@ -2731,13 +2734,15 @@ def validate() -> dict[str, int]:
     if "rotation" in tap or render_items[tap["item"]]["model"]["path"] != (
             f"{NAMESPACE}:block/brew/tap/close"):
         raise AssertionError("Tap must retain the north-authored mounting-plate orientation")
-    tap_hitbox = furniture[f"{NAMESPACE}:tap"]["variants"]["wall"]["hitboxes"][0]
+    tap_hitboxes = furniture[f"{NAMESPACE}:tap"]["variants"]["wall"]["hitboxes"]
+    tap_hitbox = tap_hitboxes[0]
     if tap_hitbox.get("position") != "0,-0.1875,0.35":
         raise AssertionError("Tap interaction hitbox must retain its corrected wall depth")
-    tap_open_hitbox = furniture[
-        f"{NAMESPACE}:tap"]["variants"]["wall_open"]["hitboxes"][0]
-    if tap_open_hitbox.get("position") != "0,-0.1875,0.6875":
-        raise AssertionError("Open tap interaction hitbox must retain its authored depth")
+    tap_open_hitboxes = furniture[
+        f"{NAMESPACE}:tap"]["variants"]["wall_open"]["hitboxes"]
+    if tap_open_hitboxes != tap_hitboxes:
+        raise AssertionError(
+            "TapBlock OPEN does not affect the source shape; both variants need identical hitboxes")
 
     pressing_tub_wall = furniture[
         f"{NAMESPACE}:pressing_tub"]["variants"]["wall"]["elements"][0]
