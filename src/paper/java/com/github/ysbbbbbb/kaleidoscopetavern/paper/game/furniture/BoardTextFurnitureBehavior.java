@@ -14,9 +14,12 @@ import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehavi
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehaviors;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureController;
 import net.momirealms.craftengine.core.entity.furniture.element.FurnitureElement;
+import net.momirealms.craftengine.core.entity.furniture.hitbox.FurnitureHitBox;
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.ClientboundAddEntityPacketProxy;
 import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacketProxy;
 import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.ClientboundSetEntityDataPacketProxy;
@@ -42,6 +45,7 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static final ConcurrentMap<UUID, Controller> LOADED = new ConcurrentHashMap<>();
     private static volatile Handler handler;
+    private static volatile InteractionHandler interactionHandler;
 
     private final int maxLines;
     private final float viewRange;
@@ -70,6 +74,16 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
         }
     }
 
+    public static void bindInteraction(InteractionHandler newHandler) {
+        interactionHandler = Objects.requireNonNull(newHandler, "newHandler");
+    }
+
+    public static void unbindInteraction(InteractionHandler oldHandler) {
+        if (interactionHandler == oldHandler) {
+            interactionHandler = null;
+        }
+    }
+
     @Override
     public FurnitureController createController(Furniture furniture) {
         if (!(furniture instanceof BukkitFurniture bukkitFurniture)) {
@@ -81,6 +95,12 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
     @FunctionalInterface
     public interface Handler {
         List<Visual> visuals(BukkitFurniture furniture);
+    }
+
+    @FunctionalInterface
+    public interface InteractionHandler {
+        InteractionResult interact(BukkitFurniture furniture,
+                                   InteractEntityContext context);
     }
 
     public record Visual(Component text, double x, double y, double z,
@@ -106,6 +126,15 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
         @Override
         public void gatherElements(Consumer<FurnitureElement> consumer) {
             consumer.accept(new BoardTextElement(bukkitFurniture, maxLines, viewRange));
+        }
+
+        @Override
+        public InteractionResult useOnFurniture(FurnitureHitBox hitBox,
+                                                InteractEntityContext context) {
+            InteractionHandler current = interactionHandler;
+            return current == null
+                    ? InteractionResult.PASS
+                    : current.interact(bukkitFurniture, context);
         }
 
         @Override

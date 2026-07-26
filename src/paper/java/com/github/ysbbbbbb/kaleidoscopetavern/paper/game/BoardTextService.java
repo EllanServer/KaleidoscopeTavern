@@ -9,11 +9,12 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.GameMode;
@@ -88,6 +89,8 @@ public final class BoardTextService implements Listener {
     private final LifecycleFurnitureBehavior.Handler lifecycleHandler;
     private final BoardTextFurnitureBehavior.Handler boardVisualHandler =
             this::boardVisuals;
+    private final BoardTextFurnitureBehavior.InteractionHandler boardInteractionHandler =
+            this::interactBoard;
     // AsyncChatEvent removes entries off the main thread.
     private final Map<UUID, EditSession> editors = new ConcurrentHashMap<>();
 
@@ -112,38 +115,37 @@ public final class BoardTextService implements Listener {
 
     public void start() {
         BoardTextFurnitureBehavior.bind(boardVisualHandler);
+        BoardTextFurnitureBehavior.bindInteraction(boardInteractionHandler);
         LifecycleFurnitureBehavior.bind(
                 LifecycleFurnitureBehavior.Channel.BOARD, lifecycleHandler);
     }
 
     public void stop() {
+        BoardTextFurnitureBehavior.unbindInteraction(boardInteractionHandler);
         BoardTextFurnitureBehavior.unbind(boardVisualHandler);
         LifecycleFurnitureBehavior.unbind(
                 LifecycleFurnitureBehavior.Channel.BOARD, lifecycleHandler);
         editors.clear();
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onFurnitureInteract(FurnitureInteractEvent event) {
-        if (event.hand() != InteractionHand.MAIN_HAND || !isBoard(event.furniture())) {
-            return;
+    private InteractionResult interactBoard(BukkitFurniture furniture,
+                                            InteractEntityContext context) {
+        if (context.getHand() != InteractionHand.MAIN_HAND || !isBoard(furniture)) {
+            return InteractionResult.PASS;
         }
-        BukkitFurniture furniture = event.furniture();
         FurnitureState state = new FurnitureState(furniture);
-        Player player = event.player();
+        Player player = (Player) context.getPlayer().platformPlayer();
         ItemStack hand = player.getInventory().getItemInMainHand();
 
         // SandwichBoardBlock applies its flower transformation before it
         // delegates to TextBlockEntity, so waxing locks text properties but
         // deliberately does not lock the board's decorative variant.
         if (isSandwichBoard(furniture) && transformSandwichBoard(player, furniture, state, hand)) {
-            event.setCancelled(true);
-            return;
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
         if (state.bool("board_waxed")) {
             player.playSound(furniture.location(), "minecraft:block.waxed_sign.interact_fail", 1F, 1F);
-            event.setCancelled(true);
-            return;
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
         DyeColor dye = dyeColor(hand.getType());
         if (dye != null && !dye.name().equals(state.string("board_color", "WHITE"))) {
@@ -151,24 +153,21 @@ public final class BoardTextService implements Listener {
             consumeUnlessCreative(player, hand);
             player.playSound(furniture.location(), Sound.ITEM_DYE_USE, 1F, 1F);
             refreshDisplay(furniture);
-            event.setCancelled(true);
-            return;
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
         if (hand.getType() == Material.GLOW_INK_SAC && !state.bool("board_glowing")) {
             state.bool("board_glowing", true);
             consumeUnlessCreative(player, hand);
             player.playSound(furniture.location(), Sound.ITEM_GLOW_INK_SAC_USE, 1F, 1F);
             refreshDisplay(furniture);
-            event.setCancelled(true);
-            return;
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
         if (hand.getType() == Material.INK_SAC && state.bool("board_glowing")) {
             state.bool("board_glowing", false);
             consumeUnlessCreative(player, hand);
             player.playSound(furniture.location(), Sound.ITEM_INK_SAC_USE, 1F, 1F);
             refreshDisplay(furniture);
-            event.setCancelled(true);
-            return;
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
         if (hand.getType() == Material.HONEYCOMB) {
             state.bool("board_waxed", true);
@@ -177,8 +176,7 @@ public final class BoardTextService implements Listener {
             world.playSound(furniture.location(), Sound.ITEM_HONEYCOMB_WAX_ON, 1F, 1F);
             world.spawnParticle(Particle.WAX_ON, furniture.location().clone().add(0, 1, 0),
                     10, 0.4, 0.4, 0.4, 0.05);
-            event.setCancelled(true);
-            return;
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
 
         Entity entity = furniture.bukkitEntity();
@@ -186,7 +184,7 @@ public final class BoardTextService implements Listener {
             editors.put(player.getUniqueId(), new EditSession(entity.getUniqueId()));
             player.sendMessage(Component.text("请在聊天栏输入文字（\\n 换行；[left]/[center]/[right] 设置对齐；!clear 清空；!cancel 取消）。"));
         }
-        event.setCancelled(true);
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

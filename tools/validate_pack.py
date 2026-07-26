@@ -769,6 +769,11 @@ def validate() -> dict[str, int]:
     for required_token in (
             "BoardTextFurnitureBehavior.bind(boardVisualHandler)",
             "BoardTextFurnitureBehavior.unbind(boardVisualHandler)",
+            "BoardTextFurnitureBehavior.bindInteraction(boardInteractionHandler)",
+            "BoardTextFurnitureBehavior.unbindInteraction(boardInteractionHandler)",
+            "private InteractionResult interactBoard(",
+            "context.getHand() != InteractionHand.MAIN_HAND",
+            "InteractionResult.SUCCESS_AND_CANCEL",
             "private List<BoardTextFurnitureBehavior.Visual> boardVisuals",
             "furniture.refreshElements()",
             "LifecycleFurnitureBehavior.Channel.BOARD, lifecycleHandler"):
@@ -779,7 +784,8 @@ def validate() -> dict[str, int]:
     for stale_token in (
             "org.bukkit.entity.TextDisplay", "PersistentDataType", "NamespacedKey",
             "board_owner", "board_line", "board_displays", "getNearbyEntities(",
-            "removeDisplay(", "TextDisplay.TextAlignment"):
+            "removeDisplay(", "TextDisplay.TextAlignment", "FurnitureInteractEvent",
+            "public void onFurnitureInteract("):
         if stale_token in board_text_source:
             raise AssertionError(
                 "Board text must not recreate persistent Bukkit display entities or helper "
@@ -1051,7 +1057,11 @@ def validate() -> dict[str, int]:
             "ClientboundAddEntityPacketProxy.INSTANCE.newInstance",
             "ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance",
             "player.sendPackets",
-            "public void gatherElements"):
+            "public void gatherElements",
+            "public static void bindInteraction(",
+            "public static void unbindInteraction(",
+            "public InteractionResult useOnFurniture(",
+            "current.interact(bukkitFurniture, context)"):
         if required_token not in board_text_behavior_source:
             raise AssertionError(
                 "board_text_furniture must use CE-tracked packet-only text elements; "
