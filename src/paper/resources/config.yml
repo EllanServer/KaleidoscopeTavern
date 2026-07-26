@@ -29,6 +29,34 @@ effect-hud:
 gameplay:
   infinite-lava-from-tap: true
 
+# 四季生长限制（由 CustomCrops 的世界季节驱动）。
+# 各项默认值与 Forge 版“静谧四季（SereneSeasons）”方块标签一致
+# （datagen/tag/TagBlock）：
+#   grapevine-trellis      葡萄藤架的藤蔓攀爬生长：春、夏
+#   gold-grapevine-trellis 金葡萄藤架：夏
+#   ice-grapevine-trellis  冰葡萄藤架：冬
+#   hanging-grape          悬挂葡萄结果：夏、秋
+#   hanging-gold-grape     悬挂金葡萄：夏
+#   hanging-ice-grape      悬挂冰葡萄：冬
+# 语义：
+#   - 世界季节为 DISABLE（该世界未启用 CustomCrops 季节）时不做任何限制，
+#     对应 Forge 版“未安装季节模组则不限制”；
+#   - 季节不符时，若 CustomCrops 启用了温室（greenhouse），会按其
+#     greenhouse 范围设置向上扫描温室玻璃，找到即放行（与 CustomCrops
+#     自身 season requirement 的温室豁免完全一致）；
+#   - 只拦截随机刻生长；骨粉催熟不受季节限制（与 SereneSeasons 一致）；
+#   - 野生葡萄藤（wild_grapevine）与 Forge 版一致，不受季节限制。
+# 季节取值：spring / summer / autumn / winter（大小写不敏感）；
+# 列表留空表示任何季节都不自然生长（骨粉与温室仍然有效）。
+seasons:
+  enable: true
+  grapevine-trellis: [spring, summer]
+  gold-grapevine-trellis: [summer]
+  ice-grapevine-trellis: [winter]
+  hanging-grape: [summer, autumn]
+  hanging-gold-grape: [summer]
+  hanging-ice-grape: [winter]
+
 bottle-placement:
   water: true
   honey: true

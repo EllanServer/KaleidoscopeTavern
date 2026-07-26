@@ -15,6 +15,7 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.proxy.minecraft.core.Vec3iProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.block.BlocksProxy;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -107,8 +108,14 @@ public final class HangingGrapeCropBehavior extends BukkitBlockBehavior implemen
         if (random.nextDouble() >= GrapeGrowthSemantics.overallChance(variety, temperature)) {
             return;
         }
-        CustomCropsBridge.addGrowthPoints(
-                world.getBlockAt(x, y, z).getLocation(), random.nextInt(1, 3));
+        Location location = world.getBlockAt(x, y, z).getLocation();
+        // SereneSeasons parity: bone meal growth stays unrestricted; only the
+        // random-tick point gain is season-gated.
+        if (!GrapeSeasonGate.permitsRandomGrowth(
+                GrapeSeasonSemantics.plantForVariety(variety), location)) {
+            return;
+        }
+        CustomCropsBridge.addGrowthPoints(location, random.nextInt(1, 3));
     }
 
     private static boolean hasMatureVineAbove(World world, int x, int y, int z) {

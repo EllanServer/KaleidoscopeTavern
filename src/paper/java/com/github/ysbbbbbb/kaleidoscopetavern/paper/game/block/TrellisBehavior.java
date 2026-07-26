@@ -134,10 +134,19 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         int x = Vec3iProxy.INSTANCE.getX(position);
         int y = Vec3iProxy.INSTANCE.getY(position);
         int z = Vec3iProxy.INSTANCE.getZ(position);
-        float chance = adjustedChance(level, x, y, z, state.owner().value().id().toString());
-        if (ThreadLocalRandom.current().nextFloat() < chance) {
-            grow(new Location(world, x, y, z), state);
+        String id = state.owner().value().id().toString();
+        float chance = adjustedChance(level, x, y, z, id);
+        if (ThreadLocalRandom.current().nextFloat() >= chance) {
+            return;
         }
+        Location location = new Location(world, x, y, z);
+        GrapeSeasonSemantics.Plant plant = GrapeSeasonSemantics.plantForTrellis(id);
+        // SereneSeasons parity: only random ticks are season-gated; the bone
+        // meal chain (performBonemeal -> grow) intentionally bypasses this.
+        if (plant != null && !GrapeSeasonGate.permitsRandomGrowth(plant, location)) {
+            return;
+        }
+        grow(location, state);
     }
 
     @Override
