@@ -22,7 +22,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.Event;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -30,6 +29,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Set;
+import java.util.logging.Logger;
 
 /** Bukkit-facing interactions for the small set of real, stateful custom blocks. */
 public final class BlockService implements Listener {
@@ -40,6 +40,20 @@ public final class BlockService implements Listener {
             PREFIX + "grapevine_trellis",
             PREFIX + "ice_grapevine_trellis",
             PREFIX + "gold_grapevine_trellis");
+    // Fallback materials for soil detection when Bukkit.getTag() fails or
+    // returns null (can happen on newer Paper versions where the legacy
+    // tag API is deprecated).  Mirrors the #minecraft:dirt tag contents.
+    private static final Set<Material> DIRT_LIKE = Set.of(
+            Material.DIRT, Material.GRASS_BLOCK, Material.PODZOL,
+            Material.COARSE_DIRT, Material.MYCELIUM, Material.ROOTED_DIRT,
+            Material.MOSS_BLOCK, Material.DIRT_PATH, Material.FARMLAND,
+            Material.MUD, Material.MUDDY_MANGROVE_ROOTS);
+    // Mirrors the #minecraft:ice tag contents.
+    private static final Set<Material> ICE_LIKE = Set.of(
+            Material.ICE, Material.PACKED_ICE, Material.BLUE_ICE,
+            Material.FROSTED_ICE);
+
+    private static final Logger LOGGER = Logger.getLogger("KaleidoscopeTavern");
 
     private final JavaPlugin plugin;
     private final ContentCatalog catalog;
@@ -68,6 +82,10 @@ public final class BlockService implements Listener {
         ImmutableBlockState state = event.blockState();
         String blockId = event.customBlock().id().toString();
 
+        LOGGER.fine(() -> "onCustomBlockInteract: blockId=" + blockId + " handId=" + handId
+                + " eventItemNull=" + (eventItem == null) + " handType=" + hand.getType()
+                + " at " + event.bukkitBlock().getLocation());
+
         boolean handled = blockId.startsWith(PREFIX + "string_lights_")
                 ? interactStringLights(player, event.bukkitBlock(), state, hand)
                 : switch (blockId) {
@@ -87,18 +105,25 @@ public final class BlockService implements Listener {
     }
 
     /**
-     * Intercepts grapevine placement when the player right-clicks a vanilla
-     * block (dirt, grass, etc.) that sits directly below a plain trellis.
+     * Intercepts grapevine placement at the Bukkit {@link PlayerInteractEvent}
+     * level, before CraftEngine's own handler (which runs at {@code HIGHEST})
+     * can fire {@link CustomBlockInteractEvent} or process the item's
+     * {@code block_item} behavior.
      * <p>
-     * Without this, the player's aim can land on the soil instead of the
-     * trellis itself. Because soil is a vanilla block, CraftEngine never fires
-     * {@link CustomBlockInteractEvent}, and the grapevine item's
-     * {@code block_item} behavior places a {@code wild_grapevine} on the soil.
-     * This listener runs at {@code HIGH} priority—before CraftEngine's
-     * {@code HIGHEST}—so cancelling here prevents the unwanted placement.
+     * This handles two scenarios:
+     * <ol>
+     *   <li>The player right-clicks a plain trellis directly while holding a
+     *       grapevine — the trellis is replaced with the appropriate
+     *       grapevine-trellis variant based on the soil below.</li>
+     *   <li>The player right-clicks the soil block directly below a trellis
+     *       (aim was slightly off) — same outcome as above.</li>
+     * </ol>
+     * In both cases the event is cancelled so CraftEngine cannot fire
+     * {@code CustomBlockInteractEvent} or place a {@code wild_grapevine}
+     * via the item's {@code block_item} behavior.
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onRightClickSoilBelowTrellis(PlayerInteractEvent event) {
+    public void onRightClickWithGrapevine(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
@@ -117,19 +142,46 @@ public final class BlockService implements Listener {
         if (clicked == null) {
             return;
         }
-        // If the clicked block is itself a custom block, CustomBlockInteractEvent handles it.
-        if (CraftEngineBlocks.getCustomBlockState(clicked) != null) {
+
+        ImmutableBlockState clickedState = CraftEngineBlocks.getCustomBlockState(clicked);
+
+        // Case 1: player right-clicked a plain trellis directly.
+        if (clickedState != null && TRELLIS.equals(clickedState.owner().value().id().toString())) {
+            LOGGER.info(() -> "onRightClickWithGrapevine: clicked trellis at " + clicked.getLocation());
+            Block soil = clicked.getRelative(BlockFace.DOWN);
+            String planted = grapevineFor(soil);
+            if (planted != null) {
+                LOGGER.info(() -> "onRightClickWithGrapevine: planting " + planted + " on trellis");
+                plantGrapevineOnTrellis(player, clicked, clickedState, hand, soil, planted);
+            } else {
+                LOGGER.warning(() -> "onRightClickWithGrapevine: grapevineFor returned null for soil="
+                        + soil.getType() + " at " + soil.getLocation());
+            }
+            // Always cancel to prevent block_item from placing wild_grapevine,
+            // even when planting fails (wrong soil).
+            event.setCancelled(true);
             return;
         }
-        Block above = clicked.getRelative(BlockFace.UP);
-        ImmutableBlockState aboveState = CraftEngineBlocks.getCustomBlockState(above);
-        if (aboveState == null || !TRELLIS.equals(aboveState.owner().value().id().toString())) {
-            return;
+
+        // Case 2: player right-clicked a vanilla block (soil) directly below
+        // a plain trellis.  Skip other custom blocks — CustomBlockInteractEvent
+        // handles those.
+        if (clickedState == null) {
+            Block above = clicked.getRelative(BlockFace.UP);
+            ImmutableBlockState aboveState = CraftEngineBlocks.getCustomBlockState(above);
+            if (aboveState != null && TRELLIS.equals(aboveState.owner().value().id().toString())) {
+                LOGGER.info(() -> "onRightClickWithGrapevine: clicked soil below trellis at " + clicked.getLocation());
+                String planted = grapevineFor(clicked);
+                if (planted != null) {
+                    LOGGER.info(() -> "onRightClickWithGrapevine: planting " + planted + " on trellis above");
+                    plantGrapevineOnTrellis(player, above, aboveState, hand, clicked, planted);
+                } else {
+                    LOGGER.warning(() -> "onRightClickWithGrapevine: grapevineFor returned null for soil="
+                            + clicked.getType() + " at " + clicked.getLocation());
+                }
+                event.setCancelled(true);
+            }
         }
-        // A plain trellis sits directly above the clicked soil — plant on it
-        // and cancel so CraftEngine's block_item behavior cannot fire.
-        plantGrapevineOnTrellis(player, above, aboveState, hand, clicked);
-        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -238,13 +290,18 @@ public final class BlockService implements Listener {
             return true;
         }
         if (!GRAPEVINE.equals(handId)) {
+            LOGGER.fine(() -> "interactPlainTrellis: handId=" + handId + " does not match " + GRAPEVINE
+                    + ", handType=" + hand.getType());
             return false;
         }
-        // Consume the interaction for every ordinary trellis shape. Connected
-        // trellises carry cross/axis type values, but the replacement definition
-        // preserves that value, so they must remain plantable instead of falling
-        // through to the grapevine block_item behavior beside the trellis.
-        plantGrapevineOnTrellis(player, block, state, hand, block.getRelative(BlockFace.DOWN));
+        Block soil = block.getRelative(BlockFace.DOWN);
+        String planted = grapevineFor(soil);
+        if (planted == null) {
+            LOGGER.warning(() -> "interactPlainTrellis: grapevineFor returned null for soil="
+                    + soil.getType() + " at " + soil.getLocation());
+            return true; // still cancel to prevent block_item from placing wild_grapevine
+        }
+        plantGrapevineOnTrellis(player, block, state, hand, soil, planted);
         return true;
     }
 
@@ -255,14 +312,11 @@ public final class BlockService implements Listener {
      */
     private void plantGrapevineOnTrellis(Player player, Block trellisBlock,
                                           ImmutableBlockState trellisState,
-                                          ItemStack hand, Block soil) {
-        String planted = grapevineFor(soil);
-        if (planted == null) {
-            return;
-        }
+                                          ItemStack hand, Block soil, String planted) {
         net.momirealms.craftengine.core.block.BlockDefinition definition =
                 CraftEngineBlocks.byId(net.momirealms.craftengine.core.util.Key.of(planted));
         if (definition == null) {
+            LOGGER.warning(() -> "plantGrapevineOnTrellis: definition not found for " + planted);
             return;
         }
         ImmutableBlockState replacement = definition.defaultState();
@@ -272,11 +326,19 @@ public final class BlockService implements Listener {
         if (CraftEngineBlocks.place(trellisBlock.getLocation(), replacement, false)) {
             consumeUnlessCreative(player, hand);
             trellisBlock.getWorld().playSound(trellisBlock.getLocation(), "minecraft:block.crop.planted", 1F, 1F);
+        } else {
+            LOGGER.warning(() -> "plantGrapevineOnTrellis: CraftEngineBlocks.place failed for " + planted
+                    + " at " + trellisBlock.getLocation());
         }
     }
 
     private boolean interactVineTrellis(Player player, Block block, ImmutableBlockState state,
                                         ItemStack hand, InteractionHand usedHand) {
+        // Cancel grapevine item placement on vine trellises to prevent
+        // wild_grapevine from being placed adjacent to the trellis.
+        if (GRAPEVINE.equals(items.id(hand))) {
+            return true;
+        }
         if (hand.getType() == Material.SHEARS) {
             net.momirealms.craftengine.core.block.BlockDefinition definition =
                     CraftEngineBlocks.byId(net.momirealms.craftengine.core.util.Key.of(TRELLIS));
@@ -325,11 +387,29 @@ public final class BlockService implements Listener {
         ImmutableBlockState custom = CraftEngineBlocks.getCustomBlockState(block);
         String customId = custom == null ? "" : custom.owner().value().id().toString();
         String vanillaId = block.getType().getKey().asString();
-        for (String member : catalog.blockTag(tagId)) {
+        Material material = block.getType();
+        Set<String> members = catalog.blockTag(tagId);
+        for (String member : members) {
             if (member.startsWith("#")) {
-                NamespacedKey key = NamespacedKey.fromString(member.substring(1));
-                Tag<Material> tag = key == null ? null : Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class);
-                if (tag != null && tag.isTagged(block.getType())) {
+                String tagRef = member.substring(1);
+                // Try Bukkit tag API first.  Catch Throwable (not just Exception)
+                // because Paper 26.2 can throw NoSuchMethodError /
+                // IncompatibleClassChangeError when the legacy tag API is
+                // accessed at runtime.
+                try {
+                    NamespacedKey key = NamespacedKey.fromString(tagRef);
+                    Tag<Material> tag = key == null ? null : Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class);
+                    if (tag != null && tag.isTagged(material)) {
+                        return true;
+                    }
+                } catch (Throwable e) {
+                    LOGGER.fine(() -> "matchesBlockTag: Bukkit.getTag failed for " + tagRef + ": " + e);
+                }
+                // Fallback: check known material sets for vanilla tags
+                if (tagRef.equals("minecraft:dirt") && DIRT_LIKE.contains(material)) {
+                    return true;
+                }
+                if (tagRef.equals("minecraft:ice") && ICE_LIKE.contains(material)) {
                     return true;
                 }
             } else if (member.equals(vanillaId) || member.equals(customId)) {
