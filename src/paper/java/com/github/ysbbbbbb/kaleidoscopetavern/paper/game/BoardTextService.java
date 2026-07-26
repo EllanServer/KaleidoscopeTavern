@@ -36,7 +36,10 @@ import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
+import org.joml.AxisAngle4f;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +54,9 @@ public final class BoardTextService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String CHALKBOARD = PREFIX + "chalkboard";
     private static final String BASE_SANDWICH_BOARD = PREFIX + "base_sandwich_board";
+    private static final float VANILLA_TEXT_SCALE = 0.025F;
+    private static final float SANDWICH_TEXT_SCALE = 0.01F;
+    private static final float CHALKBOARD_TEXT_SCALE = 0.012F;
     private static final Map<Material, String> SANDWICH_VARIANTS = Map.ofEntries(
             Map.entry(Material.SHORT_GRASS, "grass"),
             Map.entry(Material.ALLIUM, "allium"),
@@ -432,6 +438,7 @@ public final class BoardTextService implements Listener {
         display.setShadowed(false);
         display.setSeeThrough(false);
         display.setBillboard(Display.Billboard.FIXED);
+        display.setTransformation(textTransformation(furniture));
         display.setViewRange(1.0F);
         display.setShadowRadius(0F);
         display.setGlowing(glowing);
@@ -513,16 +520,27 @@ public final class BoardTextService implements Listener {
     private static Location textLocation(BukkitFurniture furniture) {
         Location origin = furniture.location().clone();
         boolean sandwich = isSandwichBoard(furniture);
-        double forwardOffset = sandwich ? -0.06 : -0.43;
+        double forwardOffset = sandwich ? 0.06 : -0.43;
         Vector forward = origin.getDirection().setY(0);
         if (forward.lengthSquared() > 0) {
             forward.normalize().multiply(forwardOffset);
             origin.add(forward);
         }
-        origin.add(0, sandwich ? 1.06 : 1.535, 0);
+        // Text displays are bottom-anchored. The archived renderer started its first
+        // baseline ten font pixels above the equivalent display anchor.
+        origin.add(0, sandwich ? 1.16 : 1.655, 0);
         origin.setPitch(sandwich ? -22.5F : 0F);
-        origin.setYaw(origin.getYaw() + 180F);
         return origin;
+    }
+
+    private static Transformation textTransformation(BukkitFurniture furniture) {
+        float legacyScale = isSandwichBoard(furniture) ? SANDWICH_TEXT_SCALE : CHALKBOARD_TEXT_SCALE;
+        float displayScale = legacyScale / VANILLA_TEXT_SCALE;
+        return new Transformation(
+                new Vector3f(),
+                new AxisAngle4f(),
+                new Vector3f(displayScale),
+                new AxisAngle4f());
     }
 
     private static Vector horizontalRight(float yaw) {

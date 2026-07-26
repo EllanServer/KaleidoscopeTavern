@@ -662,18 +662,14 @@ def validate() -> dict[str, int]:
             element.get("type") != "item_display" for element in stepladder_elements):
         raise AssertionError("Stepladder must keep exactly two ItemDisplay halves")
     stepladder_hitboxes = stepladder_ground.get("hitboxes", [])
-    if len(stepladder_hitboxes) != 16 or any(
+    if len(stepladder_hitboxes) != 4 or any(
             hitbox.get("type") != "shulker" for hitbox in stepladder_hitboxes):
-        raise AssertionError("Stepladder must use sixteen physical shulker hitboxes")
+        raise AssertionError("Stepladder must use four physical shulker hitboxes")
     expected_stepladder_hitboxes = {
-        (f"{x},{half},{z}", 0.5, 100, "up")
-        for half in (0, 1)
-        for x in (-0.25, 0.25)
-        for z in (0, 0.25)
-    } | {
-        (f"{x},{half},-0.375", 0.25, 100, "up")
-        for half in (0, 1)
-        for x in (-0.375, -0.125, 0.125, 0.375)
+        ("0,0,0", 0.75, 0, "up", True, False),
+        ("0,0.75,-0.25", 0.625, 25, "north", False, False),
+        ("-0.25,1.5,-0.25", 0.4, 35, "up", False, False),
+        ("0.25,1.5,-0.25", 0.4, 35, "up", False, False),
     }
     actual_stepladder_hitboxes = {
         (
@@ -681,12 +677,14 @@ def validate() -> dict[str, int]:
             hitbox.get("scale", 1),
             hitbox.get("peek", 0),
             hitbox.get("direction", "up"),
+            hitbox.get("blocks_building"),
+            hitbox.get("invisible"),
         )
         for hitbox in stepladder_hitboxes
     }
     if actual_stepladder_hitboxes != expected_stepladder_hitboxes:
         raise AssertionError(
-            "Stepladder hitboxes must exactly cover the source body and treads: "
+            "Stepladder hitboxes must retain the server-tested compact layout: "
             f"found={sorted(actual_stepladder_hitboxes)}")
 
     trellis = blocks[f"{NAMESPACE}:trellis"]
@@ -920,10 +918,12 @@ def validate() -> dict[str, int]:
         if item.get("data", {}).get("components", {}).get("minecraft:max_stack_size") != 16:
             raise AssertionError(f"{item_id}: bottle/glassware stack size must remain 16")
         potion_contents = item.get("data", {}).get("components", {}).get("minecraft:potion_contents")
-        if not potion_contents or potion_contents.get("potion") != "minecraft:water":
+        if potion_contents is not None and (
+                set(potion_contents) != {"custom_color"}
+                or not isinstance(potion_contents.get("custom_color"), int)):
             raise AssertionError(
-                f"{item_id}: drink items must have potion_contents with water type "
-                "to avoid 'Uncraftable Potion' display name")
+                f"{item_id}: drink potion_contents may contain only custom_color; "
+                "a base potion type overrides the configured item name in 26.2")
 
     for item_id, item in items.items():
         if not item_id.endswith("_bucket"):
@@ -1092,8 +1092,18 @@ def validate() -> dict[str, int]:
             f"{NAMESPACE}:block/brew/tap/close"):
         raise AssertionError("Tap must retain the north-authored mounting-plate orientation")
     tap_hitbox = furniture[f"{NAMESPACE}:tap"]["variants"]["wall"]["hitboxes"][0]
-    if tap_hitbox.get("position") != "0,-0.1875,0.6875":
-        raise AssertionError("Tap hitbox must run from its z=16 mounting plate toward z=6")
+    if tap_hitbox.get("position") != "0,-0.1875,0.35":
+        raise AssertionError("Tap interaction hitbox must retain its corrected wall depth")
+    tap_open_hitbox = furniture[
+        f"{NAMESPACE}:tap"]["variants"]["wall_open"]["hitboxes"][0]
+    if tap_open_hitbox.get("position") != "0,-0.1875,0.6875":
+        raise AssertionError("Open tap interaction hitbox must retain its authored depth")
+
+    pressing_tub_wall = furniture[
+        f"{NAMESPACE}:pressing_tub"]["variants"]["wall"]["elements"][0]
+    if (pressing_tub_wall.get("position") != "0,0,0.19"
+            or pressing_tub_wall.get("translation") != "0,0,-0.627"):
+        raise AssertionError("Tilted pressing tub must retain its corrected wall depth")
 
     paintings = [item_id for item_id in items if item_id.endswith("_painting")]
     if len(paintings) != 14:
@@ -1106,6 +1116,10 @@ def validate() -> dict[str, int]:
             raise AssertionError(f"{painting_id}: wall/ceiling placement rules are incomplete")
         if any(hitbox.get("blocks_building") is not False for hitbox in wall["hitboxes"]):
             raise AssertionError(f"{painting_id}: square wall hitbox must not block placement")
+        wall_element = wall["elements"][0]
+        if (wall_element.get("position") != "0,0,0.19"
+                or wall_element.get("translation") != "0,0,-0.627"):
+            raise AssertionError(f"{painting_id}: wall display depth drifted")
 
     storage_slot_counts = {
         "bar_cabinet": 2,

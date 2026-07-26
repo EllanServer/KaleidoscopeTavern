@@ -922,13 +922,19 @@ def furniture_element(
     # so every model needs the corresponding half-block translation.  The
     # 0.01 entity offsets keep wall/ceiling displays lit; their translation is
     # compensated so the final visual location remains exact.
+    # Paintings and the tilted pressing tub use the empirically corrected wall
+    # depth from the live pack. Keep it in the generator so regeneration does
+    # not restore the old floating placement.
+    corrected_wall_depth = anchor == "wall" and (
+        block_id in PAINTINGS or block_id == "pressing_tub"
+    )
     base_translation = {
         "ground": (0.0, 0.5, 0.0),
-        "wall": (0.0, 0.0, 0.49),
+        "wall": (0.0, 0.0, -0.627 if corrected_wall_depth else 0.49),
         "ceiling": (0.0, -0.49, 0.0),
     }[anchor]
     if anchor == "wall":
-        element["position"] = "0,0,0.01"
+        element["position"] = "0,0,0.19" if corrected_wall_depth else "0,0,0.01"
     elif anchor == "ceiling":
         element["position"] = "0,-0.01,0"
 
@@ -1109,6 +1115,9 @@ def shulker_box(
     scale: float = 1.0,
     peek: int = 0,
     direction: str | None = None,
+    *,
+    blocks_building: bool = True,
+    invisible: bool | None = None,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "type": "shulker",
@@ -1118,12 +1127,14 @@ def shulker_box(
         "can_use_item_on": True,
         "can_be_hit_by_projectile": True,
         "interactive": False,
-        "blocks_building": True,
+        "blocks_building": blocks_building,
     }
     if abs(scale - 1.0) > 1.0e-8:
         result["scale"] = round(scale, 6)
     if direction is not None:
         result["direction"] = direction
+    if invisible is not None:
+        result["invisible"] = invisible
     return result
 
 
@@ -1328,32 +1339,23 @@ def furniture_hitboxes(
             for z in (-1, 0, 1)
         ]
     if block_id == "stepladder":
-        # StepladderBlock is two blocks tall. Each half's source VoxelShape is:
-        #   body:  x=0..16, y=0..16, z=4..16
-        #   tread: x=0..16, y=0..8,  z=0..4
-        #
-        # A shulker is square in the horizontal plane, so one scale=0.75 box
-        # cannot represent the body's full 16-pixel width. Split the body into
-        # four 8x8 columns: two x columns and two overlapping z rows. With
-        # scale=0.5 and peek=100 facing up, each column is exactly 8x16x8
-        # pixels; their union is the exact 16x16x12 body volume.
-        #
-        # The tread is split into four 4x4 columns across x. With scale=0.25
-        # and peek=100 facing up, each is exactly 4x8x4 pixels; their union is
-        # the exact 16x8x4 front step. CraftEngine rotates these offsets with
-        # the furniture yaw, so the north-authored layout serves every facing.
-        boxes: list[dict[str, Any]] = []
-        for half in (0, 1):
-            boxes.extend(
-                shulker_box((x, half, z), 0.5, 100, "up")
-                for x in (-0.25, 0.25)
-                for z in (0, 0.25)
-            )
-            boxes.extend(
-                shulker_box((x, half, -0.375), 0.25, 100, "up")
-                for x in (-0.375, -0.125, 0.125, 0.375)
-            )
-        return boxes
+        # Keep the compact, server-tested layout. Only the base blocks building;
+        # the upper rails remain physical without preventing adjacent placement.
+        return [
+            shulker_box((0, 0, 0), 0.75, direction="up", invisible=False),
+            shulker_box(
+                (0, 0.75, -0.25), 0.625, 25, "north",
+                blocks_building=False, invisible=False,
+            ),
+            shulker_box(
+                (-0.25, 1.5, -0.25), 0.4, 35, "up",
+                blocks_building=False, invisible=False,
+            ),
+            shulker_box(
+                (0.25, 1.5, -0.25), 0.4, 35, "up",
+                blocks_building=False, invisible=False,
+            ),
+        ]
     if block_id.endswith("_sofa"):
         # Four half-block cubes reproduce the solid seat/base without filling
         # the open space in front of the authored 18-pixel-high backrest.
@@ -1413,7 +1415,12 @@ def furniture_hitboxes(
         return [shulker_box(hitbox_position(anchor, 8, 0, 8))]
     if block_id == "circular_rack":
         return [interaction_box(aggregate, anchor)]
-    if block_id in {"tilted_rack", "holder", "tap"}:
+    if block_id == "tap":
+        hitboxes = [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
+        if properties.get("open") == "false":
+            hitboxes[0]["position"] = "0,-0.1875,0.35"
+        return hitboxes
+    if block_id in {"tilted_rack", "holder"}:
         return [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
     if block_id in SMALL_FURNITURE or block_id.endswith("_incense"):
         return [interaction_box(aggregate, anchor), *(hitbox for box in boxes for hitbox in physical_box(box, anchor))]
@@ -1976,10 +1983,9 @@ def load_drink_effects() -> tuple[set[str], list[list[Any]]]:
     return drink_ids, rows
 
 
-# Maps cocktail_ingredient_<color> tag suffixes to the RGB liquid tint
-# used by ContentCatalog.cocktailColor(). Without a potion_contents component,
-# Minecraft 1.21+ treats potion-material items as "Uncraftable Potion" and the
-# item_name display is overridden by the default uncraftable name.
+# Maps cocktail_ingredient_<color> tag suffixes to the RGB liquid tint used by
+# ContentCatalog.cocktailColor(). In 26.2, a custom_color-only potion_contents
+# component preserves that tint without overriding the configured item_name.
 DRINK_COLORS: dict[str, int] = {
     "black": 0x1D1D21, "blue": 0x3C44AA, "brown": 0x835432,
     "cyan": 0x169C9C, "gray": 0x474F52, "green": 0x5E7C16,
@@ -2081,8 +2087,8 @@ def build_items(
         if config["material"] == "potion":
             # In 26.2+, a potion_contents component with potion="minecraft:water"
             # makes the item show as "Water Bottle", overriding item_name.  Using
-            # only custom_color (no potion field) tints the liquid without
-            # clobbering the display name, and avoids "Uncraftable Potion" too.
+            # only custom_color (no potion field) tints tagged liquids without
+            # clobbering the display name; untagged drinks omit the component.
             components = config["data"].setdefault("components", {})
             color = drink_color(memberships.get(item_id, []))
             if color is not None:
