@@ -62,6 +62,21 @@ EXPECTED_STATE_FURNITURE = {
     "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
     "watermelon_juice",
 }
+EXPECTED_BOTTLE_FURNITURE = {
+    "empty_bottle", "empty_glassware",
+    "signature_cocktail", "mystery_cocktail", "white_lady", "emerald",
+    "brass_heart", "godfather", "grasshopper", "screwdriver", "mojito",
+    "allium_garden", "depth_charge", "nether_special", "bloody_mary",
+    "sculk_special", "molotov", "water_bottle", "honey_bottle",
+    "dragon_breath_bottle", "potion_bottle", "xp_bottle",
+    "wine", "champagne", "vodka", "brandy", "carignan", "sakura_wine",
+    "plum_wine", "whiskey", "ice_wine", "polaris_sweet_white",
+    "honey_wine", "red_queen", "miners_star", "rum",
+    "riesling_dry_white", "sunset_glow", "madame_shexiang",
+    "sweet_berry_wine", "sherry", "mother_snow", "luminous_bride",
+    "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
+    "watermelon_juice",
+}
 FURNITURE_COLORS = {
     "black", "blue", "brown", "cyan", "gray", "green", "light_blue",
     "light_gray", "lime", "magenta", "orange", "pink", "purple", "red",
@@ -204,7 +219,10 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("BarStoolVisualService.java", "onMount"),
     ),
     "BarrelBlock.java": (("StationService.java", "interactBarrel"),),
-    "BottleBlock.java": (("BottleFurnitureService.java", "onInteract"),),
+    "BottleBlock.java": (
+        ("furniture/BottleFurnitureBehavior.java", "useOnFurniture"),
+        ("BottleFurnitureService.java", "private InteractionResult interact"),
+    ),
     "BottleBlockDispenseBehavior.java": (
         ("BottlePlacementService.java", "onDispenseBottle"),
     ),
@@ -589,6 +607,9 @@ def validate() -> dict[str, int]:
         encoding="utf-8-sig")
     bottle_furniture_source = (game_package / "BottleFurnitureService.java").read_text(
         encoding="utf-8-sig")
+    bottle_behavior_source = (
+        game_package / "furniture/BottleFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
     block_service_source = (game_package / "block/BlockService.java").read_text(
         encoding="utf-8-sig")
     if ("grapevineFor returned null" in block_service_source
@@ -658,6 +679,43 @@ def validate() -> dict[str, int]:
     if "onPlace(FurniturePlaceEvent" in bottle_furniture_source:
         raise AssertionError(
             "Bottle furniture placement must not copy CE sourceItem into duplicate custom state")
+    for token in (
+            "BottleFurnitureBehavior.register()",
+            "bottleFurniture.start()",
+            "bottleFurniture.stop()"):
+        if token not in plugin_source:
+            raise AssertionError(
+                f"Bottle interactions must be owned by the CE furniture lifecycle: missing {token}")
+    for token in (
+            "BottleFurnitureBehavior.bind(interactionHandler)",
+            "BottleFurnitureBehavior.unbind(interactionHandler)",
+            "private InteractionResult interact(",
+            "context.getHand()",
+            "InteractionResult.SUCCESS_AND_CANCEL"):
+        if token not in bottle_furniture_source:
+            raise AssertionError(
+                f"Bottle pickup/stacking must run through its CE controller: missing {token}")
+    for stale_token in (
+            "FurnitureInteractEvent", "public void onInteract("):
+        if stale_token in bottle_furniture_source:
+            raise AssertionError(
+                "Bottle pickup/stacking must not retain a global Paper furniture listener: "
+                f"found {stale_token}")
+    for token in (
+            "extends FurnitureBehaviorTemplate",
+            "FurnitureBehaviors.register(Key.of(TYPE)",
+            "public InteractionResult useOnFurniture",
+            "current.interact(bukkitFurniture, context)"):
+        if token not in bottle_behavior_source:
+            raise AssertionError(
+                f"Bottle CE furniture behavior is incomplete: missing {token}")
+    for forbidden_token in (
+            "org.bukkit.event", "PersistentDataType", "NamespacedKey",
+            "getNearbyEntities(", "runTaskTimer"):
+        if forbidden_token in bottle_behavior_source:
+            raise AssertionError(
+                "Bottle CE behavior must remain a controller adapter without Paper polling/PDC: "
+                f"found {forbidden_token}")
     for native_bottle_state_token in (
             "Item source = furniture.sourceItem()",
             "if (maxBottleCount(furniture) > 1)",
@@ -2547,6 +2605,42 @@ def validate() -> dict[str, int]:
         if index != 1 or behavior != expected_behavior:
             raise AssertionError(
                 f"{furniture_id}: animated_item_furniture order/config drifted: "
+                f"index={index}, behavior={behavior}")
+
+    bottle_type = f"{NAMESPACE}:bottle_furniture"
+    configured_bottles: dict[str, tuple[int, dict[str, Any]]] = {}
+    for furniture_id, definition in furniture.items():
+        all_behaviors = list(definition.get("behaviors", []))
+        single_behavior = definition.get("behavior")
+        if single_behavior is not None:
+            all_behaviors.append(single_behavior)
+        matches = [
+            (index, behavior) for index, behavior in enumerate(all_behaviors)
+            if behavior.get("type") == bottle_type
+        ]
+        if len(matches) > 1:
+            raise AssertionError(f"{furniture_id}: duplicate bottle_furniture behaviors")
+        if matches:
+            configured_bottles[furniture_id] = matches[0]
+    expected_bottle_ids = {
+        f"{NAMESPACE}:{block_id}" for block_id in EXPECTED_BOTTLE_FURNITURE
+    }
+    if set(configured_bottles) != expected_bottle_ids:
+        missing = sorted(expected_bottle_ids - set(configured_bottles))
+        unexpected = sorted(set(configured_bottles) - expected_bottle_ids)
+        raise AssertionError(
+            "Bottle CE interaction coverage drift: "
+            f"missing={missing}, unexpected={unexpected}")
+    for block_id in EXPECTED_BOTTLE_FURNITURE:
+        furniture_id = f"{NAMESPACE}:{block_id}"
+        index, behavior = configured_bottles[furniture_id]
+        expected_index = (
+            (1 if block_id in EXPECTED_STATE_FURNITURE else 0)
+            + len(EXPECTED_LIFECYCLE_FURNITURE.get(block_id, ()))
+        )
+        if index != expected_index or behavior != {"type": bottle_type}:
+            raise AssertionError(
+                f"{furniture_id}: bottle_furniture order/config drifted: "
                 f"index={index}, behavior={behavior}")
 
     pressing_id = f"{NAMESPACE}:pressing_tub"

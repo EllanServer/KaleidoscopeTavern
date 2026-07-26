@@ -2262,6 +2262,9 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
             "view_range": 1.25,
         })
 
+    if block_id in BOTTLE_AND_GLASS_ITEMS:
+        behaviors.append({"type": f"{NAMESPACE}:bottle_furniture"})
+
     def display_slots(
         positions: list[str],
         width: float,

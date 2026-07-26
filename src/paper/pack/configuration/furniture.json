@@ -15259,10 +15259,15 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:lifecycle_furniture",
-        "channel": "tap_bottle"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "tap_bottle"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:empty_glassware": {
       "settings": {
@@ -15327,6 +15332,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:signature_cocktail": {
@@ -15395,6 +15403,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:mystery_cocktail": {
@@ -15461,11 +15472,16 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:ticking_furniture",
-        "channel": "ambient",
-        "interval": 1
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ]
     },
     "kaleidoscope_tavern:white_lady": {
       "settings": {
@@ -15530,6 +15546,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:emerald": {
@@ -15595,6 +15614,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:brass_heart": {
@@ -15660,6 +15682,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:godfather": {
@@ -15725,6 +15750,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:grasshopper": {
@@ -15790,6 +15818,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:screwdriver": {
@@ -15855,6 +15886,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:mojito": {
@@ -15920,6 +15954,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:allium_garden": {
@@ -15985,6 +16022,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:depth_charge": {
@@ -16050,6 +16090,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:nether_special": {
@@ -16115,6 +16158,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:bloody_mary": {
@@ -16180,6 +16226,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:sculk_special": {
@@ -16245,6 +16294,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:shaker": {
@@ -16395,12 +16447,17 @@
           }
         ]
       },
-      "behavior": {
-        "type": "glowing_furniture",
-        "lights": [
-          "0,0,0 14"
-        ]
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        },
+        {
+          "type": "glowing_furniture",
+          "lights": [
+            "0,0,0 14"
+          ]
+        }
+      ]
     },
     "kaleidoscope_tavern:barrel": {
       "settings": {
@@ -17923,6 +17980,9 @@
             }
           ]
         }
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:honey_bottle": {
@@ -17974,6 +18034,9 @@
             }
           ]
         }
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:dragon_breath_bottle": {
@@ -18025,6 +18088,9 @@
             }
           ]
         }
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:potion_bottle": {
@@ -18079,6 +18145,9 @@
             }
           ]
         }
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:xp_bottle": {
@@ -18130,6 +18199,9 @@
             }
           ]
         }
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:wine": {
@@ -18488,9 +18560,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:champagne": {
       "settings": {
@@ -18848,9 +18925,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:vodka": {
       "settings": {
@@ -19064,9 +19146,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:brandy": {
       "settings": {
@@ -19202,9 +19289,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:carignan": {
       "settings": {
@@ -19340,9 +19432,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:sakura_wine": {
       "settings": {
@@ -19700,9 +19797,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:plum_wine": {
       "settings": {
@@ -19895,9 +19997,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:whiskey": {
       "settings": {
@@ -20255,9 +20362,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:ice_wine": {
       "settings": {
@@ -20615,9 +20727,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:polaris_sweet_white": {
       "settings": {
@@ -20975,9 +21092,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:honey_wine": {
       "settings": {
@@ -21335,9 +21457,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:red_queen": {
       "settings": {
@@ -21695,9 +21822,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:miners_star": {
       "settings": {
@@ -22055,9 +22187,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:rum": {
       "settings": {
@@ -22415,9 +22552,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:riesling_dry_white": {
       "settings": {
@@ -22631,9 +22773,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:sunset_glow": {
       "settings": {
@@ -22769,9 +22916,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:madame_shexiang": {
       "settings": {
@@ -22985,9 +23137,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:sweet_berry_wine": {
       "settings": {
@@ -23201,9 +23358,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:sherry": {
       "settings": {
@@ -23561,9 +23723,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:mother_snow": {
       "settings": {
@@ -23777,9 +23944,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:luminous_bride": {
       "settings": {
@@ -24137,9 +24309,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:glowflower_brew": {
       "settings": {
@@ -24497,9 +24674,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:sauvignon_blanc_dry_white": {
       "settings": {
@@ -24857,9 +25039,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:vinegar": {
       "settings": {
@@ -25217,9 +25404,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:watermelon_juice": {
       "settings": {
@@ -25577,9 +25769,14 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:state_furniture"
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     }
   }
 }

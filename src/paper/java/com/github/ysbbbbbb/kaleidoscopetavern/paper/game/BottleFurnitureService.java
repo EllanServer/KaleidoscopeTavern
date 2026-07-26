@@ -1,17 +1,19 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BottleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
+import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import net.momirealms.craftengine.libraries.antigrieflib.Flag;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -51,6 +53,7 @@ public final class BottleFurnitureService implements Listener {
     private final ContentCatalog catalog;
     private final ItemService items;
     private final EffectService effects;
+    private final BottleFurnitureBehavior.Handler interactionHandler = this::interact;
 
     public BottleFurnitureService(JavaPlugin plugin, ContentCatalog catalog,
                                   ItemService items, EffectService effects) {
@@ -60,23 +63,34 @@ public final class BottleFurnitureService implements Listener {
         this.effects = effects;
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onInteract(FurnitureInteractEvent event) {
-        BukkitFurniture furniture = event.furniture();
-        String furnitureId = furniture.id().toString();
-        if (!isBottleOrGlass(furnitureId)) {
-            return;
+    public void start() {
+        BottleFurnitureBehavior.bind(interactionHandler);
+    }
+
+    public void stop() {
+        BottleFurnitureBehavior.unbind(interactionHandler);
+    }
+
+    private InteractionResult interact(BukkitFurniture furniture,
+                                       InteractEntityContext context) {
+        Player player = (Player) context.getPlayer().platformPlayer();
+        if (player == null) {
+            return InteractionResult.PASS;
         }
-        ItemStack hand = event.hand() == InteractionHand.MAIN_HAND
-                ? event.player().getInventory().getItemInMainHand()
-                : event.player().getInventory().getItemInOffHand();
+        ItemStack hand = context.getHand() == InteractionHand.MAIN_HAND
+                ? player.getInventory().getItemInMainHand()
+                : player.getInventory().getItemInOffHand();
         if (hand.isEmpty()) {
-            takeBottle(event, furniture);
-            return;
+            return takeBottle(player, furniture)
+                    ? InteractionResult.SUCCESS_AND_CANCEL
+                    : InteractionResult.PASS;
         }
-        if (items.id(hand).equals(furnitureId) && maxBottleCount(furniture) > 1) {
-            stackBottle(event, furniture, hand);
+        if (items.id(hand).equals(furniture.id().toString())
+                && maxBottleCount(furniture) > 1
+                && stackBottle(player, furniture, hand)) {
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
+        return InteractionResult.PASS;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -195,25 +209,24 @@ public final class BottleFurnitureService implements Listener {
         return true;
     }
 
-    private void takeBottle(FurnitureInteractEvent event, BukkitFurniture furniture) {
+    private boolean takeBottle(Player player, BukkitFurniture furniture) {
         List<ItemStack> stored = storedItems(furniture);
         if (stored.isEmpty()) {
-            return;
+            return false;
         }
         Location location = furniture.location().clone();
         ItemStack removed = stored.removeLast();
-        items.give(event.player(), removed);
+        items.give(player, removed);
         if (stored.isEmpty()) {
             // BottleBlock#use removes via silent setBlock; the pickup
             // sound below is the only audible cue, so CE's furniture
             // break sound (glass shatter) must stay muted here.
-            CraftEngineFurniture.remove(furniture, event.player(), false, false);
+            CraftEngineFurniture.remove(furniture, player, false, false);
         } else {
             storeExpandedItems(furniture, stored);
             setBottleCount(furniture, stored.size());
             furniture.setUnsaved();
         }
-        event.setCancelled(true);
         // DrinkBlock uses GLASS_PLACE on the BLOCKS channel; BottleBlock and
         // GlasswareBlock retain the source's slightly surprising STONE
         // placement sound played through the interacting player's channel.
@@ -224,27 +237,28 @@ public final class BottleFurnitureService implements Listener {
             location.getWorld().playSound(location, Sound.BLOCK_STONE_PLACE,
                     SoundCategory.PLAYERS, 1.0F, 1.0F);
         }
+        return true;
     }
 
-    private void stackBottle(FurnitureInteractEvent event, BukkitFurniture furniture, ItemStack hand) {
+    private boolean stackBottle(Player player, BukkitFurniture furniture, ItemStack hand) {
         List<ItemStack> stored = storedItems(furniture);
         int maximum = maxBottleCount(furniture);
         if (stored.isEmpty() || stored.size() >= maximum) {
-            return;
+            return false;
         }
         ItemStack addition = hand.clone();
         addition.setAmount(1);
-        if (event.player().getGameMode() != GameMode.CREATIVE) {
+        if (player.getGameMode() != GameMode.CREATIVE) {
             hand.subtract(1);
         }
         stored.add(addition);
         storeExpandedItems(furniture, stored);
         setBottleCount(furniture, stored.size());
         furniture.setUnsaved();
-        event.setCancelled(true);
         // BlockItem#place volume (glass 1.0 + 1) / 2 and pitch * 0.8.
-        event.player().getWorld().playSound(furniture.location(), Sound.BLOCK_GLASS_PLACE,
+        player.getWorld().playSound(furniture.location(), Sound.BLOCK_GLASS_PLACE,
                 SoundCategory.BLOCKS, 1.0F, 0.8F);
+        return true;
     }
 
     private List<ItemStack> storedItems(BukkitFurniture furniture) {
