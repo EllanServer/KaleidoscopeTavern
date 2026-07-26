@@ -56,12 +56,6 @@ EXPECTED_STATE_FURNITURE = {
     "pressing_tub", "glassware_holder", "shaker", "barrel",
     "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
     "tilted_rack", "circular_rack", "holder",
-    "empty_bottle", "empty_glassware", "signature_cocktail",
-    "mystery_cocktail", "white_lady", "emerald", "brass_heart",
-    "godfather", "grasshopper", "screwdriver", "mojito",
-    "allium_garden", "depth_charge", "nether_special", "bloody_mary",
-    "sculk_special", "molotov", "water_bottle", "honey_bottle",
-    "dragon_breath_bottle", "potion_bottle", "xp_bottle",
     "wine", "champagne", "vodka", "brandy", "carignan", "sakura_wine",
     "plum_wine", "whiskey", "ice_wine", "polaris_sweet_white",
     "honey_wine", "red_queen", "miners_star", "rum",
@@ -675,11 +669,12 @@ def validate() -> dict[str, int]:
             "Bottle furniture placement must not copy CE sourceItem into duplicate custom state")
     for native_bottle_state_token in (
             "Item source = furniture.sourceItem()",
+            "if (maxBottleCount(furniture) > 1)",
             "BottleFurnitureSemantics.needsExpandedItemState(stored.size())",
             '? stored : List.of()'):
         if native_bottle_state_token not in bottle_furniture_source:
             raise AssertionError(
-                "Single bottles must use CE sourceItem and only stacked bottles may store a list")
+                "Single bottles must bypass custom state; only stacked bottles may store a list")
     station_source = (game_package / "StationService.java").read_text(
         encoding="utf-8-sig")
     if ('state.items("shaker_ingredients"' in station_source

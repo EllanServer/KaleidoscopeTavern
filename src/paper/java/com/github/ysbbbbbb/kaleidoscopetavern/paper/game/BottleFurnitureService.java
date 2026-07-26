@@ -248,10 +248,12 @@ public final class BottleFurnitureService implements Listener {
     }
 
     private List<ItemStack> storedItems(BukkitFurniture furniture) {
-        FurnitureState state = new FurnitureState(furniture);
-        List<ItemStack> stored = new ArrayList<>(state.items("bottle_items"));
-        if (!stored.isEmpty()) {
-            return stored;
+        List<ItemStack> stored = new ArrayList<>();
+        if (maxBottleCount(furniture) > 1) {
+            stored.addAll(new FurnitureState(furniture).items("bottle_items"));
+            if (!stored.isEmpty()) {
+                return stored;
+            }
         }
         ItemStack fallback = sourceItem(furniture);
         if (fallback != null) {

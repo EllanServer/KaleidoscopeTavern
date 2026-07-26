@@ -2197,7 +2197,9 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     behaviors: list[dict[str, Any]] = []
 
     uses_tavern_state = (
-        block_id in BOTTLE_AND_GLASS_ITEMS
+        # CE sourceItem is the complete state for a single placed bottle.
+        # Only count variants can contain additional, non-identical bottles.
+        (block_id in BOTTLE_AND_GLASS_ITEMS and "ground_count_2" in variants)
         or block_id in {
             "pressing_tub", "barrel", "shaker", "chalkboard",
             "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
@@ -2207,8 +2209,8 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         or block_id.endswith("_bar_stool")
     )
     if uses_tavern_state:
-        # Index zero is intentional: FurnitureState resolves this controller
-        # directly instead of touching one Bukkit PDC key per business field.
+        # Index zero is intentional: the remaining custom-data consumers
+        # resolve this controller directly instead of allocating Bukkit PDC.
         behaviors.append({"type": f"{NAMESPACE}:state_furniture"})
 
     if block_id == "pressing_tub":
