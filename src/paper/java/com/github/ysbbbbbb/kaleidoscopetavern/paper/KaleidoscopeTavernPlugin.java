@@ -111,7 +111,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             return;
         }
 
-        items = new ItemService(this);
+        items = new ItemService(this, catalog);
         Messages messages = new Messages(this);
         shakerVisuals = new ShakerVisualService(this, items);
         stations = new StationService(this, catalog, items, messages, shakerVisuals);
@@ -124,6 +124,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         FurnitureConnectionService furnitureConnections = new FurnitureConnectionService(this);
 
         getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(items, this);
         getServer().getPluginManager().registerEvents(new BlockService(this, catalog, items), this);
         getServer().getPluginManager().registerEvents(furnitureConnections, this);
         getServer().getPluginManager().registerEvents(new MolotovService(this, items), this);

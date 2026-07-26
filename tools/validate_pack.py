@@ -334,6 +334,19 @@ def model_references(value: Any):
             yield from model_references(child)
 
 
+def item_model_paths(value: Any):
+    """Yield every vanilla block-model path nested in an item definition."""
+    if isinstance(value, dict):
+        if (value.get("type") in {"model", "minecraft:model"}
+                and isinstance(value.get("path"), str)):
+            yield value["path"]
+        for child in value.values():
+            yield from item_model_paths(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from item_model_paths(child)
+
+
 def model_has_geometry(resource_id: str, roots=ASSET_ROOTS, seen=frozenset()) -> bool:
     if resource_id in seen:
         return False
@@ -840,9 +853,12 @@ def validate() -> dict[str, int]:
         raise AssertionError("CustomCrops must not add a second grape random-growth scheduler")
 
     for item_id, item in {**items, **render_items}.items():
-        model = item.get("model", {}).get("path")
-        if not model or not asset_exists(model, "models"):
-            raise AssertionError(f"{item_id}: missing model {model!r}")
+        models = set(item_model_paths(item.get("model", {})))
+        if not models:
+            raise AssertionError(f"{item_id}: item definition has no block-model path")
+        for model in models:
+            if not asset_exists(model, "models"):
+                raise AssertionError(f"{item_id}: missing model {model!r}")
 
     for block_id, block in blocks.items():
         public_item = block.get("settings", {}).get("item")
@@ -901,10 +917,11 @@ def validate() -> dict[str, int]:
         if expected is not None and count != expected:
             raise AssertionError(f"{name}: expected {expected} rows, found {count}")
         catalog_counts[name] = count
-    if len({row[0] for row in tsv_rows("drink-effects.tsv")}) != 37:
+    effect_rows = tsv_rows("drink-effects.tsv")
+    if len({row[0] for row in effect_rows}) != 37:
         raise AssertionError("Expected drink effects for 37 items")
 
-    drink_ids = {row[0] for row in tsv_rows("drink-effects.tsv")}
+    drink_ids = {row[0] for row in effect_rows}
     drink_ids.add(f"{NAMESPACE}:signature_cocktail")
     for item_id in drink_ids:
         item = items[item_id]
@@ -922,6 +939,10 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{item_id}: potion drinks require custom_name because PotionItem "
                 "ignores item_name when deriving its hover title")
+        if data.get("hide_tooltip") != ["minecraft:potion_contents"]:
+            raise AssertionError(
+                f"{item_id}: drinks must hide only the vanilla potion_contents tooltip; "
+                "their real server-side effects are rendered as custom lore")
         potion_contents = data.get("components", {}).get("minecraft:potion_contents")
         if (not isinstance(potion_contents, dict)
                 or potion_contents.get("potion") != "minecraft:water"
@@ -931,6 +952,19 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{item_id}: drink potion_contents must use the neutral water base "
                 "and may only add an integer custom_color")
+
+    fixed_cocktails = {row[1] for row in tsv_rows("shaker.tsv")}
+    fixed_cocktails.add(f"{NAMESPACE}:mystery_cocktail")
+    for item_id in fixed_cocktails:
+        lore = items[item_id].get("data", {}).get("lore", [])
+        expected_effects = {
+            f"effect.{row[2].replace(':', '.')}"
+            for row in effect_rows if row[0] == item_id and row[1] == "1"
+        }
+        if not lore or any(not any(effect in line for line in lore)
+                           for effect in expected_effects):
+            raise AssertionError(
+                f"{item_id}: fixed cocktail creative preview is missing real effect lore")
 
     for item_id, item in items.items():
         if not item_id.endswith("_bucket"):
@@ -953,6 +987,35 @@ def validate() -> dict[str, int]:
             }):
         raise AssertionError(
             "Molotov must retain its 72,000-tick spear charge instead of instant splash-potion use")
+
+    shaker_item = items[f"{NAMESPACE}:shaker"]
+    shaker_components = shaker_item.get("data", {}).get("components", {})
+    if (shaker_item.get("material") != "paper"
+            or shaker_components.get("minecraft:max_stack_size") != 1
+            or shaker_components.get("minecraft:consumable") != {
+                "consume_seconds": 3_600.0,
+                "animation": "brush",
+                "has_consume_particles": False,
+            }):
+        raise AssertionError(
+            "Shaker must use a behavior-free material with a component-only brush animation")
+    if shaker_item.get("model") != {
+            "type": "minecraft:select",
+            "property": "display_context",
+            "cases": [{
+                "when": ["gui", "fixed"],
+                "model": {
+                    "type": "minecraft:model",
+                    "path": f"{NAMESPACE}:item/shaker",
+                },
+            }],
+            "fallback": {
+                "type": "minecraft:model",
+                "path": f"{NAMESPACE}:item/shaker_3d",
+            },
+            }:
+        raise AssertionError(
+            "Shaker must use the 2D icon only in GUI/FIXED display contexts")
 
     barrel_variants = furniture[f"{NAMESPACE}:barrel"]["variants"]
     if set(barrel_variants) != {"ground", "ground_open"}:
@@ -1032,6 +1095,31 @@ def validate() -> dict[str, int]:
     if (shaker_base is None or len(shaker_base.get("elements", [])) != 2
             or shaker_lid is None or len(shaker_lid.get("elements", [])) != 3):
         raise AssertionError("ShakerModel must remain split as 2 root + 3 animated lid cuboids")
+    shaker_item_model = asset_json(f"{NAMESPACE}:item/shaker", "models")
+    if shaker_item_model != {
+            "parent": "minecraft:item/generated",
+            "textures": {"layer0": f"{NAMESPACE}:item/shaker"},
+            }:
+        raise AssertionError(
+            "Shaker inventory model must remain vanilla-compatible instead of using Forge loaders")
+    paper_asset_roots = (ROOT / "src/paper/pack/resourcepack/assets",)
+    shaker_3d_model = asset_json(
+        f"{NAMESPACE}:item/shaker_3d", "models", paper_asset_roots)
+    source_shaker_3d = asset_json(
+        f"{NAMESPACE}:item/shaker_3d", "models", SOURCE_ASSET_ROOTS)
+    if (shaker_3d_model is None or source_shaker_3d is None
+            or shaker_3d_model != {
+                key: value for key, value in source_shaker_3d.items()
+                if key != "groups"
+            }
+            or len(shaker_3d_model.get("elements", [])) != 5
+            or set(shaker_3d_model.get("display", {})) != {
+                "thirdperson_righthand", "thirdperson_lefthand",
+                "firstperson_righthand", "firstperson_lefthand",
+                "ground", "head",
+            }):
+        raise AssertionError(
+            "Shaker held/ground/head model must retain the authored 3D geometry and transforms")
     if bottle["hitboxes"][0].get("width") != 0.375 or bottle["hitboxes"][0].get("height") != 0.875:
         raise AssertionError("Bottle hitboxes must retain the 6x14x6 source VoxelShape")
 

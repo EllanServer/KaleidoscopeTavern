@@ -36,4 +36,16 @@ class BarrelSemanticsTest {
         assertEquals(new BarrelSemantics.BrewState(6, -1),
                 BarrelSemantics.advance(5, 0, 2400));
     }
+
+    @Test
+    void tapFailuresUseTheSourceCheckOrder() {
+        assertEquals(BarrelSemantics.TapExtractStatus.NOT_BREWING,
+                BarrelSemantics.tapExtractStatus(false, 0, false));
+        assertEquals(BarrelSemantics.TapExtractStatus.EMPTY,
+                BarrelSemantics.tapExtractStatus(true, 0, false));
+        assertEquals(BarrelSemantics.TapExtractStatus.INVALID_CONTAINER,
+                BarrelSemantics.tapExtractStatus(true, 1, false));
+        assertEquals(BarrelSemantics.TapExtractStatus.READY,
+                BarrelSemantics.tapExtractStatus(true, 1, true));
+    }
 }

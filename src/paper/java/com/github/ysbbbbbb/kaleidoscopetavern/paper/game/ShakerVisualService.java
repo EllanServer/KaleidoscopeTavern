@@ -101,9 +101,15 @@ public final class ShakerVisualService implements Listener {
             return;
         }
         UUID owner = furniture.bukkitEntity().getUniqueId();
-        animations.remove(owner);
-        removeVisuals(owner, furniture.location());
-        stopAnimationTaskIfIdle();
+        Location location = furniture.location().clone();
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (event.isCancelled()) {
+                return;
+            }
+            animations.remove(owner);
+            removeVisuals(owner, location);
+            stopAnimationTaskIfIdle();
+        });
     }
 
     @EventHandler

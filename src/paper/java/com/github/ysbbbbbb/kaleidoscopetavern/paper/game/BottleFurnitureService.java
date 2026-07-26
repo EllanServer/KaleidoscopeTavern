@@ -7,15 +7,23 @@ import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
+import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
+import net.momirealms.craftengine.core.plugin.context.parameter.DirectContextParameters;
+import net.momirealms.craftengine.libraries.antigrieflib.Flag;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.GameRules;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -92,23 +100,26 @@ public final class BottleFurnitureService implements Listener {
             return;
         }
         event.setDropItems(false);
-        stored.forEach(stack -> event.location().getWorld().dropItemNaturally(event.location(), stack));
+        Location dropLocation = event.location().clone();
+        List<ItemStack> drops = stored.stream().map(ItemStack::clone).toList();
+        // A later HIGHEST/MONITOR listener may still cancel the break. Defer
+        // custom drops until event dispatch has completed so a cancelled
+        // FurnitureBreakEvent cannot duplicate the stored bottles.
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (event.isCancelled() || event.dropItems()) {
+                return;
+            }
+            drops.forEach(stack -> dropLocation.getWorld()
+                    .dropItemNaturally(dropLocation, stack));
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onProjectileHit(ProjectileHitEvent event) {
         Projectile projectile = event.getEntity();
-        Location impact = projectile.getLocation();
-        BukkitFurniture furniture = impact.getWorld().getNearbyEntities(impact, 0.85, 0.9, 0.85).stream()
-                .filter(CraftEngineFurniture::isFurniture)
-                .map(CraftEngineFurniture::getLoadedFurnitureByMetaEntity)
-                .filter(candidate -> candidate != null && candidate.isValid())
-                .filter(candidate -> isBottleOrGlass(candidate.id().toString()))
-                .filter(candidate -> !candidate.id().toString().equals(MOLOTOV))
-                .distinct()
-                .min(Comparator.comparingDouble(candidate -> candidate.location().distanceSquared(impact)))
-                .orElse(null);
-        if (furniture == null) {
+        BukkitFurniture furniture = directlyHitFurniture(event);
+        if (furniture == null || !isBottleOrGlass(furniture.id().toString())
+                || furniture.id().toString().equals(MOLOTOV)) {
             return;
         }
 
@@ -122,14 +133,77 @@ public final class BottleFurnitureService implements Listener {
                     .filter(stack -> items.brewLevel(stack) > 0)
                     .orElse(null)
                 : null;
-        Location origin = furniture.location().clone().add(0, 0.35, 0);
-        CraftEngineFurniture.remove(furniture, false, false);
+        // Forge spawns the ThrownPotion at the removed block's base position
+        // with no initial movement. The entity then falls and produces the
+        // normal delayed PotionSplashEvent at its real impact location.
+        Location origin = furniture.location().getBlock().getLocation();
         if (strongest != null) {
-            effects.splash(strongest, origin, projectile.getShooter() instanceof Entity entity ? entity : null);
+            effects.launchSplash(strongest, origin,
+                    projectile.getShooter() instanceof Entity entity ? entity : null);
         }
-        origin.getWorld().playSound(origin, Sound.BLOCK_GLASS_BREAK, 1.0F, 1.0F);
+        // DrinkBlock launches its falling splash before BottleBlock checks
+        // Projectile.mayInteract. Protection therefore keeps the bottle but
+        // does not suppress the splash caused by the hit.
+        if (!mayBreak(projectile, furniture)) {
+            return;
+        }
+        CraftEngineFurniture.remove(furniture, false, false);
+        origin.getWorld().playSound(origin, Sound.BLOCK_GLASS_BREAK,
+                SoundCategory.BLOCKS, 1.0F, 1.0F);
         origin.getWorld().spawnParticle(Particle.BLOCK, origin, 24,
                 0.25, 0.25, 0.25, 0.08, Material.GLASS.createBlockData());
+    }
+
+    /**
+     * Furniture is represented by an item-display meta entity plus collision
+     * entities. ProjectileHitEvent identifies the collider that was actually
+     * hit; proximity lookup is deliberately forbidden because it can select a
+     * neighbouring bottle when the projectile hit a block or another entity.
+     */
+    static BukkitFurniture directlyHitFurniture(ProjectileHitEvent event) {
+        if (event.getHitBlock() != null || event.getHitEntity() == null) {
+            return null;
+        }
+        Entity hit = event.getHitEntity();
+        BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByCollider(hit);
+        if (furniture == null && CraftEngineFurniture.isFurniture(hit)) {
+            furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(hit);
+        }
+        return furniture != null && furniture.isValid() ? furniture : null;
+    }
+
+    /** Mirrors Projectile.mayInteract while retaining CraftEngine protection hooks. */
+    static boolean mayBreak(Projectile projectile, BukkitFurniture furniture) {
+        if (projectile.getShooter() instanceof Player player) {
+            if (player.getGameMode() == GameMode.SPECTATOR
+                    || player.getGameMode() == GameMode.ADVENTURE
+                    && !furniture.config.settings().allowBreakingInAdventureMode()) {
+                return false;
+            }
+            if (!BukkitCraftEngine.instance().antiGriefProvider()
+                    .test(player, Flag.BREAK, furniture.location())) {
+                return false;
+            }
+
+            ContextHolder.Builder context = ContextHolder.builder()
+                    .withParameter(DirectContextParameters.FURNITURE, furniture)
+                    .withParameter(DirectContextParameters.POSITION, furniture.position());
+            FurnitureBreakEvent breakEvent = new FurnitureBreakEvent(player, furniture, context);
+            // Projectile shattering never drops the stored bottles in Forge.
+            // Set this before dispatch so this service's normal break-drop
+            // listener and other integrations observe the correct semantics.
+            breakEvent.setDropItems(false);
+            Bukkit.getPluginManager().callEvent(breakEvent);
+            return !breakEvent.isCancelled() && furniture.isValid();
+        }
+
+        if (projectile.getShooter() instanceof Entity) {
+            Boolean mobGriefing = projectile.getWorld().getGameRuleValue(GameRules.MOB_GRIEFING);
+            return !Boolean.FALSE.equals(mobGriefing);
+        }
+        // Dispensers and ownerless projectiles have no Forge owner, and
+        // Projectile.mayInteract permits them.
+        return true;
     }
 
     private void takeBottle(FurnitureInteractEvent event, BukkitFurniture furniture) {

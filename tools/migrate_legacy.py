@@ -1551,7 +1551,21 @@ def create_shaker_models() -> None:
     )
     if len(source.get("elements", [])) != 5:
         raise AssertionError("shaker_3d must retain its 2 body + 3 lid cuboids")
-    model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture"
+    model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models"
+
+    # Forge's generated item model is a forge:separate_transforms wrapper. A
+    # vanilla 26.2 client ignores that loader, so the Paper item definition
+    # performs the same GUI/FIXED selection with display_context. Keep both
+    # vanilla child models available to that selector.
+    write_json(model_root / "item/shaker.json", {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": f"{NAMESPACE}:item/shaker"},
+    })
+    write_json(model_root / "item/shaker_3d.json", {
+        key: deepcopy(value)
+        for key, value in source.items()
+        if key != "groups"
+    })
 
     def model_with(elements: list[dict[str, Any]]) -> dict[str, Any]:
         return {
@@ -1560,7 +1574,7 @@ def create_shaker_models() -> None:
             if key not in {"display", "groups"}
         } | {"elements": elements}
 
-    write_json(model_root / "shaker_base.json", model_with(
+    write_json(model_root / "furniture/shaker_base.json", model_with(
         deepcopy(source["elements"][:2])))
 
     # bone2's authored pivot is [8, 12.16667, 8]. ItemDisplay rotates around
@@ -1574,7 +1588,7 @@ def create_shaker_models() -> None:
         rotation = element.get("rotation")
         if isinstance(rotation, dict) and isinstance(rotation.get("origin"), list):
             rotation["origin"][1] -= pivot_delta
-    write_json(model_root / "shaker_lid.json", model_with(lid_elements))
+    write_json(model_root / "furniture/shaker_lid.json", model_with(lid_elements))
 
 
 def add_runtime_render_items(render_items: dict[str, Any]) -> None:
@@ -1983,15 +1997,107 @@ def load_drink_effects() -> tuple[set[str], list[list[Any]]]:
     return drink_ids, rows
 
 
-# Maps cocktail_ingredient_<color> tag suffixes to the RGB liquid tint used by
-# ContentCatalog.cocktailColor().
+HARMFUL_DRINK_EFFECTS = {
+    "minecraft:bad_omen", "minecraft:blindness", "minecraft:mining_fatigue",
+    "minecraft:nausea",
+}
+NEUTRAL_DRINK_EFFECTS = {
+    f"{NAMESPACE}:slightly_tipsy", f"{NAMESPACE}:upside_down",
+}
+MANAGED_LORE_INSERTION = "kaleidoscope_tavern_managed_lore"
+
+# effect id -> (attribute translation key, base amount, operation id).
+# Operation 0 is an absolute addition and operation 1 is a percentage, matching
+# the vanilla attribute.modifier translation keys used by PotionUtils.
+DRINK_EFFECT_ATTRIBUTES: dict[str, list[tuple[str, float, int]]] = {
+    "minecraft:speed": [("attribute.name.generic.movement_speed", 0.2, 1)],
+    "minecraft:strength": [("attribute.name.generic.attack_damage", 3.0, 0)],
+    f"{NAMESPACE}:high_heels": [
+        ("attribute.name.generic.step_height", 0.5, 0),
+    ],
+    f"{NAMESPACE}:long_reach": [
+        ("attribute.name.player.block_interaction_range", 3.0, 0),
+        ("attribute.name.player.entity_interaction_range", 3.0, 0),
+    ],
+}
+
+
+def format_effect_duration(ticks: int) -> str:
+    total_seconds = max(1, ticks // 20)
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if hours:
+        return f"{hours}:{minutes:02d}:{seconds:02d}"
+    return f"{minutes}:{seconds:02d}"
+
+
+def mini_message_quote(value: str) -> str:
+    return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
+
+
+def translatable_component(key: str, *arguments: str) -> str:
+    suffix = "".join(f":{mini_message_quote(argument)}" for argument in arguments)
+    return f"<lang:{key}{suffix}>"
+
+
+def format_attribute_amount(amount: float, operation: int) -> str:
+    displayed = abs(amount) * (100.0 if operation in {1, 2} else 1.0)
+    return f"{displayed:.12f}".rstrip("0").rstrip(".")
+
+
+def fixed_cocktail_lore(item_id: str, effect_rows: list[list[Any]]) -> list[str]:
+    """Build the creative-menu preview for cocktails whose effects are fixed."""
+    full_id = f"{NAMESPACE}:{item_id}"
+    lore: list[str] = []
+    attributes: list[tuple[str, float, int]] = []
+    for effect_item, level, effect_id, duration, amplifier, probability in effect_rows:
+        if effect_item != full_id or level != 1:
+            continue
+        namespace, path = effect_id.split(":", 1)
+        color = "red" if effect_id in HARMFUL_DRINK_EFFECTS else (
+            "gray" if effect_id in NEUTRAL_DRINK_EFFECTS else "blue")
+        effect = translatable_component(f"effect.{namespace}.{path}")
+        if amplifier > 0:
+            effect = translatable_component(
+                "potion.withAmplifier", effect,
+                translatable_component(f"potion.potency.{amplifier}"))
+        if duration > 0:
+            effect = translatable_component(
+                "potion.withDuration", effect, format_effect_duration(duration))
+        line = (f"<!i><insert:{MANAGED_LORE_INSERTION}><{color}>" + effect)
+        if probability < 1.0:
+            chance = f"{probability * 100:g}%"
+            line += " <dark_gray>" + translatable_component(
+                f"tooltip.{NAMESPACE}.drink_effect.chance", chance)
+        lore.append(line)
+
+        if probability >= 1.0:
+            for attribute_key, base_amount, operation in DRINK_EFFECT_ATTRIBUTES.get(effect_id, []):
+                attributes.append((attribute_key, base_amount * (amplifier + 1), operation))
+
+    if attributes:
+        lore.append(f"<!i><insert:{MANAGED_LORE_INSERTION}>")
+        lore.append(f"<!i><insert:{MANAGED_LORE_INSERTION}><dark_purple>"
+                    + translatable_component("potion.whenDrank"))
+        for attribute_key, amount, operation in attributes:
+            sign = "plus" if amount >= 0 else "take"
+            modifier = translatable_component(
+                f"attribute.modifier.{sign}.{operation}",
+                format_attribute_amount(amount, operation),
+                translatable_component(attribute_key))
+            color = "blue" if amount >= 0 else "red"
+            lore.append(f"<!i><insert:{MANAGED_LORE_INSERTION}><{color}>{modifier}")
+    return lore
+
+
+# Exact RGB values returned by the Forge ChatFormatting entries in ColorUtils.
 DRINK_COLORS: dict[str, int] = {
-    "black": 0x1D1D21, "blue": 0x3C44AA, "brown": 0x835432,
-    "cyan": 0x169C9C, "gray": 0x474F52, "green": 0x5E7C16,
-    "light_blue": 0x3AB3DA, "light_gray": 0x9D9D97,
-    "light_purple": 0xC74EBD, "lime": 0x80C71F, "orange": 0xF9801D,
-    "pink": 0xF38BAA, "purple": 0x8932B8, "red": 0xB02E26,
-    "white": 0xF9FFFE, "yellow": 0xFED83D, "gold": 0xF6C344,
+    "black": 0x000000, "dark_blue": 0x0000AA, "dark_green": 0x00AA00,
+    "dark_aqua": 0x00AAAA, "dark_red": 0xAA0000, "dark_purple": 0xAA00AA,
+    "gold": 0xFFAA00, "gray": 0xAAAAAA, "dark_gray": 0x555555,
+    "blue": 0x5555FF, "green": 0x55FF55, "aqua": 0x55FFFF,
+    "red": 0xFF5555, "light_purple": 0xFF55FF, "yellow": 0xFFFF55,
+    "white": 0xFFFFFF,
 }
 
 
@@ -2017,7 +2123,9 @@ def material_for(item_id: str, drink_ids: set[str], block_ids: set[str]) -> str:
     if item_id in GRAPE_ITEMS:
         return "sweet_berries"
     if item_id == "shaker":
-        return "brush"
+        # A real BrushItem can brush suspicious blocks and take durability
+        # while StationService is driving the long use state.
+        return "paper"
     if item_id in block_ids:
         return "paper"
     return "paper"
@@ -2048,6 +2156,7 @@ def build_items(
     furniture_ids: set[str],
     furniture_placement: dict[str, dict[str, Any]],
     drink_ids: set[str],
+    effect_rows: list[list[Any]],
     tags: dict[str, list[str]],
     language_keys: set[str],
 ) -> dict[str, Any]:
@@ -2096,6 +2205,38 @@ def build_items(
                 potion_contents["custom_color"] = color
             components["minecraft:potion_contents"] = potion_contents
             config["data"]["custom_name"] = config["data"]["item_name"]
+            # Drink effects are implemented by the Paper service rather than
+            # potion_contents. Hide only that vanilla tooltip section so it
+            # cannot claim "No Effects" while retaining custom lore and names.
+            config["data"]["hide_tooltip"] = ["minecraft:potion_contents"]
+        if item_id == "shaker":
+            config["data"].setdefault("components", {}).update({
+                "minecraft:max_stack_size": 1,
+                "minecraft:consumable": {
+                    "consume_seconds": 3_600.0,
+                    "animation": "brush",
+                    "has_consume_particles": False,
+                },
+            })
+            # This is the vanilla item-model equivalent of the source
+            # forge:separate_transforms wrapper: inventory/item-frame views
+            # use the authored icon, while held/dropped/head views retain the
+            # complete cuboid model and its original display transforms.
+            config["model"] = {
+                "type": "minecraft:select",
+                "property": "display_context",
+                "cases": [{
+                    "when": ["gui", "fixed"],
+                    "model": {
+                        "type": "minecraft:model",
+                        "path": f"{NAMESPACE}:item/shaker",
+                    },
+                }],
+                "fallback": {
+                    "type": "minecraft:model",
+                    "path": f"{NAMESPACE}:item/shaker_3d",
+                },
+            }
         if item_id == "molotov":
             config["data"].setdefault("components", {})["minecraft:consumable"] = {
                 "consume_seconds": 3_600.0,
@@ -2115,6 +2256,13 @@ def build_items(
             lore_keys = [f"tooltip.{NAMESPACE}.{item_id}"]
         if lore_keys:
             config["data"]["lore"] = [f"<!i><gray><lang:{key}>" for key in lore_keys]
+        elif item_id in COCKTAILS:
+            # Creative-menu entries bypass ItemService, so fixed cocktails
+            # need a generated preview. Aged wines and signature cocktails are
+            # rebuilt at runtime because their effects live on the item stack.
+            cocktail_lore = fixed_cocktail_lore(item_id, effect_rows)
+            if cocktail_lore:
+                config["data"]["lore"] = cocktail_lore
         if item_id in GRAPE_ITEMS:
             config["data"]["food"] = {
                 "nutrition": 2,
@@ -2282,6 +2430,7 @@ def main() -> None:
         set(furniture_ids),
         furniture_placement,
         drink_ids,
+        effect_rows,
         tags,
         language_keys,
     )

@@ -1,5 +1,6 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
+import com.destroystokyo.paper.event.player.PlayerPickupExperienceEvent;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
@@ -14,6 +15,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Registry;
+import org.bukkit.SoundCategory;
 import org.bukkit.Tag;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -21,6 +23,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.command.CommandSender;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Entity;
@@ -29,23 +32,29 @@ import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
+import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -69,6 +78,9 @@ public final class EffectService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final Set<String> INSTANT_EFFECTS = Set.of(
             PREFIX + "shriek_attack", PREFIX + "upside_down", PREFIX + "zenith");
+    private static final Set<Material> VANILLA_CROP_BLOCKS = Set.of(
+            Material.WHEAT, Material.CARROTS, Material.POTATOES,
+            Material.BEETROOTS, Material.TORCHFLOWER_CROP);
     private static final EquipmentSlot[] ARMOR_SLOTS = {
             EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
     };
@@ -81,6 +93,8 @@ public final class EffectService implements Listener {
     private final NamespacedKey heelsModifierKey;
     private final NamespacedKey blockReachModifierKey;
     private final NamespacedKey entityReachModifierKey;
+    private final NamespacedKey splashPreparedKey;
+    private final NamespacedKey splashCustomEffectsKey;
     private final Map<UUID, Map<String, ActiveEffect>> active = new HashMap<>();
     private long elapsedTicks;
     private BukkitTask task;
@@ -94,10 +108,13 @@ public final class EffectService implements Listener {
         this.heelsModifierKey = new NamespacedKey(plugin, "effect_high_heels");
         this.blockReachModifierKey = new NamespacedKey(plugin, "effect_long_reach_block");
         this.entityReachModifierKey = new NamespacedKey(plugin, "effect_long_reach_entity");
+        this.splashPreparedKey = new NamespacedKey(plugin, "thrown_drink_prepared");
+        this.splashCustomEffectsKey = new NamespacedKey(plugin, "thrown_drink_custom_effects");
     }
 
     public void start() {
         for (Player player : Bukkit.getOnlinePlayers()) {
+            items.refreshInventory(player);
             load(player);
         }
         for (org.bukkit.World world : Bukkit.getWorlds()) {
@@ -131,13 +148,17 @@ public final class EffectService implements Listener {
     public void onConsume(PlayerItemConsumeEvent event) {
         ItemStack consumed = event.getItem();
         String itemId = items.id(consumed);
+        if (consumed.getType() == Material.MILK_BUCKET || catalog.pressingByBucket(itemId).isPresent()) {
+            clearEffects(event.getPlayer());
+            return;
+        }
         List<EffectSpec> specs = effectsFor(consumed);
         if (specs.isEmpty() && !catalog.hasDrinkEffects(itemId)
                 && !itemId.equals(PREFIX + "signature_cocktail")) {
             return;
         }
         for (EffectSpec spec : specs) {
-            if (ThreadLocalRandom.current().nextDouble() <= spec.probability()) {
+            if (EffectSemantics.rolls(ThreadLocalRandom.current().nextDouble(), spec.probability())) {
                 apply(event.getPlayer(), spec);
             }
         }
@@ -161,19 +182,70 @@ public final class EffectService implements Listener {
         });
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onPotionSplash(PotionSplashEvent event) {
-        ItemStack drink = event.getPotion().getItem();
-        if (effectsFor(drink).isEmpty()) {
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onPotionLaunch(ProjectileLaunchEvent event) {
+        if (!(event.getEntity() instanceof ThrownPotion potion)
+                || !isThrownDrink(potion.getItem())) {
             return;
         }
-        event.setCancelled(true);
-        splash(drink, event.getPotion().getLocation(), event.getPotion().getShooter() instanceof Entity entity
-                ? entity : null);
+        prepareThrownDrink(potion);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPotionSplash(PotionSplashEvent event) {
+        String encoded = event.getPotion().getPersistentDataContainer()
+                .get(splashCustomEffectsKey, PersistentDataType.STRING);
+        if (!event.getPotion().getPersistentDataContainer()
+                .has(splashPreparedKey, PersistentDataType.BYTE)) {
+            return;
+        }
+
+        // Do not cancel the real event. Vanilla applies the rolled Minecraft
+        // effects with its own direct-hit handling and instantaneous-effect
+        // intensity. Only the custom Forge effects need a Paper-side bridge.
+        List<EffectSpec> customEffects = decodeSplashEffects(encoded);
+        for (LivingEntity target : event.getAffectedEntities()) {
+            if (target.isDead()) {
+                continue;
+            }
+            double intensity = event.getIntensity(target);
+            for (EffectSpec spec : customEffects) {
+                if (INSTANT_EFFECTS.contains(spec.effect())) {
+                    // All three archived custom instantaneous effects ignore
+                    // the health/intensity argument in Forge.
+                    apply(target, spec);
+                    continue;
+                }
+                int duration = SplashSemantics.scaledDuration(spec.durationTicks(), intensity);
+                if (duration > 0) {
+                    apply(target, new EffectSpec(spec.effect(), duration, spec.amplifier(), 1.0));
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
+        detectEffectClear(event.getPlayer(), event.getMessage());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onServerCommand(ServerCommandEvent event) {
+        detectEffectClear(event.getSender(), event.getCommand());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPotionEffectsCleared(EntityPotionEffectEvent event) {
+        if (event.getAction() == EntityPotionEffectEvent.Action.CLEARED
+                && (event.getCause() == EntityPotionEffectEvent.Cause.COMMAND
+                || event.getCause() == EntityPotionEffectEvent.Cause.MILK)) {
+            clearEffects(event.getEntity());
+        }
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
+        items.refreshInventory(event.getPlayer());
         load(event.getPlayer());
     }
 
@@ -206,15 +278,14 @@ public final class EffectService implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDeath(EntityDeathEvent event) {
         LivingEntity target = event.getEntity();
-        LivingEntity killer = target.getLastDamageCause() instanceof EntityDamageByEntityEvent damage
-                ? attackingLiving(damage.getDamager()) : null;
+        EntityDamageEvent lastDamage = target.getLastDamageCause();
+        LivingEntity killer = lastDamage == null ? null : attackingLiving(lastDamage);
         if (killer != null && !killer.equals(target) && has(killer, PREFIX + "bloody_mary")) {
             AttributeInstance targetHealth = target.getAttribute(Attribute.MAX_HEALTH);
-            AttributeInstance killerHealth = killer.getAttribute(Attribute.MAX_HEALTH);
-            if (targetHealth != null && killerHealth != null) {
+            if (targetHealth != null) {
                 double heal = Math.floor(targetHealth.getValue() / 3.0);
                 if (heal > 0) {
-                    killer.setHealth(Math.min(killerHealth.getValue(), killer.getHealth() + heal));
+                    killer.heal(heal);
                 }
             }
         }
@@ -223,7 +294,7 @@ public final class EffectService implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent event) {
-        LivingEntity attacker = attackingLiving(event.getDamager());
+        LivingEntity attacker = attackingLiving(event);
         if (attacker == null || !has(attacker, PREFIX + "tomb_raider")
                 || !(event.getEntity() instanceof LivingEntity target)
                 || !matchesEntityTag(target.getType(), PREFIX + "tomb_raider_disarmable")
@@ -243,7 +314,9 @@ public final class EffectService implements Listener {
             mainHand.setItemMeta(damageable);
         }
         equipment.setItemInMainHand(null);
-        target.getWorld().dropItemNaturally(target.getLocation(), mainHand).setPickupDelay(40);
+        org.bukkit.entity.Item dropped = target.getWorld().dropItem(target.getLocation(), mainHand);
+        dropped.setVelocity(new Vector());
+        dropped.setPickupDelay(40);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -260,33 +333,113 @@ public final class EffectService implements Listener {
         return value != null && value.remainingTicks() > 0;
     }
 
-    /** Applies a placed or launched drink as a splash potion around an impact point. */
-    public boolean splash(ItemStack drink, Location center, Entity owner) {
-        List<EffectSpec> specs = effectsFor(drink);
-        if (specs.isEmpty()) {
+    /**
+     * Launches the same zero-velocity ThrownPotion used by DrinkBlock in the
+     * archived Forge implementation. Gravity decides the delay and final
+     * splash point; ProjectileLaunchEvent prepares its rolled effect payload.
+     */
+    public boolean launchSplash(ItemStack drink, Location origin, Entity owner) {
+        if (!isThrownDrink(drink)) {
             return false;
         }
-        List<EffectSpec> rolled = specs.stream()
-                .filter(spec -> ThreadLocalRandom.current().nextDouble() <= spec.probability())
+        ItemStack payload = drink.clone();
+        payload.setAmount(1);
+        origin.getWorld().spawn(origin, ThrownPotion.class, potion -> {
+            potion.setItem(payload);
+            potion.setVelocity(new Vector());
+            if (owner instanceof ProjectileSource source) {
+                potion.setShooter(source);
+            }
+        });
+        return true;
+    }
+
+    /** @deprecated use {@link #launchSplash(ItemStack, Location, Entity)}. */
+    @Deprecated(forRemoval = false)
+    public boolean splash(ItemStack drink, Location center, Entity owner) {
+        return launchSplash(drink, center, owner);
+    }
+
+    private boolean isThrownDrink(ItemStack drink) {
+        String id = items.id(drink);
+        return catalog.hasDrinkEffects(id) && !catalog.isCocktail(id);
+    }
+
+    private void prepareThrownDrink(ThrownPotion potion) {
+        List<EffectSpec> rolled = effectsFor(potion.getItem()).stream()
+                .filter(spec -> EffectSemantics.rolls(
+                        ThreadLocalRandom.current().nextDouble(), spec.probability()))
+                .map(spec -> new EffectSpec(spec.effect(), spec.durationTicks(), spec.amplifier(), 1.0))
                 .toList();
-        for (Entity nearby : center.getWorld().getNearbyEntities(center, 4, 2, 4,
-                candidate -> candidate instanceof LivingEntity && !candidate.isDead())) {
-            LivingEntity target = (LivingEntity) nearby;
-            double distanceSquared = target.getLocation().distanceSquared(center);
-            if (distanceSquared >= 16.0) {
+        List<EffectSpec> customEffects = new ArrayList<>();
+        ItemStack payload = potion.getItem().clone();
+        payload.setAmount(1);
+        if (payload.getItemMeta() instanceof PotionMeta potionMeta) {
+            // The deployable custom item uses water only as a neutral tooltip
+            // base. Forge's DrinkBlockItem was not a water potion, so remove
+            // that base before putting it into a projectile entity.
+            potionMeta.setBasePotionType(null);
+            potionMeta.clearCustomEffects();
+            boolean hasVanillaEffect = false;
+            for (EffectSpec spec : rolled) {
+                NamespacedKey key = NamespacedKey.fromString(spec.effect());
+                PotionEffectType type = key == null ? null : Registry.EFFECT.get(key);
+                if (type == null) {
+                    customEffects.add(spec);
+                    continue;
+                }
+                int duration = type.isInstant() ? 1 : Math.max(1, spec.durationTicks());
+                potionMeta.addCustomEffect(new PotionEffect(
+                        type, duration, spec.amplifier(), false, true, true), true);
+                hasVanillaEffect = true;
+            }
+
+            // A harmless one-tick effect forces Minecraft to create the real
+            // PotionSplashEvent for a payload containing only custom effects.
+            // Vanilla's splash loop discards non-instant effects <= 20 ticks.
+            if (!customEffects.isEmpty() && !hasVanillaEffect) {
+                PotionEffectType marker = Registry.EFFECT.get(NamespacedKey.minecraft("luck"));
+                if (marker != null) {
+                    potionMeta.addCustomEffect(
+                            new PotionEffect(marker, 1, 0, false, false, false), true);
+                }
+            }
+            payload.setItemMeta(potionMeta);
+        }
+        potion.setItem(payload);
+        potion.getPersistentDataContainer().set(splashPreparedKey, PersistentDataType.BYTE, (byte) 1);
+        if (!customEffects.isEmpty()) {
+            potion.getPersistentDataContainer().set(splashCustomEffectsKey,
+                    PersistentDataType.STRING, encodeSplashEffects(customEffects));
+        }
+    }
+
+    private static String encodeSplashEffects(List<EffectSpec> effects) {
+        return effects.stream()
+                .map(spec -> spec.effect() + "," + spec.durationTicks() + "," + spec.amplifier())
+                .reduce((left, right) -> left + ";" + right)
+                .orElse("");
+    }
+
+    private static List<EffectSpec> decodeSplashEffects(String encoded) {
+        if (encoded == null || encoded.isBlank()) {
+            return List.of();
+        }
+        List<EffectSpec> effects = new ArrayList<>();
+        for (String entry : encoded.split(";")) {
+            String[] fields = entry.split(",", 3);
+            if (fields.length != 3) {
                 continue;
             }
-            double intensity = 1.0 - Math.sqrt(distanceSquared) / 4.0;
-            for (EffectSpec spec : rolled) {
-                int duration = spec.durationTicks() == 0 ? 0
-                        : Math.max(1, (int) Math.round(spec.durationTicks() * intensity));
-                apply(target, new EffectSpec(spec.effect(), duration, spec.amplifier(), 1.0));
+            try {
+                effects.add(new EffectSpec(fields[0], Integer.parseInt(fields[1]),
+                        Integer.parseInt(fields[2]), 1.0));
+            } catch (NumberFormatException ignored) {
+                // A malformed or externally edited projectile payload should
+                // break harmlessly rather than aborting the splash event.
             }
         }
-        center.getWorld().spawnParticle(Particle.ENTITY_EFFECT, center, 45,
-                0.6, 0.35, 0.6, 0.08);
-        center.getWorld().playSound(center, "minecraft:entity.splash_potion.break", 1.0F, 1.0F);
-        return true;
+        return List.copyOf(effects);
     }
 
     private List<EffectSpec> effectsFor(ItemStack drink) {
@@ -311,9 +464,12 @@ public final class EffectService implements Listener {
         Map<String, ActiveEffect> effects = active.computeIfAbsent(
                 target.getUniqueId(), ignored -> new LinkedHashMap<>());
         ActiveEffect previous = effects.get(spec.effect());
-        int duration = Math.max(spec.durationTicks(), previous == null ? 0 : previous.remainingTicks());
-        effects.put(spec.effect(), new ActiveEffect(spec.effect(), duration,
-                Math.max(spec.amplifier(), previous == null ? 0 : previous.amplifier())));
+        EffectSemantics.EffectState merged = EffectSemantics.mergeEffect(
+                previous == null ? null : previous.state(), spec.durationTicks(), spec.amplifier());
+        if (merged == null) {
+            return;
+        }
+        effects.put(spec.effect(), new ActiveEffect(spec.effect(), merged));
         save(target);
         reconcileAttributes(target, effects);
     }
@@ -341,16 +497,19 @@ public final class EffectService implements Listener {
                     changed = true;
                     continue;
                 }
-                int remaining = effect.remainingTicks() - (int) period;
-                if (remaining <= 0) {
-                    if (effect.effect().equals(PREFIX + "ardent_heat")) {
-                        applyHunger(living, 600);
-                    }
+                boolean visibleExpired = effect.remainingTicks() <= period;
+                EffectSemantics.EffectState next = EffectSemantics.advanceEffect(
+                        effect.state(), (int) period);
+                if (visibleExpired && living instanceof Player
+                        && effect.effect().equals(PREFIX + "ardent_heat")) {
+                    applyHunger(living, 600);
+                }
+                if (next == null) {
                     effects.remove(effect.effect());
                     changed = true;
                 } else {
-                    effects.put(effect.effect(), new ActiveEffect(
-                            effect.effect(), remaining, effect.amplifier()));
+                    effects.put(effect.effect(), new ActiveEffect(effect.effect(), next));
+                    changed |= visibleExpired;
                 }
             }
             reconcileAttributes(living, effects);
@@ -430,10 +589,19 @@ public final class EffectService implements Listener {
                 continue;
             }
             Vector delta = player.getLocation().add(0, 0.5, 0).toVector().subtract(orb.getLocation().toVector());
-            double distance = Math.max(0.01, delta.length());
+            double distance = Math.max(0.01, player.getLocation().distance(orb.getLocation()));
             if (distance < 1.5) {
-                player.giveExp(orb.getExperience(), true);
-                orb.remove();
+                PlayerPickupExperienceEvent pickup = new PlayerPickupExperienceEvent(player, orb);
+                Bukkit.getPluginManager().callEvent(pickup);
+                if (!pickup.isCancelled()) {
+                    player.giveExp(orb.getExperience(), true);
+                    int remainingCount = EffectSemantics.remainingOrbCountAfterPickup(orb.getCount());
+                    if (remainingCount == 0) {
+                        orb.remove();
+                    } else {
+                        orb.setCount(remainingCount);
+                    }
+                }
                 player.setExpCooldown(0);
                 continue;
             }
@@ -457,7 +625,7 @@ public final class EffectService implements Listener {
     }
 
     private boolean ardentHeat(Player player) {
-        if (player.getFoodLevel() <= 0 && player.getSaturation() <= 0.01F) {
+        if (EffectSemantics.ardentHeatExhausted(player.getFoodLevel(), player.getSaturation())) {
             return false;
         }
         if (!player.isSprinting()) {
@@ -471,7 +639,7 @@ public final class EffectService implements Listener {
             for (int lateral = -1; lateral <= 1; lateral++) {
                 Block block = origin.getRelative(alongZ ? lateral : 0, y, alongZ ? 0 : lateral);
                 if (matchesBlockTag(block, PREFIX + "ardent_heat_breakable")) {
-                    block.breakNaturally(player.getInventory().getItemInMainHand(), true, true);
+                    block.breakNaturally(true, true);
                     broken++;
                 }
             }
@@ -507,10 +675,11 @@ public final class EffectService implements Listener {
     }
 
     private boolean isStealthPlant(Block block) {
-        if (block.getBlockData() instanceof Ageable ageable && ageable.getAge() < ageable.getMaximumAge()) {
-            return false;
-        }
-        return matchesBlockTag(block, PREFIX + "grass_stealth_plants");
+        boolean vanillaCrop = VANILLA_CROP_BLOCKS.contains(block.getType());
+        boolean mature = block.getBlockData() instanceof Ageable ageable
+                && ageable.getAge() == ageable.getMaximumAge();
+        return EffectSemantics.isGrassStealthPlant(vanillaCrop, mature,
+                matchesBlockTag(block, PREFIX + "grass_stealth_plants"));
     }
 
     private boolean matchesBlockTag(Block block, String tagId) {
@@ -555,6 +724,10 @@ public final class EffectService implements Listener {
     private void applyInstant(LivingEntity user, String effect) {
         switch (effect) {
             case PREFIX + "upside_down" -> {
+                if (user instanceof Mob self && !self.isDead()) {
+                    self.customName(Component.text("Grumm"));
+                    self.setCustomNameVisible(false);
+                }
                 for (Entity entity : user.getNearbyEntities(16, 16, 16)) {
                     if (entity instanceof Mob mob && !mob.isDead()) {
                         mob.customName(Component.text("Grumm"));
@@ -564,14 +737,17 @@ public final class EffectService implements Listener {
             }
             case PREFIX + "zenith" -> {
                 Location current = user.getLocation();
-                int surface = current.getWorld().getHighestBlockYAt(current, HeightMap.MOTION_BLOCKING);
+                int surface = EffectSemantics.surfaceY(
+                        current.getWorld().getHighestBlockYAt(current, HeightMap.MOTION_BLOCKING));
                 if (current.getBlockY() < surface) {
-                    current.getWorld().playSound(current, "minecraft:item.chorus_fruit.teleport", 1.0F, 1.0F);
+                    current.getWorld().playSound(current, "minecraft:item.chorus_fruit.teleport",
+                            SoundCategory.PLAYERS, 1.0F, 1.0F);
                     Location destination = new Location(current.getWorld(), current.getBlockX() + 0.5,
                             surface, current.getBlockZ() + 0.5, current.getYaw(), current.getPitch());
                     user.teleport(destination);
                     user.setFallDistance(0F);
-                    destination.getWorld().playSound(destination, "minecraft:item.chorus_fruit.teleport", 1.0F, 1.0F);
+                    destination.getWorld().playSound(destination, "minecraft:item.chorus_fruit.teleport",
+                            SoundCategory.PLAYERS, 1.0F, 1.0F);
                     applyHunger(user, 600);
                 }
             }
@@ -612,7 +788,8 @@ public final class EffectService implements Listener {
             target.damage(damage, damageSource);
             target.setVelocity(target.getVelocity().add(horizontal.clone().multiply(0.63)).add(new Vector(0, 0.28, 0)));
         }
-        user.getWorld().playSound(user.getLocation(), "minecraft:entity.warden.sonic_boom", 1.0F, 1.0F);
+        user.getWorld().playSound(user.getLocation(), "minecraft:entity.warden.sonic_boom",
+                SoundCategory.PLAYERS, 1.0F, 1.0F);
         for (int distance = 2; distance <= 32; distance += 2) {
             user.getWorld().spawnParticle(Particle.SONIC_BOOM,
                     eye.clone().add(look.clone().multiply(distance)), 1, 0, 0, 0, 0);
@@ -620,11 +797,13 @@ public final class EffectService implements Listener {
     }
 
     private void reconcileAttributes(LivingEntity living, Map<String, ActiveEffect> effects) {
+        ActiveEffect heels = effects.get(PREFIX + "high_heels");
         reconcileModifier(living, Attribute.STEP_HEIGHT, heelsModifierKey,
-                effects.containsKey(PREFIX + "high_heels") ? 0.5 : null);
-        boolean longReach = effects.containsKey(PREFIX + "long_reach");
-        reconcileModifier(living, Attribute.BLOCK_INTERACTION_RANGE, blockReachModifierKey, longReach ? 3.0 : null);
-        reconcileModifier(living, Attribute.ENTITY_INTERACTION_RANGE, entityReachModifierKey, longReach ? 3.0 : null);
+                heels == null ? null : 0.5 * (heels.amplifier() + 1));
+        ActiveEffect longReach = effects.get(PREFIX + "long_reach");
+        Double reachAmount = longReach == null ? null : 3.0 * (longReach.amplifier() + 1);
+        reconcileModifier(living, Attribute.BLOCK_INTERACTION_RANGE, blockReachModifierKey, reachAmount);
+        reconcileModifier(living, Attribute.ENTITY_INTERACTION_RANGE, entityReachModifierKey, reachAmount);
     }
 
     private static void reconcileModifier(LivingEntity living, Attribute attribute, NamespacedKey key, Double amount) {
@@ -637,7 +816,10 @@ public final class EffectService implements Listener {
             if (existing != null) {
                 instance.removeModifier(existing);
             }
-        } else if (existing == null) {
+        } else if (existing == null || Double.compare(existing.getAmount(), amount) != 0) {
+            if (existing != null) {
+                instance.removeModifier(existing);
+            }
             instance.addTransientModifier(new AttributeModifier(key, amount, AttributeModifier.Operation.ADD_NUMBER));
         }
     }
@@ -648,15 +830,9 @@ public final class EffectService implements Listener {
         reconcileModifier(living, Attribute.ENTITY_INTERACTION_RANGE, entityReachModifierKey, null);
     }
 
-    private static LivingEntity attackingLiving(Entity damager) {
-        if (damager instanceof LivingEntity living) {
-            return living;
-        }
-        if (damager instanceof Projectile projectile) {
-            ProjectileSource source = projectile.getShooter();
-            return source instanceof LivingEntity living ? living : null;
-        }
-        return null;
+    private static LivingEntity attackingLiving(EntityDamageEvent damage) {
+        Entity source = damage.getDamageSource().getCausingEntity();
+        return source instanceof LivingEntity living ? living : null;
     }
 
     private static void applyHunger(LivingEntity living, int duration) {
@@ -664,6 +840,41 @@ public final class EffectService implements Listener {
         if (hunger != null) {
             living.addPotionEffect(new PotionEffect(hunger, duration, 0, false, true, true));
         }
+    }
+
+    private void detectEffectClear(CommandSender sender, String rawCommand) {
+        Optional<EffectSemantics.ClearCommand> parsed = EffectSemantics.parseClearCommand(rawCommand);
+        if (parsed.isEmpty() || !sender.hasPermission("minecraft.command.effect")) {
+            return;
+        }
+        List<UUID> targets = new ArrayList<>();
+        EffectSemantics.ClearCommand command = parsed.get();
+        if (command.targetsSender()) {
+            if (sender instanceof LivingEntity living) {
+                targets.add(living.getUniqueId());
+            }
+        } else {
+            try {
+                for (Entity entity : Bukkit.selectEntities(sender, command.target())) {
+                    if (entity instanceof LivingEntity living) {
+                        targets.add(living.getUniqueId());
+                    }
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Invalid selectors are rejected by the vanilla command too.
+            }
+        }
+        if (targets.isEmpty()) {
+            return;
+        }
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            for (UUID target : targets) {
+                Entity entity = Bukkit.getEntity(target);
+                if (entity instanceof LivingEntity living) {
+                    clearEffects(living);
+                }
+            }
+        });
     }
 
     private void load(LivingEntity living) {
@@ -682,13 +893,16 @@ public final class EffectService implements Listener {
         if (encoded == null || encoded.isBlank()) {
             return result;
         }
-        boolean legacyEpochMillis = !encoded.startsWith("v2|");
-        if (!legacyEpochMillis) {
+        boolean versionThree = encoded.startsWith("v3|");
+        boolean versionTwo = encoded.startsWith("v2|");
+        boolean legacyEpochMillis = !versionThree && !versionTwo;
+        if (versionThree || versionTwo) {
             encoded = encoded.substring(3);
         }
         for (String entry : encoded.split(";")) {
             String[] fields = entry.split(",", -1);
-            if (fields.length != 3) {
+            if ((!versionThree && fields.length != 3)
+                    || (versionThree && (fields.length < 3 || fields.length % 2 == 0))) {
                 continue;
             }
             try {
@@ -697,8 +911,16 @@ public final class EffectService implements Listener {
                 // Convert it once without allowing offline time to advance thereafter.
                 int remaining = EffectSemantics.decodeRemainingTicks(
                         storedTime, System.currentTimeMillis(), legacyEpochMillis);
-                ActiveEffect effect = new ActiveEffect(fields[0], remaining,
-                        Integer.parseInt(fields[2]));
+                EffectSemantics.EffectState hidden = null;
+                if (versionThree) {
+                    for (int index = fields.length - 2; index >= 3; index -= 2) {
+                        hidden = new EffectSemantics.EffectState(
+                                Integer.parseInt(fields[index]), Integer.parseInt(fields[index + 1]), hidden);
+                    }
+                }
+                EffectSemantics.EffectState state = new EffectSemantics.EffectState(
+                        remaining, Integer.parseInt(fields[2]), hidden);
+                ActiveEffect effect = new ActiveEffect(fields[0], state);
                 if (effect.remainingTicks() > 0) {
                     result.put(effect.effect(), effect);
                 }
@@ -716,10 +938,21 @@ public final class EffectService implements Listener {
             return;
         }
         String encoded = effects.values().stream()
-                .map(effect -> effect.effect() + ',' + effect.remainingTicks() + ',' + effect.amplifier())
+                .map(this::encode)
                 .reduce((left, right) -> left + ';' + right)
                 .orElse("");
-        living.getPersistentDataContainer().set(activeKey, PersistentDataType.STRING, "v2|" + encoded);
+        living.getPersistentDataContainer().set(activeKey, PersistentDataType.STRING, "v3|" + encoded);
+    }
+
+    private String encode(ActiveEffect effect) {
+        StringBuilder encoded = new StringBuilder(effect.effect());
+        EffectSemantics.EffectState state = effect.state();
+        while (state != null) {
+            encoded.append(',').append(state.remainingTicks())
+                    .append(',').append(state.amplifier());
+            state = state.hidden();
+        }
+        return encoded.toString();
     }
 
     private void clearEffects(LivingEntity living) {
@@ -728,6 +961,13 @@ public final class EffectService implements Listener {
         removeAttributeModifiers(living);
     }
 
-    private record ActiveEffect(String effect, int remainingTicks, int amplifier) {
+    private record ActiveEffect(String effect, EffectSemantics.EffectState state) {
+        private int remainingTicks() {
+            return state.remainingTicks();
+        }
+
+        private int amplifier() {
+            return state.amplifier();
+        }
     }
 }

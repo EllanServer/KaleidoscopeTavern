@@ -199,6 +199,7 @@
   "tooltip.kaleidoscope_tavern.mona_lisa_painting": "Mona Lisa",
   "tooltip.kaleidoscope_tavern.mondrian_painting": "Mondrian",
   "tooltip.kaleidoscope_tavern.bottle_block.brew_level": "Brew Level: %s",
+  "tooltip.kaleidoscope_tavern.drink_effect.chance": "Chance %s",
   "tooltip.kaleidoscope_tavern.grape_bucket": "Use to brew light purple drinks",
   "tooltip.kaleidoscope_tavern.ice_grape_bucket": "Use to brew blue drinks",
   "tooltip.kaleidoscope_tavern.gold_grape_bucket": "Use to brew golden drinks",

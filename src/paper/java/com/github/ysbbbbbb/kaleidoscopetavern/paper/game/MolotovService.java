@@ -10,17 +10,20 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
+import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Snowball;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
@@ -46,8 +49,11 @@ public final class MolotovService implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onLaunch(ProjectileLaunchEvent event) {
-        if (event.getEntity() instanceof ThrownPotion potion && MOLOTOV.equals(items.id(potion.getItem()))) {
-            mark(potion);
+        if ((event.getEntity() instanceof Snowball snowball
+                && MOLOTOV.equals(items.id(snowball.getItem())))
+                || (event.getEntity() instanceof ThrownPotion potion
+                && MOLOTOV.equals(items.id(potion.getItem())))) {
+            mark(event.getEntity());
         }
     }
 
@@ -66,18 +72,18 @@ public final class MolotovService implements Listener {
                         random.nextGaussian() * 0.0075,
                         random.nextGaussian() * 0.0075,
                         random.nextGaussian() * 0.0075)).normalize().multiply(0.8);
-        ThrownPotion projectile = eye.getWorld().spawn(eye.clone().subtract(0, 0.1, 0),
-                ThrownPotion.class, potion -> {
-                    potion.setShooter(player);
-                    potion.setItem(projectileItem);
-                    potion.setVelocity(direction);
+        Snowball projectile = eye.getWorld().spawn(eye.clone().subtract(0, 0.1, 0),
+                Snowball.class, snowball -> {
+                    snowball.setShooter(player);
+                    snowball.setItem(projectileItem);
+                    snowball.setVelocity(direction);
                 });
         mark(projectile);
 
         if (player.getGameMode() != GameMode.CREATIVE) {
             consumeRaisedMolotov(player, event.getItem());
         }
-        eye.getWorld().playSound(eye, "minecraft:entity.snowball.throw", 0.5F,
+        eye.getWorld().playSound(eye, "minecraft:entity.snowball.throw", SoundCategory.PLAYERS, 0.5F,
                 0.4F / (random.nextFloat() * 0.4F + 0.8F));
     }
 
@@ -92,26 +98,49 @@ public final class MolotovService implements Listener {
     public void onProjectileHit(ProjectileHitEvent event) {
         Projectile projectile = event.getEntity();
         Location impact = projectile.getLocation();
+
+        // MolotovBlock reacts only when that exact block was hit. It first
+        // creates a zero-velocity ThrownMolotovEntity at block centre, then
+        // BottleBlock independently decides whether mayInteract permits the
+        // placed bottle itself to be removed without drops.
+        BukkitFurniture placed = BottleFurnitureService.directlyHitFurniture(event);
+        if (placed != null && MOLOTOV.equals(placed.id().toString())) {
+            Location origin = placed.location().getBlock().getLocation().add(0.5, 0.5, 0.5);
+            launchFallingMolotov(origin);
+            if (BottleFurnitureService.mayBreak(projectile, placed)) {
+                CraftEngineFurniture.remove(placed, false, false);
+                origin.getWorld().playSound(origin, "minecraft:block.glass.break",
+                        SoundCategory.BLOCKS, 1F, 1F);
+                origin.getWorld().spawnParticle(Particle.BLOCK, origin, 24,
+                        0.25, 0.25, 0.25, 0.08, Material.GLASS.createBlockData());
+            }
+        }
+
         if (isMolotov(projectile)) {
             spreadFire(impact, projectile);
             projectile.remove();
-            return;
         }
+    }
 
-        // A placed Molotov is furniture, not a block. Any projectile hitting its
-        // immediate position breaks the bottle and triggers the same fire burst.
-        for (Entity nearby : impact.getWorld().getNearbyEntities(impact, 0.8, 0.8, 0.8)) {
-            if (!CraftEngineFurniture.isFurniture(nearby)) {
-                continue;
-            }
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(nearby);
-            if (furniture != null && MOLOTOV.equals(furniture.id().toString())) {
-                Location origin = furniture.location().clone();
-                CraftEngineFurniture.remove(furniture, false, true);
-                spreadFire(origin, projectile);
-                return;
-            }
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onProjectileDamage(EntityDamageByEntityEvent event) {
+        // Snowball is the closest vanilla carrier to the original generic
+        // ThrowableProjectile, but it has a Blaze-only damage special case.
+        // The archived Molotov never dealt direct projectile damage.
+        if (event.getDamager() instanceof Snowball snowball && isMolotov(snowball)) {
+            event.setCancelled(true);
         }
+    }
+
+    private void launchFallingMolotov(Location origin) {
+        items.build(MOLOTOV, null).ifPresent(payload -> {
+            payload.setAmount(1);
+            Snowball falling = origin.getWorld().spawn(origin, Snowball.class, snowball -> {
+                snowball.setItem(payload);
+                snowball.setVelocity(new org.bukkit.util.Vector());
+            });
+            mark(falling);
+        });
     }
 
     private void spreadFire(Location center, Entity source) {
@@ -148,8 +177,8 @@ public final class MolotovService implements Listener {
                 }
             }
         }
-        center.getWorld().playSound(center, "minecraft:item.firecharge.use", 2F, 1F);
-        center.getWorld().playSound(center, "minecraft:block.glass.break", 2F, 1F);
+        center.getWorld().playSound(center, "minecraft:item.firecharge.use", SoundCategory.BLOCKS, 2F, 1F);
+        center.getWorld().playSound(center, "minecraft:block.glass.break", SoundCategory.BLOCKS, 2F, 1F);
         center.getWorld().spawnParticle(Particle.FLAME, center.clone().add(0, 0.5, 0),
                 30, radius, 1, radius, 0.1);
         center.getWorld().spawnParticle(Particle.SMOKE, center.clone().add(0, 0.5, 0),
@@ -162,6 +191,7 @@ public final class MolotovService implements Listener {
 
     private boolean isMolotov(Projectile projectile) {
         return projectile.getPersistentDataContainer().has(projectileKey, PersistentDataType.BYTE)
+                || projectile instanceof Snowball snowball && MOLOTOV.equals(items.id(snowball.getItem()))
                 || projectile instanceof ThrownPotion potion && MOLOTOV.equals(items.id(potion.getItem()));
     }
 
