@@ -2,6 +2,7 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.momirealms.craftengine.bukkit.entity.data.DisplayData;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
@@ -203,7 +204,9 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
                 DisplayData.TextDisplayData.Scale.addEntityDataIfNotDefaultValue(
                         new Vector3f(visual.scale()), metadata);
                 DisplayData.TextDisplayData.Text.addEntityData(
-                        ComponentUtils.adventureToMinecraft(visual.text()), metadata);
+                        ComponentUtils.jsonToMinecraft(
+                                GsonComponentSerializer.gson().serialize(visual.text())),
+                        metadata);
                 DisplayData.TextDisplayData.LineWidth.addEntityDataIfNotDefaultValue(
                         Integer.MAX_VALUE, metadata);
                 DisplayData.TextDisplayData.BackgroundColor.addEntityDataIfNotDefaultValue(

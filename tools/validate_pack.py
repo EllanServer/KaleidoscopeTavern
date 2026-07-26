@@ -981,7 +981,8 @@ def validate() -> dict[str, int]:
     for required_token in (
             "implements FurnitureElement",
             "EntityTypesProxy.TEXT_DISPLAY",
-            "ComponentUtils.adventureToMinecraft",
+            "ComponentUtils.jsonToMinecraft",
+            "GsonComponentSerializer.gson().serialize",
             "DisplayData.TextDisplayData.Text.addEntityData",
             "DisplayData.TextDisplayData.LineWidth",
             "DisplayData.TextDisplayData.BackgroundColor",
