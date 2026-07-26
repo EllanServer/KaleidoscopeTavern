@@ -1362,20 +1362,39 @@ def validate() -> dict[str, int]:
     worldgen = json.loads((ROOT / "src/paper/pack/configuration/worldgen.json").read_text(
         encoding="utf-8-sig"))
     chain = worldgen["configured_features"][f"{NAMESPACE}:wild_grapevine_chain"]
+    layers = chain["config"]["layers"]
     if (chain["type"] != "minecraft:block_column"
             or chain["config"]["direction"] != "down"
-            or chain["config"]["layers"][0]["provider"]["state"]["Name"]
+            or layers[0]["height"] != {
+                "type": "minecraft:uniform", "min_inclusive": 0, "max_inclusive": 6}
+            or layers[0]["provider"]["state"]["Name"]
             != f"{NAMESPACE}:wild_grapevine_plant"
-            or chain["config"]["layers"][1]["provider"]["state"]["Name"]
+            or layers[1]["height"] != 1
+            or layers[1]["provider"]["state"]["Name"]
             != f"{NAMESPACE}:wild_grapevine"):
         raise AssertionError("Wild grapevine feature must hang body segments above a head")
-    placements = {entry["type"] for entry in
-                  worldgen["placed_features"][f"{NAMESPACE}:wild_grapevine"]["placement"]}
+    placed_feature = worldgen["placed_features"][f"{NAMESPACE}:wild_grapevine"]
+    placements = {entry["type"]: entry for entry in placed_feature["placement"]}
     for required in ("minecraft:rarity_filter", "minecraft:count", "minecraft:in_square",
                      "minecraft:heightmap", "minecraft:environment_scan",
                      "minecraft:block_predicate_filter"):
         if required not in placements:
             raise AssertionError(f"Wild grapevine placed feature is missing {required}")
+    environment_scan = placements["minecraft:environment_scan"]
+    target_condition = environment_scan.get("target_condition", {})
+    target_predicates = target_condition.get("predicates", [])
+    expected_air = {"type": "minecraft:matching_blocks", "blocks": "minecraft:air"}
+    expected_leaves = {
+        "type": "minecraft:matching_blocks",
+        "offset": [0, 1, 0],
+        "blocks": ["minecraft:oak_leaves", "minecraft:birch_leaves"],
+    }
+    if (environment_scan.get("direction_of_search") != "down"
+            or target_condition.get("type") != "minecraft:all_of"
+            or expected_air not in target_predicates
+            or expected_leaves not in target_predicates):
+        raise AssertionError(
+            "Wild grapevine worldgen must anchor the head/body chain directly below oak or birch leaves")
     if (ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game"
             / "WorldgenService.java").exists():
         raise AssertionError("WorldgenService must stay deleted; CE features own worldgen")
