@@ -125,9 +125,12 @@ public final class TapService {
         if (!tap.isValid() || running.containsKey(tap.uuid())) {
             return;
         }
-        TapPlan initial = resolve(tap, player);
+        UUID tapId = tap.uuid();
+        TapGeometry initialGeometry = geometry(tap);
+        TapPlan initial = resolve(tap, player, initialGeometry);
         boolean extracting = initial != null;
         int duration = extracting ? TapSemantics.TAKE_TICKS : TapSemantics.EMPTY_OPEN_TICKS;
+        Location dripOrigin = initialGeometry.tapBlock().getLocation().add(0.5, 0.25, 0.5);
         setOpen(tap, true);
         tap.location().getWorld().playSound(tap.location(), Sound.BLOCK_IRON_TRAPDOOR_OPEN,
                 SoundCategory.BLOCKS, 1F, 0.8F);
@@ -140,26 +143,26 @@ public final class TapService {
                 if (!tap.isValid()) {
                     // Chunk unloads mid-extraction: drop the running marker or
                     // the reloaded tap swallows its next click.
-                    running.remove(tap.uuid());
+                    running.remove(tapId);
                     cancel();
                     return;
                 }
-                if (!running.containsKey(tap.uuid())) {
+                if (!running.containsKey(tapId)) {
                     cancel();
                     return;
                 }
                 ticks++;
                 if (extracting && ticks <= TapSemantics.TAKE_PARTICLE_TICKS
                         || !extracting && TapSemantics.emitsEmptyCloud(ticks)) {
-                    spawnDrip(tap, extracting, extracting && initial.hot());
+                    spawnDrip(dripOrigin, extracting, extracting && initial.hot());
                 }
                 if (extracting && ticks <= TapSemantics.TAKE_PARTICLE_TICKS + DRIP_LIFETIME_TICKS) {
-                    spawnFallingDrip(tap, initial.hot());
+                    spawnFallingDrip(dripOrigin, initial.hot());
                 }
                 if (ticks < duration) {
                     return;
                 }
-                running.remove(tap.uuid());
+                running.remove(tapId);
                 cancel();
                 if (extracting) {
                     TapPlan current = resolve(tap, null);
@@ -171,14 +174,17 @@ public final class TapService {
             }
         };
         BukkitTask task = runnable.runTaskTimer(plugin, 1L, 1L);
-        running.put(tap.uuid(), task);
+        running.put(tapId, task);
     }
 
     /** TapDripParticle: each hanging drip lives for 18 ticks. */
     private static final int DRIP_LIFETIME_TICKS = 18;
 
     private TapPlan resolve(BukkitFurniture tap, Player feedback) {
-        TapGeometry geometry = geometry(tap);
+        return resolve(tap, feedback, geometry(tap));
+    }
+
+    private TapPlan resolve(BukkitFurniture tap, Player feedback, TapGeometry geometry) {
         Block source = geometry.source();
         Block destination = geometry.destination();
         // Every archived ITapBehavior except BarrelBlockEntity matched an
@@ -460,9 +466,8 @@ public final class TapService {
         tap.setVariant(open ? base + "_open" : base, true);
     }
 
-    private static void spawnDrip(BukkitFurniture tap, boolean extracting, boolean hot) {
+    private static void spawnDrip(Location location, boolean extracting, boolean hot) {
         // TapBlockEntity emits at the tap block's horizontal centre, +0.25 up.
-        Location location = tapBlock(tap).getLocation().add(0.5, 0.25, 0.5);
         if (extracting) {
             Particle particle = hot ? Particle.DRIPPING_LAVA : Particle.DRIPPING_WATER;
             location.getWorld().spawnParticle(particle, location, 1, 0, 0, 0, 0);
@@ -475,8 +480,7 @@ public final class TapService {
      * TapDripParticle spawns a falling dripstone particle on every tick of a
      * hanging drip's 18-tick life, forming the visible stream below the tap.
      */
-    private static void spawnFallingDrip(BukkitFurniture tap, boolean hot) {
-        Location location = tapBlock(tap).getLocation().add(0.5, 0.25, 0.5);
+    private static void spawnFallingDrip(Location location, boolean hot) {
         Particle particle = hot
                 ? Particle.FALLING_DRIPSTONE_LAVA : Particle.FALLING_DRIPSTONE_WATER;
         location.getWorld().spawnParticle(particle, location, 1, 0, 0, 0, 0);
@@ -493,17 +497,6 @@ public final class TapService {
         Block source = origin.clone().subtract(outward.clone().multiply(0.05)).getBlock();
         Block tapBlock = origin.clone().add(outward.clone().multiply(0.05)).getBlock();
         return new TapGeometry(source, tapBlock, tapBlock.getRelative(BlockFace.DOWN));
-    }
-
-    private static Block tapBlock(BukkitFurniture tap) {
-        Location origin = tap.location().clone();
-        Vector outward = origin.getDirection().setY(0);
-        if (outward.lengthSquared() < 0.001) {
-            outward = new Vector(0, 0, 1);
-        } else {
-            outward.normalize();
-        }
-        return origin.add(outward.multiply(0.05)).getBlock();
     }
 
     private Optional<BottleCarrier> findPlacedBottleCarrier(Block block) {

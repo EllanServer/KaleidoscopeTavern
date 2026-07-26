@@ -1372,7 +1372,12 @@ def validate() -> dict[str, int]:
     for required_token in (
             "LifecycleFurnitureBehavior.Channel.TAP_BOTTLE, block",
             "LifecycleFurnitureBehavior.Channel.BARREL,",
-            "center, 3.25, 3.25"):
+            "center, 3.25, 3.25",
+            "TapGeometry initialGeometry = geometry(tap)",
+            "Location dripOrigin = initialGeometry.tapBlock().getLocation()",
+            "spawnDrip(dripOrigin, extracting",
+            "spawnFallingDrip(dripOrigin, initial.hot())",
+            "private TapPlan resolve(BukkitFurniture tap, Player feedback, TapGeometry geometry)"):
         if required_token not in tap_source:
             raise AssertionError(
                 "TapService must use CE lifecycle indexes for placed bottles and barrels; "
@@ -1380,6 +1385,14 @@ def validate() -> dict[str, int]:
     if "findFurnitureAtBlock" in tap_source:
         raise AssertionError(
             "TapService must not rediscover indexed placed bottles through Bukkit entities")
+    for stale_token in (
+            "private static Block tapBlock(",
+            "spawnDrip(BukkitFurniture tap",
+            "spawnFallingDrip(BukkitFurniture tap"):
+        if stale_token in tap_source:
+            raise AssertionError(
+                "An active tap must reuse its fixed drip geometry instead of rebuilding it per tick; "
+                f"found {stale_token}")
     for required_token in (
             "RedstoneFurnitureBehavior.bindInteraction(",
             "RedstoneFurnitureBehavior.unbindInteraction(",
