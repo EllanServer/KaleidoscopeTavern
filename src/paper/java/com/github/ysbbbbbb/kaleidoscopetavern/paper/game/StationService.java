@@ -50,6 +50,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
+import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -105,6 +106,7 @@ public final class StationService implements Listener {
     private final Map<UUID, Boolean> recentLandings = new HashMap<>();
     private final Map<UUID, PortableShakerUse> portableShakers = new HashMap<>();
     private final Set<UUID> loadedIncense = new HashSet<>();
+    private final Map<UUID, Boolean> incensePowered = new HashMap<>();
     private final Set<UUID> loadedBarrels = new HashSet<>();
     private final Set<UUID> pendingVanillaBucketEmpty = new HashSet<>();
     private BukkitTask incenseTask;
@@ -158,6 +160,7 @@ public final class StationService implements Listener {
         recentLandings.clear();
         portableShakers.clear();
         loadedIncense.clear();
+        incensePowered.clear();
         loadedBarrels.clear();
         pendingVanillaBucketEmpty.clear();
     }
@@ -255,7 +258,10 @@ public final class StationService implements Listener {
                     Entity entity = furniture.bukkitEntity();
                     if (entity != null) {
                         UUID furnitureId = entity.getUniqueId();
-                        deferFurnitureBreak(event, () -> loadedIncense.remove(furnitureId));
+                        deferFurnitureBreak(event, () -> {
+                            loadedIncense.remove(furnitureId);
+                            incensePowered.remove(furnitureId);
+                        });
                     }
                 }
             }
@@ -317,9 +323,11 @@ public final class StationService implements Listener {
                 || !(event.getEntity() instanceof LivingEntity living)) {
             return;
         }
-        float fallDistance = Math.max(living.getFallDistance(),
-                falling.getOrDefault(living.getUniqueId(), 0F));
-        falling.remove(living.getUniqueId());
+        UUID id = living.getUniqueId();
+        Float tracked = falling.remove(id);
+        float fallDistance = tracked == null
+                ? living.getFallDistance()
+                : Math.max(living.getFallDistance(), tracked);
         if (fallDistance >= 0.5F && handlePressLanding(living, fallDistance)) {
             event.setCancelled(true);
         }
@@ -540,6 +548,17 @@ public final class StationService implements Listener {
         }
     }
 
+    @EventHandler
+    public void onEntitiesUnload(EntitiesUnloadEvent event) {
+        for (Entity entity : event.getEntities()) {
+            UUID id = entity.getUniqueId();
+            if (loadedIncense.remove(id)) {
+                incensePowered.remove(id);
+            }
+            loadedBarrels.remove(id);
+        }
+    }
+
     private boolean interactPress(Player player, BukkitFurniture furniture, InteractionHand usedHand) {
         FurnitureState state = new FurnitureState(plugin, furniture);
         ItemStack hand = usedHand == InteractionHand.MAIN_HAND
@@ -730,15 +749,20 @@ public final class StationService implements Listener {
     }
 
     private void trackPressLanding(LivingEntity living) {
-        UUID id = living.getUniqueId();
-        if (living.getFallDistance() > 0) {
-            falling.merge(id, living.getFallDistance(), Math::max);
+        float currentFallDistance = living.getFallDistance();
+        if (currentFallDistance > 0) {
+            falling.merge(living.getUniqueId(), currentFallDistance, Math::max);
             return;
         }
-        float fallDistance = falling.getOrDefault(id, 0F);
-        falling.remove(id);
-        if (fallDistance >= 0.5F) {
-            handlePressLanding(living, fallDistance);
+        // Nearly every movement event is an entity walking on the ground. If
+        // nobody is being tracked, avoid UUID creation and hash lookups for
+        // that overwhelmingly common path.
+        if (falling.isEmpty()) {
+            return;
+        }
+        Float trackedFallDistance = falling.remove(living.getUniqueId());
+        if (trackedFallDistance != null && trackedFallDistance >= 0.5F) {
+            handlePressLanding(living, trackedFallDistance);
         }
     }
 
@@ -1352,6 +1376,7 @@ public final class StationService implements Listener {
         }
         if (invalid != null) {
             loadedIncense.removeAll(invalid);
+            invalid.forEach(incensePowered::remove);
         }
     }
 
@@ -1368,17 +1393,24 @@ public final class StationService implements Listener {
                 invalid = addInvalid(invalid, uuid);
                 continue;
             }
-            initializeIncense(furniture);
             boolean powered = isIncensePowered(furniture);
-            FurnitureState state = new FurnitureState(plugin, furniture);
-            boolean wasPowered = state.bool("incense_powered");
+            Boolean cached = incensePowered.get(uuid);
+            boolean wasPowered;
+            if (cached == null) {
+                wasPowered = new FurnitureState(plugin, furniture).bool("incense_powered");
+                incensePowered.put(uuid, wasPowered);
+            } else {
+                wasPowered = cached;
+            }
             if (powered != wasPowered) {
-                state.bool("incense_powered", powered);
+                incensePowered.put(uuid, powered);
+                new FurnitureState(plugin, furniture).bool("incense_powered", powered);
                 setIncenseActive(furniture, powered, true);
             }
         }
         if (invalid != null) {
             loadedIncense.removeAll(invalid);
+            invalid.forEach(incensePowered::remove);
         }
     }
 
@@ -1403,12 +1435,19 @@ public final class StationService implements Listener {
             return;
         }
         FurnitureState state = new FurnitureState(plugin, furniture);
+        Entity entity = furniture.bukkitEntity();
         if (state.bool("incense_initialized")) {
+            if (entity != null) {
+                incensePowered.put(entity.getUniqueId(), state.bool("incense_powered"));
+            }
             return;
         }
         boolean powered = isIncensePowered(furniture);
         state.bool("incense_initialized", true);
         state.bool("incense_powered", powered);
+        if (entity != null) {
+            incensePowered.put(entity.getUniqueId(), powered);
+        }
         setIncenseActive(furniture, powered, false);
     }
 

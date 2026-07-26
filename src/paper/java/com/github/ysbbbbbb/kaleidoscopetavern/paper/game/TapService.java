@@ -59,7 +59,6 @@ public final class TapService implements Listener {
     private final Set<UUID> loadedTaps = new HashSet<>();
     private final Map<UUID, BukkitTask> running = new HashMap<>();
     private final Map<UUID, Boolean> tapTriggered = new HashMap<>();
-    private boolean redstonePollParity;
     private BukkitTask redstoneTask;
 
     public TapService(JavaPlugin plugin, StationService stations, ItemService items) {
@@ -70,7 +69,9 @@ public final class TapService implements Listener {
 
     public void start() {
         Bukkit.getScheduler().runTask(plugin, this::bootstrapTaps);
-        redstoneTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pollRedstone, 1L, 1L);
+        // This is the same 1,3,5... tick phase previously produced by an
+        // every-tick task plus a parity guard, without scheduling empty calls.
+        redstoneTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pollRedstone, 1L, 2L);
     }
 
     public void stop() {
@@ -494,12 +495,6 @@ public final class TapService implements Listener {
     }
 
     private void pollRedstone() {
-        // Redstone gates are never shorter than two game ticks, so polling on
-        // alternate ticks halves the idle cost without observable latency.
-        redstonePollParity ^= true;
-        if (!redstonePollParity) {
-            return;
-        }
         List<UUID> invalid = null;
         for (UUID id : loadedTaps) {
             Entity entity = Bukkit.getEntity(id);
