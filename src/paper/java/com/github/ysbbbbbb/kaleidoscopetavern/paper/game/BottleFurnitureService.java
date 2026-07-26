@@ -222,11 +222,16 @@ public final class BottleFurnitureService implements Listener {
             furniture.setUnsaved();
         }
         event.setCancelled(true);
-        // DrinkBlock uses GLASS_PLACE; BottleBlock and GlasswareBlock retain
-        // the source's slightly surprising STONE placement sound on pickup.
-        Sound pickupSound = isDrinkBlock(furniture.id().toString())
-                ? Sound.BLOCK_GLASS_PLACE : Sound.BLOCK_STONE_PLACE;
-        location.getWorld().playSound(location, pickupSound, 1.0F, 1.0F);
+        // DrinkBlock uses GLASS_PLACE on the BLOCKS channel; BottleBlock and
+        // GlasswareBlock retain the source's slightly surprising STONE
+        // placement sound played through the interacting player's channel.
+        if (isDrinkBlock(furniture.id().toString())) {
+            location.getWorld().playSound(location, Sound.BLOCK_GLASS_PLACE,
+                    SoundCategory.BLOCKS, 1.0F, 1.0F);
+        } else {
+            location.getWorld().playSound(location, Sound.BLOCK_STONE_PLACE,
+                    SoundCategory.PLAYERS, 1.0F, 1.0F);
+        }
     }
 
     private void stackBottle(FurnitureInteractEvent event, BukkitFurniture furniture, ItemStack hand) {
@@ -245,7 +250,9 @@ public final class BottleFurnitureService implements Listener {
         setBottleCount(furniture, stored.size());
         furniture.setUnsaved();
         event.setCancelled(true);
-        event.player().getWorld().playSound(furniture.location(), Sound.BLOCK_GLASS_PLACE, 1.0F, 1.2F);
+        // BlockItem#place volume (glass 1.0 + 1) / 2 and pitch * 0.8.
+        event.player().getWorld().playSound(furniture.location(), Sound.BLOCK_GLASS_PLACE,
+                SoundCategory.BLOCKS, 1.0F, 0.8F);
     }
 
     private List<ItemStack> storedItems(BukkitFurniture furniture) {
