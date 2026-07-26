@@ -414,7 +414,7 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
         long phase = Math.floorMod(identityHash, interval);
         long remainder = Math.floorMod(gameTime + phase, interval);
-        return (int) Math.floorMod(-remainder, interval);
+        return Math.floorMod(-remainder, interval);
     }
 
     /** Inverse-CDF sample for independent one-in-{@code chance} trials. */

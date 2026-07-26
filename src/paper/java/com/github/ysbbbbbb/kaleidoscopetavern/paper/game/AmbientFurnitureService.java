@@ -39,7 +39,7 @@ public final class AmbientFurnitureService {
     private final TickingFurnitureBehavior.Handler incenseEffectHandler =
             this::tickIncenseEffect;
     private final TickingFurnitureBehavior.Handler incenseParticleHandler =
-            this::tickIncenseParticle;
+            AmbientFurnitureService::tickIncenseParticle;
     private final TickingFurnitureBehavior.Handler mysteryParticleHandler =
             AmbientFurnitureService::tickMysteryCocktail;
     private final TickingFurnitureBehavior.Handler rackParticleHandler =
