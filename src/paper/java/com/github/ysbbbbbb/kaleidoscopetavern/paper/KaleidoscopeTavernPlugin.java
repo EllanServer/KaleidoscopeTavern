@@ -19,6 +19,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.ShakerVisualService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.StationService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.TapService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.BlockService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.GrapeSeasonGate;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBlockShape;
@@ -117,6 +118,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             return;
         }
 
+        GrapeSeasonGate.configure(getConfig(), getLogger());
         items = new ItemService(this, catalog);
         Messages messages = new Messages(this);
         shakerVisuals = new ShakerVisualService(this, items);
@@ -235,6 +237,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         }
         if (args[0].equalsIgnoreCase("reload")) {
             reloadConfig();
+            GrapeSeasonGate.configure(getConfig(), getLogger());
             if (stations != null) {
                 stations.stop();
                 stations.start();
