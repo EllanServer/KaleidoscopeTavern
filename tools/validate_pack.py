@@ -1560,6 +1560,18 @@ def validate() -> dict[str, int]:
         if on_demand_token not in effect_service_source:
             raise AssertionError(
                 f"Custom effect on-demand tick lifecycle is missing {on_demand_token}")
+    for allocation_free_tick_token in (
+            "Iterator<Map.Entry<String, ActiveEffect>> effectIterator",
+            "effectIterator.remove()",
+            "effectEntry.setValue(new ActiveEffect(effect.effect(), next))",
+            "private boolean tickEffect(LivingEntity living, ActiveEffect effect)"):
+        if allocation_free_tick_token not in effect_service_source:
+            raise AssertionError(
+                "Custom effect steady-state ticking must mutate entries without snapshots; "
+                f"missing {allocation_free_tick_token}")
+    if "new ArrayList<>(effects.values())" in effect_service_source:
+        raise AssertionError(
+            "Custom effect ticking must not allocate an effects snapshot every entity tick")
     for packet_token in (
             "ClientboundSetEntityDataPacketProxy",
             'ComponentProxy.INSTANCE.literal("Grumm")',

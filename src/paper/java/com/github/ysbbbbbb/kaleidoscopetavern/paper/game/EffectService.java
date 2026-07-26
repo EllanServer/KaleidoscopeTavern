@@ -579,8 +579,13 @@ public final class EffectService implements Listener {
             }
             Map<String, ActiveEffect> effects = entry.getValue();
             boolean changed = false;
-            for (ActiveEffect effect : new ArrayList<>(effects.values())) {
-                if (!tickEffect(living, effect, effects)) {
+            Iterator<Map.Entry<String, ActiveEffect>> effectIterator =
+                    effects.entrySet().iterator();
+            while (effectIterator.hasNext()) {
+                Map.Entry<String, ActiveEffect> effectEntry = effectIterator.next();
+                ActiveEffect effect = effectEntry.getValue();
+                if (!tickEffect(living, effect)) {
+                    effectIterator.remove();
                     changed = true;
                     continue;
                 }
@@ -592,10 +597,10 @@ public final class EffectService implements Listener {
                     applyHunger(living, 600);
                 }
                 if (next == null) {
-                    effects.remove(effect.effect());
+                    effectIterator.remove();
                     changed = true;
                 } else {
-                    effects.put(effect.effect(), new ActiveEffect(effect.effect(), next));
+                    effectEntry.setValue(new ActiveEffect(effect.effect(), next));
                     changed |= visibleExpired;
                 }
             }
@@ -704,8 +709,7 @@ public final class EffectService implements Listener {
                 1, 0.0, 0.0, 0.0, 0.0, color);
     }
 
-    private boolean tickEffect(LivingEntity living, ActiveEffect effect,
-                               Map<String, ActiveEffect> effects) {
+    private boolean tickEffect(LivingEntity living, ActiveEffect effect) {
         switch (effect.effect()) {
             case PREFIX + "vision" -> {
                 if (EffectSemantics.ticksAt(effect.remainingTicks(), 50)) {
@@ -727,9 +731,7 @@ public final class EffectService implements Listener {
             }
             case PREFIX + "ardent_heat" -> {
                 if (living instanceof Player player && !ardentHeat(player)) {
-                    effects.remove(effect.effect());
                     applyHunger(player, 600);
-                    save(player);
                     return false;
                 }
             }
