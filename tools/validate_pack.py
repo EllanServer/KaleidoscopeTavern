@@ -944,17 +944,19 @@ def validate() -> dict[str, int]:
             "public void postRemove(Player player)",
             "public void onUnload(boolean isStopping)",
             "PressingTubSemantics.isLandingPosition",
-            "PressingTubSemantics.isAboveColumn"):
+            "PressingTubSemantics.isAboveColumn",
+            "public static void bindAvailability",
+            "public static void unbindAvailability",
+            "handler.accept(available)"):
         if required_token not in pressing_behavior_source:
             raise AssertionError(
                 "pressing_tub_furniture must own CE lifecycle and indexed lookup; "
                 f"missing token: {required_token}")
-    for stale_token in ("static volatile Handler", "public static void bind(",
-                        "public static void unbind(", "LOADED"):
+    for stale_token in ("static volatile Handler", "LOADED"):
         if stale_token in pressing_behavior_source:
             raise AssertionError(
-                "pressing_tub_furniture must only own its CE spatial index; "
-                f"station visuals no longer need lifecycle dispatch: {stale_token}")
+                "pressing_tub_furniture must own only its CE spatial index and "
+                f"availability signal; stale token: {stale_token}")
 
     lifecycle_behavior_source = (
         game_package / "furniture" / "LifecycleFurnitureBehavior.java"
@@ -1109,6 +1111,9 @@ def validate() -> dict[str, int]:
     if "portableShakerTask" in station_start:
         raise AssertionError(
             "StationService.start must not schedule an idle every-tick portable shaker task")
+    if "fallingCleanupTask" in station_start:
+        raise AssertionError(
+            "StationService.start must not schedule an idle falling-entity cleanup task")
     for required_token in (
             "StationVisualFurnitureBehavior.bind(stationVisualHandler)",
             "StationVisualFurnitureBehavior.unbind(stationVisualHandler)",
@@ -1117,6 +1122,12 @@ def validate() -> dict[str, int]:
             "PressingTubFurnitureBehavior.occupiesBlock(block)",
             "LifecycleFurnitureBehavior.Channel.BARREL, center, 3.0, 3.0",
             "PressingTubFurnitureBehavior.hasLoadedInWorld(",
+            "PressingTubFurnitureBehavior.bindAvailability(",
+            "PressingTubFurnitureBehavior.unbindAvailability(",
+            "Bukkit.getPluginManager().registerEvents(pressLandingListener, plugin)",
+            "HandlerList.unregisterAll(pressLandingListener)",
+            "ensureFallingCleanupTask();",
+            "stopFallingCleanupTaskIfIdle();",
             "trackPressLanding(event.getEntity(), event.getTo())",
             "furniture.refreshElements()"):
         if required_token not in station_source:

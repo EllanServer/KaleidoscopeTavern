@@ -36,6 +36,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -63,6 +64,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 
 /** Implements the former Forge block-entity gameplay on CraftEngine furniture entities. */
 public final class StationService implements Listener {
@@ -88,6 +90,10 @@ public final class StationService implements Listener {
     private final Set<UUID> pendingVanillaBucketEmpty = new HashSet<>();
     private BukkitTask portableShakerTask;
     private BukkitTask fallingCleanupTask;
+    private final PressLandingListener pressLandingListener = new PressLandingListener();
+    private final Consumer<Boolean> pressLandingAvailabilityHandler =
+            this::setPressLandingEventsActive;
+    private boolean pressLandingEventsActive;
     private final RedstoneFurnitureBehavior.Handler incenseRedstoneHandler =
             (furniture, powered, initial) -> setIncenseActive(furniture, powered, !initial);
     private final StationVisualFurnitureBehavior.Handler stationVisualHandler =
@@ -120,8 +126,7 @@ public final class StationService implements Listener {
                 RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
         TickingFurnitureBehavior.bind(
                 TickingFurnitureBehavior.Channel.BARREL, barrelTickingHandler);
-        fallingCleanupTask = Bukkit.getScheduler().runTaskTimer(
-                plugin, this::cleanupFalling, 600L, 600L);
+        PressingTubFurnitureBehavior.bindAvailability(pressLandingAvailabilityHandler);
     }
 
     public void stop() {
@@ -130,6 +135,9 @@ public final class StationService implements Listener {
                 RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
         TickingFurnitureBehavior.unbind(
                 TickingFurnitureBehavior.Channel.BARREL, barrelTickingHandler);
+        PressingTubFurnitureBehavior.unbindAvailability(
+                pressLandingAvailabilityHandler);
+        setPressLandingEventsActive(false);
         if (portableShakerTask != null) {
             portableShakerTask.cancel();
             portableShakerTask = null;
@@ -226,28 +234,6 @@ public final class StationService implements Listener {
         });
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onMove(PlayerMoveEvent event) {
-        if (event.getTo() == null || (event.getFrom().getX() == event.getTo().getX()
-                && event.getFrom().getY() == event.getTo().getY()
-                && event.getFrom().getZ() == event.getTo().getZ())
-                || !PressingTubFurnitureBehavior.hasLoadedInWorld(
-                        event.getPlayer().getWorld())) {
-            return;
-        }
-        trackPressLanding(event.getPlayer(), event.getTo());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEntityMove(EntityMoveEvent event) {
-        if (event.getEntity() instanceof Player || !event.hasExplicitlyChangedPosition()
-                || !PressingTubFurnitureBehavior.hasLoadedInWorld(
-                        event.getEntity().getWorld())) {
-            return;
-        }
-        trackPressLanding(event.getEntity(), event.getTo());
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onFallDamage(EntityDamageEvent event) {
         if (event.getCause() != EntityDamageEvent.DamageCause.FALL
@@ -256,10 +242,12 @@ public final class StationService implements Listener {
         }
         if (!PressingTubFurnitureBehavior.hasLoadedInWorld(living.getWorld())) {
             falling.remove(living.getUniqueId());
+            stopFallingCleanupTaskIfIdle();
             return;
         }
         UUID id = living.getUniqueId();
         Float tracked = falling.remove(id);
+        stopFallingCleanupTaskIfIdle();
         float fallDistance = tracked == null
                 ? living.getFallDistance()
                 : Math.max(living.getFallDistance(), tracked);
@@ -329,6 +317,7 @@ public final class StationService implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         falling.remove(event.getPlayer().getUniqueId());
+        stopFallingCleanupTaskIfIdle();
         recentLandings.remove(event.getPlayer().getUniqueId());
         portableShakers.remove(event.getPlayer().getUniqueId());
         stopPortableShakerTaskIfIdle();
@@ -664,6 +653,7 @@ public final class StationService implements Listener {
         if (currentFallDistance > 0) {
             if (PressingTubFurnitureBehavior.hasPotentialBelow(feet)) {
                 falling.merge(living.getUniqueId(), currentFallDistance, Math::max);
+                ensureFallingCleanupTask();
             }
             return;
         }
@@ -674,6 +664,7 @@ public final class StationService implements Listener {
             return;
         }
         Float trackedFallDistance = falling.remove(living.getUniqueId());
+        stopFallingCleanupTaskIfIdle();
         if (trackedFallDistance != null
                 && trackedFallDistance >= PressingTubSemantics.MIN_FALL_DISTANCE) {
             handlePressLanding(living, feet);
@@ -1246,6 +1237,61 @@ public final class StationService implements Listener {
         // Entities despawned mid-air never fire a landing; this low-frequency
         // cleanup is unrelated to furniture ticking and prevents stale UUIDs.
         falling.keySet().removeIf(id -> Bukkit.getEntity(id) == null);
+        stopFallingCleanupTaskIfIdle();
+    }
+
+    private void ensureFallingCleanupTask() {
+        if (fallingCleanupTask == null && !falling.isEmpty()) {
+            fallingCleanupTask = Bukkit.getScheduler().runTaskTimer(
+                    plugin, this::cleanupFalling, 600L, 600L);
+        }
+    }
+
+    private void stopFallingCleanupTaskIfIdle() {
+        if (fallingCleanupTask != null && falling.isEmpty()) {
+            fallingCleanupTask.cancel();
+            fallingCleanupTask = null;
+        }
+    }
+
+    private void setPressLandingEventsActive(boolean active) {
+        if (active == pressLandingEventsActive) {
+            return;
+        }
+        pressLandingEventsActive = active;
+        if (active) {
+            Bukkit.getPluginManager().registerEvents(pressLandingListener, plugin);
+            return;
+        }
+        HandlerList.unregisterAll(pressLandingListener);
+        falling.clear();
+        recentLandings.clear();
+        stopFallingCleanupTaskIfIdle();
+    }
+
+    private final class PressLandingListener implements Listener {
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        public void onMove(PlayerMoveEvent event) {
+            Location to = event.getTo();
+            if (to == null || (event.getFrom().getX() == to.getX()
+                    && event.getFrom().getY() == to.getY()
+                    && event.getFrom().getZ() == to.getZ())
+                    || !PressingTubFurnitureBehavior.hasLoadedInWorld(
+                            event.getPlayer().getWorld())) {
+                return;
+            }
+            trackPressLanding(event.getPlayer(), to);
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        public void onEntityMove(EntityMoveEvent event) {
+            if (event.getEntity() instanceof Player || !event.hasExplicitlyChangedPosition()
+                    || !PressingTubFurnitureBehavior.hasLoadedInWorld(
+                            event.getEntity().getWorld())) {
+                return;
+            }
+            trackPressLanding(event.getEntity(), event.getTo());
+        }
     }
 
     private void tickBarrel(BukkitFurniture furniture) {

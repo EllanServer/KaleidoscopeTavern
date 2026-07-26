@@ -16,11 +16,13 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 
 import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
  * Lets CraftEngine own the loaded pressing-tub lifecycle and spatial lookup.
@@ -34,8 +36,10 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
     public static final String TYPE = "kaleidoscope_tavern:pressing_tub_furniture";
 
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
+    private static final AtomicBoolean AVAILABLE = new AtomicBoolean();
     private static final ConcurrentMap<UUID, WorldIndex> WORLD_INDEX =
             new ConcurrentHashMap<>();
+    private static volatile Consumer<Boolean> availabilityHandler;
 
     private PressingTubFurnitureBehavior(FurnitureDefinition furniture, ConfigSection section) {
         super(furniture);
@@ -50,6 +54,20 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
     public static boolean hasLoadedInWorld(World world) {
         WorldIndex index = WORLD_INDEX.get(world.getUID());
         return index != null && !index.columns.isEmpty();
+    }
+
+    /** Lets CE-loaded tubs enable the otherwise-global Paper fall bridge on demand. */
+    public static void bindAvailability(Consumer<Boolean> handler) {
+        availabilityHandler = Objects.requireNonNull(handler, "handler");
+        boolean available = !WORLD_INDEX.isEmpty();
+        AVAILABLE.set(available);
+        handler.accept(available);
+    }
+
+    public static void unbindAvailability(Consumer<Boolean> handler) {
+        if (availabilityHandler == handler) {
+            availabilityHandler = null;
+        }
     }
 
     /** Whether a loaded pressing-tub origin occupies this exact block. */
@@ -217,6 +235,7 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
             worldIndex.columns.computeIfAbsent(column,
                     ignored -> ConcurrentHashMap.<Controller>newKeySet()).add(this);
             indexed = true;
+            updateAvailability();
         }
 
         private void unindex() {
@@ -237,6 +256,16 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
                 }
             }
             indexed = false;
+            updateAvailability();
+        }
+    }
+
+    private static void updateAvailability() {
+        boolean available = !WORLD_INDEX.isEmpty();
+        boolean previous = AVAILABLE.getAndSet(available);
+        Consumer<Boolean> handler = availabilityHandler;
+        if (previous != available && handler != null) {
+            handler.accept(available);
         }
     }
 
