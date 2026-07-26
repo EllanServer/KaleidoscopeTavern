@@ -103,6 +103,7 @@ public final class EffectService implements Listener {
     private final NamespacedKey splashPreparedKey;
     private final NamespacedKey splashCustomEffectsKey;
     private final Map<UUID, Map<String, ActiveEffect>> active = new HashMap<>();
+    private final Map<UUID, LivingEntity> activeEntities = new HashMap<>();
     private final Map<UUID, BossBar> effectHudBars = new HashMap<>();
     private final Map<UUID, String> effectHudLines = new HashMap<>();
     private final Map<UUID, Map<UUID, Long>> visionPacketExpiry = new HashMap<>();
@@ -155,8 +156,7 @@ public final class EffectService implements Listener {
                 }
             }
         }
-        // Forge evaluates active effects and EffectEvent once per game tick.
-        task = Bukkit.getScheduler().runTaskTimer(plugin, () -> tick(1L), 1L, 1L);
+        ensureTickTask();
     }
 
     public void stop() {
@@ -165,8 +165,11 @@ public final class EffectService implements Listener {
             task = null;
         }
         for (UUID uuid : new ArrayList<>(active.keySet())) {
-            Entity entity = Bukkit.getEntity(uuid);
-            if (entity instanceof LivingEntity living) {
+            LivingEntity living = activeEntities.get(uuid);
+            if (living == null && Bukkit.getEntity(uuid) instanceof LivingEntity recovered) {
+                living = recovered;
+            }
+            if (living != null) {
                 save(living);
                 removeAttributeModifiers(living);
             }
@@ -188,6 +191,7 @@ public final class EffectService implements Listener {
         visionPacketExpiry.clear();
         restoreUpsideDownPackets();
         upsideDownPacketTargets.clear();
+        activeEntities.clear();
         active.clear();
     }
 
@@ -288,7 +292,9 @@ public final class EffectService implements Listener {
         restoreStealthVisibility(event.getPlayer());
         visionPacketExpiry.remove(event.getPlayer().getUniqueId());
         upsideDownPacketTargets.remove(event.getPlayer().getUniqueId());
+        activeEntities.remove(event.getPlayer().getUniqueId());
         active.remove(event.getPlayer().getUniqueId());
+        stopTickTaskIfIdle();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -325,9 +331,11 @@ public final class EffectService implements Listener {
             if (entity instanceof LivingEntity living && active.containsKey(living.getUniqueId())) {
                 save(living);
                 restoreStealthVisibility(living);
+                activeEntities.remove(living.getUniqueId());
                 active.remove(living.getUniqueId());
             }
         }
+        stopTickTaskIfIdle();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -529,6 +537,8 @@ public final class EffectService implements Listener {
             return;
         }
         effects.put(spec.effect(), new ActiveEffect(spec.effect(), merged));
+        activeEntities.put(target.getUniqueId(), target);
+        ensureTickTask();
         save(target);
         reconcileAttributes(target, effects);
         if (target instanceof Player player) {
@@ -551,8 +561,20 @@ public final class EffectService implements Listener {
         Iterator<Map.Entry<UUID, Map<String, ActiveEffect>>> iterator = active.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<UUID, Map<String, ActiveEffect>> entry = iterator.next();
-            Entity entity = Bukkit.getEntity(entry.getKey());
-            if (!(entity instanceof LivingEntity living) || !entity.isValid() || living.isDead()) {
+            LivingEntity living = activeEntities.get(entry.getKey());
+            if (living == null) {
+                // Recovery-only fallback for an unforeseen lifecycle ordering;
+                // the normal path is populated by apply/load and performs no
+                // global Bukkit UUID lookup per effect per tick.
+                Entity entity = Bukkit.getEntity(entry.getKey());
+                if (entity instanceof LivingEntity recovered) {
+                    living = recovered;
+                    activeEntities.put(entry.getKey(), recovered);
+                }
+            }
+            if (living == null || !living.isValid() || living.isDead()) {
+                iterator.remove();
+                activeEntities.remove(entry.getKey());
                 continue;
             }
             Map<String, ActiveEffect> effects = entry.getValue();
@@ -595,7 +617,25 @@ public final class EffectService implements Listener {
             }
             if (effects.isEmpty()) {
                 iterator.remove();
+                activeEntities.remove(entry.getKey());
             }
+        }
+        stopTickTaskIfIdle();
+    }
+
+    private void ensureTickTask() {
+        if (task == null && !active.isEmpty()) {
+            // Forge evaluates active effects and EffectEvent once per game
+            // tick. Keep that cadence, but do not leave an empty global task
+            // running when the server has no Tavern effects at all.
+            task = Bukkit.getScheduler().runTaskTimer(plugin, () -> tick(1L), 1L, 1L);
+        }
+    }
+
+    private void stopTickTaskIfIdle() {
+        if (task != null && active.isEmpty()) {
+            task.cancel();
+            task = null;
         }
     }
 
@@ -1120,9 +1160,12 @@ public final class EffectService implements Listener {
     private void load(LivingEntity living) {
         Map<String, ActiveEffect> effects = read(living);
         if (effects.isEmpty()) {
+            activeEntities.remove(living.getUniqueId());
             active.remove(living.getUniqueId());
         } else {
             active.put(living.getUniqueId(), effects);
+            activeEntities.put(living.getUniqueId(), living);
+            ensureTickTask();
         }
         reconcileAttributes(living, effects);
         if (living instanceof Player player) {
@@ -1274,6 +1317,7 @@ public final class EffectService implements Listener {
     }
 
     private void clearEffects(LivingEntity living) {
+        activeEntities.remove(living.getUniqueId());
         active.remove(living.getUniqueId());
         visionPacketExpiry.remove(living.getUniqueId());
         living.getPersistentDataContainer().remove(activeKey);
@@ -1282,6 +1326,7 @@ public final class EffectService implements Listener {
         if (living instanceof Player player) {
             hideEffectHud(player);
         }
+        stopTickTaskIfIdle();
     }
 
     private record ActiveEffect(String effect, EffectSemantics.EffectState state) {

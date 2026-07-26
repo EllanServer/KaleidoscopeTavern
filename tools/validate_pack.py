@@ -1063,6 +1063,24 @@ def validate() -> dict[str, int]:
                 f"Viewer-only drink effect writes shared entity state: {shared_state_write}")
     if "viewer.sendPotionEffectChange" not in effect_service_source:
         raise AssertionError("Vision must use Paper's per-viewer effect packet")
+    effect_start = re.search(
+        r"public void start\(\) \{(.*?)\n    \}\n\n    public void stop\(\)",
+        effect_service_source,
+        flags=re.DOTALL)
+    if effect_start is None or "runTaskTimer" in effect_start.group(1):
+        raise AssertionError(
+            "Custom effects must not leave an unconditional global tick task running")
+    for on_demand_token in (
+            "private final Map<UUID, LivingEntity> activeEntities",
+            "LivingEntity living = activeEntities.get(entry.getKey())",
+            "private void ensureTickTask()",
+            "task == null && !active.isEmpty()",
+            "runTaskTimer(plugin, () -> tick(1L), 1L, 1L)",
+            "private void stopTickTaskIfIdle()",
+            "task != null && active.isEmpty()"):
+        if on_demand_token not in effect_service_source:
+            raise AssertionError(
+                f"Custom effect on-demand tick lifecycle is missing {on_demand_token}")
     for packet_token in (
             "ClientboundSetEntityDataPacketProxy",
             'ComponentProxy.INSTANCE.literal("Grumm")',
