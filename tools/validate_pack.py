@@ -237,12 +237,14 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "CocktailBlockItem.java": (
         ("EffectService.java", "onConsume"),
-        ("BottlePlacementService.java", "onPlaceVanillaBottle"),
+        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+         "SneakPlaceDrinkItemBehavior.java", "useOnBlock"),
     ),
     "DrinkBlock.java": (("BottleFurnitureService.java", "onProjectileHit"),),
     "DrinkBlockItem.java": (
         ("EffectService.java", "onConsume"),
-        ("BottlePlacementService.java", "onPlaceVanillaBottle"),
+        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+         "SneakPlaceDrinkItemBehavior.java", "useOnBlock"),
     ),
     "GlasswareBlock.java": (("BottleFurnitureService.java", "onProjectileHit"),),
     "GlasswareHolderBlock.java": (("DisplayStorageService.java", "GLASSWARE_HOLDER"),),
@@ -631,13 +633,33 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Wild grapevine head/body must preserve the source leaves attachment rule")
     plugin_config = PLUGIN_CONFIG.read_text(encoding="utf-8-sig")
+    item_behavior_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
+        "item/behavior/SneakPlaceDrinkItemBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    plugin_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
+        "KaleidoscopeTavernPlugin.java"
+    ).read_text(encoding="utf-8-sig")
     if ("bottle-placement.drinks" in bottle_placement_source
-            or re.search(r"(?m)^\s+drinks:\s*", plugin_config)
-            or not re.search(
-                r"new Placement\(customId,\s*null(?:,\s*false)?\)",
-                bottle_placement_source)):
+            or re.search(r"(?m)^\s+drinks:\s*", plugin_config)):
         raise AssertionError(
             "Custom DrinkBlockItem/CocktailBlockItem placement must remain unconditional")
+    for token in (
+            "SneakPlaceDrinkItemBehavior.register()",
+            "FurnitureItemBehavior.FACTORY.create"):
+        if token not in plugin_source + item_behavior_source:
+            raise AssertionError("Drink placement behavior must delegate to native CE furniture placement")
+    for token in (
+            "if (!context.isSecondaryUseActive())",
+            "return InteractionResult.PASS;",
+            "Direction.UP",
+            "return InteractionResult.SUCCESS_AND_CANCEL;"):
+        if token not in item_behavior_source:
+            raise AssertionError(
+                "Drink CE behavior must preserve normal drinking and own rejected sneak placement")
+    if "new Placement(customId" in bottle_placement_source:
+        raise AssertionError("Paper must not duplicate custom drink player placement")
 
     board_text_source = (game_package / "BoardTextService.java").read_text(
         encoding="utf-8-sig")
@@ -1479,13 +1501,21 @@ def validate() -> dict[str, int]:
     drink_ids.add(f"{NAMESPACE}:signature_cocktail")
     for item_id in drink_ids:
         item = items[item_id]
-        behavior_types = {
-            behavior.get("type") for behavior in (
-                item.get("behaviors", []) or ([item["behavior"]] if "behavior" in item else [])
-            )
-        }
-        if item.get("material") != "potion" or "furniture_item" in behavior_types:
-            raise AssertionError(f"{item_id}: drinks must remain consumable items with manual sneak placement")
+        item_behaviors = (
+            item.get("behaviors", []) or ([item["behavior"]] if "behavior" in item else [])
+        )
+        behavior_types = {behavior.get("type") for behavior in item_behaviors}
+        if (item.get("material") != "potion"
+                or behavior_types != {f"{NAMESPACE}:sneak_place_drink"}):
+            raise AssertionError(
+                f"{item_id}: drinks must remain consumable items with CE-owned sneak placement")
+        if (len(item_behaviors) != 1
+                or item_behaviors[0].get("furniture") != item_id
+                or item_behaviors[0].get("rules") != {
+                    "ground": {"rotation": "four", "alignment": "center"}
+                }):
+            raise AssertionError(
+                f"{item_id}: CE drink placement target/rules drifted from BottleBlockItem")
         if item.get("data", {}).get("components", {}).get("minecraft:max_stack_size") != 16:
             raise AssertionError(f"{item_id}: bottle/glassware stack size must remain 16")
         data = item.get("data", {})
@@ -2027,10 +2057,16 @@ def validate() -> dict[str, int]:
     }
     for furniture_id, (family, hit_times) in material_examples.items():
         settings = furniture[f"{NAMESPACE}:{furniture_id}"]["settings"]
-        expected_sounds = {
+        expected_sounds: dict[str, object] = {
             action: f"minecraft:block.{family}.{action}"
             for action in ("break", "place", "hit")
         }
+        if family == "glass":
+            expected_sounds["place"] = {
+                "id": "minecraft:block.glass.place",
+                "volume": 1.0,
+                "pitch": 0.8,
+            }
         if settings.get("hit_times") != hit_times or settings.get("sounds") != expected_sounds:
             raise AssertionError(f"{furniture_id}: source material/break behavior drifted")
 

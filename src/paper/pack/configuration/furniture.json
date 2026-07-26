@@ -15084,7 +15084,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:empty_bottle"
@@ -15165,7 +15169,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:empty_glassware"
@@ -15229,7 +15237,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:signature_cocktail"
@@ -15296,7 +15308,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:mystery_cocktail"
@@ -15367,7 +15383,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:white_lady"
@@ -15431,7 +15451,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:emerald"
@@ -15495,7 +15519,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:brass_heart"
@@ -15559,7 +15587,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:godfather"
@@ -15623,7 +15655,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:grasshopper"
@@ -15687,7 +15723,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:screwdriver"
@@ -15751,7 +15791,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:mojito"
@@ -15815,7 +15859,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:allium_garden"
@@ -15879,7 +15927,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:depth_charge"
@@ -15943,7 +15995,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:nether_special"
@@ -16007,7 +16063,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:bloody_mary"
@@ -16071,7 +16131,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sculk_special"
@@ -16205,7 +16269,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:molotov"
@@ -18005,7 +18073,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         }
       },
@@ -18055,7 +18127,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         }
       },
@@ -18105,7 +18181,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         }
       },
@@ -18155,7 +18235,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         }
       },
@@ -18208,7 +18292,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         }
       },
@@ -18258,7 +18346,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:wine"
@@ -18614,7 +18706,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:champagne"
@@ -18970,7 +19066,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:vodka"
@@ -19182,7 +19282,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:brandy"
@@ -19316,7 +19420,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:carignan"
@@ -19450,7 +19558,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sakura_wine"
@@ -19806,7 +19918,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:plum_wine"
@@ -19997,7 +20113,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:whiskey"
@@ -20353,7 +20473,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:ice_wine"
@@ -20709,7 +20833,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:polaris_sweet_white"
@@ -21065,7 +21193,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:honey_wine"
@@ -21421,7 +21553,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:red_queen"
@@ -21777,7 +21913,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:miners_star"
@@ -22133,7 +22273,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:rum"
@@ -22489,7 +22633,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:riesling_dry_white"
@@ -22701,7 +22849,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sunset_glow"
@@ -22835,7 +22987,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:madame_shexiang"
@@ -23047,7 +23203,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sweet_berry_wine"
@@ -23259,7 +23419,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sherry"
@@ -23615,7 +23779,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:mother_snow"
@@ -23827,7 +23995,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:luminous_bride"
@@ -24183,7 +24355,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:glowflower_brew"
@@ -24539,7 +24715,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sauvignon_blanc_dry_white"
@@ -24895,7 +25075,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:vinegar"
@@ -25251,7 +25435,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:watermelon_juice"

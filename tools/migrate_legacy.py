@@ -2382,12 +2382,20 @@ def furniture_settings(block_id: str) -> dict[str, Any]:
         or block_id == "shaker"
         or block_id.endswith("_incense")
     )
+    sounds: dict[str, Any] = {
+        action: f"minecraft:block.{family}.{action}"
+        for action in ("break", "place", "hit")
+    }
+    if block_id in BOTTLE_AND_GLASS_ITEMS:
+        # Forge BlockItem#place applies the block sound at 0.8 pitch.
+        sounds["place"] = {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8,
+        }
     return {
         "hit_times": 1 if instant_break else 3,
-        "sounds": {
-            action: f"minecraft:block.{family}.{action}"
-            for action in ("break", "place", "hit")
-        },
+        "sounds": sounds,
     }
 
 
@@ -2864,10 +2872,9 @@ def build_items(
             "model": {"type": "minecraft:model", "path": f"{NAMESPACE}:item/{item_id}"},
         }
         behaviors: list[dict[str, Any]] = []
-        # Drinks keep vanilla potion consumption. Their sneak-placement is
-        # performed by the Paper layer; attaching CE's unconditional
-        # furniture_item behavior here would place a bottle on every normal
-        # right-click instead of drinking it.
+        # Drinks keep vanilla potion consumption. A thin custom CE behavior
+        # delegates to the native furniture_item only while sneaking and
+        # returns PASS for ordinary right-clicks so they still drink normally.
         manually_placed_drink = is_drink(item_id, drink_ids)
         if item_id in BOTTLE_AND_GLASS_ITEMS or item_id.endswith("_bucket"):
             # The Forge BottleBlockItem/GlasswareBlockItem hierarchy stacks to
@@ -2973,9 +2980,10 @@ def build_items(
                 "consume_seconds": 1.6,
                 "animation": "eat",
             }
-        if item_id in furniture_ids and not manually_placed_drink:
+        if item_id in furniture_ids:
             furniture_behavior: dict[str, Any] = {
-                "type": "furniture_item",
+                "type": (f"{NAMESPACE}:sneak_place_drink"
+                         if manually_placed_drink else "furniture_item"),
                 "furniture": f"{NAMESPACE}:{item_id}",
                 "rules": furniture_placement[item_id],
             }

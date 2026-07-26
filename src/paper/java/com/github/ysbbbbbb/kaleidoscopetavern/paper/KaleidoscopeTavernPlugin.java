@@ -32,6 +32,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnit
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.EffectHudPlaceholder;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.SneakPlaceDrinkItemBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.pack.CustomCropsInstaller;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.pack.PackInstaller;
 import net.kyori.adventure.text.Component;
@@ -95,6 +96,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             PressingTubFurnitureBehavior.register();
             RedstoneFurnitureBehavior.register();
             TickingFurnitureBehavior.register();
+            SneakPlaceDrinkItemBehavior.register();
             if (getConfig().getBoolean("pack.install-on-startup", true)) {
                 packResult = PackInstaller.install(this);
             }
