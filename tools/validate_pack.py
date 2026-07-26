@@ -912,6 +912,18 @@ def validate() -> dict[str, int]:
                 "CE pressing-tub lifecycle/index must replace global or nearby entity scans; "
                 f"stale token found: {stale_token}")
     for required_token in (
+            "ensurePortableShakerTask();",
+            "stopPortableShakerTaskIfIdle();"):
+        if required_token not in station_source:
+            raise AssertionError(
+                "Portable shaker ticking must start on demand and stop when idle; "
+                f"missing token: {required_token}")
+    station_start = station_source.partition("public void start() {")[2].partition(
+        "public void stop() {")[0]
+    if "portableShakerTask" in station_start:
+        raise AssertionError(
+            "StationService.start must not schedule an idle every-tick portable shaker task")
+    for required_token in (
             "PressingTubFurnitureBehavior.bind(pressingTubLifecycleHandler)",
             "PressingTubFurnitureBehavior.hasPotentialBelow(living.getLocation())",
             "PressingTubFurnitureBehavior.findBelow(living.getLocation())",

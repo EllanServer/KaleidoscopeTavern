@@ -139,7 +139,6 @@ public final class StationService implements Listener {
                 RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
         TickingFurnitureBehavior.bind(
                 TickingFurnitureBehavior.Channel.BARREL, barrelTickingHandler);
-        portableShakerTask = Bukkit.getScheduler().runTaskTimer(plugin, this::tickPortableShakers, 1L, 1L);
         fallingCleanupTask = Bukkit.getScheduler().runTaskTimer(
                 plugin, this::cleanupFalling, 600L, 600L);
     }
@@ -373,6 +372,7 @@ public final class StationService implements Listener {
         falling.remove(event.getPlayer().getUniqueId());
         recentLandings.remove(event.getPlayer().getUniqueId());
         portableShakers.remove(event.getPlayer().getUniqueId());
+        stopPortableShakerTaskIfIdle();
         pendingVanillaBucketEmpty.remove(event.getPlayer().getUniqueId());
     }
 
@@ -428,6 +428,7 @@ public final class StationService implements Listener {
                 return;
             }
             portableShakers.put(player.getUniqueId(), new PortableShakerUse(hand, 0));
+            ensurePortableShakerTask();
             player.startUsingItem(hand);
             player.setActiveItemRemainingTime(72_000);
         });
@@ -440,6 +441,7 @@ public final class StationService implements Listener {
         if (use == null) {
             return;
         }
+        stopPortableShakerTaskIfIdle();
         finishPortableShaker(player, use.hand(), Math.max(use.ticks(), event.getTicksHeldFor()));
     }
 
@@ -468,9 +470,6 @@ public final class StationService implements Listener {
     }
 
     private void tickPortableShakers() {
-        if (portableShakers.isEmpty()) {
-            return;
-        }
         for (UUID playerId : new ArrayList<>(portableShakers.keySet())) {
             PortableShakerUse use = portableShakers.get(playerId);
             Player player = Bukkit.getPlayer(playerId);
@@ -494,6 +493,21 @@ public final class StationService implements Listener {
             } else {
                 portableShakers.put(playerId, new PortableShakerUse(use.hand(), ticks + 1));
             }
+        }
+        stopPortableShakerTaskIfIdle();
+    }
+
+    private void ensurePortableShakerTask() {
+        if (portableShakerTask == null) {
+            portableShakerTask = Bukkit.getScheduler().runTaskTimer(
+                    plugin, this::tickPortableShakers, 1L, 1L);
+        }
+    }
+
+    private void stopPortableShakerTaskIfIdle() {
+        if (portableShakerTask != null && portableShakers.isEmpty()) {
+            portableShakerTask.cancel();
+            portableShakerTask = null;
         }
     }
 
