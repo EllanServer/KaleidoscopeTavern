@@ -917,13 +917,20 @@ def validate() -> dict[str, int]:
             raise AssertionError(f"{item_id}: drinks must remain consumable items with manual sneak placement")
         if item.get("data", {}).get("components", {}).get("minecraft:max_stack_size") != 16:
             raise AssertionError(f"{item_id}: bottle/glassware stack size must remain 16")
-        potion_contents = item.get("data", {}).get("components", {}).get("minecraft:potion_contents")
-        if potion_contents is not None and (
-                set(potion_contents) != {"custom_color"}
-                or not isinstance(potion_contents.get("custom_color"), int)):
+        data = item.get("data", {})
+        if data.get("custom_name") != data.get("item_name"):
             raise AssertionError(
-                f"{item_id}: drink potion_contents may contain only custom_color; "
-                "a base potion type overrides the configured item name in 26.2")
+                f"{item_id}: potion drinks require custom_name because PotionItem "
+                "ignores item_name when deriving its hover title")
+        potion_contents = data.get("components", {}).get("minecraft:potion_contents")
+        if (not isinstance(potion_contents, dict)
+                or potion_contents.get("potion") != "minecraft:water"
+                or not set(potion_contents).issubset({"potion", "custom_color"})
+                or ("custom_color" in potion_contents
+                    and not isinstance(potion_contents["custom_color"], int))):
+            raise AssertionError(
+                f"{item_id}: drink potion_contents must use the neutral water base "
+                "and may only add an integer custom_color")
 
     for item_id, item in items.items():
         if not item_id.endswith("_bucket"):

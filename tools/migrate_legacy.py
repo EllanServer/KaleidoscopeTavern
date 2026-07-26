@@ -1984,8 +1984,7 @@ def load_drink_effects() -> tuple[set[str], list[list[Any]]]:
 
 
 # Maps cocktail_ingredient_<color> tag suffixes to the RGB liquid tint used by
-# ContentCatalog.cocktailColor(). In 26.2, a custom_color-only potion_contents
-# component preserves that tint without overriding the configured item_name.
+# ContentCatalog.cocktailColor().
 DRINK_COLORS: dict[str, int] = {
     "black": 0x1D1D21, "blue": 0x3C44AA, "brown": 0x835432,
     "cyan": 0x169C9C, "gray": 0x474F52, "green": 0x5E7C16,
@@ -2085,14 +2084,18 @@ def build_items(
             # explicitly for both drink and place-only bottle items.
             config["data"]["components"] = {"minecraft:max_stack_size": 16}
         if config["material"] == "potion":
-            # In 26.2+, a potion_contents component with potion="minecraft:water"
-            # makes the item show as "Water Bottle", overriding item_name.  Using
-            # only custom_color (no potion field) tints tagged liquids without
-            # clobbering the display name; untagged drinks omit the component.
+            # PotionItem#getName derives its title from potion_contents and does
+            # not honor ITEM_NAME. A valid neutral base avoids "Uncraftable
+            # Potion", while CUSTOM_NAME wins in ItemStack#getHoverName and
+            # retains the authored drink name. Tagged drinks also keep their
+            # source liquid tint.
             components = config["data"].setdefault("components", {})
+            potion_contents: dict[str, Any] = {"potion": "minecraft:water"}
             color = drink_color(memberships.get(item_id, []))
             if color is not None:
-                components["minecraft:potion_contents"] = {"custom_color": color}
+                potion_contents["custom_color"] = color
+            components["minecraft:potion_contents"] = potion_contents
+            config["data"]["custom_name"] = config["data"]["item_name"]
         if item_id == "molotov":
             config["data"].setdefault("components", {})["minecraft:consumable"] = {
                 "consume_seconds": 3_600.0,

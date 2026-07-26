@@ -71,7 +71,10 @@ public final class BlockService implements Listener {
             return;
         }
         Player player = event.player();
-        ItemStack hand = event.hand() == InteractionHand.MAIN_HAND
+        EquipmentSlot usedSlot = event.hand() == InteractionHand.MAIN_HAND
+                ? EquipmentSlot.HAND
+                : EquipmentSlot.OFF_HAND;
+        ItemStack hand = usedSlot == EquipmentSlot.HAND
                 ? player.getInventory().getItemInMainHand()
                 : player.getInventory().getItemInOffHand();
         // CE supplies the exact stack that triggered this interaction. Prefer it
@@ -90,7 +93,7 @@ public final class BlockService implements Listener {
                 ? interactStringLights(player, event.bukkitBlock(), state, hand)
                 : switch (blockId) {
             case TRELLIS -> interactPlainTrellis(
-                    player, event.bukkitBlock(), state, hand, handId);
+                    player, event.bukkitBlock(), state, hand, handId, usedSlot);
             case PREFIX + "grapevine_trellis", PREFIX + "ice_grapevine_trellis",
                     PREFIX + "gold_grapevine_trellis" -> interactVineTrellis(
                             player, event.bukkitBlock(), state, hand, event.hand());
@@ -131,7 +134,10 @@ public final class BlockService implements Listener {
         if (player.getGameMode() == GameMode.SPECTATOR) {
             return;
         }
-        ItemStack hand = event.getHand() == EquipmentSlot.HAND
+        EquipmentSlot usedSlot = event.getHand() == EquipmentSlot.OFF_HAND
+                ? EquipmentSlot.OFF_HAND
+                : EquipmentSlot.HAND;
+        ItemStack hand = usedSlot == EquipmentSlot.HAND
                 ? player.getInventory().getItemInMainHand()
                 : player.getInventory().getItemInOffHand();
         String handId = items.id(hand);
@@ -152,7 +158,7 @@ public final class BlockService implements Listener {
             String planted = grapevineFor(soil);
             if (planted != null) {
                 LOGGER.info(() -> "onRightClickWithGrapevine: planting " + planted + " on trellis");
-                plantGrapevineOnTrellis(player, clicked, clickedState, hand, soil, planted);
+                plantGrapevineOnTrellis(player, clicked, clickedState, hand, soil, planted, usedSlot);
             } else {
                 LOGGER.warning(() -> "onRightClickWithGrapevine: grapevineFor returned null for soil="
                         + soil.getType() + " at " + soil.getLocation());
@@ -174,7 +180,7 @@ public final class BlockService implements Listener {
                 String planted = grapevineFor(clicked);
                 if (planted != null) {
                     LOGGER.info(() -> "onRightClickWithGrapevine: planting " + planted + " on trellis above");
-                    plantGrapevineOnTrellis(player, above, aboveState, hand, clicked, planted);
+                    plantGrapevineOnTrellis(player, above, aboveState, hand, clicked, planted, usedSlot);
                 } else {
                     LOGGER.warning(() -> "onRightClickWithGrapevine: grapevineFor returned null for soil="
                             + clicked.getType() + " at " + clicked.getLocation());
@@ -269,7 +275,7 @@ public final class BlockService implements Listener {
     }
 
     private boolean interactPlainTrellis(Player player, Block block, ImmutableBlockState state,
-                                         ItemStack hand, String handId) {
+                                         ItemStack hand, String handId, EquipmentSlot usedSlot) {
         boolean waxed = booleanProperty(state, "waxed");
         if (hand.getType() == Material.HONEYCOMB && !waxed) {
             ImmutableBlockState changed = TrellisBehavior.withNamed(state, "waxed", "true");
@@ -301,7 +307,7 @@ public final class BlockService implements Listener {
                     + soil.getType() + " at " + soil.getLocation());
             return true; // still cancel to prevent block_item from placing wild_grapevine
         }
-        plantGrapevineOnTrellis(player, block, state, hand, soil, planted);
+        plantGrapevineOnTrellis(player, block, state, hand, soil, planted, usedSlot);
         return true;
     }
 
@@ -312,7 +318,8 @@ public final class BlockService implements Listener {
      */
     private void plantGrapevineOnTrellis(Player player, Block trellisBlock,
                                           ImmutableBlockState trellisState,
-                                          ItemStack hand, Block soil, String planted) {
+                                          ItemStack hand, Block soil, String planted,
+                                          EquipmentSlot usedSlot) {
         net.momirealms.craftengine.core.block.BlockDefinition definition =
                 CraftEngineBlocks.byId(net.momirealms.craftengine.core.util.Key.of(planted));
         if (definition == null) {
@@ -325,6 +332,7 @@ public final class BlockService implements Listener {
                 Boolean.toString(booleanProperty(trellisState, "waterlogged")));
         if (CraftEngineBlocks.place(trellisBlock.getLocation(), replacement, false)) {
             consumeUnlessCreative(player, hand);
+            player.swingHand(usedSlot);
             trellisBlock.getWorld().playSound(trellisBlock.getLocation(), "minecraft:block.crop.planted", 1F, 1F);
         } else {
             LOGGER.warning(() -> "plantGrapevineOnTrellis: CraftEngineBlocks.place failed for " + planted

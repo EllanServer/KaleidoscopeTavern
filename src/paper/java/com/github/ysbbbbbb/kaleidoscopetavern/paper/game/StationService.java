@@ -101,6 +101,7 @@ public final class StationService implements Listener {
     private final Set<UUID> loadedIncense = new HashSet<>();
     private final Set<UUID> activeIncense = new HashSet<>();
     private final Set<UUID> loadedBarrels = new HashSet<>();
+    private final Set<UUID> pendingVanillaBucketEmpty = new HashSet<>();
     private BukkitTask incenseTask;
     private BukkitTask incenseRedstoneTask;
     private BukkitTask portableShakerTask;
@@ -154,6 +155,7 @@ public final class StationService implements Listener {
         loadedIncense.clear();
         activeIncense.clear();
         loadedBarrels.clear();
+        pendingVanillaBucketEmpty.clear();
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -267,6 +269,14 @@ public final class StationService implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
+        // FurnitureInteractEvent already consumed this bucket into the station.
+        // The vanilla target can be a block behind the furniture because its
+        // hitboxes are entities, so the exact interaction is more reliable than
+        // trying to infer the station from that target block.
+        if (pendingVanillaBucketEmpty.remove(event.getPlayer().getUniqueId())) {
+            event.setCancelled(true);
+            return;
+        }
         // Read the bucket from the hand the event reports, so an off-hand pour is
         // recognised too, and keep using the item id because pressing recipes are
         // keyed by custom juice buckets rather than vanilla materials.
@@ -320,6 +330,7 @@ public final class StationService implements Listener {
         falling.remove(event.getPlayer().getUniqueId());
         recentLandings.remove(event.getPlayer().getUniqueId());
         portableShakers.remove(event.getPlayer().getUniqueId());
+        pendingVanillaBucketEmpty.remove(event.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -731,6 +742,7 @@ public final class StationService implements Listener {
                 state.putString("barrel_fluid", fluid.get());
                 state.integer("barrel_amount", amount + 1_000);
                 items.build("minecraft:bucket", player).ifPresent(bucket -> items.give(player, bucket));
+                suppressVanillaBucketEmpty(player);
                 furniture.location().getWorld().playSound(furniture.location(),
                         "minecraft:item.bucket.empty", 0.9F, 1.0F);
                 refreshBarrelVisuals(furniture);
@@ -803,6 +815,13 @@ public final class StationService implements Listener {
         furniture.location().getWorld().playSound(furniture.location(),
                 "minecraft:entity.item_frame.add_item", 0.75F, 0.9F);
         return true;
+    }
+
+    private void suppressVanillaBucketEmpty(Player player) {
+        UUID playerId = player.getUniqueId();
+        pendingVanillaBucketEmpty.add(playerId);
+        Bukkit.getScheduler().runTask(plugin,
+                () -> pendingVanillaBucketEmpty.remove(playerId));
     }
 
     private boolean initializeBarrelState(BukkitFurniture furniture, FurnitureState state) {

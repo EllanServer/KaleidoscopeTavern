@@ -2346,8 +2346,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.signature_cocktail>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.signature_cocktail>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2359,8 +2363,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.mystery_cocktail>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.mystery_cocktail>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2372,8 +2380,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.white_lady>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.white_lady>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2385,8 +2397,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.emerald>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.emerald>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2398,8 +2414,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.brass_heart>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.brass_heart>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2411,8 +2431,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.godfather>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.godfather>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2424,8 +2448,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.grasshopper>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.grasshopper>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2437,8 +2465,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.screwdriver>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.screwdriver>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2450,8 +2482,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.mojito>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.mojito>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2463,8 +2499,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.allium_garden>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.allium_garden>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2476,8 +2516,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.depth_charge>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.depth_charge>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2489,8 +2533,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.nether_special>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.nether_special>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2502,8 +2550,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.bloody_mary>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.bloody_mary>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2515,8 +2567,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.sculk_special>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.sculk_special>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2598,9 +2654,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 13061821
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.wine>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2620,9 +2678,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 13061821
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.champagne>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2642,9 +2702,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 16383998
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.vodka>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2666,9 +2728,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 13061821
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.brandy>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2692,9 +2756,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 13061821
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.carignan>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2718,9 +2784,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 13061821
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.sakura_wine>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2740,9 +2808,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 11546150
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.plum_wine>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2762,9 +2832,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 16383998
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.whiskey>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2784,9 +2856,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 3949738
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.ice_wine>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2806,9 +2880,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 3949738
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.polaris_sweet_white>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2828,9 +2904,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 16171844
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.honey_wine>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2850,9 +2928,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 11546150
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.red_queen>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2872,9 +2952,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 16171844
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.miners_star>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2896,9 +2978,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 16383998
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.rum>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2920,9 +3004,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 6192150
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.riesling_dry_white>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2944,9 +3030,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 16171844
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.sunset_glow>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2968,9 +3056,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 16171844
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.madame_shexiang>"
       },
       "model": {
         "type": "minecraft:model",
@@ -2992,9 +3082,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 11546150
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.sweet_berry_wine>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3016,9 +3108,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 3949738
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.sherry>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3038,9 +3132,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 3949738
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.mother_snow>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3062,9 +3158,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 16701501
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.luminous_bride>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3084,9 +3182,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 16701501
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.glowflower_brew>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3106,9 +3206,11 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
+            "potion": "minecraft:water",
             "custom_color": 6192150
           }
-        }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.sauvignon_blanc_dry_white>"
       },
       "model": {
         "type": "minecraft:model",
@@ -3126,8 +3228,12 @@
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.vinegar>",
         "components": {
-          "minecraft:max_stack_size": 16
-        }
+          "minecraft:max_stack_size": 16,
+          "minecraft:potion_contents": {
+            "potion": "minecraft:water"
+          }
+        },
+        "custom_name": "<!i><lang:block.kaleidoscope_tavern.vinegar>"
       },
       "model": {
         "type": "minecraft:model",
