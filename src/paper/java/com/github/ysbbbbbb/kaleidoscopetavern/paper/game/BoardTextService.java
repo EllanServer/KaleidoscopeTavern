@@ -369,13 +369,17 @@ public final class BoardTextService implements Listener {
     }
 
     private void tryMergeChalkboards(BukkitFurniture placed) {
-        if (!placed.isValid() || !placed.currentVariant().name().equals("ground")
+        String variant = placed.currentVariant().name();
+        if (!placed.isValid() || !(variant.equals("ground") || variant.equals("wall"))
                 || !new FurnitureState(plugin, placed).string("board_text", "").isBlank()) {
             return;
         }
         List<BukkitFurniture> candidates = nearbyFurniture(placed.location(), 2.25).stream()
                 .filter(furniture -> furniture.id().toString().equals(CHALKBOARD))
-                .filter(furniture -> furniture.currentVariant().name().equals("ground"))
+                .filter(furniture -> {
+                    String candidateVariant = furniture.currentVariant().name();
+                    return candidateVariant.equals("ground") || candidateVariant.equals("wall");
+                })
                 .filter(furniture -> new FurnitureState(plugin, furniture).string("board_text", "").isBlank())
                 .filter(furniture -> yawDistance(furniture.location().getYaw(), placed.location().getYaw()) < 1F)
                 .toList();
@@ -393,7 +397,7 @@ public final class BoardTextService implements Listener {
             removeDisplay(new FurnitureState(plugin, rightBoard));
             CraftEngineFurniture.remove(left, false, false);
             CraftEngineFurniture.remove(rightBoard, false, false);
-            center.setVariant("ground_large", true);
+            center.setVariant(center.currentVariant().name() + "_large", true);
             new FurnitureState(plugin, center).integer("board_large_count", 3);
             refreshDisplay(center);
             center.location().getWorld().playSound(center.location(), Sound.BLOCK_WOOD_PLACE, 1F, 0.9F);
@@ -403,14 +407,14 @@ public final class BoardTextService implements Listener {
 
     private static BukkitFurniture sideAt(List<BukkitFurniture> candidates, BukkitFurniture center,
                                           Vector right, int side) {
-        Location origin = center.location();
+        Location origin = chalkboardMergeOrigin(center);
         BukkitFurniture best = null;
         double bestError = Double.MAX_VALUE;
         for (BukkitFurniture candidate : candidates) {
             if (candidate == center) {
                 continue;
             }
-            Vector delta = candidate.location().toVector().subtract(origin.toVector());
+            Vector delta = chalkboardMergeOrigin(candidate).toVector().subtract(origin.toVector());
             double projection = delta.dot(right);
             Vector lateral = delta.clone().subtract(right.clone().multiply(projection));
             double error = Math.abs(projection - side) + lateral.length() * 2;
@@ -420,6 +424,21 @@ public final class BoardTextService implements Listener {
             }
         }
         return best;
+    }
+
+    private static Location chalkboardMergeOrigin(BukkitFurniture furniture) {
+        Location origin = furniture.location().clone();
+        if (!isWallBoard(furniture)) {
+            return origin;
+        }
+        // CE stores a centred wall anchor half a block above and half a block
+        // behind the equivalent ground anchor.  Normalise to the rendered panel
+        // so boards placed through either Forge-supported gesture share a row.
+        Vector forward = origin.getDirection().setY(0);
+        if (forward.lengthSquared() > 0) {
+            origin.add(forward.normalize().multiply(0.5));
+        }
+        return origin.subtract(0, 0.5, 0);
     }
 
     private void refreshDisplay(BukkitFurniture furniture) {
@@ -595,12 +614,17 @@ public final class BoardTextService implements Listener {
                                              TextDisplay.TextAlignment alignment) {
         Location origin = furniture.location().clone();
         boolean sandwich = isSandwichBoard(furniture);
+        boolean wall = !sandwich && isWallBoard(furniture);
         float scale = sandwich ? SANDWICH_TEXT_SCALE : CHALKBOARD_TEXT_SCALE;
         int lineHeight = sandwich ? SANDWICH_LINE_HEIGHT : CHALKBOARD_LINE_HEIGHT;
         double localVerticalOffset = (FIRST_LINE_ENTITY_OFFSET - lineIndex * lineHeight) * scale;
+        // A ground chalkboard's panel hangs at the back of its cell, 0.4375
+        // behind the furniture origin; a wall chalkboard's origin sits on the
+        // wall plane with the panel 0..1/16 in front of it, so its text goes
+        // just outside the panel's outward face instead.
         double forwardOffset = sandwich
                 ? 0.06 - localVerticalOffset * Math.sin(SANDWICH_TILT_RADIANS)
-                : -0.43;
+                : wall ? 0.07 : -0.43;
         Vector forward = origin.getDirection().setY(0);
         if (forward.lengthSquared() > 0) {
             forward.normalize().multiply(forwardOffset);
@@ -609,7 +633,10 @@ public final class BoardTextService implements Listener {
         double verticalOffset = sandwich
                 ? localVerticalOffset * Math.cos(SANDWICH_TILT_RADIANS)
                 : localVerticalOffset;
-        origin.add(0, (sandwich ? 1.06 : 1.535) + verticalOffset, 0);
+        // The wall anchor's centre alignment stores the furniture origin half
+        // a block above a ground board's, while the board itself renders at
+        // the same world height, so wall text drops the same half block.
+        origin.add(0, (sandwich ? 1.06 : wall ? 1.035 : 1.535) + verticalOffset, 0);
 
         double alignedCenterUnits = switch (alignment) {
             case LEFT -> (lineWidthUnits - maxWidthUnits) / 2.0;
@@ -639,7 +666,7 @@ public final class BoardTextService implements Listener {
     }
 
     private static int textMaxWidth(BukkitFurniture furniture) {
-        if (furniture.currentVariant().name().equals("ground_large")) {
+        if (isLargeBoard(furniture)) {
             return 232;
         }
         return isSandwichBoard(furniture) ? 55 : 63;
@@ -716,13 +743,22 @@ public final class BoardTextService implements Listener {
 
     private static int maxTextLength(BukkitFurniture furniture) {
         if (furniture.id().toString().equals(CHALKBOARD)) {
-            return furniture.currentVariant().name().equals("ground_large") ? 1_500 : 350;
+            return isLargeBoard(furniture) ? 1_500 : 350;
         }
         return 320;
     }
 
     private static boolean isBoard(BukkitFurniture furniture) {
         return furniture.id().toString().equals(CHALKBOARD) || isSandwichBoard(furniture);
+    }
+
+    /** Matches ground_large and wall_large; sandwich boards have no large variants. */
+    private static boolean isLargeBoard(BukkitFurniture furniture) {
+        return furniture.currentVariant().name().endsWith("_large");
+    }
+
+    private static boolean isWallBoard(BukkitFurniture furniture) {
+        return furniture.currentVariant().name().startsWith("wall");
     }
 
     private static boolean isSandwichBoard(BukkitFurniture furniture) {

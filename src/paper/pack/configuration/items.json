@@ -656,8 +656,13 @@
           "ground": {
             "rotation": "four",
             "alignment": "center"
+          },
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
           }
-        }
+        },
+        "ignore_placer": true
       }
     },
     "kaleidoscope_tavern:table": {
