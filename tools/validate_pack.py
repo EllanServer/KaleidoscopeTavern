@@ -712,6 +712,9 @@ def validate() -> dict[str, int]:
     if "StateFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register state_furniture before pack loading")
+    if "PressingTubFurnitureBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register pressing_tub_furniture before pack loading")
     if "RedstoneFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register redstone_furniture before pack loading")
@@ -766,6 +769,39 @@ def validate() -> dict[str, int]:
         if required_token not in state_behavior_source:
             raise AssertionError(
                 "state_furniture must persist through CE's dirty custom-data lifecycle; "
+                f"missing token: {required_token}")
+
+    pressing_behavior_source = (
+        game_package / "furniture" / "PressingTubFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "public void onPlace(Player player)",
+            "public void onLoad()",
+            "public void postRemove(Player player)",
+            "public void onUnload(boolean isStopping)",
+            "PressingTubSemantics.isLandingPosition",
+            "PressingTubSemantics.isAboveColumn"):
+        if required_token not in pressing_behavior_source:
+            raise AssertionError(
+                "pressing_tub_furniture must own CE lifecycle and indexed lookup; "
+                f"missing token: {required_token}")
+
+    station_source = (game_package / "StationService.java").read_text(
+        encoding="utf-8-sig")
+    for stale_token in (
+            "bootstrapPressVisuals", "onEntitiesLoad(EntitiesLoadEvent event)",
+            "pressingTubBelow", "getNearbyEntities(feet"):
+        if stale_token in station_source:
+            raise AssertionError(
+                "CE pressing-tub lifecycle/index must replace global or nearby entity scans; "
+                f"stale token found: {stale_token}")
+    for required_token in (
+            "PressingTubFurnitureBehavior.bind(pressingTubLifecycleHandler)",
+            "PressingTubFurnitureBehavior.hasPotentialBelow(living.getLocation())",
+            "PressingTubFurnitureBehavior.findBelow(living.getLocation())"):
+        if required_token not in station_source:
+            raise AssertionError(
+                "StationService must retain only the source-compatible fallOn bridge; "
                 f"missing token: {required_token}")
     stale_redstone_tokens = (
         "pollRedstone", "pollIncenseRedstone", "tap_triggered",
@@ -1911,6 +1947,16 @@ def validate() -> dict[str, int]:
         if index != 0 or behavior != {"type": state_type}:
             raise AssertionError(
                 f"{furniture_id}: state_furniture must be the exact index-zero behavior")
+
+    pressing_id = f"{NAMESPACE}:pressing_tub"
+    pressing_behaviors = list(furniture[pressing_id].get("behaviors", []))
+    pressing_single_behavior = furniture[pressing_id].get("behavior")
+    if pressing_single_behavior is not None:
+        pressing_behaviors.append(pressing_single_behavior)
+    expected_pressing_behavior = {"type": f"{NAMESPACE}:pressing_tub_furniture"}
+    if len(pressing_behaviors) != 2 or pressing_behaviors[1] != expected_pressing_behavior:
+        raise AssertionError(
+            "pressing_tub must put pressing_tub_furniture after its index-zero state controller")
 
     configured_redstone: dict[str, dict[str, Any]] = {}
     redstone_type = f"{NAMESPACE}:redstone_furniture"

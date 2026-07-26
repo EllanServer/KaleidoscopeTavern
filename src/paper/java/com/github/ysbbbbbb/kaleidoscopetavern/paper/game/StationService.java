@@ -5,6 +5,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.BarrelRecipe;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.PressingRecipe;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.PressingTubFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
@@ -45,7 +46,6 @@ import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -77,7 +77,6 @@ public final class StationService implements Listener {
     private static final String BARREL = NAMESPACE + "barrel";
     private static final String SHAKER = NAMESPACE + "shaker";
     private static final String EMPTY_GLASSWARE = NAMESPACE + "empty_glassware";
-    private static final Key PRESSING_TUB_KEY = Key.of(PRESSING_TUB);
     private static final Key BARREL_KEY = Key.of(BARREL);
     private static final int PRESS_CAPACITY = 1_000;
     private static final int BARREL_CAPACITY = 4_000;
@@ -103,6 +102,8 @@ public final class StationService implements Listener {
     private BukkitTask fallingCleanupTask;
     private final RedstoneFurnitureBehavior.Handler incenseRedstoneHandler =
             (furniture, powered, initial) -> setIncenseActive(furniture, powered, !initial);
+    private final PressingTubFurnitureBehavior.Handler pressingTubLifecycleHandler =
+            this::refreshPressVisualsDeferred;
     private final TickingFurnitureBehavior.Handler barrelTickingHandler =
             new TickingFurnitureBehavior.Handler() {
                 @Override
@@ -132,6 +133,7 @@ public final class StationService implements Listener {
     }
 
     public void start() {
+        PressingTubFurnitureBehavior.bind(pressingTubLifecycleHandler);
         RedstoneFurnitureBehavior.bind(
                 RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
         TickingFurnitureBehavior.bind(
@@ -139,10 +141,10 @@ public final class StationService implements Listener {
         portableShakerTask = Bukkit.getScheduler().runTaskTimer(plugin, this::tickPortableShakers, 1L, 1L);
         fallingCleanupTask = Bukkit.getScheduler().runTaskTimer(
                 plugin, this::cleanupFalling, 600L, 600L);
-        Bukkit.getScheduler().runTask(plugin, this::bootstrapPressVisuals);
     }
 
     public void stop() {
+        PressingTubFurnitureBehavior.unbind(pressingTubLifecycleHandler);
         RedstoneFurnitureBehavior.unbind(
                 RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
         TickingFurnitureBehavior.unbind(
@@ -184,9 +186,7 @@ public final class StationService implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onFurniturePlace(FurniturePlaceEvent event) {
         String id = event.furniture().id().toString();
-        if (id.equals(PRESSING_TUB)) {
-            Bukkit.getScheduler().runTask(plugin, () -> refreshPressVisuals(event.furniture()));
-        } else if (id.equals(BARREL)) {
+        if (id.equals(BARREL)) {
             Bukkit.getScheduler().runTask(plugin, () -> setBarrelOpen(event.furniture(), true, false));
         } else if (id.equals(SHAKER)) {
             loadPortableShaker(event.furniture());
@@ -295,12 +295,17 @@ public final class StationService implements Listener {
                 || !(event.getEntity() instanceof LivingEntity living)) {
             return;
         }
+        if (!PressingTubFurnitureBehavior.hasLoadedInWorld(living.getWorld())) {
+            falling.remove(living.getUniqueId());
+            return;
+        }
         UUID id = living.getUniqueId();
         Float tracked = falling.remove(id);
         float fallDistance = tracked == null
                 ? living.getFallDistance()
                 : Math.max(living.getFallDistance(), tracked);
-        if (fallDistance >= 0.5F && handlePressLanding(living, fallDistance)) {
+        if (fallDistance >= PressingTubSemantics.MIN_FALL_DISTANCE
+                && handlePressLanding(living, fallDistance)) {
             event.setCancelled(true);
         }
     }
@@ -501,19 +506,6 @@ public final class StationService implements Listener {
         }
     }
 
-    @EventHandler
-    public void onEntitiesLoad(EntitiesLoadEvent event) {
-        for (Entity entity : event.getEntities()) {
-            if (!(entity instanceof ItemDisplay) || !CraftEngineFurniture.isFurniture(entity)) {
-                continue;
-            }
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (furniture != null && furniture.id().toString().equals(PRESSING_TUB)) {
-                Bukkit.getScheduler().runTask(plugin, () -> refreshPressVisuals(furniture));
-            }
-        }
-    }
-
     private boolean interactPress(Player player, BukkitFurniture furniture, InteractionHand usedHand) {
         FurnitureState state = new FurnitureState(furniture);
         ItemStack hand = usedHand == InteractionHand.MAIN_HAND
@@ -706,7 +698,9 @@ public final class StationService implements Listener {
     private void trackPressLanding(LivingEntity living) {
         float currentFallDistance = living.getFallDistance();
         if (currentFallDistance > 0) {
-            falling.merge(living.getUniqueId(), currentFallDistance, Math::max);
+            if (PressingTubFurnitureBehavior.hasPotentialBelow(living.getLocation())) {
+                falling.merge(living.getUniqueId(), currentFallDistance, Math::max);
+            }
             return;
         }
         // Nearly every movement event is an entity walking on the ground. If
@@ -716,7 +710,8 @@ public final class StationService implements Listener {
             return;
         }
         Float trackedFallDistance = falling.remove(living.getUniqueId());
-        if (trackedFallDistance != null && trackedFallDistance >= 0.5F) {
+        if (trackedFallDistance != null
+                && trackedFallDistance >= PressingTubSemantics.MIN_FALL_DISTANCE) {
             handlePressLanding(living, trackedFallDistance);
         }
     }
@@ -727,7 +722,7 @@ public final class StationService implements Listener {
         if (recent != null) {
             return recent;
         }
-        boolean pressed = pressingTubBelow(living.getLocation())
+        boolean pressed = PressingTubFurnitureBehavior.findBelow(living.getLocation())
                 .map(this::pressOne)
                 .orElse(false);
         recentLandings.put(id, pressed);
@@ -1482,19 +1477,9 @@ public final class StationService implements Listener {
         state.clear("barrel_item_visuals", "barrel_fluid_visual");
     }
 
-    /** Rebuilds the legacy pressing-tub block-entity visuals after a reload. */
-    private void bootstrapPressVisuals() {
-        for (World world : Bukkit.getWorlds()) {
-            for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
-                if (!CraftEngineFurniture.isFurniture(display)) {
-                    continue;
-                }
-                BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                if (furniture != null && furniture.id().toString().equals(PRESSING_TUB)) {
-                    refreshPressVisuals(furniture);
-                }
-            }
-        }
+    /** CE lifecycle callbacks arrive before every newly loaded meta entity is fully settled. */
+    private void refreshPressVisualsDeferred(BukkitFurniture furniture) {
+        Bukkit.getScheduler().runTask(plugin, () -> refreshPressVisuals(furniture));
     }
 
     private void refreshPressVisuals(BukkitFurniture furniture) {
@@ -1696,24 +1681,6 @@ public final class StationService implements Listener {
         hash = (hash ^ hash >>> 27) * 0x94d049bb133111ebL;
         hash ^= hash >>> 31;
         return (float) (int) hash / (float) Integer.MAX_VALUE;
-    }
-
-    private Optional<BukkitFurniture> pressingTubBelow(Location feet) {
-        return feet.getWorld().getNearbyEntities(feet, 0.9, 1.25, 0.9).stream()
-                .filter(CraftEngineFurniture::isFurniture)
-                .map(CraftEngineFurniture::getLoadedFurnitureByMetaEntity)
-                .filter(java.util.Objects::nonNull)
-                .filter(furniture -> furniture.id().equals(PRESSING_TUB_KEY))
-                .filter(furniture -> furniture.currentVariant().name().equals("ground"))
-                .filter(furniture -> {
-                    Location base = furniture.location();
-                    double relativeY = feet.getY() - base.getY();
-                    return Math.abs(feet.getX() - base.getX()) <= 0.5
-                            && Math.abs(feet.getZ() - base.getZ()) <= 0.5
-                            && relativeY >= 0.35 && relativeY <= 1.25;
-                })
-                .min(Comparator.comparingDouble(furniture ->
-                        furniture.location().distanceSquared(feet)));
     }
 
     private Optional<String> fluidFromBucket(String bucketId) {

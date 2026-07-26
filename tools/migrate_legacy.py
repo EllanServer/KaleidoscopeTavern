@@ -2210,6 +2210,11 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         # directly instead of touching one Bukkit PDC key per business field.
         behaviors.append({"type": f"{NAMESPACE}:state_furniture"})
 
+    if block_id == "pressing_tub":
+        # CE owns loaded/unloaded furniture discovery and the spatial index;
+        # Paper only supplies the block-style fallOn event CE does not expose.
+        behaviors.append({"type": f"{NAMESPACE}:pressing_tub_furniture"})
+
     def display_slots(
         positions: list[str],
         width: float,
