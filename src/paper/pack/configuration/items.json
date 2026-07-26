@@ -1852,6 +1852,9 @@
       },
       "behaviors": [
         {
+          "type": "kaleidoscope_tavern:grapevine_item"
+        },
+        {
           "type": "block_item",
           "block": "kaleidoscope_tavern:wild_grapevine"
         },

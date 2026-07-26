@@ -260,7 +260,12 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("block/HangingGrapeCropBehavior.java", "addGrowthPoints"),
         ("src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml", "harvest_with_shears"),
     ),
-    "GrapevineItem.java": (("tools/migrate_legacy.py", '"fuel_time"'),),
+    "GrapevineItem.java": (
+        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+         "GrapevineItemBehavior.java", "useOnBlock"),
+        ("block/BlockService.java", "useGrapevineOnBlock"),
+        ("tools/migrate_legacy.py", '"fuel_time"'),
+    ),
     "GrapevineTrellisBlock.java": (
         ("block/BlockService.java", "interactVineTrellis"),
         ("block/TrellisBehavior.java", "implements BonemealableBlock"),
@@ -313,7 +318,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "TiltedRackBlock.java": (("DisplayStorageService.java", "TILTED_RACK"),),
     "TrellisBlock.java": (
-        ("block/BlockService.java", "interactPlainTrellis"),
+        ("block/BlockService.java", "useGrapevineOnBlock"),
         ("block/TrellisBehavior.java", "updateStateForPlacement"),
         ("src/paper/pack/configuration/blocks.json", "item.axe.wax_off"),
     ),
@@ -897,16 +902,45 @@ def validate() -> dict[str, int]:
 
     block_service_source = (game_package / "block/BlockService.java").read_text(
         encoding="utf-8-sig")
+    grapevine_item_behavior_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+        "GrapevineItemBehavior.java"
+    ).read_text(encoding="utf-8-sig")
     for evidence in (
             "ItemStack eventItem = event.item();",
             "String planted = grapevineFor(soil);",
             'withNamed(replacement, "type", stringProperty(trellisState, "type"))',
             "void plantGrapevineOnTrellis(",
-            "onRightClickWithGrapevine"):
+            "useGrapevineOnBlock"):
         if evidence not in block_service_source:
             raise AssertionError(f"BlockService grapevine planting evidence is missing: {evidence}")
-    if '"single".equals(stringProperty(state, "type"))' in block_service_source:
-        raise AssertionError("Grapevine planting must support connected trellis shapes")
+    for evidence in (
+            'TYPE = Key.of("kaleidoscope_tavern", "grapevine_item")',
+            "ItemBehaviors.register(TYPE",
+            "current.useOnBlock(context)"):
+        if evidence not in grapevine_item_behavior_source:
+            raise AssertionError(
+                f"CE grapevine item behavior evidence is missing: {evidence}")
+    for evidence in (
+            "GrapevineItemBehavior.register()",
+            "blocks.start()",
+            "blocks.stop()"):
+        if evidence not in plugin_source:
+            raise AssertionError(
+                f"CE grapevine item lifecycle evidence is missing: {evidence}")
+    if "PlayerInteractEvent" in block_service_source or "onRightClickWithGrapevine" in block_service_source:
+        raise AssertionError(
+            "Grapevine planting must not retain a global Bukkit PlayerInteractEvent listener")
+    grapevine_behaviors = items[f"{NAMESPACE}:grapevine"].get("behaviors", [])
+    if [behavior.get("type") for behavior in grapevine_behaviors] != [
+            f"{NAMESPACE}:grapevine_item", "block_item", "compostable_item"]:
+        raise AssertionError(
+            "Grapevine must run its CE trellis interaction before wild placement and composting")
+    if grapevine_behaviors[1].get("block") != f"{NAMESPACE}:wild_grapevine":
+        raise AssertionError("Grapevine's CE block-item fallback must place wild_grapevine")
+    if '!"single".equals(stringProperty(trellisState, "type"))' not in block_service_source:
+        raise AssertionError(
+            "Grapevine planting must retain the original single-trellis restriction")
     for stale_listener in ("interactWildHead", "Material.HONEYCOMB", "WAX_ON", "WAX_OFF"):
         if stale_listener in block_service_source:
             raise AssertionError(

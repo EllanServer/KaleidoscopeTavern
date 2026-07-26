@@ -3063,6 +3063,9 @@ def build_items(
         elif item_id in block_ids:
             behaviors.append({"type": "block_item", "block": f"{NAMESPACE}:{item_id}"})
         elif item_id == "grapevine":
+            # Resolve trellis planting from the grapevine itself, then retain
+            # CE's native block item as the fallback for wild placement.
+            behaviors.append({"type": f"{NAMESPACE}:grapevine_item"})
             behaviors.append({"type": "block_item", "block": f"{NAMESPACE}:wild_grapevine"})
         compost_chance = 0.25 if item_id == "grapevine" else (
             0.5 if item_id in {"grape", "ice_grape", "gold_grape", "green_grape"} else None
