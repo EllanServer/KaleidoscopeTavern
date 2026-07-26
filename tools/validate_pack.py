@@ -31,6 +31,19 @@ EXPECTED_REDSTONE_FURNITURE = {
     "circular_rack": ("storage", 1),
     "holder": ("storage", 1),
 }
+EXPECTED_TICKING_FURNITURE = {
+    "sakura_incense": ("ambient", 1),
+    "pine_incense": ("ambient", 1),
+    "ginkgo_incense": ("ambient", 1),
+    "snow_incense": ("ambient", 1),
+    "spore_incense": ("ambient", 1),
+    "catnip_incense": ("ambient", 1),
+    "butterfly_incense": ("ambient", 1),
+    "firefly_incense": ("ambient", 1),
+    "mystery_cocktail": ("ambient", 1),
+    "circular_rack": ("ambient", 1),
+    "barrel": ("barrel", 97),
+}
 CUSTOM_EFFECT_ICON_IDS = (
     "slightly_tipsy",
     "high_heels",
@@ -149,6 +162,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     "CircularRackBlock.java": (
         ("DisplayStorageService.java", "CIRCULAR_RACK"),
         ("AmbientFurnitureService.java", "tickCircularRack"),
+        ("furniture/TickingFurnitureBehavior.java", "createFurnitureTicker"),
     ),
     "CocktailBlockItem.java": (
         ("EffectService.java", "onConsume"),
@@ -178,6 +192,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("StationService.java", "RedstoneFurnitureBehavior.bind("),
         ("StationService.java", "RedstoneFurnitureBehavior.Channel.INCENSE"),
         ("AmbientFurnitureService.java", "tickIncense"),
+        ("AmbientFurnitureService.java", "TickingFurnitureBehavior.bind("),
     ),
     "JuiceBucketItem.java": (("tools/migrate_legacy.py", "milk_bucket"),),
     "MolotovBlock.java": (("MolotovService.java", "onProjectileHit"),),
@@ -187,6 +202,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "MysteryCocktailBlock.java": (
         ("AmbientFurnitureService.java", "tickMysteryCocktail"),
+        ("furniture/TickingFurnitureBehavior.java", "createFurnitureTicker"),
     ),
     "PressingTubBlock.java": (
         ("StationService.java", "interactPress"),
@@ -237,7 +253,7 @@ TAP_BEHAVIOR_COVERAGE = {
 }
 
 TICKING_BLOCK_ENTITY_COVERAGE = {
-    "BarrelBlockEntity.java": ("StationService.java", "tickBarrels"),
+    "BarrelBlockEntity.java": ("StationService.java", "barrelTickingHandler"),
     "BarStoolBlockEntity.java": ("BarStoolVisualService.java", "tickOccupied"),
     "TapBlockEntity.java": ("TapService.java", "TAKE_PARTICLE_TICKS"),
     "TextBlockEntity.java": ("BoardTextService.java", "validateEditDistance"),
@@ -300,7 +316,10 @@ BLOCK_ENTITY_COVERAGE = {
     ),
     "GlasswareHolderBlockEntity.java": (("DisplayStorageService.java", "GLASSWARE_HOLDER"),),
     "HolderBlockEntity.java": (("DisplayStorageService.java", "HOLDER"),),
-    "IncenseBlockEntity.java": (("AmbientFurnitureService.java", "tickIncense"),),
+    "IncenseBlockEntity.java": (
+        ("AmbientFurnitureService.java", "tickIncense"),
+        ("furniture/TickingFurnitureBehavior.java", "createFurnitureTicker"),
+    ),
     "SandwichBlockEntity.java": (("BoardTextService.java", "isSandwichBoard"),),
     "StorageBlockEntity.java": (("DisplayStorageService.java", "StorageSpec"),),
     "TextBlockEntity.java": (("BoardTextService.java", "board_text"),),
@@ -667,6 +686,30 @@ def validate() -> dict[str, int]:
     if "RedstoneFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register redstone_furniture before pack loading")
+    if "TickingFurnitureBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register ticking_furniture before pack loading")
+
+    stale_ambient_scan_tokens = (
+        "runTaskTimer", "Bukkit.getEntity", "CraftEngineFurniture",
+        "FurniturePlaceEvent", "FurnitureBreakEvent", "EntitiesLoadEvent",
+        "tracked", "bootstrap",
+    )
+    for stale_token in stale_ambient_scan_tokens:
+        if stale_token in ambient_source:
+            raise AssertionError(
+                "CE furniture tickers own ambient furniture lifecycle; "
+                f"AmbientFurnitureService must not reintroduce {stale_token}")
+    stale_barrel_scan_tokens = (
+        "tickBarrels", "loadedBarrels", "barrelTask", "barrelTickCounter",
+        "bootstrapBarrels",
+    )
+    for stale_token in stale_barrel_scan_tokens:
+        if stale_token in station_source:
+            raise AssertionError(
+                "CE furniture tickers own barrel lifecycle; "
+                f"StationService must not reintroduce {stale_token}")
+
     all_paper_java = "\n".join(
         path.read_text(encoding="utf-8-sig")
         for path in sorted((ROOT / "src/paper/java").rglob("*.java"))
@@ -1823,6 +1866,43 @@ def validate() -> dict[str, int]:
         if configured_redstone[furniture_id] != expected_behavior:
             raise AssertionError(
                 f"{furniture_id}: redstone behavior must be exactly {expected_behavior!r}")
+
+    configured_ticking: dict[str, dict[str, Any]] = {}
+    ticking_type = f"{NAMESPACE}:ticking_furniture"
+    for furniture_id, definition in furniture.items():
+        all_behaviors = list(definition.get("behaviors", []))
+        single_behavior = definition.get("behavior")
+        if single_behavior is not None:
+            all_behaviors.append(single_behavior)
+        ticking_behaviors = [
+            behavior for behavior in all_behaviors
+            if behavior.get("type") == ticking_type
+        ]
+        if len(ticking_behaviors) > 1:
+            raise AssertionError(
+                f"{furniture_id}: duplicate ticking_furniture behaviors")
+        if ticking_behaviors:
+            configured_ticking[furniture_id] = ticking_behaviors[0]
+
+    expected_ticking_ids = {
+        f"{NAMESPACE}:{block_id}" for block_id in EXPECTED_TICKING_FURNITURE
+    }
+    if set(configured_ticking) != expected_ticking_ids:
+        missing = sorted(expected_ticking_ids - set(configured_ticking))
+        unexpected = sorted(set(configured_ticking) - expected_ticking_ids)
+        raise AssertionError(
+            "Ticking furniture coverage drift: "
+            f"missing={missing}, unexpected={unexpected}")
+    for block_id, (channel, interval) in EXPECTED_TICKING_FURNITURE.items():
+        furniture_id = f"{NAMESPACE}:{block_id}"
+        expected_behavior = {
+            "type": ticking_type,
+            "channel": channel,
+            "interval": interval,
+        }
+        if configured_ticking[furniture_id] != expected_behavior:
+            raise AssertionError(
+                f"{furniture_id}: ticking behavior must be exactly {expected_behavior!r}")
 
     storage_slot_counts = {
         "bar_cabinet": 2,

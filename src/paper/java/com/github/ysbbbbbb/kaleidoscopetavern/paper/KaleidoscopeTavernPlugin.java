@@ -25,6 +25,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBlockShape;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.WildGrapevineBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.EffectHudPlaceholder;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
@@ -86,6 +87,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             HangingGrapeCropBehavior.register();
             WildGrapevineBehavior.register();
             RedstoneFurnitureBehavior.register();
+            TickingFurnitureBehavior.register();
             if (getConfig().getBoolean("pack.install-on-startup", true)) {
                 packResult = PackInstaller.install(this);
             }
@@ -129,7 +131,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         boards = new BoardTextService(this, items);
         taps = new TapService(this, stations, items);
         displayStorage = new DisplayStorageService(this, catalog, items);
-        ambientFurniture = new AmbientFurnitureService(this, displayStorage);
+        ambientFurniture = new AmbientFurnitureService(displayStorage);
         barStoolVisuals = new BarStoolVisualService(this, items);
         FurnitureConnectionService furnitureConnections = new FurnitureConnectionService(this);
 
@@ -141,7 +143,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         getServer().getPluginManager().registerEvents(new BottlePlacementService(this, catalog, items), this);
         getServer().getPluginManager().registerEvents(new BottleFurnitureService(this, catalog, items, effects), this);
         getServer().getPluginManager().registerEvents(displayStorage, this);
-        getServer().getPluginManager().registerEvents(ambientFurniture, this);
         getServer().getPluginManager().registerEvents(barStoolVisuals, this);
         getServer().getPluginManager().registerEvents(shakerVisuals, this);
         getServer().getPluginManager().registerEvents(boards, this);

@@ -12573,12 +12573,19 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:redstone_furniture",
-        "channel": "incense",
-        "interval": 1,
-        "data_key": "kaleidoscope_tavern:redstone_sakura_incense"
-      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_sakura_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -12745,12 +12752,19 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:redstone_furniture",
-        "channel": "incense",
-        "interval": 1,
-        "data_key": "kaleidoscope_tavern:redstone_pine_incense"
-      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_pine_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -12917,12 +12931,19 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:redstone_furniture",
-        "channel": "incense",
-        "interval": 1,
-        "data_key": "kaleidoscope_tavern:redstone_ginkgo_incense"
-      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_ginkgo_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -13089,12 +13110,19 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:redstone_furniture",
-        "channel": "incense",
-        "interval": 1,
-        "data_key": "kaleidoscope_tavern:redstone_spore_incense"
-      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_spore_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -13261,12 +13289,19 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:redstone_furniture",
-        "channel": "incense",
-        "interval": 1,
-        "data_key": "kaleidoscope_tavern:redstone_catnip_incense"
-      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_catnip_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -13433,12 +13468,19 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:redstone_furniture",
-        "channel": "incense",
-        "interval": 1,
-        "data_key": "kaleidoscope_tavern:redstone_snow_incense"
-      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_snow_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -13605,12 +13647,19 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:redstone_furniture",
-        "channel": "incense",
-        "interval": 1,
-        "data_key": "kaleidoscope_tavern:redstone_butterfly_incense"
-      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_butterfly_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -13777,12 +13826,19 @@
           }
         ]
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:redstone_furniture",
-        "channel": "incense",
-        "interval": 1,
-        "data_key": "kaleidoscope_tavern:redstone_firefly_incense"
-      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_firefly_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -14913,6 +14969,11 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:ticking_furniture",
+        "channel": "ambient",
+        "interval": 1
       }
     },
     "kaleidoscope_tavern:white_lady": {
@@ -16399,6 +16460,11 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:ticking_furniture",
+        "channel": "barrel",
+        "interval": 97
       }
     },
     "kaleidoscope_tavern:bar_cabinet": {
@@ -17312,6 +17378,11 @@
           "channel": "storage",
           "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_circular_rack"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
         }
       ]
     },

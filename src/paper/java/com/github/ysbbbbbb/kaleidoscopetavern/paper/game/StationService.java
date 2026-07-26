@@ -6,6 +6,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.Barre
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.PressingRecipe;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import io.papermc.paper.event.entity.EntityMoveEvent;
 import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
@@ -21,7 +22,6 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.Vec3d;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
@@ -46,7 +46,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
-import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -97,15 +96,25 @@ public final class StationService implements Listener {
     private final NamespacedKey barrelVisualRoleKey;
     private final NamespacedKey barrelVisualIndexKey;
     private final Map<UUID, Float> falling = new HashMap<>();
-    private long barrelTickCounter;
     private final Map<UUID, Boolean> recentLandings = new HashMap<>();
     private final Map<UUID, PortableShakerUse> portableShakers = new HashMap<>();
-    private final Set<UUID> loadedBarrels = new HashSet<>();
     private final Set<UUID> pendingVanillaBucketEmpty = new HashSet<>();
     private BukkitTask portableShakerTask;
-    private BukkitTask barrelTask;
+    private BukkitTask fallingCleanupTask;
     private final RedstoneFurnitureBehavior.Handler incenseRedstoneHandler =
             (furniture, powered, initial) -> setIncenseActive(furniture, powered, !initial);
+    private final TickingFurnitureBehavior.Handler barrelTickingHandler =
+            new TickingFurnitureBehavior.Handler() {
+                @Override
+                public void tick(BukkitFurniture furniture) {
+                    tickBarrel(furniture);
+                }
+
+                @Override
+                public void onReady(BukkitFurniture furniture) {
+                    syncBarrelState(furniture);
+                }
+            };
 
     public StationService(JavaPlugin plugin, ContentCatalog catalog, ItemService items,
                           Messages messages, ShakerVisualService shakerVisuals) {
@@ -125,27 +134,30 @@ public final class StationService implements Listener {
     public void start() {
         RedstoneFurnitureBehavior.bind(
                 RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
+        TickingFurnitureBehavior.bind(
+                TickingFurnitureBehavior.Channel.BARREL, barrelTickingHandler);
         portableShakerTask = Bukkit.getScheduler().runTaskTimer(plugin, this::tickPortableShakers, 1L, 1L);
-        barrelTask = Bukkit.getScheduler().runTaskTimer(plugin, this::tickBarrels, 1L, 1L);
+        fallingCleanupTask = Bukkit.getScheduler().runTaskTimer(
+                plugin, this::cleanupFalling, 600L, 600L);
         Bukkit.getScheduler().runTask(plugin, this::bootstrapPressVisuals);
-        Bukkit.getScheduler().runTask(plugin, this::bootstrapBarrels);
     }
 
     public void stop() {
         RedstoneFurnitureBehavior.unbind(
                 RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
+        TickingFurnitureBehavior.unbind(
+                TickingFurnitureBehavior.Channel.BARREL, barrelTickingHandler);
         if (portableShakerTask != null) {
             portableShakerTask.cancel();
             portableShakerTask = null;
         }
-        if (barrelTask != null) {
-            barrelTask.cancel();
-            barrelTask = null;
+        if (fallingCleanupTask != null) {
+            fallingCleanupTask.cancel();
+            fallingCleanupTask = null;
         }
         falling.clear();
         recentLandings.clear();
         portableShakers.clear();
-        loadedBarrels.clear();
         pendingVanillaBucketEmpty.clear();
     }
 
@@ -175,7 +187,6 @@ public final class StationService implements Listener {
         if (id.equals(PRESSING_TUB)) {
             Bukkit.getScheduler().runTask(plugin, () -> refreshPressVisuals(event.furniture()));
         } else if (id.equals(BARREL)) {
-            loadedBarrels.add(event.furniture().bukkitEntity().getUniqueId());
             Bukkit.getScheduler().runTask(plugin, () -> setBarrelOpen(event.furniture(), true, false));
         } else if (id.equals(SHAKER)) {
             loadPortableShaker(event.furniture());
@@ -204,16 +215,9 @@ public final class StationService implements Listener {
                 // finished tank fluid is deliberately lost on break.
             }
             case BARREL -> {
-                Entity entity = furniture.bukkitEntity();
-                UUID furnitureId = entity == null ? null : entity.getUniqueId();
                 FurnitureState state = new FurnitureState(plugin, furniture);
                 List<ItemDisplay> visuals = currentBarrelVisuals(furniture, state);
-                deferFurnitureBreak(event, () -> {
-                    if (furnitureId != null) {
-                        loadedBarrels.remove(furnitureId);
-                    }
-                    visuals.forEach(Entity::remove);
-                });
+                deferFurnitureBreak(event, () -> visuals.forEach(Entity::remove));
                 // Forge only drops the barrel itself. Its internal ingredients, fluid and
                 // finished output are deliberately lost when the multiblock is destroyed.
             }
@@ -506,18 +510,7 @@ public final class StationService implements Listener {
             BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
             if (furniture != null && furniture.id().toString().equals(PRESSING_TUB)) {
                 Bukkit.getScheduler().runTask(plugin, () -> refreshPressVisuals(furniture));
-            } else if (furniture != null && furniture.id().toString().equals(BARREL)) {
-                loadedBarrels.add(entity.getUniqueId());
-                Bukkit.getScheduler().runTask(plugin, () -> syncBarrelState(furniture));
             }
-        }
-    }
-
-    @EventHandler
-    public void onEntitiesUnload(EntitiesUnloadEvent event) {
-        for (Entity entity : event.getEntities()) {
-            UUID id = entity.getUniqueId();
-            loadedBarrels.remove(id);
         }
     }
 
@@ -770,7 +763,7 @@ public final class StationService implements Listener {
 
         // With an open barrel, an empty-hand click on any non-centre top cell
         // closes the lid. The source's next 97-tick check decides whether a
-        // recipe can start; tickBarrels deliberately preserves that delay.
+        // recipe can start; the CE furniture ticker deliberately preserves that delay.
         if (hit == BarrelSemantics.Hit.TOP_RIM) {
             if (hand.isEmpty()) {
                 setBarrelOpen(furniture, false, true);
@@ -1286,59 +1279,10 @@ public final class StationService implements Listener {
         }
     }
 
-    /** Restores the source default/open lid variant after plugin or CE reload. */
-    private void bootstrapBarrels() {
-        for (World world : Bukkit.getWorlds()) {
-            for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
-                if (!CraftEngineFurniture.isFurniture(display)) {
-                    continue;
-                }
-                BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                if (furniture != null && furniture.id().equals(BARREL_KEY)) {
-                    loadedBarrels.add(display.getUniqueId());
-                    syncBarrelState(furniture);
-                }
-            }
-        }
-    }
-
-    /** Runs the retained Forge barrel state machine only while its chunk/entity is loaded. */
-    private void tickBarrels() {
-        barrelTickCounter++;
-        if (barrelTickCounter % 600 == 0) {
-            // Entities despawned mid-air never fire a landing; sweep the
-            // fall-tracking map so it cannot accumulate dead UUIDs.
-            falling.keySet().removeIf(id -> Bukkit.getEntity(id) == null);
-        }
-        List<UUID> invalid = null;
-        for (UUID uuid : loadedBarrels) {
-            // The 97-tick phase gate runs before any entity resolution so the
-            // 96 quiet ticks per barrel cost a hash and a modulo only.
-            long offset = uuid.hashCode() % BarrelSemantics.CHECK_INTERVAL
-                    + BarrelSemantics.CHECK_INTERVAL;
-            if ((barrelTickCounter + offset) % BarrelSemantics.CHECK_INTERVAL != 0) {
-                continue;
-            }
-            Entity entity = Bukkit.getEntity(uuid);
-            if (!(entity instanceof ItemDisplay) || !entity.isValid()
-                    || !CraftEngineFurniture.isFurniture(entity)) {
-                invalid = addInvalid(invalid, uuid);
-                continue;
-            }
-            // BlockEntityTicker pauses in lazy chunks; brewing does the same.
-            if (entity.getChunk().getLoadLevel() != Chunk.LoadLevel.ENTITY_TICKING) {
-                continue;
-            }
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (furniture == null || !furniture.id().equals(BARREL_KEY)) {
-                invalid = addInvalid(invalid, uuid);
-                continue;
-            }
-            tickBarrel(furniture);
-        }
-        if (invalid != null) {
-            loadedBarrels.removeAll(invalid);
-        }
+    private void cleanupFalling() {
+        // Entities despawned mid-air never fire a landing; this low-frequency
+        // cleanup is unrelated to furniture ticking and prevents stale UUIDs.
+        falling.keySet().removeIf(id -> Bukkit.getEntity(id) == null);
     }
 
     private void tickBarrel(BukkitFurniture furniture) {
@@ -1752,12 +1696,6 @@ public final class StationService implements Listener {
         hash = (hash ^ hash >>> 27) * 0x94d049bb133111ebL;
         hash ^= hash >>> 31;
         return (float) (int) hash / (float) Integer.MAX_VALUE;
-    }
-
-    private static List<UUID> addInvalid(List<UUID> invalid, UUID uuid) {
-        List<UUID> result = invalid == null ? new ArrayList<>() : invalid;
-        result.add(uuid);
-        return result;
     }
 
     private Optional<BukkitFurniture> pressingTubBelow(Location feet) {

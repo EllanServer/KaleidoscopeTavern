@@ -2284,6 +2284,20 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
             # behavior ordering so future native CE behaviors cannot alias it.
             "data_key": f"{NAMESPACE}:redstone_{block_id}",
         })
+
+    ticking_channel: str | None = None
+    ticking_interval = 1
+    if block_id.endswith("_incense") or block_id in {"mystery_cocktail", "circular_rack"}:
+        ticking_channel = "ambient"
+    elif block_id == "barrel":
+        ticking_channel = "barrel"
+        ticking_interval = 97
+    if ticking_channel is not None:
+        behaviors.append({
+            "type": f"{NAMESPACE}:ticking_furniture",
+            "channel": ticking_channel,
+            "interval": ticking_interval,
+        })
     return behaviors
 
 
