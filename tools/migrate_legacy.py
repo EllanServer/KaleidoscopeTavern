@@ -1692,6 +1692,44 @@ def string_lights_dye_events(block_id: str) -> list[dict[str, Any]]:
     return events
 
 
+def create_molotov_charging_model() -> None:
+    """A raised, tilted display variant shown while the molotov charges.
+
+    The flat item barely moves under the vanilla SPEAR use pose, so the item
+    model swaps on the minecraft:using_item condition - the same technique the
+    vanilla trident uses - cocking the bottle up and back for a readable
+    wind-up in both first and third person.
+    """
+    write_json(
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/item/molotov_charging.json",
+        {
+            "parent": f"{NAMESPACE}:item/molotov",
+            "display": {
+                "firstperson_righthand": {
+                    "rotation": [-40, 0, -15],
+                    "translation": [1.13, 5.2, 1.13],
+                    "scale": [0.68, 0.68, 0.68],
+                },
+                "firstperson_lefthand": {
+                    "rotation": [-40, 0, 15],
+                    "translation": [-1.13, 5.2, 1.13],
+                    "scale": [0.68, 0.68, 0.68],
+                },
+                "thirdperson_righthand": {
+                    "rotation": [-80, 0, 0],
+                    "translation": [0, 5.5, 2],
+                    "scale": [0.55, 0.55, 0.55],
+                },
+                "thirdperson_lefthand": {
+                    "rotation": [-80, 0, 0],
+                    "translation": [0, 5.5, 2],
+                    "scale": [0.55, 0.55, 0.55],
+                },
+            },
+        },
+    )
+
+
 def create_worldgen_features() -> None:
     """Generate the CraftEngine worldgen features for wild grapevines.
 
@@ -2572,6 +2610,21 @@ def build_items(
                 "animation": "spear",
                 "has_consume_particles": False,
             }
+            # The trident technique: swap to the cocked-back display model
+            # while the throw charges, because the SPEAR pose alone is nearly
+            # invisible on a flat item.
+            config["model"] = {
+                "type": "minecraft:condition",
+                "property": "minecraft:using_item",
+                "on_true": {
+                    "type": "minecraft:model",
+                    "path": f"{NAMESPACE}:item/molotov_charging",
+                },
+                "on_false": {
+                    "type": "minecraft:model",
+                    "path": f"{NAMESPACE}:item/molotov",
+                },
+            }
         lore_keys: list[str] = []
         if item_id == "grapevine":
             lore_keys = [f"tooltip.{NAMESPACE}.grapevine.{index}" for index in range(1, 4)]
@@ -2762,6 +2815,7 @@ def main() -> None:
     create_pendant_lamp_models()
     create_custom_effect_font()
     create_custom_effect_hud_assets()
+    create_molotov_charging_model()
     create_worldgen_features()
     create_bar_stool_body_models()
     create_shaker_models()

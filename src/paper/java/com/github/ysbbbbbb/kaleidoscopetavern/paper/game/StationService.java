@@ -1133,7 +1133,9 @@ public final class StationService implements Listener {
         // Programmatic removal does not emit FurnitureBreakEvent, so the
         // split base/lid ItemDisplays must be removed explicitly on pickup.
         shakerVisuals.removeFurnitureVisuals(furniture);
-        CraftEngineFurniture.remove(furniture, player, false, true);
+        // Mute CE's own break sound: the explicit lantern break below is
+        // the source's single pickup cue, not a doubled pair.
+        CraftEngineFurniture.remove(furniture, player, false, false);
         location.getWorld().playSound(location, "minecraft:block.lantern.break",
                 SoundCategory.BLOCKS, 1.0F, 1.0F);
         return true;

@@ -1035,6 +1035,13 @@ def validate() -> dict[str, int]:
             }):
         raise AssertionError(
             "Molotov must retain its 72,000-tick spear charge instead of instant splash-potion use")
+    molotov_model = molotov_item.get("model", {})
+    if (molotov_model.get("property") != "minecraft:using_item"
+            or molotov_model.get("on_true", {}).get("path") != f"{NAMESPACE}:item/molotov_charging"):
+        raise AssertionError(
+            "Molotov must swap to the charging display model while using_item is true")
+    if asset_json(f"{NAMESPACE}:item/molotov_charging", "models") is None:
+        raise AssertionError("Missing generated molotov charging display model")
 
     shaker_item = items[f"{NAMESPACE}:shaker"]
     shaker_components = shaker_item.get("data", {}).get("components", {})
