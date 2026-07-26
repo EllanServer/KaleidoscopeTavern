@@ -13,6 +13,7 @@ import net.momirealms.craftengine.bukkit.entity.furniture.behavior.DisplayItemFu
 import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.Vec3d;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -60,20 +61,20 @@ public final class DisplayStorageService implements Listener {
     private static final String IRREGULAR_TAG = PREFIX + "bar_cabinet_irregular";
     private static final String EMPTY_GLASSWARE = PREFIX + "empty_glassware";
     private static final String MOLOTOV = PREFIX + "molotov";
-    private static final Map<String, StorageSpec> STORAGE = Map.ofEntries(
-            Map.entry(PREFIX + "bar_cabinet", new StorageSpec(
+    private static final Map<Key, StorageSpec> STORAGE = Map.ofEntries(
+            Map.entry(Key.of(PREFIX + "bar_cabinet"), new StorageSpec(
                     2, null, false, StorageSemantics.Kind.BAR_CABINET)),
-            Map.entry(PREFIX + "glass_bar_cabinet", new StorageSpec(
+            Map.entry(Key.of(PREFIX + "glass_bar_cabinet"), new StorageSpec(
                     2, null, false, StorageSemantics.Kind.BAR_CABINET)),
-            Map.entry(PREFIX + "cellar_cabinet", new StorageSpec(
+            Map.entry(Key.of(PREFIX + "cellar_cabinet"), new StorageSpec(
                     9, PREFIX + "cellar_cabinet_blocklist", true, StorageSemantics.Kind.CELLAR_CABINET)),
-            Map.entry(PREFIX + "tilted_rack", new StorageSpec(
+            Map.entry(Key.of(PREFIX + "tilted_rack"), new StorageSpec(
                     3, PREFIX + "tilted_rack_blocklist", true, StorageSemantics.Kind.TILTED_RACK)),
-            Map.entry(PREFIX + "circular_rack", new StorageSpec(
+            Map.entry(Key.of(PREFIX + "circular_rack"), new StorageSpec(
                     6, PREFIX + "circular_rack_blocklist", true, StorageSemantics.Kind.CIRCULAR_RACK)),
-            Map.entry(PREFIX + "holder", new StorageSpec(
+            Map.entry(Key.of(PREFIX + "holder"), new StorageSpec(
                     1, PREFIX + "holder_blocklist", true, StorageSemantics.Kind.HOLDER)),
-            Map.entry(PREFIX + "glassware_holder", new StorageSpec(
+            Map.entry(Key.of(PREFIX + "glassware_holder"), new StorageSpec(
                     4, null, false, StorageSemantics.Kind.GLASSWARE_HOLDER)));
 
     private final JavaPlugin plugin;
@@ -133,7 +134,7 @@ public final class DisplayStorageService implements Listener {
             return;
         }
         BukkitFurniture furniture = event.furniture();
-        StorageSpec spec = STORAGE.get(furniture.id().toString());
+        StorageSpec spec = STORAGE.get(furniture.id());
         if (spec == null) {
             return;
         }
@@ -354,16 +355,22 @@ public final class DisplayStorageService implements Listener {
     }
 
     private void pollRedstone() {
-        List<UUID> invalid = new ArrayList<>();
+        List<UUID> invalid = null;
         for (UUID uuid : loadedLaunchers) {
             Entity entity = Bukkit.getEntity(uuid);
             if (entity == null || !entity.isValid()) {
+                if (invalid == null) {
+                    invalid = new ArrayList<>();
+                }
                 invalid.add(uuid);
                 continue;
             }
             BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            StorageSpec spec = furniture == null ? null : STORAGE.get(furniture.id().toString());
+            StorageSpec spec = furniture == null ? null : STORAGE.get(furniture.id());
             if (spec == null || !spec.redstoneLauncher()) {
+                if (invalid == null) {
+                    invalid = new ArrayList<>();
+                }
                 invalid.add(uuid);
                 continue;
             }
@@ -377,7 +384,9 @@ public final class DisplayStorageService implements Listener {
                 }
             }
         }
-        loadedLaunchers.removeAll(invalid);
+        if (invalid != null) {
+            loadedLaunchers.removeAll(invalid);
+        }
     }
 
     private void launchRandomBottle(BukkitFurniture furniture, StorageSpec spec) {
@@ -464,7 +473,7 @@ public final class DisplayStorageService implements Listener {
     }
 
     boolean hasAnyStoredItem(BukkitFurniture furniture) {
-        StorageSpec spec = STORAGE.get(furniture.id().toString());
+        StorageSpec spec = STORAGE.get(furniture.id());
         if (spec == null) {
             return false;
         }
@@ -725,14 +734,14 @@ public final class DisplayStorageService implements Listener {
     }
 
     private static StorageSpec storageSpec(BukkitFurniture furniture) {
-        return furniture == null ? null : STORAGE.get(furniture.id().toString());
+        return furniture == null ? null : STORAGE.get(furniture.id());
     }
 
     private void track(BukkitFurniture furniture) {
         if (furniture == null) {
             return;
         }
-        StorageSpec spec = STORAGE.get(furniture.id().toString());
+        StorageSpec spec = STORAGE.get(furniture.id());
         Entity entity = furniture.bukkitEntity();
         if (spec != null && spec.redstoneLauncher() && entity != null) {
             loadedLaunchers.add(entity.getUniqueId());

@@ -485,6 +485,7 @@ public final class EffectService implements Listener {
 
     private void tick(long period) {
         elapsedTicks += period;
+        boolean persistThisTick = elapsedTicks % 20 == 0;
         for (UUID uuid : new ArrayList<>(active.keySet())) {
             Entity entity = Bukkit.getEntity(uuid);
             if (!(entity instanceof LivingEntity living) || !entity.isValid() || living.isDead()) {
@@ -513,7 +514,7 @@ public final class EffectService implements Listener {
                 }
             }
             reconcileAttributes(living, effects);
-            if (changed || elapsedTicks % 20 == 0) {
+            if (changed || persistThisTick) {
                 save(living);
             }
             if (effects.isEmpty()) {
@@ -588,8 +589,13 @@ public final class EffectService implements Listener {
             if (!(entity instanceof ExperienceOrb orb) || !orb.isValid()) {
                 continue;
             }
-            Vector delta = player.getLocation().add(0, 0.5, 0).toVector().subtract(orb.getLocation().toVector());
-            double distance = Math.max(0.01, player.getLocation().distance(orb.getLocation()));
+            Location playerLocation = player.getLocation();
+            Location orbLocation = orb.getLocation();
+            Vector delta = new Vector(
+                    playerLocation.getX() - orbLocation.getX(),
+                    playerLocation.getY() + 0.5 - orbLocation.getY(),
+                    playerLocation.getZ() - orbLocation.getZ());
+            double distance = Math.max(0.01, playerLocation.distance(orbLocation));
             if (distance < 1.5) {
                 PlayerPickupExperienceEvent pickup = new PlayerPickupExperienceEvent(player, orb);
                 Bukkit.getPluginManager().callEvent(pickup);
@@ -675,11 +681,11 @@ public final class EffectService implements Listener {
     }
 
     private boolean isStealthPlant(Block block) {
-        boolean vanillaCrop = VANILLA_CROP_BLOCKS.contains(block.getType());
-        boolean mature = block.getBlockData() instanceof Ageable ageable
-                && ageable.getAge() == ageable.getMaximumAge();
-        return EffectSemantics.isGrassStealthPlant(vanillaCrop, mature,
-                matchesBlockTag(block, PREFIX + "grass_stealth_plants"));
+        if (VANILLA_CROP_BLOCKS.contains(block.getType())) {
+            return block.getBlockData() instanceof Ageable ageable
+                    && ageable.getAge() == ageable.getMaximumAge();
+        }
+        return matchesBlockTag(block, PREFIX + "grass_stealth_plants");
     }
 
     private boolean matchesBlockTag(Block block, String tagId) {
@@ -937,22 +943,26 @@ public final class EffectService implements Listener {
             living.getPersistentDataContainer().remove(activeKey);
             return;
         }
-        String encoded = effects.values().stream()
-                .map(this::encode)
-                .reduce((left, right) -> left + ';' + right)
-                .orElse("");
-        living.getPersistentDataContainer().set(activeKey, PersistentDataType.STRING, "v3|" + encoded);
+        StringBuilder encoded = new StringBuilder("v3|");
+        boolean first = true;
+        for (ActiveEffect effect : effects.values()) {
+            if (!first) {
+                encoded.append(';');
+            }
+            appendEncoded(encoded, effect);
+            first = false;
+        }
+        living.getPersistentDataContainer().set(activeKey, PersistentDataType.STRING, encoded.toString());
     }
 
-    private String encode(ActiveEffect effect) {
-        StringBuilder encoded = new StringBuilder(effect.effect());
+    private static void appendEncoded(StringBuilder encoded, ActiveEffect effect) {
+        encoded.append(effect.effect());
         EffectSemantics.EffectState state = effect.state();
         while (state != null) {
             encoded.append(',').append(state.remainingTicks())
                     .append(',').append(state.amplifier());
             state = state.hidden();
         }
-        return encoded.toString();
     }
 
     private void clearEffects(LivingEntity living) {

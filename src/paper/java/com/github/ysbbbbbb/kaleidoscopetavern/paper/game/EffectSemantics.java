@@ -101,6 +101,11 @@ final class EffectSemantics {
         if (normalized.isEmpty()) {
             return Optional.empty();
         }
+        if (!normalized.regionMatches(true, 0, "effect", 0, "effect".length())
+                && !normalized.regionMatches(true, 0, "minecraft:effect", 0,
+                "minecraft:effect".length())) {
+            return Optional.empty();
+        }
         String[] fields = normalized.split("\\s+");
         if (fields.length < 2 || fields.length > 3
                 || !(fields[0].equalsIgnoreCase("effect")

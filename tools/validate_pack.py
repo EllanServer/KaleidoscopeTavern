@@ -243,10 +243,10 @@ ENTITY_BEHAVIOR_COVERAGE = {
 
 BLOCK_ENTITY_COVERAGE = {
     "BarCabinetBlockEntity.java": (("DisplayStorageService.java", "BAR_CABINET"),),
-    "BarrelBlockEntity.java": (("StationService.java", "barrel_ingredients"),),
+    "BarrelBlockEntity.java": (("StationService.java", "barrel_items"),),
     "CellarCabinetBlockEntity.java": (("DisplayStorageService.java", "CELLAR_CABINET"),),
     "DrinkBlockEntity.java": (("BottleFurnitureService.java", "bottle_items"),),
-    "PotionBottleBlockEntity.java": (("BottlePlacementService.java", "placed_potion"),),
+    "PotionBottleBlockEntity.java": (("BottlePlacementService.java", "bottle_items"),),
     "PressingTubBlockEntity.java": (("StationService.java", "press_count"),),
     "TapBlockEntity.java": (("TapService.java", "running"),),
     "BarStoolBlockEntity.java": (("BarStoolVisualService.java", "refreshBody"),),
@@ -473,7 +473,9 @@ def validate() -> dict[str, int]:
     plugin_config = PLUGIN_CONFIG.read_text(encoding="utf-8-sig")
     if ("bottle-placement.drinks" in bottle_placement_source
             or re.search(r"(?m)^\s+drinks:\s*", plugin_config)
-            or "new Placement(customId, null, false)" not in bottle_placement_source):
+            or not re.search(
+                r"new Placement\(customId,\s*null(?:,\s*false)?\)",
+                bottle_placement_source)):
         raise AssertionError(
             "Custom DrinkBlockItem/CocktailBlockItem placement must remain unconditional")
 

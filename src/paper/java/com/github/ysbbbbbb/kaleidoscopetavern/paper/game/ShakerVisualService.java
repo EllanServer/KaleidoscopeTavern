@@ -172,23 +172,31 @@ public final class ShakerVisualService implements Listener {
     }
 
     private void tickAnimations() {
-        List<UUID> finished = new ArrayList<>();
+        List<UUID> finished = null;
         for (Map.Entry<UUID, Float> entry : animations.entrySet()) {
             BukkitFurniture furniture = loadedFurniture(entry.getKey());
             VisualPair pair = visualPair(entry.getKey());
             if (!isShaker(furniture) || pair == null) {
+                if (finished == null) {
+                    finished = new ArrayList<>();
+                }
                 finished.add(entry.getKey());
                 continue;
             }
             float elapsed = entry.getValue() + 1F;
             applyPose(pair, ShakerAnimationSemantics.pose(elapsed));
             if (elapsed >= ShakerAnimationSemantics.LENGTH_TICKS) {
+                if (finished == null) {
+                    finished = new ArrayList<>();
+                }
                 finished.add(entry.getKey());
             } else {
                 entry.setValue(elapsed);
             }
         }
-        finished.forEach(animations::remove);
+        if (finished != null) {
+            finished.forEach(animations::remove);
+        }
         stopAnimationTaskIfIdle();
     }
 

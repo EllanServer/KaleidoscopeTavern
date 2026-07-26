@@ -4,6 +4,7 @@ import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
+import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -29,17 +30,17 @@ import java.util.concurrent.ThreadLocalRandom;
 /** Restores the legacy ticking, redstone and ambient behavior of decorative furniture. */
 public final class AmbientFurnitureService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
-    private static final String MYSTERY_COCKTAIL = PREFIX + "mystery_cocktail";
-    private static final String CIRCULAR_RACK = PREFIX + "circular_rack";
-    private static final Map<String, IncenseSpec> INCENSE = Map.ofEntries(
-            Map.entry(PREFIX + "sakura_incense", incense("CHERRY_LEAVES", "CHERRY_LEAVES")),
-            Map.entry(PREFIX + "pine_incense", incense("SMOKE", "CAMPFIRE_COSY_SMOKE")),
-            Map.entry(PREFIX + "ginkgo_incense", incense("WAX_OFF", "COMPOSTER")),
-            Map.entry(PREFIX + "spore_incense", incense("SPORE_BLOSSOM_AIR", "SPORE_BLOSSOM_AIR")),
-            Map.entry(PREFIX + "catnip_incense", incense("HAPPY_VILLAGER", "HAPPY_VILLAGER")),
-            Map.entry(PREFIX + "snow_incense", incense("SNOWFLAKE", "SNOWFLAKE")),
-            Map.entry(PREFIX + "butterfly_incense", incense("GLOW", "GLOW")),
-            Map.entry(PREFIX + "firefly_incense",
+    private static final Key MYSTERY_COCKTAIL = Key.of(PREFIX + "mystery_cocktail");
+    private static final Key CIRCULAR_RACK = Key.of(PREFIX + "circular_rack");
+    private static final Map<Key, IncenseSpec> INCENSE = Map.ofEntries(
+            Map.entry(Key.of(PREFIX + "sakura_incense"), incense("CHERRY_LEAVES", "CHERRY_LEAVES")),
+            Map.entry(Key.of(PREFIX + "pine_incense"), incense("SMOKE", "CAMPFIRE_COSY_SMOKE")),
+            Map.entry(Key.of(PREFIX + "ginkgo_incense"), incense("WAX_OFF", "COMPOSTER")),
+            Map.entry(Key.of(PREFIX + "spore_incense"), incense("SPORE_BLOSSOM_AIR", "SPORE_BLOSSOM_AIR")),
+            Map.entry(Key.of(PREFIX + "catnip_incense"), incense("HAPPY_VILLAGER", "HAPPY_VILLAGER")),
+            Map.entry(Key.of(PREFIX + "snow_incense"), incense("SNOWFLAKE", "SNOWFLAKE")),
+            Map.entry(Key.of(PREFIX + "butterfly_incense"), incense("GLOW", "GLOW")),
+            Map.entry(Key.of(PREFIX + "firefly_incense"),
                     new IncenseSpec(particle("FIREFLY"), particle("FIREFLY"), -0.67, 5.33))
     );
 
@@ -89,19 +90,25 @@ public final class AmbientFurnitureService implements Listener {
     }
 
     private void tick() {
-        List<UUID> invalid = new ArrayList<>();
+        List<UUID> invalid = null;
         for (UUID uuid : tracked) {
             Entity entity = Bukkit.getEntity(uuid);
             if (entity == null || !entity.isValid()) {
+                if (invalid == null) {
+                    invalid = new ArrayList<>();
+                }
                 invalid.add(uuid);
                 continue;
             }
             BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
             if (furniture == null || !furniture.isValid()) {
+                if (invalid == null) {
+                    invalid = new ArrayList<>();
+                }
                 invalid.add(uuid);
                 continue;
             }
-            String id = furniture.id().toString();
+            Key id = furniture.id();
             IncenseSpec incense = INCENSE.get(id);
             if (incense != null) {
                 tickIncense(furniture, incense);
@@ -110,10 +117,15 @@ public final class AmbientFurnitureService implements Listener {
             } else if (id.equals(CIRCULAR_RACK)) {
                 tickCircularRack(furniture);
             } else {
+                if (invalid == null) {
+                    invalid = new ArrayList<>();
+                }
                 invalid.add(uuid);
             }
         }
-        tracked.removeAll(invalid);
+        if (invalid != null) {
+            tracked.removeAll(invalid);
+        }
     }
 
     private void tickIncense(BukkitFurniture furniture, IncenseSpec spec) {
@@ -171,7 +183,7 @@ public final class AmbientFurnitureService implements Listener {
     }
 
     private void track(BukkitFurniture furniture) {
-        if (furniture == null || !isManaged(furniture.id().toString())) {
+        if (furniture == null || !isManaged(furniture.id())) {
             return;
         }
         Entity entity = furniture.bukkitEntity();
@@ -190,7 +202,7 @@ public final class AmbientFurnitureService implements Listener {
         }
     }
 
-    private static boolean isManaged(String id) {
+    private static boolean isManaged(Key id) {
         return INCENSE.containsKey(id) || id.equals(MYSTERY_COCKTAIL) || id.equals(CIRCULAR_RACK);
     }
 

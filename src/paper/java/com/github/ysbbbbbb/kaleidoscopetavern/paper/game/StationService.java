@@ -76,10 +76,13 @@ import java.util.concurrent.ThreadLocalRandom;
 /** Implements the former Forge block-entity gameplay on CraftEngine furniture entities. */
 public final class StationService implements Listener {
     private static final String NAMESPACE = "kaleidoscope_tavern:";
+    private static final String KEY_NAMESPACE = "kaleidoscope_tavern";
     private static final String PRESSING_TUB = NAMESPACE + "pressing_tub";
     private static final String BARREL = NAMESPACE + "barrel";
     private static final String SHAKER = NAMESPACE + "shaker";
     private static final String EMPTY_GLASSWARE = NAMESPACE + "empty_glassware";
+    private static final Key PRESSING_TUB_KEY = Key.of(PRESSING_TUB);
+    private static final Key BARREL_KEY = Key.of(BARREL);
     private static final int PRESS_CAPACITY = 1_000;
     private static final int BARREL_CAPACITY = 4_000;
     private static final int MAX_BARREL_SLOTS = 4;
@@ -207,7 +210,7 @@ public final class StationService implements Listener {
             case PRESSING_TUB -> {
                 FurnitureState state = new FurnitureState(plugin, furniture);
                 List<ItemDisplay> visuals = currentPressVisuals(furniture, state);
-                ItemStack storedIngredient = pressingItem(state, null);
+                ItemStack storedIngredient = pressingItem(state);
                 ItemStack ingredient = storedIngredient == null ? null : storedIngredient.clone();
                 int ingredientCount = ingredient == null ? 0 : state.integer("press_count");
                 deferFurnitureBreak(event, () -> {
@@ -531,13 +534,13 @@ public final class StationService implements Listener {
         int storedCount = state.integer("press_count");
         if (hand.isEmpty() && storedCount > 0) {
             int removeCount = player.isSneaking() ? Math.min(64, storedCount) : 1;
-            ItemStack stored = pressingItem(state, player);
+            ItemStack stored = pressingItem(state);
             if (stored != null) {
                 giveStored(player, stored, removeCount);
                 int remaining = storedCount - removeCount;
                 state.integer("press_count", remaining);
                 if (remaining == 0) {
-                    state.clear("press_ingredient", "press_item");
+                    state.clear("press_item");
                 }
                 playItemFrameSound(furniture.location(),
                         "minecraft:entity.item_frame.remove_item");
@@ -575,7 +578,6 @@ public final class StationService implements Listener {
                 // PressingTubBlockEntity inserts the carried stack directly;
                 // unlike most interactions this also shrinks creative stacks.
                 hand.subtract(inserted);
-                state.putString("press_ingredient", handId);
                 state.item("press_item", template);
                 state.integer("press_count", count + inserted);
                 playItemFrameSound(furniture.location(),
@@ -593,7 +595,7 @@ public final class StationService implements Listener {
         }
         FurnitureState state = new FurnitureState(plugin, furniture);
         int count = state.integer("press_count");
-        ItemStack ingredient = pressingItem(state, null);
+        ItemStack ingredient = pressingItem(state);
         if (ingredient == null || count <= 0) {
             if (state.integer("press_amount") > 0) {
                 playSuccessfulPress(furniture, null);
@@ -622,7 +624,7 @@ public final class StationService implements Listener {
         }
         state.integer("press_count", count - 1);
         if (count == 1) {
-            state.clear("press_ingredient", "press_item");
+            state.clear("press_item");
         }
         state.putString("press_fluid", recipe.fluid());
         state.integer("press_amount", Math.min(PRESS_CAPACITY, amount + recipe.amount()));
@@ -681,7 +683,7 @@ public final class StationService implements Listener {
         if (!plugin.getConfig().getBoolean("stations.press-eject-invalid", true) || totalCount <= 0) {
             return;
         }
-        state.clear("press_count", "press_ingredient", "press_item");
+        state.clear("press_count", "press_item");
         refreshPressVisuals(furniture);
         int directionCount = Math.min(8, totalCount);
         double diagonal = 1.0 / Math.sqrt(2.0);
@@ -790,7 +792,7 @@ public final class StationService implements Listener {
         }
 
         if (hand.isEmpty()) {
-            List<ItemStack> stored = barrelIngredients(state, player);
+            List<ItemStack> stored = barrelIngredients(state);
             if (!stored.isEmpty()) {
                 ItemStack removed = stored.removeLast();
                 items.give(player, removed);
@@ -806,7 +808,7 @@ public final class StationService implements Listener {
 
         Optional<String> fluid = fluidFromBucket(handId);
         if (fluid.isPresent()) {
-            List<ItemStack> stored = barrelIngredients(state, player);
+            List<ItemStack> stored = barrelIngredients(state);
             String current = state.string("barrel_fluid");
             int amount = state.integer("barrel_amount");
             if (stored.isEmpty() && amount <= BARREL_CAPACITY - 1_000
@@ -827,7 +829,7 @@ public final class StationService implements Listener {
         }
 
         if (handId.equals("minecraft:bucket") && state.integer("barrel_amount") >= 1_000
-                && barrelIngredients(state, player).isEmpty()) {
+                && barrelIngredients(state).isEmpty()) {
             String storedFluid = state.string("barrel_fluid");
             Optional<String> bucketId = bucketForFluid(storedFluid);
             if (bucketId.isPresent()) {
@@ -861,7 +863,7 @@ public final class StationService implements Listener {
         // ItemStackHandler accepts as much as fits in one matching/empty slot
         // (up to sixteen), and deliberately accepts non-recipe ingredients;
         // an unmatched closed barrel becomes vinegar.
-        List<ItemStack> stored = barrelIngredients(state, player);
+        List<ItemStack> stored = barrelIngredients(state);
         int matching = -1;
         for (int index = 0; index < stored.size(); index++) {
             if (stored.get(index).isSimilar(hand)) {
@@ -901,9 +903,8 @@ public final class StationService implements Listener {
 
     private boolean initializeBarrelState(BukkitFurniture furniture, FurnitureState state) {
         if (!state.bool("barrel_initialized")) {
-            // BarrelBlockEntity.open defaults to true. Legacy Paper barrels
-            // that were already brewing must instead be repaired as closed.
-            migrateLegacyBarrelTiming(state);
+            // BarrelBlockEntity.open defaults to true; an already-started
+            // brewing state is closed when first observed.
             boolean open = !isBarrelBrewing(state);
             state.bool("barrel_initialized", true);
             state.bool("barrel_open", open);
@@ -917,7 +918,6 @@ public final class StationService implements Listener {
             return;
         }
         FurnitureState state = new FurnitureState(plugin, furniture);
-        migrateLegacyBarrelTiming(state);
         boolean open = initializeBarrelState(furniture, state);
         if (isBarrelBrewing(state) && open) {
             open = false;
@@ -961,31 +961,8 @@ public final class StationService implements Listener {
         return BarrelSemantics.classify(sourceX, point.getY() - origin.getY(), sourceZ);
     }
 
-    private List<ItemStack> barrelIngredients(FurnitureState state, Player context) {
-        List<ItemStack> stored = state.items("barrel_items");
-        if (!stored.isEmpty()) {
-            return stored;
-        }
-
-        // One-time migration from the earlier id/count-only representation.
-        // New state keeps the complete stack so potion/custom components are
-        // returned and dropped exactly as they entered the source inventory.
-        Map<String, Integer> legacy = state.counts("barrel_ingredients");
-        if (legacy.isEmpty()) {
-            return stored;
-        }
-        for (Map.Entry<String, Integer> entry : legacy.entrySet()) {
-            if (stored.size() >= MAX_BARREL_SLOTS) {
-                break;
-            }
-            items.build(entry.getKey(), context).ifPresent(stack -> {
-                stack.setAmount(Math.min(MAX_BARREL_STACK, entry.getValue()));
-                stored.add(stack);
-            });
-        }
-        state.items("barrel_items", stored);
-        state.clear("barrel_ingredients");
-        return stored;
+    private List<ItemStack> barrelIngredients(FurnitureState state) {
+        return state.items("barrel_items");
     }
 
     private boolean beginBrewing(BukkitFurniture furniture, FurnitureState state) {
@@ -993,7 +970,7 @@ public final class StationService implements Listener {
             return false;
         }
         String fluid = state.string("barrel_fluid", "");
-        List<ItemStack> stored = barrelIngredients(state, null);
+        List<ItemStack> stored = barrelIngredients(state);
         List<String> ingredientIds = stored.stream().map(items::id).toList();
         Optional<BarrelRecipe> optional = catalog.barrel(fluid, ingredientIds);
         String result;
@@ -1020,13 +997,11 @@ public final class StationService implements Listener {
         state.integer("barrel_unit", Math.max(1, unitTicks));
         state.integer("barrel_level", 1);
         state.integer("barrel_time", Math.max(1, unitTicks));
-        state.clear("barrel_started");
-        state.clear("barrel_fluid", "barrel_amount", "barrel_ingredients", "barrel_items");
+        state.clear("barrel_fluid", "barrel_amount", "barrel_items");
         return true;
     }
 
     private int brewLevel(FurnitureState state) {
-        migrateLegacyBarrelTiming(state);
         return Math.clamp(state.integer("barrel_level"), 0, 6);
     }
 
@@ -1229,7 +1204,7 @@ public final class StationService implements Listener {
     }
 
     BarrelSemantics.TapExtractStatus tapExtractStatus(BukkitFurniture barrel) {
-        if (barrel == null || !barrel.isValid() || !barrel.id().toString().equals(BARREL)) {
+        if (barrel == null || !barrel.isValid() || !barrel.id().equals(BARREL_KEY)) {
             return BarrelSemantics.TapExtractStatus.INVALID_CONTAINER;
         }
         FurnitureState state = new FurnitureState(plugin, barrel);
@@ -1242,7 +1217,7 @@ public final class StationService implements Listener {
     }
 
     boolean isTapOutputHot(BukkitFurniture barrel) {
-        return barrel != null && barrel.isValid() && barrel.id().toString().equals(BARREL)
+        return barrel != null && barrel.isValid() && barrel.id().equals(BARREL_KEY)
                 && TapSemantics.isHotBarrelOutput(
                         new FurnitureState(plugin, barrel).string("barrel_result"));
     }
@@ -1302,16 +1277,16 @@ public final class StationService implements Listener {
     }
 
     private void pulseIncense() {
-        List<UUID> invalid = new ArrayList<>();
+        List<UUID> invalid = null;
         for (UUID uuid : activeIncense) {
             Entity entity = Bukkit.getEntity(uuid);
             if (entity == null || !entity.isValid()) {
-                invalid.add(uuid);
+                invalid = addInvalid(invalid, uuid);
                 continue;
             }
             BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
             if (furniture == null || !new FurnitureState(plugin, furniture).bool("incense_active")) {
-                invalid.add(uuid);
+                invalid = addInvalid(invalid, uuid);
                 continue;
             }
             Location center = furniture.location();
@@ -1331,20 +1306,22 @@ public final class StationService implements Listener {
                 }
             }
         }
-        activeIncense.removeAll(invalid);
+        if (invalid != null) {
+            activeIncense.removeAll(invalid);
+        }
     }
 
     private void pollIncenseRedstone() {
-        List<UUID> invalid = new ArrayList<>();
+        List<UUID> invalid = null;
         for (UUID uuid : loadedIncense) {
             Entity entity = Bukkit.getEntity(uuid);
             if (entity == null || !entity.isValid()) {
-                invalid.add(uuid);
+                invalid = addInvalid(invalid, uuid);
                 continue;
             }
             BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
             if (!isIncense(furniture)) {
-                invalid.add(uuid);
+                invalid = addInvalid(invalid, uuid);
                 continue;
             }
             initializeIncense(furniture);
@@ -1356,8 +1333,10 @@ public final class StationService implements Listener {
                 setIncenseActive(furniture, powered, true);
             }
         }
-        loadedIncense.removeAll(invalid);
-        activeIncense.removeAll(invalid);
+        if (invalid != null) {
+            loadedIncense.removeAll(invalid);
+            activeIncense.removeAll(invalid);
+        }
     }
 
     private void bootstrapIncense() {
@@ -1406,7 +1385,7 @@ public final class StationService implements Listener {
                     continue;
                 }
                 BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                if (furniture != null && furniture.id().toString().equals(BARREL)) {
+                if (furniture != null && furniture.id().equals(BARREL_KEY)) {
                     loadedBarrels.add(display.getUniqueId());
                     syncBarrelState(furniture);
                 }
@@ -1416,17 +1395,17 @@ public final class StationService implements Listener {
 
     /** Runs the retained Forge barrel state machine only while its chunk/entity is loaded. */
     private void tickBarrels() {
-        List<UUID> invalid = new ArrayList<>();
+        List<UUID> invalid = null;
         for (UUID uuid : loadedBarrels) {
             Entity entity = Bukkit.getEntity(uuid);
             if (!(entity instanceof ItemDisplay) || !entity.isValid()
                     || !CraftEngineFurniture.isFurniture(entity)) {
-                invalid.add(uuid);
+                invalid = addInvalid(invalid, uuid);
                 continue;
             }
             BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (furniture == null || !furniture.id().toString().equals(BARREL)) {
-                invalid.add(uuid);
+            if (furniture == null || !furniture.id().equals(BARREL_KEY)) {
+                invalid = addInvalid(invalid, uuid);
                 continue;
             }
             long offset = entity.getUniqueId().hashCode() % BarrelSemantics.CHECK_INTERVAL
@@ -1436,12 +1415,13 @@ public final class StationService implements Listener {
             }
             tickBarrel(furniture);
         }
-        loadedBarrels.removeAll(invalid);
+        if (invalid != null) {
+            loadedBarrels.removeAll(invalid);
+        }
     }
 
     private void tickBarrel(BukkitFurniture furniture) {
         FurnitureState state = new FurnitureState(plugin, furniture);
-        migrateLegacyBarrelTiming(state);
         if (state.bool("barrel_open")) {
             return;
         }
@@ -1459,32 +1439,6 @@ public final class StationService implements Listener {
         beginBrewing(furniture, state);
     }
 
-    /** One-time continuity bridge for barrels created by the earlier wall-clock implementation. */
-    private void migrateLegacyBarrelTiming(FurnitureState state) {
-        long started = state.longValue("barrel_started");
-        if (started <= 0 || state.integer("barrel_level") > 0) {
-            return;
-        }
-        int unit = Math.max(1, state.integer("barrel_unit"));
-        long elapsed = Math.max(0, (System.currentTimeMillis() - started) / 50L);
-        int level = 1;
-        long levelStart = 0;
-        for (int next = 2; next <= 6; next++) {
-            long threshold = levelStart + (long) unit * (next - 1);
-            if (elapsed < threshold) {
-                break;
-            }
-            level = next;
-            levelStart = threshold;
-        }
-        int remaining = level >= 6 ? -1
-                : (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE,
-                (long) unit * level - (elapsed - levelStart)));
-        state.integer("barrel_level", level);
-        state.integer("barrel_time", remaining);
-        state.clear("barrel_started");
-    }
-
     /** Mirrors BarrelBlockEntityRender's open-only fluid and ingredient layer. */
     private void refreshBarrelVisuals(BukkitFurniture furniture) {
         if (furniture == null || !furniture.isValid() || furniture.bukkitEntity() == null) {
@@ -1498,7 +1452,7 @@ public final class StationService implements Listener {
 
         List<ItemStack> renderedItems = new ArrayList<>();
         List<Integer> renderedSlots = new ArrayList<>();
-        List<ItemStack> ingredients = barrelIngredients(state, null);
+        List<ItemStack> ingredients = barrelIngredients(state);
         for (int slot = 0; slot < ingredients.size(); slot++) {
             ItemStack ingredient = ingredients.get(slot);
             int visualCount = ingredient.isEmpty() ? 0 : ingredient.getAmount() / 2 + 1;
@@ -1683,7 +1637,7 @@ public final class StationService implements Listener {
             return;
         }
         FurnitureState state = new FurnitureState(plugin, furniture);
-        ItemStack ingredient = pressingItem(state, null);
+        ItemStack ingredient = pressingItem(state);
         int count = ingredient == null ? 0 : Math.max(0, state.integer("press_count"));
         List<ItemDisplay> itemDisplays = pressVisuals(furniture, state, "item", "press_item_visuals");
         while (itemDisplays.size() > count) {
@@ -1880,8 +1834,14 @@ public final class StationService implements Listener {
     }
 
     private static boolean isIncense(BukkitFurniture furniture) {
-        return furniture != null && furniture.id().toString().startsWith(NAMESPACE)
-                && furniture.id().toString().endsWith("_incense");
+        return furniture != null && furniture.id().namespace().equals(KEY_NAMESPACE)
+                && furniture.id().value().endsWith("_incense");
+    }
+
+    private static List<UUID> addInvalid(List<UUID> invalid, UUID uuid) {
+        List<UUID> result = invalid == null ? new ArrayList<>() : invalid;
+        result.add(uuid);
+        return result;
     }
 
     private Optional<BukkitFurniture> pressingTubBelow(Location feet) {
@@ -1889,7 +1849,7 @@ public final class StationService implements Listener {
                 .filter(CraftEngineFurniture::isFurniture)
                 .map(CraftEngineFurniture::getLoadedFurnitureByMetaEntity)
                 .filter(java.util.Objects::nonNull)
-                .filter(furniture -> furniture.id().toString().equals(PRESSING_TUB))
+                .filter(furniture -> furniture.id().equals(PRESSING_TUB_KEY))
                 .filter(furniture -> furniture.currentVariant().name().equals("ground"))
                 .filter(furniture -> {
                     Location base = furniture.location();
@@ -1936,13 +1896,8 @@ public final class StationService implements Listener {
         }
     }
 
-    private ItemStack pressingItem(FurnitureState state, Player context) {
-        ItemStack stored = state.item("press_item");
-        if (stored != null) {
-            return stored;
-        }
-        String legacyId = state.string("press_ingredient");
-        return legacyId == null ? null : items.build(legacyId, context).orElse(null);
+    private static ItemStack pressingItem(FurnitureState state) {
+        return state.item("press_item");
     }
 
     private void giveStored(Player player, ItemStack template, int amount) {

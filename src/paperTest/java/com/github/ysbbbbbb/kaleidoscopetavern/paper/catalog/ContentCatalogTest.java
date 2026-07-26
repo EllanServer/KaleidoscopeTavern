@@ -4,7 +4,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -40,6 +42,40 @@ final class ContentCatalogTest {
         assertEquals("kaleidoscope_tavern:grape_juice",
                 catalog.pressing("kaleidoscope_tavern:grape").orElseThrow().fluid());
         assertTrue(catalog.pressing("minecraft:stone").isEmpty());
+    }
+
+    @Test
+    void indexedRecipeLookupsKeepCatalogFirstMatchSemantics() {
+        Set<String> pressingInputs = new LinkedHashSet<>();
+        for (ContentCatalog.PressingRecipe recipe : catalog.pressingRecipes()) {
+            if (recipe.ingredient().kind() == ContentCatalog.SelectorKind.ITEM) {
+                pressingInputs.add(recipe.ingredient().value());
+            } else {
+                pressingInputs.addAll(catalog.tag(recipe.ingredient().value()));
+            }
+        }
+        for (String input : pressingInputs) {
+            assertEquals(catalog.pressingRecipes().stream()
+                            .filter(recipe -> catalog.selectorMatches(recipe.ingredient(), input))
+                            .findFirst(),
+                    catalog.pressing(input));
+        }
+        for (ContentCatalog.PressingRecipe recipe : catalog.pressingRecipes()) {
+            assertEquals(catalog.pressingRecipes().stream()
+                            .filter(candidate -> candidate.fluid().equals(recipe.fluid()))
+                            .findFirst(),
+                    catalog.pressingByFluid(recipe.fluid()));
+            assertEquals(catalog.pressingRecipes().stream()
+                            .filter(candidate -> candidate.bucket().equals(recipe.bucket()))
+                            .findFirst(),
+                    catalog.pressingByBucket(recipe.bucket()));
+        }
+        for (ContentCatalog.BarrelRecipe recipe : catalog.barrelRecipes()) {
+            assertEquals(catalog.barrelRecipes().stream()
+                            .filter(candidate -> candidate.id().equals(recipe.id()))
+                            .findFirst(),
+                    catalog.barrelById(recipe.id()));
+        }
     }
 
     @Test

@@ -504,20 +504,14 @@ public final class BoardTextService implements Listener {
 
         indexed.values().forEach(Entity::remove);
         reusable.forEach(Entity::remove);
-        if (active.isEmpty()) {
-            state.clear("board_displays");
-        } else {
-            state.putString("board_displays", String.join(",", active.stream()
-                    .map(display -> display.getUniqueId().toString())
-                    .toList()));
-        }
-        state.clear("board_display");
+        state.strings("board_displays", active.stream()
+                .map(display -> display.getUniqueId().toString())
+                .toList());
     }
 
     private List<TextDisplay> findDisplays(BukkitFurniture furniture, FurnitureState state) {
         Map<UUID, TextDisplay> displays = new LinkedHashMap<>();
-        addStoredDisplays(state.string("board_displays"), displays);
-        addStoredDisplays(state.string("board_display"), displays);
+        addStoredDisplays(state.strings("board_displays"), displays);
         Entity owner = furniture.bukkitEntity();
         if (owner == null) {
             return new ArrayList<>(displays.values());
@@ -534,29 +528,24 @@ public final class BoardTextService implements Listener {
         return new ArrayList<>(displays.values());
     }
 
-    private static void addStoredDisplays(String stored, Map<UUID, TextDisplay> displays) {
-        if (stored == null || stored.isBlank()) {
-            return;
-        }
-        for (String token : stored.split(",")) {
+    private static void addStoredDisplays(List<String> stored, Map<UUID, TextDisplay> displays) {
+        for (String token : stored) {
             try {
                 Entity entity = Bukkit.getEntity(UUID.fromString(token));
                 if (entity instanceof TextDisplay textDisplay && entity.isValid()) {
                     displays.putIfAbsent(entity.getUniqueId(), textDisplay);
                 }
             } catch (IllegalArgumentException ignored) {
-                // Ignore malformed legacy state; the caller rewrites it after refresh.
+                // Ignore malformed state; the caller rewrites it after refresh.
             }
         }
     }
 
     private void removeDisplay(FurnitureState state) {
         Map<UUID, TextDisplay> displays = new LinkedHashMap<>();
-        addStoredDisplays(state.string("board_displays"), displays);
-        addStoredDisplays(state.string("board_display"), displays);
+        addStoredDisplays(state.strings("board_displays"), displays);
         displays.values().forEach(Entity::remove);
         state.clear("board_displays");
-        state.clear("board_display");
     }
 
     private void bootstrapDisplays() {

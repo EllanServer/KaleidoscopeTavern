@@ -86,9 +86,6 @@ public final class BottlePlacementService implements Listener {
         furniture.setUnsaved();
         FurnitureState state = new FurnitureState(plugin, furniture);
         state.items("bottle_items", List.of(source));
-        if (placement.storePotion()) {
-            state.item("placed_potion", source);
-        }
         consumeUnlessCreative(event.getPlayer(), event.getItem());
         event.setCancelled(true);
         event.setUseInteractedBlock(Event.Result.DENY);
@@ -138,7 +135,7 @@ public final class BottlePlacementService implements Listener {
         if (catalog.hasDrinkEffects(customId) || catalog.isCocktail(customId)) {
             // DrinkBlockItem/CocktailBlockItem placement is unconditional;
             // only the five vanilla bottle families had Forge config gates.
-            return new Placement(customId, null, false);
+            return new Placement(customId, null);
         }
         return switch (stack.getType()) {
             case POTION -> {
@@ -146,11 +143,11 @@ public final class BottlePlacementService implements Listener {
                         ? potion.getBasePotionType() : null;
                 boolean water = type == null || type == PotionType.WATER;
                 yield new Placement(water ? PREFIX + "water_bottle" : POTION_BOTTLE,
-                        water ? "bottle-placement.water" : "bottle-placement.potion", !water);
+                        water ? "bottle-placement.water" : "bottle-placement.potion");
             }
-            case HONEY_BOTTLE -> new Placement(PREFIX + "honey_bottle", "bottle-placement.honey", false);
-            case DRAGON_BREATH -> new Placement(PREFIX + "dragon_breath_bottle", "bottle-placement.dragon-breath", false);
-            case EXPERIENCE_BOTTLE -> new Placement(PREFIX + "xp_bottle", "bottle-placement.experience", false);
+            case HONEY_BOTTLE -> new Placement(PREFIX + "honey_bottle", "bottle-placement.honey");
+            case DRAGON_BREATH -> new Placement(PREFIX + "dragon_breath_bottle", "bottle-placement.dragon-breath");
+            case EXPERIENCE_BOTTLE -> new Placement(PREFIX + "xp_bottle", "bottle-placement.experience");
             default -> null;
         };
     }
@@ -207,6 +204,6 @@ public final class BottlePlacementService implements Listener {
         }
     }
 
-    private record Placement(String furniture, String configPath, boolean storePotion) {
+    private record Placement(String furniture, String configPath) {
     }
 }
