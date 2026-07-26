@@ -273,6 +273,7 @@ COCKTAILS = {
     "mojito", "allium_garden", "depth_charge", "nether_special", "bloody_mary",
     "sculk_special",
 }
+CONSUMABLE_COCKTAILS = COCKTAILS - {"empty_glassware"}
 # DrinkBlockItem does not require a drink-effect datamap entry.  These drinks
 # still use PotionItem's consume action and return their authored container,
 # but intentionally apply no effects after consumption.
@@ -2679,7 +2680,7 @@ def build_items(
             lore_keys = [f"tooltip.{NAMESPACE}.{item_id}"]
         if lore_keys:
             config["data"]["lore"] = [f"<!i><gray><lang:{key}>" for key in lore_keys]
-        elif item_id in COCKTAILS:
+        elif item_id in CONSUMABLE_COCKTAILS:
             # Creative-menu entries bypass ItemService, so fixed cocktails
             # need a generated preview. Aged wines and signature cocktails are
             # rebuilt at runtime because their effects live on the item stack.
@@ -2732,7 +2733,7 @@ def build_items(
         # IHasContainer#returnContainerToEntity: CraftEngine's own
         # consume_replacement setting now hands back the empty vessel, so the
         # plugin no longer rewrites PlayerItemConsumeEvent replacements.
-        if item_id in COCKTAILS or item_id == "signature_cocktail":
+        if item_id in CONSUMABLE_COCKTAILS:
             config.setdefault("settings", {})["consume_replacement"] = (
                 f"{NAMESPACE}:empty_glassware")
         elif is_drink(item_id, drink_ids):

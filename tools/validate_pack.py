@@ -1271,16 +1271,21 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"CustomEffectHudSemantics.HUD_ROW2_EFFECTS must contain {row2_effect}")
 
-    # Drinking hands the vessel back through CE's consume_replacement.
-    for item_id, item in items.items():
-        settings = item.get("settings", {})
-        replacement = settings.get("consume_replacement")
-        if item_id in (f"{NAMESPACE}:signature_cocktail",):
-            if replacement != f"{NAMESPACE}:empty_glassware":
-                raise AssertionError(f"{item_id}: missing empty_glassware consume_replacement")
-    if not any(item.get("settings", {}).get("consume_replacement") == f"{NAMESPACE}:empty_bottle"
-               for item in items.values()):
-        raise AssertionError("No drink declares an empty_bottle consume_replacement")
+    # Drinking hands the authored vessel back through CE's consume_replacement.
+    cocktail_ids = {row[1] for row in tsv_rows("shaker.tsv")} | {
+        f"{NAMESPACE}:mystery_cocktail",
+        f"{NAMESPACE}:signature_cocktail",
+    }
+    for item_id in drink_ids:
+        replacement = items[item_id].get("settings", {}).get("consume_replacement")
+        expected = (f"{NAMESPACE}:empty_glassware" if item_id in cocktail_ids
+                    else f"{NAMESPACE}:empty_bottle")
+        if replacement != expected:
+            raise AssertionError(
+                f"{item_id}: consume_replacement must be {expected}, got {replacement!r}")
+    empty_glassware = items[f"{NAMESPACE}:empty_glassware"]
+    if "consume_replacement" in empty_glassware.get("settings", {}):
+        raise AssertionError("empty_glassware must not return itself as a consume replacement")
 
     # String-lights dyeing is expressed as CE block events.
     dye_colors = ("white", "orange", "magenta", "light_blue", "yellow", "lime",

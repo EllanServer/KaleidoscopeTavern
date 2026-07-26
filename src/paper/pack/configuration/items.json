@@ -2339,9 +2339,6 @@
             "alignment": "center"
           }
         }
-      },
-      "settings": {
-        "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
     },
     "kaleidoscope_tavern:signature_cocktail": {

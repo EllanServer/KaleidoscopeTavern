@@ -4,8 +4,25 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
+import net.momirealms.craftengine.bukkit.api.event.FurnitureAttemptPlaceEvent;
+import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
+import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.bukkit.util.CollisionUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
+import net.momirealms.craftengine.core.entity.furniture.FurnitureDefinition;
+import net.momirealms.craftengine.core.entity.furniture.FurnitureVariant;
+import net.momirealms.craftengine.core.entity.furniture.hitbox.FurnitureHitBoxConfig;
+import net.momirealms.craftengine.core.entity.player.InteractionHand;
+import net.momirealms.craftengine.core.plugin.context.ContextHolder;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.WorldPosition;
+import net.momirealms.craftengine.core.world.collision.AABB;
+import net.momirealms.craftengine.libraries.antigrieflib.Flag;
+import net.momirealms.craftengine.proxy.bukkit.craftbukkit.CraftWorldProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.entity.EntityProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.phys.AABBProxy;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -15,7 +32,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Container;
 import org.bukkit.block.data.Directional;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -31,6 +47,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -66,31 +83,73 @@ public final class BottlePlacementService implements Listener {
                 && !plugin.getConfig().getBoolean(placement.configPath(), true)) {
             return;
         }
-        Block clicked = event.getClickedBlock();
-        Block target = clicked.isReplaceable() ? clicked : clicked.getRelative(event.getBlockFace());
-        if (!canPlaceAt(target)) {
+
+        // This listener owns recognized sneak-placement. Deny the underlying
+        // Bukkit interaction before validation so a rejected CE placement can
+        // neither consume the item nor fall through to another use behavior.
+        event.setCancelled(true);
+        event.setUseInteractedBlock(Event.Result.DENY);
+        event.setUseItemInHand(Event.Result.DENY);
+        if (event.getPlayer().getGameMode() == GameMode.ADVENTURE) {
             return;
         }
+
+        Block clicked = event.getClickedBlock();
+        Block target = clicked.isReplaceable() ? clicked : clicked.getRelative(event.getBlockFace());
         // Forge's BottleBlockItem was still a normal BlockItem: the clicked
         // point selected the target block, but never offset the bottle inside
         // that block. Preserve the target-centred, cardinal placement.
         Location location = target.getLocation().add(0.5, 0, 0.5);
         location.setYaw(snapRotation(180F + event.getPlayer().getYaw()));
-        BukkitFurniture furniture = CraftEngineFurniture.place(location, Key.of(placement.furniture()), "ground", true);
+
+        FurnitureDefinition definition = CraftEngineFurniture.byId(Key.of(placement.furniture()));
+        FurnitureVariant variant = definition == null ? null : definition.getVariant("ground");
+        if (variant == null || !canPlaceAt(location, variant)
+                || !BukkitCraftEngine.instance().antiGriefProvider()
+                .test(event.getPlayer(), Flag.PLACE, location)) {
+            return;
+        }
+
+        ContextHolder.Builder context = ContextHolder.builder();
+        InteractionHand hand = event.getHand() == EquipmentSlot.OFF_HAND
+                ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+        FurnitureAttemptPlaceEvent attempt = new FurnitureAttemptPlaceEvent(
+                event.getPlayer(), definition, variant, location, hand, clicked, context);
+        Bukkit.getPluginManager().callEvent(attempt);
+        if (attempt.isCancelled()) {
+            return;
+        }
+
+        // CE's public placement API does not perform the checks above. It can,
+        // however, play the configured placement sound; keep that disabled and
+        // emit the original bottle's glass sound exactly once below.
+        BukkitFurniture furniture = CraftEngineFurniture.place(location, definition, "ground", false);
         if (furniture == null) {
             return;
         }
         ItemStack source = event.getItem().clone();
         source.setAmount(1);
-        furniture.setSourceItem(BukkitAdaptor.adapt(source));
-        furniture.refreshElements();
-        furniture.setUnsaved();
-        FurnitureState state = new FurnitureState(plugin, furniture);
-        state.items("bottle_items", List.of(source));
+        try {
+            furniture.setSourceItem(BukkitAdaptor.adapt(source));
+            furniture.refreshElements();
+            furniture.setUnsaved();
+            FurnitureState state = new FurnitureState(plugin, furniture);
+            state.items("bottle_items", List.of(source));
+
+            FurniturePlaceEvent placed = new FurniturePlaceEvent(
+                    event.getPlayer(), furniture, location, hand, context);
+            Bukkit.getPluginManager().callEvent(placed);
+            if (placed.isCancelled()) {
+                CraftEngineFurniture.remove(furniture, false, false);
+                return;
+            }
+        } catch (RuntimeException exception) {
+            CraftEngineFurniture.remove(furniture, false, false);
+            plugin.getLogger().warning("Failed to initialize placed bottle furniture: "
+                    + exception.getMessage());
+            return;
+        }
         consumeUnlessCreative(event.getPlayer(), event.getItem());
-        event.setCancelled(true);
-        event.setUseInteractedBlock(Event.Result.DENY);
-        event.setUseItemInHand(Event.Result.DENY);
         // BlockItem#place: (glass volume 1.0 + 1) / 2 and pitch * 0.8.
         target.getWorld().playSound(location, Sound.BLOCK_GLASS_PLACE,
                 SoundCategory.BLOCKS, 1F, 0.8F);
@@ -103,7 +162,7 @@ public final class BottlePlacementService implements Listener {
             return;
         }
         String id = items.id(event.getItem());
-        if (!isDispensableBottle(id) || CraftEngineFurniture.byId(Key.of(id)) == null) {
+        if (!isDispensableBottle(id)) {
             return;
         }
         // BottleBlockDispenseBehavior is optional: if placement is blocked it
@@ -111,12 +170,14 @@ public final class BottlePlacementService implements Listener {
         // base item's drop/projectile behavior.
         event.setCancelled(true);
         Block target = event.getBlock().getRelative(directional.getFacing());
-        if (!canPlaceAt(target)) {
-            return;
-        }
         Location location = target.getLocation().add(0.5, 0, 0.5);
         location.setYaw(snapRotation(180F + facingYaw(directional.getFacing())));
-        BukkitFurniture furniture = CraftEngineFurniture.place(location, Key.of(id), "ground", true);
+        FurnitureDefinition definition = CraftEngineFurniture.byId(Key.of(id));
+        FurnitureVariant variant = definition == null ? null : definition.getVariant("ground");
+        if (variant == null || !canPlaceAt(location, variant)) {
+            return;
+        }
+        BukkitFurniture furniture = CraftEngineFurniture.place(location, definition, "ground", false);
         if (furniture == null) {
             return;
         }
@@ -171,17 +232,25 @@ public final class BottlePlacementService implements Listener {
                 || catalog.hasDrinkEffects(id) && !catalog.isCocktail(id);
     }
 
-    private static boolean canPlaceAt(Block target) {
-        if (!target.isReplaceable()) {
+    private static boolean canPlaceAt(Location placement, FurnitureVariant variant) {
+        if (!placement.getBlock().isReplaceable()) {
             return false;
         }
-        Location center = target.getLocation().add(0.5, 0.4, 0.5);
-        for (Entity entity : target.getWorld().getNearbyEntities(center, 0.32, 0.4, 0.32)) {
-            if (CraftEngineFurniture.isFurniture(entity)) {
-                return false;
-            }
+        WorldPosition furniturePosition = LocationUtils.toWorldPosition(placement);
+        List<AABB> boxes = new ArrayList<>();
+        for (FurnitureHitBoxConfig<?> hitBox : variant.hitBoxConfigs()) {
+            hitBox.prepareBoundingBox(furniturePosition, boxes::add, false);
         }
-        return true;
+        if (boxes.isEmpty()) {
+            return true;
+        }
+        List<Object> nativeBoxes = new ArrayList<>(boxes.size());
+        for (AABB box : boxes) {
+            nativeBoxes.add(AABBProxy.INSTANCE.newInstance(
+                    box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ));
+        }
+        Object nativeWorld = CraftWorldProxy.INSTANCE.getWorld(placement.getWorld());
+        return CollisionUtils.test(nativeWorld, nativeBoxes, EntityProxy.INSTANCE::getBlocksBuilding);
     }
 
     private static boolean takeOneFromDispenser(BlockState state, ItemStack expected) {
