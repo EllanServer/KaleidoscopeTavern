@@ -69,6 +69,8 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +103,11 @@ public final class EffectService implements Listener {
     private final NamespacedKey splashCustomEffectsKey;
     private final Map<UUID, Map<String, ActiveEffect>> active = new HashMap<>();
     private final Map<UUID, BossBar> effectHudBars = new HashMap<>();
+    private final Map<UUID, String> effectHudLines = new HashMap<>();
+    private final Set<UUID> stealthHidden = new HashSet<>();
+    private final Map<String, Color> effectColorCache = new HashMap<>();
+    private final Map<String, CompiledBlockTag> blockTagCache = new HashMap<>();
+    private final Map<String, CompiledEntityTag> entityTagCache = new HashMap<>();
     private final boolean builtinHud;
     private final boolean cornerHud;
     private final int hudGuiHalfWidth;
@@ -167,6 +174,13 @@ public final class EffectService implements Listener {
             }
         }
         effectHudBars.clear();
+        effectHudLines.clear();
+        for (UUID uuid : new ArrayList<>(stealthHidden)) {
+            if (Bukkit.getEntity(uuid) instanceof LivingEntity living) {
+                living.setInvisible(false);
+            }
+        }
+        stealthHidden.clear();
         active.clear();
     }
 
@@ -279,6 +293,7 @@ public final class EffectService implements Listener {
     public void onQuit(PlayerQuitEvent event) {
         save(event.getPlayer());
         hideEffectHud(event.getPlayer());
+        restoreStealthVisibility(event.getPlayer());
         active.remove(event.getPlayer().getUniqueId());
     }
 
@@ -297,6 +312,7 @@ public final class EffectService implements Listener {
         for (Entity entity : event.getEntities()) {
             if (entity instanceof LivingEntity living && active.containsKey(living.getUniqueId())) {
                 save(living);
+                restoreStealthVisibility(living);
                 active.remove(living.getUniqueId());
             }
         }
@@ -341,8 +357,9 @@ public final class EffectService implements Listener {
             mainHand.setItemMeta(damageable);
         }
         equipment.setItemInMainHand(null);
+        // World#dropItem uses the same ItemEntity constructor as the source,
+        // so the disarmed item pops with the identical random velocity.
         org.bukkit.entity.Item dropped = target.getWorld().dropItem(target.getLocation(), mainHand);
-        dropped.setVelocity(new Vector());
         dropped.setPickupDelay(40);
     }
 
@@ -516,12 +533,14 @@ public final class EffectService implements Listener {
     private void tick(long period) {
         elapsedTicks += period;
         boolean persistThisTick = elapsedTicks % 20 == 0;
-        for (UUID uuid : new ArrayList<>(active.keySet())) {
-            Entity entity = Bukkit.getEntity(uuid);
+        Iterator<Map.Entry<UUID, Map<String, ActiveEffect>>> iterator = active.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, Map<String, ActiveEffect>> entry = iterator.next();
+            Entity entity = Bukkit.getEntity(entry.getKey());
             if (!(entity instanceof LivingEntity living) || !entity.isValid() || living.isDead()) {
                 continue;
             }
-            Map<String, ActiveEffect> effects = active.get(uuid);
+            Map<String, ActiveEffect> effects = entry.getValue();
             boolean changed = false;
             for (ActiveEffect effect : new ArrayList<>(effects.values())) {
                 if (!tickEffect(living, effect, effects)) {
@@ -543,17 +562,49 @@ public final class EffectService implements Listener {
                     changed |= visibleExpired;
                 }
             }
-            reconcileAttributes(living, effects);
+            updateStealthVisibility(living, effects);
             spawnEffectParticles(living, effects);
             if (changed || persistThisTick) {
                 save(living);
+                // Attribute reconciliation is a repair pass: applies and
+                // expiries reconcile immediately through `changed`, so the
+                // steady-state check only needs the once-per-second cadence.
+                reconcileAttributes(living, effects);
                 if (living instanceof Player player) {
                     updateEffectHud(player, effects);
                 }
             }
             if (effects.isEmpty()) {
-                active.remove(uuid);
+                iterator.remove();
             }
+        }
+    }
+
+    /**
+     * The Forge client cancels the whole player render while stealthed in a
+     * plant; the closest vanilla-protocol equivalent is the invisibility flag
+     * (equipment stays visible). Tracking our own set keeps the flag from
+     * clobbering invisibility granted by other sources.
+     */
+    private void updateStealthVisibility(LivingEntity living, Map<String, ActiveEffect> effects) {
+        UUID uuid = living.getUniqueId();
+        boolean hidden = stealthHidden.contains(uuid);
+        boolean desired = effects.containsKey(PREFIX + "grass_stealth")
+                && living.isSneaking() && isStealthPlant(living);
+        if (desired == hidden) {
+            return;
+        }
+        living.setInvisible(desired);
+        if (desired) {
+            stealthHidden.add(uuid);
+        } else {
+            stealthHidden.remove(uuid);
+        }
+    }
+
+    private void restoreStealthVisibility(LivingEntity living) {
+        if (stealthHidden.remove(living.getUniqueId())) {
+            living.setInvisible(false);
         }
     }
 
@@ -569,17 +620,29 @@ public final class EffectService implements Listener {
             return;
         }
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        List<String> ids = List.copyOf(effects.keySet());
-        Integer rgb = CustomEffectHudSemantics.color(ids.get(random.nextInt(ids.size())));
-        if (rgb == null) {
-            return;
+        String chosen = null;
+        int index = random.nextInt(effects.size());
+        for (String id : effects.keySet()) {
+            if (index-- == 0) {
+                chosen = id;
+                break;
+            }
+        }
+        Color color = effectColorCache.get(chosen);
+        if (color == null) {
+            Integer rgb = CustomEffectHudSemantics.color(chosen);
+            if (rgb == null) {
+                return;
+            }
+            color = Color.fromRGB(rgb);
+            effectColorCache.put(chosen, color);
         }
         BoundingBox box = living.getBoundingBox();
         living.getWorld().spawnParticle(Particle.ENTITY_EFFECT,
                 box.getMinX() + random.nextDouble() * box.getWidthX(),
                 box.getMinY() + random.nextDouble() * box.getHeight(),
                 box.getMinZ() + random.nextDouble() * box.getWidthZ(),
-                1, 0.0, 0.0, 0.0, 0.0, Color.fromRGB(rgb));
+                1, 0.0, 0.0, 0.0, 0.0, color);
     }
 
     private boolean tickEffect(LivingEntity living, ActiveEffect effect,
@@ -639,7 +702,7 @@ public final class EffectService implements Listener {
         }
         if (applied) {
             user.getWorld().playSound(user.getLocation(),
-                    "kaleidoscope_tavern:effect.vision", 1.0F, 1.0F);
+                    "kaleidoscope_tavern:effect.vision", SoundCategory.PLAYERS, 1.0F, 1.0F);
         }
     }
 
@@ -704,7 +767,8 @@ public final class EffectService implements Listener {
             for (int lateral = -1; lateral <= 1; lateral++) {
                 Block block = origin.getRelative(alongZ ? lateral : 0, y, alongZ ? 0 : lateral);
                 if (matchesBlockTag(block, PREFIX + "ardent_heat_breakable")) {
-                    block.breakNaturally(true, true);
+                    // Level#destroyBlock drops loot but never block experience.
+                    block.breakNaturally(true, false);
                     broken++;
                 }
             }
@@ -747,38 +811,71 @@ public final class EffectService implements Listener {
         return matchesBlockTag(block, PREFIX + "grass_stealth_plants");
     }
 
+    // The ardent-heat sprint check matches nine blocks per tick, so tag
+    // members resolve once instead of hitting the registry on every block.
+    private record CompiledBlockTag(List<Tag<Material>> materialTags, Set<String> ids,
+                                    boolean hasCustomIds) {
+    }
+
+    private record CompiledEntityTag(List<Tag<EntityType>> entityTags, Set<String> ids) {
+    }
+
     private boolean matchesBlockTag(Block block, String tagId) {
-        String customId = customBlockId(block);
-        String vanillaId = block.getType().getKey().asString();
-        for (String member : catalog.blockTag(tagId)) {
-            if (member.startsWith("#")) {
-                NamespacedKey key = NamespacedKey.fromString(member.substring(1));
-                Tag<Material> tag = key == null ? null : Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class);
-                if (tag != null && tag.isTagged(block.getType())) {
-                    return true;
+        CompiledBlockTag compiled = blockTagCache.computeIfAbsent(tagId, id -> {
+            List<Tag<Material>> tags = new ArrayList<>();
+            Set<String> ids = new HashSet<>();
+            boolean custom = false;
+            for (String member : catalog.blockTag(id)) {
+                if (member.startsWith("#")) {
+                    NamespacedKey key = NamespacedKey.fromString(member.substring(1));
+                    Tag<Material> tag = key == null ? null
+                            : Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class);
+                    if (tag != null) {
+                        tags.add(tag);
+                    }
+                } else {
+                    ids.add(member);
+                    custom |= !member.startsWith("minecraft:");
                 }
-            } else if (member.equals(vanillaId) || member.equals(customId)) {
+            }
+            return new CompiledBlockTag(List.copyOf(tags), Set.copyOf(ids), custom);
+        });
+        Material type = block.getType();
+        for (Tag<Material> tag : compiled.materialTags()) {
+            if (tag.isTagged(type)) {
                 return true;
             }
         }
-        return false;
+        if (compiled.ids().contains(type.getKey().asString())) {
+            return true;
+        }
+        return compiled.hasCustomIds() && compiled.ids().contains(customBlockId(block));
     }
 
     private boolean matchesEntityTag(EntityType type, String tagId) {
-        String entityId = type.getKey().asString();
-        for (String member : catalog.entityTypeTag(tagId)) {
-            if (member.startsWith("#")) {
-                NamespacedKey key = NamespacedKey.fromString(member.substring(1));
-                Tag<EntityType> tag = key == null ? null
-                        : Bukkit.getTag(Tag.REGISTRY_ENTITY_TYPES, key, EntityType.class);
-                if (tag != null && tag.isTagged(type)) {
-                    return true;
+        CompiledEntityTag compiled = entityTagCache.computeIfAbsent(tagId, id -> {
+            List<Tag<EntityType>> tags = new ArrayList<>();
+            Set<String> ids = new HashSet<>();
+            for (String member : catalog.entityTypeTag(id)) {
+                if (member.startsWith("#")) {
+                    NamespacedKey key = NamespacedKey.fromString(member.substring(1));
+                    Tag<EntityType> tag = key == null ? null
+                            : Bukkit.getTag(Tag.REGISTRY_ENTITY_TYPES, key, EntityType.class);
+                    if (tag != null) {
+                        tags.add(tag);
+                    }
+                } else {
+                    ids.add(member);
                 }
-            } else if (member.equals(entityId)) {
+            }
+            return new CompiledEntityTag(List.copyOf(tags), Set.copyOf(ids));
+        });
+        for (Tag<EntityType> tag : compiled.entityTags()) {
+            if (tag.isTagged(type)) {
                 return true;
             }
         }
-        return false;
+        return compiled.ids().contains(type.getKey().asString());
     }
 
     private static String customBlockId(Block block) {
@@ -829,6 +926,9 @@ public final class EffectService implements Listener {
         Vector horizontal = new Vector(look.getX(), 0, look.getZ());
         if (horizontal.lengthSquared() > 0.001) {
             horizontal.normalize();
+        } else {
+            // Looking straight up or down knocks targets purely upward.
+            horizontal = new Vector();
         }
         double damage = user.getHealth() * 1.2;
         DamageSource damageSource = DamageSource.builder(DamageType.SONIC_BOOM)
@@ -1059,7 +1159,15 @@ public final class EffectService implements Listener {
             hideEffectHud(player);
             return;
         }
-        Component title = MiniMessage.miniMessage().deserialize(hudLine(effects));
+        // The corner style only changes when the effect set changes, so the
+        // per-second refresh usually skips the MiniMessage re-parse entirely.
+        String line = hudLine(effects);
+        if (line.equals(effectHudLines.get(player.getUniqueId()))
+                && effectHudBars.containsKey(player.getUniqueId())) {
+            return;
+        }
+        Component title = MiniMessage.miniMessage().deserialize(line);
+        effectHudLines.put(player.getUniqueId(), line);
         BossBar bar = effectHudBars.get(player.getUniqueId());
         if (bar == null) {
             // The corner style hides the bar itself: the pack overrides the
@@ -1083,6 +1191,7 @@ public final class EffectService implements Listener {
     }
 
     private void hideEffectHud(Player player) {
+        effectHudLines.remove(player.getUniqueId());
         BossBar bar = effectHudBars.remove(player.getUniqueId());
         if (bar != null) {
             player.hideBossBar(bar);
@@ -1093,6 +1202,7 @@ public final class EffectService implements Listener {
         active.remove(living.getUniqueId());
         living.getPersistentDataContainer().remove(activeKey);
         removeAttributeModifiers(living);
+        restoreStealthVisibility(living);
         if (living instanceof Player player) {
             hideEffectHud(player);
         }
