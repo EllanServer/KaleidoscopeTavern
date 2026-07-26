@@ -1539,9 +1539,9 @@ def validate() -> dict[str, int]:
     for source_name, owners in EFFECT_BEHAVIOR_COVERAGE.items():
         assert_owner_evidence(source_name, owners, game_package)
 
-    # Vision and upside-down are point-of-view effects. They must never write
-    # shared entity state, otherwise unrelated players see the outline/name
-    # and upside-down permanently pollutes the mob's saved custom name.
+    # Vision, upside-down and slightly-tipsy are point-of-view effects. They
+    # must never write shared entity state, otherwise unrelated players see
+    # the outline/name or the server gains a fake nausea effect.
     effect_service_source = (game_package / "EffectService.java").read_text(
         encoding="utf-8-sig")
     viewer_packet_source = (game_package / "ViewerEffectPackets.java").read_text(
@@ -1555,6 +1555,20 @@ def validate() -> dict[str, int]:
                 f"Viewer-only drink effect writes shared entity state: {shared_state_write}")
     if "viewer.sendPotionEffectChange" not in effect_service_source:
         raise AssertionError("Vision must use Paper's per-viewer effect packet")
+    for tipsy_packet_token in (
+            "private final Set<UUID> privateTipsyVisual",
+            "syncPrivateTipsyVisual(player, effects)",
+            "player.sendPotionEffectChange(player, new PotionEffect(",
+            "nausea, PotionEffect.INFINITE_DURATION",
+            "player.sendPotionEffectChangeRemove(player, type)",
+            "restorePrivateTipsyVisual(player)"):
+        if tipsy_packet_token not in effect_service_source:
+            raise AssertionError(
+                "Slightly-tipsy must retain its viewer-only client visual; "
+                f"missing {tipsy_packet_token}")
+    if "player.addPotionEffect(new PotionEffect(nausea" in effect_service_source:
+        raise AssertionError(
+            "Slightly-tipsy must not add a real server-side nausea effect")
     effect_start = re.search(
         r"public void start\(\) \{(.*?)\n    \}\n\n    public void stop\(\)",
         effect_service_source,

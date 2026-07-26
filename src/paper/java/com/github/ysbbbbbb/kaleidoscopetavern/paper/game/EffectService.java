@@ -47,9 +47,11 @@ import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
@@ -106,6 +108,7 @@ public final class EffectService implements Listener {
     private final Map<UUID, LivingEntity> activeEntities = new HashMap<>();
     private final Map<UUID, BossBar> effectHudBars = new HashMap<>();
     private final Map<UUID, String> effectHudLines = new HashMap<>();
+    private final Set<UUID> privateTipsyVisual = new HashSet<>();
     private final Map<UUID, Map<UUID, Long>> visionPacketExpiry = new HashMap<>();
     private final Map<UUID, Set<UUID>> upsideDownPacketTargets = new HashMap<>();
     private final Set<UUID> stealthHidden = new HashSet<>();
@@ -180,8 +183,15 @@ public final class EffectService implements Listener {
                 player.hideBossBar(entry.getValue());
             }
         }
+        for (UUID uuid : new ArrayList<>(privateTipsyVisual)) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                restorePrivateTipsyVisual(player);
+            }
+        }
         effectHudBars.clear();
         effectHudLines.clear();
+        privateTipsyVisual.clear();
         for (UUID uuid : new ArrayList<>(stealthHidden)) {
             if (Bukkit.getEntity(uuid) instanceof LivingEntity living) {
                 living.setInvisible(false);
@@ -290,11 +300,22 @@ public final class EffectService implements Listener {
         save(event.getPlayer());
         hideEffectHud(event.getPlayer());
         restoreStealthVisibility(event.getPlayer());
+        privateTipsyVisual.remove(event.getPlayer().getUniqueId());
         visionPacketExpiry.remove(event.getPlayer().getUniqueId());
         upsideDownPacketTargets.remove(event.getPlayer().getUniqueId());
         activeEntities.remove(event.getPlayer().getUniqueId());
         active.remove(event.getPlayer().getUniqueId());
         stopTickTaskIfIdle();
+    }
+
+    @EventHandler
+    public void onChangedWorld(PlayerChangedWorldEvent event) {
+        resetPrivateTipsyVisual(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent event) {
+        resetPrivateTipsyVisual(event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -543,6 +564,7 @@ public final class EffectService implements Listener {
         reconcileAttributes(target, effects);
         if (target instanceof Player player) {
             updateEffectHud(player, effects);
+            syncPrivateTipsyVisual(player, effects);
         }
     }
 
@@ -618,6 +640,7 @@ public final class EffectService implements Listener {
                 reconcileAttributes(living, effects);
                 if (living instanceof Player player) {
                     updateEffectHud(player, effects);
+                    syncPrivateTipsyVisual(player, effects);
                 }
             }
             if (effects.isEmpty()) {
@@ -1172,6 +1195,7 @@ public final class EffectService implements Listener {
         reconcileAttributes(living, effects);
         if (living instanceof Player player) {
             updateEffectHud(player, effects);
+            syncPrivateTipsyVisual(player, effects);
         }
     }
 
@@ -1318,6 +1342,65 @@ public final class EffectService implements Listener {
         }
     }
 
+    /**
+     * The archived Forge client applied {@code slightly_tipsy} only to its
+     * local camera. Vanilla has no camera-roll packet, so a hidden, client-only
+     * nausea effect is the closest server-only approximation. This never enters
+     * the player's real potion-effect collection or leaks to other viewers.
+     */
+    private void syncPrivateTipsyVisual(Player player, Map<String, ActiveEffect> effects) {
+        PotionEffectType nausea = Registry.EFFECT.get(NamespacedKey.minecraft("nausea"));
+        if (nausea == null) {
+            return;
+        }
+        ActiveEffect tipsy = effects.get(PREFIX + "slightly_tipsy");
+        PotionEffect realNausea = player.getPotionEffect(nausea);
+        UUID uuid = player.getUniqueId();
+        if (tipsy == null || tipsy.remainingTicks() <= 0) {
+            if (privateTipsyVisual.remove(uuid)) {
+                restorePotionEffectView(player, nausea, realNausea);
+            }
+            return;
+        }
+        if (realNausea != null) {
+            if (privateTipsyVisual.remove(uuid)) {
+                player.sendPotionEffectChange(player, realNausea);
+            }
+            return;
+        }
+        if (privateTipsyVisual.add(uuid)) {
+            player.sendPotionEffectChange(player, new PotionEffect(
+                    nausea, PotionEffect.INFINITE_DURATION, 0, false, false, false));
+        }
+    }
+
+    private void restorePrivateTipsyVisual(Player player) {
+        PotionEffectType nausea = Registry.EFFECT.get(NamespacedKey.minecraft("nausea"));
+        if (nausea == null || !privateTipsyVisual.remove(player.getUniqueId())) {
+            return;
+        }
+        restorePotionEffectView(player, nausea, player.getPotionEffect(nausea));
+    }
+
+    private static void restorePotionEffectView(Player player, PotionEffectType type,
+                                                PotionEffect realEffect) {
+        if (realEffect == null) {
+            player.sendPotionEffectChangeRemove(player, type);
+        } else {
+            player.sendPotionEffectChange(player, realEffect);
+        }
+    }
+
+    private void resetPrivateTipsyVisual(Player player) {
+        restorePrivateTipsyVisual(player);
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (player.isOnline()) {
+                syncPrivateTipsyVisual(player,
+                        active.getOrDefault(player.getUniqueId(), Map.of()));
+            }
+        });
+    }
+
     private void clearEffects(LivingEntity living) {
         activeEntities.remove(living.getUniqueId());
         active.remove(living.getUniqueId());
@@ -1327,6 +1410,7 @@ public final class EffectService implements Listener {
         restoreStealthVisibility(living);
         if (living instanceof Player player) {
             hideEffectHud(player);
+            restorePrivateTipsyVisual(player);
         }
         stopTickTaskIfIdle();
     }
