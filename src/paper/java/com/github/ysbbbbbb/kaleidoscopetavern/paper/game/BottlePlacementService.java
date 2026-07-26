@@ -78,6 +78,12 @@ public final class BottlePlacementService implements Listener {
                 || event.getItem() == null) {
             return;
         }
+        // Custom drinks are handled later by CE's sneak_place_drink item
+        // behavior. Returning here is essential: this LOW listener must not
+        // cancel the event before CE's HIGHEST item dispatcher sees it.
+        if (isPlaceableDrink(items.id(event.getItem()))) {
+            return;
+        }
         Placement placement = placementFor(event.getItem());
         if (placement == null || placement.configPath() != null
                 && !plugin.getConfig().getBoolean(placement.configPath(), true)) {
@@ -133,8 +139,6 @@ public final class BottlePlacementService implements Listener {
             furniture.setSourceItem(BukkitAdaptor.adapt(source));
             furniture.refreshElements();
             furniture.setUnsaved();
-            FurnitureState state = new FurnitureState(plugin, furniture);
-            state.items("bottle_items", List.of(source));
 
             FurniturePlaceEvent placed = new FurniturePlaceEvent(
                     event.getPlayer(), furniture, location, hand, context);
@@ -186,7 +190,6 @@ public final class BottlePlacementService implements Listener {
         furniture.setSourceItem(BukkitAdaptor.adapt(source));
         furniture.refreshElements();
         furniture.setUnsaved();
-        new FurnitureState(plugin, furniture).items("bottle_items", List.of(source));
         if (!takeOneFromDispenser(event.getBlock().getState(), source)) {
             CraftEngineFurniture.remove(furniture, false, false);
             return;
@@ -197,12 +200,6 @@ public final class BottlePlacementService implements Listener {
     }
 
     private Placement placementFor(ItemStack stack) {
-        String customId = items.id(stack);
-        if (isPlaceableDrink(customId)) {
-            // DrinkBlockItem/CocktailBlockItem placement is unconditional;
-            // only the five vanilla bottle families had Forge config gates.
-            return new Placement(customId, null);
-        }
         return switch (stack.getType()) {
             case POTION -> {
                 PotionType type = stack.getItemMeta() instanceof PotionMeta potion

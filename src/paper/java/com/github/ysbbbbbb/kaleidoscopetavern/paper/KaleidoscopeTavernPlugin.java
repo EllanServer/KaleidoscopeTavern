@@ -24,9 +24,22 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropB
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBlockShape;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.WildGrapevineBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.AnimatedItemFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BoardTextFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BottleFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.PressingTubFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StateFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationInteractionFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageInteractionFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageVisualFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.EffectHudPlaceholder;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.SneakPlaceDrinkItemBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.pack.CustomCropsInstaller;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.pack.PackInstaller;
 import net.kyori.adventure.text.Component;
@@ -75,6 +88,8 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     private AmbientFurnitureService ambientFurniture;
     private BarStoolVisualService barStoolVisuals;
     private ShakerVisualService shakerVisuals;
+    private FurnitureConnectionService furnitureConnections;
+    private BottleFurnitureService bottleFurniture;
     private EffectHudPlaceholder effectHudPlaceholder;
 
     @Override
@@ -84,6 +99,19 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             TrellisBehavior.register();
             HangingGrapeCropBehavior.register();
             WildGrapevineBehavior.register();
+            StateFurnitureBehavior.register();
+            AnimatedItemFurnitureBehavior.register();
+            BoardTextFurnitureBehavior.register();
+            BottleFurnitureBehavior.register();
+            LifecycleFurnitureBehavior.register();
+            PressingTubFurnitureBehavior.register();
+            RedstoneFurnitureBehavior.register();
+            TickingFurnitureBehavior.register();
+            StationInteractionFurnitureBehavior.register();
+            StationVisualFurnitureBehavior.register();
+            StorageInteractionFurnitureBehavior.register();
+            StorageVisualFurnitureBehavior.register();
+            SneakPlaceDrinkItemBehavior.register();
             if (getConfig().getBoolean("pack.install-on-startup", true)) {
                 packResult = PackInstaller.install(this);
             }
@@ -127,27 +155,24 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         boards = new BoardTextService(this, items);
         taps = new TapService(this, stations, items);
         displayStorage = new DisplayStorageService(this, catalog, items);
-        ambientFurniture = new AmbientFurnitureService(this, displayStorage);
+        ambientFurniture = new AmbientFurnitureService(displayStorage);
         barStoolVisuals = new BarStoolVisualService(this, items);
-        FurnitureConnectionService furnitureConnections = new FurnitureConnectionService(this);
+        furnitureConnections = new FurnitureConnectionService(this);
 
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(items, this);
         getServer().getPluginManager().registerEvents(new BlockService(this, catalog, items), this);
-        getServer().getPluginManager().registerEvents(furnitureConnections, this);
         getServer().getPluginManager().registerEvents(new MolotovService(this, items), this);
         getServer().getPluginManager().registerEvents(new BottlePlacementService(this, catalog, items), this);
-        getServer().getPluginManager().registerEvents(new BottleFurnitureService(this, catalog, items, effects), this);
+        bottleFurniture = new BottleFurnitureService(this, catalog, items, effects);
+        getServer().getPluginManager().registerEvents(bottleFurniture, this);
         getServer().getPluginManager().registerEvents(displayStorage, this);
-        getServer().getPluginManager().registerEvents(ambientFurniture, this);
-        getServer().getPluginManager().registerEvents(barStoolVisuals, this);
-        getServer().getPluginManager().registerEvents(shakerVisuals, this);
         getServer().getPluginManager().registerEvents(boards, this);
-        getServer().getPluginManager().registerEvents(taps, this);
         getServer().getPluginManager().registerEvents(stations, this);
         getServer().getPluginManager().registerEvents(effects, this);
         stations.start();
         effects.start();
+        bottleFurniture.start();
         boards.start();
         taps.start();
         displayStorage.start();
@@ -190,6 +215,9 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (effects != null) {
             effects.stop();
         }
+        if (bottleFurniture != null) {
+            bottleFurniture.stop();
+        }
         if (boards != null) {
             boards.stop();
         }
@@ -207,6 +235,9 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         }
         if (shakerVisuals != null) {
             shakerVisuals.stop();
+        }
+        if (furnitureConnections != null) {
+            furnitureConnections.stop();
         }
     }
 

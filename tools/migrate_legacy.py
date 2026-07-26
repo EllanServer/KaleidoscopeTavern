@@ -2196,6 +2196,84 @@ def semantic_variant_name(anchor: str, properties: tuple[tuple[str, str], ...], 
 def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, Any]]:
     behaviors: list[dict[str, Any]] = []
 
+    uses_tavern_state = (
+        # CE sourceItem is the complete state for a single placed bottle.
+        # Only count variants can contain additional, non-identical bottles.
+        (block_id in BOTTLE_AND_GLASS_ITEMS and "ground_count_2" in variants)
+        or block_id in {"pressing_tub", "barrel", "chalkboard"}
+        or block_id.endswith("_sandwich_board")
+    )
+    if uses_tavern_state:
+        # Index zero is intentional: the remaining custom-data consumers
+        # resolve this controller directly instead of allocating Bukkit PDC.
+        behaviors.append({"type": f"{NAMESPACE}:state_furniture"})
+
+    if block_id == "pressing_tub":
+        # CE owns loaded/unloaded furniture discovery and the spatial index;
+        # Paper only supplies the block-style fallOn event CE does not expose.
+        behaviors.append({"type": f"{NAMESPACE}:pressing_tub_furniture"})
+
+    lifecycle_channels: list[str] = []
+    if block_id == "chalkboard" or block_id.endswith("_sandwich_board"):
+        lifecycle_channels.append("board")
+    if block_id.endswith("_bar_stool"):
+        lifecycle_channels.append("bar_stool")
+    if block_id == "shaker":
+        lifecycle_channels.append("shaker")
+    if block_id == "barrel":
+        lifecycle_channels.append("barrel")
+    if block_id == "empty_bottle":
+        lifecycle_channels.append("tap_bottle")
+    if (block_id.endswith("_sofa")
+            or block_id in {
+                "bar_counter", "table", "bar_cabinet",
+                "glass_bar_cabinet", "cellar_cabinet",
+            }):
+        lifecycle_channels.append("connection")
+    for channel in lifecycle_channels:
+        behaviors.append({
+            "type": f"{NAMESPACE}:lifecycle_furniture",
+            "channel": channel,
+        })
+
+    board_text_max_lines: int | None = None
+    if block_id == "chalkboard":
+        board_text_max_lines = 11
+    elif block_id.endswith("_sandwich_board"):
+        board_text_max_lines = 8
+    if board_text_max_lines is not None:
+        behaviors.append({
+            "type": f"{NAMESPACE}:board_text_furniture",
+            "max_lines": board_text_max_lines,
+            "view_range": 0.75,
+        })
+
+    animated_visual: tuple[str, int] | None = None
+    if block_id == "shaker":
+        animated_visual = ("shaker", 2)
+    elif block_id.endswith("_bar_stool"):
+        animated_visual = ("bar_stool", 1)
+    if animated_visual is not None:
+        channel, max_elements = animated_visual
+        behaviors.append({
+            "type": f"{NAMESPACE}:animated_item_furniture",
+            "channel": channel,
+            "max_elements": max_elements,
+            "view_range": 1.25,
+        })
+
+    if block_id in BOTTLE_AND_GLASS_ITEMS:
+        behaviors.append({"type": f"{NAMESPACE}:bottle_furniture"})
+
+    if block_id in {
+            "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
+            "tilted_rack", "circular_rack", "holder", "glassware_holder",
+    }:
+        # This must precede CE's native display_item controllers. It preserves
+        # the source furniture's multi-slot hit selection and restrictions;
+        # the following native controllers remain the only inventory owner.
+        behaviors.append({"type": f"{NAMESPACE}:storage_interaction_furniture"})
+
     def display_slots(
         positions: list[str],
         width: float,
@@ -2205,15 +2283,9 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     ) -> None:
         for index, position in enumerate(positions):
             variant_rules: dict[str, Any] = {}
-            for variant in variants:
-                rule: dict[str, Any] = {
-                    # Paper recreates every Forge storage renderer with its
-                    # exact block-model transform and slot-selection math.
-                    # Keep CE's controller solely as persistent storage and
-                    # move its packet-only inventory sprite out of view.
-                    "item_position": "0,-4096,0" if paper_visual else position,
-                }
-                if not paper_visual:
+            if not paper_visual:
+                for variant in variants:
+                    rule: dict[str, Any] = {"item_position": position}
                     rule["hitboxes"] = [{
                         "type": "interaction",
                         "position": position,
@@ -2222,16 +2294,18 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
                         "interactive": True,
                         "blocks_building": False,
                     }]
-                variant_rules[variant] = rule
-            behaviors.append({
+                    variant_rules[variant] = rule
+            behavior: dict[str, Any] = {
                 "type": "display_item_furniture",
                 "data_key": f"{NAMESPACE}:display_slot_{index}",
                 "sounds": {
                     "put": "minecraft:block.decorated_pot.insert",
                     "take": "minecraft:block.decorated_pot.insert_fail",
                 },
-                "variants": variant_rules,
-            })
+            }
+            if variant_rules:
+                behavior["variants"] = variant_rules
+            behaviors.append(behavior)
 
     if block_id in {"bar_cabinet", "glass_bar_cabinet"}:
         display_slots(["-0.25,0.5,0", "0.25,0.5,0"], 0.5, 1.0, paper_visual=True)
@@ -2258,12 +2332,80 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
             "-0.25,-0.24,0.25", "0.25,-0.24,0.25",
         ], 0.35, 0.35, paper_visual=True)
 
+    storage_visual_slots = {
+        "bar_cabinet": 2,
+        "glass_bar_cabinet": 2,
+        "cellar_cabinet": 9,
+        "tilted_rack": 3,
+        "circular_rack": 6,
+        "holder": 1,
+        "glassware_holder": 4,
+    }.get(block_id)
+    if storage_visual_slots is not None:
+        # Native display controllers remain the inventory owner. Tavern adds
+        # only exact Forge transforms as CE packet-only furniture elements.
+        behaviors.append({
+            "type": f"{NAMESPACE}:storage_visual_furniture",
+            "slots": storage_visual_slots,
+        })
+
+    station_visual = {
+        # One CE element owns a bounded set of packet entity ids. The first
+        # number covers every source-renderer item copy plus one fluid plane.
+        "pressing_tub": (65, 1.25),
+        "barrel": (37, 2.5),
+    }.get(block_id)
+    if station_visual is not None:
+        max_elements, view_range = station_visual
+        behaviors.append({
+            "type": f"{NAMESPACE}:station_visual_furniture",
+            "max_elements": max_elements,
+            "view_range": view_range,
+        })
+
+    if block_id in {"pressing_tub", "barrel", "shaker", "empty_glassware"}:
+        behaviors.append({"type": f"{NAMESPACE}:station_interaction_furniture"})
+
     if block_id in PENDANT_LAMPS:
         behaviors.append({"type": "glowing_furniture", "lights": ["0,-1,0 13"]})
     elif block_id == "glassware_holder":
         behaviors.append({"type": "glowing_furniture", "lights": ["0,0,0 8"]})
     elif block_id in {"circular_rack", "molotov"}:
         behaviors.append({"type": "glowing_furniture", "lights": ["0,0,0 14"]})
+
+    redstone_channel: str | None = None
+    redstone_interval = 1
+    if block_id == "tap":
+        redstone_channel = "tap"
+        redstone_interval = 2
+    elif block_id.endswith("_incense"):
+        redstone_channel = "incense"
+    elif block_id in {"cellar_cabinet", "tilted_rack", "circular_rack", "holder"}:
+        redstone_channel = "storage"
+    if redstone_channel is not None:
+        behaviors.append({
+            "type": f"{NAMESPACE}:redstone_furniture",
+            "channel": redstone_channel,
+            "interval": redstone_interval,
+            # The controller owns one persistent edge latch per furniture
+            # instance.  Keep the key deterministic and independent from
+            # behavior ordering so future native CE behaviors cannot alias it.
+            "data_key": f"{NAMESPACE}:redstone_{block_id}",
+        })
+
+    ticking_channel: str | None = None
+    ticking_interval = 1
+    if block_id.endswith("_incense") or block_id in {"mystery_cocktail", "circular_rack"}:
+        ticking_channel = "ambient"
+    elif block_id == "barrel":
+        ticking_channel = "barrel"
+        ticking_interval = 97
+    if ticking_channel is not None:
+        behaviors.append({
+            "type": f"{NAMESPACE}:ticking_furniture",
+            "channel": ticking_channel,
+            "interval": ticking_interval,
+        })
     return behaviors
 
 
@@ -2300,12 +2442,20 @@ def furniture_settings(block_id: str) -> dict[str, Any]:
         or block_id == "shaker"
         or block_id.endswith("_incense")
     )
+    sounds: dict[str, Any] = {
+        action: f"minecraft:block.{family}.{action}"
+        for action in ("break", "place", "hit")
+    }
+    if block_id in BOTTLE_AND_GLASS_ITEMS:
+        # Forge BlockItem#place applies the block sound at 0.8 pitch.
+        sounds["place"] = {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8,
+        }
     return {
         "hit_times": 1 if instant_break else 3,
-        "sounds": {
-            action: f"minecraft:block.{family}.{action}"
-            for action in ("break", "place", "hit")
-        },
+        "sounds": sounds,
     }
 
 
@@ -2782,10 +2932,9 @@ def build_items(
             "model": {"type": "minecraft:model", "path": f"{NAMESPACE}:item/{item_id}"},
         }
         behaviors: list[dict[str, Any]] = []
-        # Drinks keep vanilla potion consumption. Their sneak-placement is
-        # performed by the Paper layer; attaching CE's unconditional
-        # furniture_item behavior here would place a bottle on every normal
-        # right-click instead of drinking it.
+        # Drinks keep vanilla potion consumption. A thin custom CE behavior
+        # delegates to the native furniture_item only while sneaking and
+        # returns PASS for ordinary right-clicks so they still drink normally.
         manually_placed_drink = is_drink(item_id, drink_ids)
         if item_id in BOTTLE_AND_GLASS_ITEMS or item_id.endswith("_bucket"):
             # The Forge BottleBlockItem/GlasswareBlockItem hierarchy stacks to
@@ -2891,9 +3040,10 @@ def build_items(
                 "consume_seconds": 1.6,
                 "animation": "eat",
             }
-        if item_id in furniture_ids and not manually_placed_drink:
+        if item_id in furniture_ids:
             furniture_behavior: dict[str, Any] = {
-                "type": "furniture_item",
+                "type": (f"{NAMESPACE}:sneak_place_drink"
+                         if manually_placed_drink else "furniture_item"),
                 "furniture": f"{NAMESPACE}:{item_id}",
                 "rules": furniture_placement[item_id],
             }

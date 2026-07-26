@@ -1,11 +1,32 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
-/** Exact item-layer transform used by the source tilted pressing-tub renderer. */
-final class PressingTubSemantics {
+/** Source-compatible pressing-tub geometry and fall thresholds. */
+public final class PressingTubSemantics {
+    public static final float MIN_FALL_DISTANCE = 0.5F;
     static final float TILT_X_DEGREES = -45F;
     static final float ITEM_X_DEGREES = -90F;
 
     private PressingTubSemantics() {
+    }
+
+    /** Horizontal ownership plus the source ground-tub landing height. */
+    public static boolean isLandingPosition(double feetX, double feetY, double feetZ,
+                                            double baseX, double baseY, double baseZ) {
+        double relativeY = feetY - baseY;
+        return ownsColumn(feetX, feetZ, baseX, baseZ)
+                && relativeY >= 0.35 && relativeY <= 1.25;
+    }
+
+    /** Whether a falling entity is currently over a possible ground-tub landing. */
+    public static boolean isAboveColumn(double feetX, double feetY, double feetZ,
+                                        double baseX, double baseY, double baseZ) {
+        return ownsColumn(feetX, feetZ, baseX, baseZ) && feetY - baseY >= 0.35;
+    }
+
+    private static boolean ownsColumn(double feetX, double feetZ,
+                                      double baseX, double baseZ) {
+        return Math.abs(feetX - baseX) <= 0.5
+                && Math.abs(feetZ - baseZ) <= 0.5;
     }
 
     /**

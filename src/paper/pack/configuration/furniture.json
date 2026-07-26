@@ -450,6 +450,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:light_gray_sofa": {
@@ -902,6 +906,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:gray_sofa": {
@@ -1354,6 +1362,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:black_sofa": {
@@ -1806,6 +1818,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:brown_sofa": {
@@ -2258,6 +2274,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:red_sofa": {
@@ -2710,6 +2730,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:orange_sofa": {
@@ -3162,6 +3186,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:yellow_sofa": {
@@ -3614,6 +3642,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:lime_sofa": {
@@ -4066,6 +4098,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:green_sofa": {
@@ -4518,6 +4554,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:cyan_sofa": {
@@ -4970,6 +5010,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:light_blue_sofa": {
@@ -5422,6 +5466,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:blue_sofa": {
@@ -5874,6 +5922,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:purple_sofa": {
@@ -6326,6 +6378,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:magenta_sofa": {
@@ -6778,6 +6834,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:pink_sofa": {
@@ -7230,6 +7290,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:white_bar_stool": {
@@ -7294,7 +7358,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:light_gray_bar_stool": {
       "settings": {
@@ -7358,7 +7434,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:gray_bar_stool": {
       "settings": {
@@ -7422,7 +7510,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:black_bar_stool": {
       "settings": {
@@ -7486,7 +7586,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:brown_bar_stool": {
       "settings": {
@@ -7550,7 +7662,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:red_bar_stool": {
       "settings": {
@@ -7614,7 +7738,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:orange_bar_stool": {
       "settings": {
@@ -7678,7 +7814,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:yellow_bar_stool": {
       "settings": {
@@ -7742,7 +7890,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:lime_bar_stool": {
       "settings": {
@@ -7806,7 +7966,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:green_bar_stool": {
       "settings": {
@@ -7870,7 +8042,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:cyan_bar_stool": {
       "settings": {
@@ -7934,7 +8118,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:light_blue_bar_stool": {
       "settings": {
@@ -7998,7 +8194,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:blue_bar_stool": {
       "settings": {
@@ -8062,7 +8270,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:purple_bar_stool": {
       "settings": {
@@ -8126,7 +8346,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:magenta_bar_stool": {
       "settings": {
@@ -8190,7 +8422,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:pink_bar_stool": {
       "settings": {
@@ -8254,7 +8498,19 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "bar_stool"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "bar_stool",
+          "max_elements": 1,
+          "view_range": 1.25
+        }
+      ]
     },
     "kaleidoscope_tavern:chalkboard": {
       "settings": {
@@ -8458,7 +8714,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 11,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:table": {
       "settings": {
@@ -9884,6 +10154,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:base_sandwich_board": {
@@ -9953,7 +10227,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:grass_sandwich_board": {
       "settings": {
@@ -10022,7 +10310,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:allium_sandwich_board": {
       "settings": {
@@ -10091,7 +10393,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:azure_bluet_sandwich_board": {
       "settings": {
@@ -10160,7 +10476,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:cornflower_sandwich_board": {
       "settings": {
@@ -10229,7 +10559,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:orchid_sandwich_board": {
       "settings": {
@@ -10298,7 +10642,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:peony_sandwich_board": {
       "settings": {
@@ -10367,7 +10725,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:pink_petals_sandwich_board": {
       "settings": {
@@ -10436,7 +10808,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:pitcher_plant_sandwich_board": {
       "settings": {
@@ -10505,7 +10891,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:poppy_sandwich_board": {
       "settings": {
@@ -10574,7 +10974,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:sunflower_sandwich_board": {
       "settings": {
@@ -10643,7 +11057,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:torchflower_sandwich_board": {
       "settings": {
@@ -10712,7 +11140,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:tulip_sandwich_board": {
       "settings": {
@@ -10781,7 +11223,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:wither_rose_sandwich_board": {
       "settings": {
@@ -10850,7 +11306,21 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
+        }
+      ]
     },
     "kaleidoscope_tavern:ysbb_painting": {
       "settings": {
@@ -12573,6 +13043,19 @@
           }
         ]
       },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_sakura_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -12739,6 +13222,19 @@
           }
         ]
       },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_pine_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -12905,6 +13401,19 @@
           }
         ]
       },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_ginkgo_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -13071,6 +13580,19 @@
           }
         ]
       },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_spore_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -13237,6 +13759,19 @@
           }
         ]
       },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_catnip_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -13403,6 +13938,19 @@
           }
         ]
       },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_snow_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -13569,6 +14117,19 @@
           }
         ]
       },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_butterfly_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -13735,6 +14296,19 @@
           }
         ]
       },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "incense",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_firefly_incense"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ],
       "events": [
         {
           "on": "right_click",
@@ -13974,6 +14548,10 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:lifecycle_furniture",
+        "channel": "connection"
       }
     },
     "kaleidoscope_tavern:stepladder": {
@@ -14392,7 +14970,23 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:pressing_tub_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:station_visual_furniture",
+          "max_elements": 65,
+          "view_range": 1.25
+        },
+        {
+          "type": "kaleidoscope_tavern:station_interaction_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:tap": {
       "settings": {
@@ -14490,6 +15084,12 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:redstone_furniture",
+        "channel": "tap",
+        "interval": 2,
+        "data_key": "kaleidoscope_tavern:redstone_tap"
       }
     },
     "kaleidoscope_tavern:glassware_holder": {
@@ -14544,16 +15144,14 @@
       },
       "behaviors": [
         {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
+        },
+        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ceiling": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -14562,11 +15160,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ceiling": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -14575,11 +15168,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ceiling": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -14588,12 +15176,11 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ceiling": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 4
         },
         {
           "type": "glowing_furniture",
@@ -14608,7 +15195,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:empty_bottle"
@@ -14673,14 +15264,27 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "tap_bottle"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:empty_glassware": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:empty_glassware"
@@ -14734,14 +15338,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:station_interaction_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:signature_cocktail": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:signature_cocktail"
@@ -14798,6 +15414,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:mystery_cocktail": {
@@ -14805,7 +15424,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:mystery_cocktail"
@@ -14859,14 +15482,28 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
+        }
+      ]
     },
     "kaleidoscope_tavern:white_lady": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:white_lady"
@@ -14920,6 +15557,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:emerald": {
@@ -14927,7 +15567,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:emerald"
@@ -14981,6 +15625,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:brass_heart": {
@@ -14988,7 +15635,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:brass_heart"
@@ -15042,6 +15693,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:godfather": {
@@ -15049,7 +15703,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:godfather"
@@ -15103,6 +15761,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:grasshopper": {
@@ -15110,7 +15771,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:grasshopper"
@@ -15164,6 +15829,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:screwdriver": {
@@ -15171,7 +15839,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:screwdriver"
@@ -15225,6 +15897,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:mojito": {
@@ -15232,7 +15907,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:mojito"
@@ -15286,6 +15965,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:allium_garden": {
@@ -15293,7 +15975,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:allium_garden"
@@ -15347,6 +16033,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:depth_charge": {
@@ -15354,7 +16043,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:depth_charge"
@@ -15408,6 +16101,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:nether_special": {
@@ -15415,7 +16111,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:nether_special"
@@ -15469,6 +16169,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:bloody_mary": {
@@ -15476,7 +16179,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:bloody_mary"
@@ -15530,6 +16237,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:sculk_special": {
@@ -15537,7 +16247,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sculk_special"
@@ -15591,6 +16305,9 @@
             ]
           }
         ]
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:shaker": {
@@ -15652,14 +16369,33 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "shaker"
+        },
+        {
+          "type": "kaleidoscope_tavern:animated_item_furniture",
+          "channel": "shaker",
+          "max_elements": 2,
+          "view_range": 1.25
+        },
+        {
+          "type": "kaleidoscope_tavern:station_interaction_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:molotov": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:molotov"
@@ -15725,12 +16461,17 @@
           }
         ]
       },
-      "behavior": {
-        "type": "glowing_furniture",
-        "lights": [
-          "0,0,0 14"
-        ]
-      }
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        },
+        {
+          "type": "glowing_furniture",
+          "lights": [
+            "0,0,0 14"
+          ]
+        }
+      ]
     },
     "kaleidoscope_tavern:barrel": {
       "settings": {
@@ -16345,7 +17086,29 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "barrel"
+        },
+        {
+          "type": "kaleidoscope_tavern:station_visual_furniture",
+          "max_elements": 37,
+          "view_range": 2.5
+        },
+        {
+          "type": "kaleidoscope_tavern:station_interaction_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "barrel",
+          "interval": 97
+        }
+      ]
     },
     "kaleidoscope_tavern:bar_cabinet": {
       "settings": {
@@ -16470,25 +17233,18 @@
       },
       "behaviors": [
         {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "connection"
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
+        },
+        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -16497,21 +17253,11 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 2
         }
       ]
     },
@@ -16638,25 +17384,18 @@
       },
       "behaviors": [
         {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "connection"
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
+        },
+        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -16665,21 +17404,11 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 2
         }
       ]
     },
@@ -16806,25 +17535,18 @@
       },
       "behaviors": [
         {
+          "type": "kaleidoscope_tavern:lifecycle_furniture",
+          "channel": "connection"
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
+        },
+        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -16833,20 +17555,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -16855,20 +17563,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -16877,20 +17571,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -16899,20 +17579,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -16921,20 +17587,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -16943,20 +17595,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -16965,20 +17603,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -16987,21 +17611,17 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_left": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_middle": {
-              "item_position": "0,-4096,0"
-            },
-            "ground_position_right": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 9
+        },
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "storage",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_cellar_cabinet"
         }
       ]
     },
@@ -17067,16 +17687,14 @@
       },
       "behaviors": [
         {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
+        },
+        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17085,11 +17703,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17098,12 +17711,17 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 3
+        },
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "storage",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_tilted_rack"
         }
       ]
     },
@@ -17158,16 +17776,14 @@
       },
       "behaviors": [
         {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
+        },
+        {
           "type": "display_item_furniture",
           "data_key": "kaleidoscope_tavern:display_slot_0",
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17176,11 +17792,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17189,11 +17800,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17202,11 +17808,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17215,11 +17816,6 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
         },
         {
@@ -17228,18 +17824,28 @@
           "sounds": {
             "put": "minecraft:block.decorated_pot.insert",
             "take": "minecraft:block.decorated_pot.insert_fail"
-          },
-          "variants": {
-            "ground": {
-              "item_position": "0,-4096,0"
-            }
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 6
         },
         {
           "type": "glowing_furniture",
           "lights": [
             "0,0,0 14"
           ]
+        },
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "storage",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_circular_rack"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "ambient",
+          "interval": 1
         }
       ]
     },
@@ -17336,26 +17942,40 @@
           }
         ]
       },
-      "behavior": {
-        "type": "display_item_furniture",
-        "data_key": "kaleidoscope_tavern:display_slot_0",
-        "sounds": {
-          "put": "minecraft:block.decorated_pot.insert",
-          "take": "minecraft:block.decorated_pot.insert_fail"
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:storage_interaction_furniture"
         },
-        "variants": {
-          "ground": {
-            "item_position": "0,-4096,0"
+        {
+          "type": "display_item_furniture",
+          "data_key": "kaleidoscope_tavern:display_slot_0",
+          "sounds": {
+            "put": "minecraft:block.decorated_pot.insert",
+            "take": "minecraft:block.decorated_pot.insert_fail"
           }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage_visual_furniture",
+          "slots": 1
+        },
+        {
+          "type": "kaleidoscope_tavern:redstone_furniture",
+          "channel": "storage",
+          "interval": 1,
+          "data_key": "kaleidoscope_tavern:redstone_holder"
         }
-      }
+      ]
     },
     "kaleidoscope_tavern:water_bottle": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         }
       },
@@ -17395,6 +18015,9 @@
             }
           ]
         }
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:honey_bottle": {
@@ -17402,7 +18025,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         }
       },
@@ -17442,6 +18069,9 @@
             }
           ]
         }
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:dragon_breath_bottle": {
@@ -17449,7 +18079,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         }
       },
@@ -17489,6 +18123,9 @@
             }
           ]
         }
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:potion_bottle": {
@@ -17496,7 +18133,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         }
       },
@@ -17539,6 +18180,9 @@
             }
           ]
         }
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:xp_bottle": {
@@ -17546,7 +18190,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         }
       },
@@ -17586,6 +18234,9 @@
             }
           ]
         }
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:bottle_furniture"
       }
     },
     "kaleidoscope_tavern:wine": {
@@ -17593,7 +18244,11 @@
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:wine"
@@ -17939,14 +18594,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:champagne": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:champagne"
@@ -18292,14 +18959,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:vodka": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:vodka"
@@ -18501,14 +19180,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:brandy": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:brandy"
@@ -18632,14 +19323,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:carignan": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:carignan"
@@ -18763,14 +19466,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:sakura_wine": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sakura_wine"
@@ -19116,14 +19831,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:plum_wine": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:plum_wine"
@@ -19304,14 +20031,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:whiskey": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:whiskey"
@@ -19657,14 +20396,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:ice_wine": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:ice_wine"
@@ -20010,14 +20761,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:polaris_sweet_white": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:polaris_sweet_white"
@@ -20363,14 +21126,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:honey_wine": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:honey_wine"
@@ -20716,14 +21491,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:red_queen": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:red_queen"
@@ -21069,14 +21856,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:miners_star": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:miners_star"
@@ -21422,14 +22221,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:rum": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:rum"
@@ -21775,14 +22586,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:riesling_dry_white": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:riesling_dry_white"
@@ -21984,14 +22807,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:sunset_glow": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sunset_glow"
@@ -22115,14 +22950,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:madame_shexiang": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:madame_shexiang"
@@ -22324,14 +23171,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:sweet_berry_wine": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sweet_berry_wine"
@@ -22533,14 +23392,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:sherry": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sherry"
@@ -22886,14 +23757,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:mother_snow": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:mother_snow"
@@ -23095,14 +23978,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:luminous_bride": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:luminous_bride"
@@ -23448,14 +24343,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:glowflower_brew": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:glowflower_brew"
@@ -23801,14 +24708,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:sauvignon_blanc_dry_white": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:sauvignon_blanc_dry_white"
@@ -24154,14 +25073,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:vinegar": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:vinegar"
@@ -24507,14 +25438,26 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     },
     "kaleidoscope_tavern:watermelon_juice": {
       "settings": {
         "hit_times": 1,
         "sounds": {
           "break": "minecraft:block.glass.break",
-          "place": "minecraft:block.glass.place",
+          "place": {
+            "id": "minecraft:block.glass.place",
+            "volume": 1.0,
+            "pitch": 0.8
+          },
           "hit": "minecraft:block.glass.hit"
         },
         "item": "kaleidoscope_tavern:watermelon_juice"
@@ -24860,7 +25803,15 @@
             ]
           }
         ]
-      }
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:state_furniture"
+        },
+        {
+          "type": "kaleidoscope_tavern:bottle_furniture"
+        }
+      ]
     }
   }
 }

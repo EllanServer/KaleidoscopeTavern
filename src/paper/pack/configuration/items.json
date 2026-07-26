@@ -2389,6 +2389,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/signature_cocktail"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:signature_cocktail",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
@@ -2414,6 +2424,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/mystery_cocktail"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:mystery_cocktail",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2443,6 +2463,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/white_lady"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:white_lady",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2474,6 +2504,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/emerald"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:emerald",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
@@ -2499,6 +2539,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/brass_heart"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:brass_heart",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2526,6 +2576,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/godfather"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:godfather",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
@@ -2551,6 +2611,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/grasshopper"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:grasshopper",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2578,6 +2648,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/screwdriver"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:screwdriver",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
@@ -2603,6 +2683,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/mojito"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:mojito",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2630,6 +2720,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/allium_garden"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:allium_garden",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
@@ -2655,6 +2755,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/depth_charge"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:depth_charge",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2682,6 +2792,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/nether_special"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:nether_special",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
@@ -2708,6 +2828,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/bloody_mary"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:bloody_mary",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
       }
@@ -2733,6 +2863,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sculk_special"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:sculk_special",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2858,6 +2998,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/wine"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:wine",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
@@ -2886,6 +3036,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/champagne"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:champagne",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
@@ -2913,6 +3073,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/vodka"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:vodka",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "tags": [
@@ -2943,6 +3113,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/brandy"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:brandy",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "tags": [
@@ -2976,6 +3156,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/carignan"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:carignan",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:bar_cabinet_irregular",
@@ -3008,6 +3198,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sakura_wine"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:sakura_wine",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
@@ -3035,6 +3235,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/plum_wine"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:plum_wine",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "tags": [
@@ -3064,6 +3274,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/whiskey"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:whiskey",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
@@ -3091,6 +3311,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/ice_wine"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:ice_wine",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "tags": [
@@ -3120,6 +3350,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/polaris_sweet_white"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:polaris_sweet_white",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
@@ -3147,6 +3387,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/honey_wine"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:honey_wine",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "tags": [
@@ -3176,6 +3426,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/red_queen"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:red_queen",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
@@ -3203,6 +3463,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/miners_star"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:miners_star",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "tags": [
@@ -3234,6 +3504,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/rum"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:rum",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:cellar_cabinet_blocklist",
@@ -3263,6 +3543,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/riesling_dry_white"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:riesling_dry_white",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "tags": [
@@ -3294,6 +3584,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sunset_glow"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:sunset_glow",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:cellar_cabinet_blocklist",
@@ -3323,6 +3623,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/madame_shexiang"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:madame_shexiang",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "tags": [
@@ -3354,6 +3664,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sweet_berry_wine"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:sweet_berry_wine",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:cellar_cabinet_blocklist",
@@ -3384,6 +3704,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sherry"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:sherry",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
@@ -3411,6 +3741,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/mother_snow"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:mother_snow",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "tags": [
@@ -3442,6 +3782,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/luminous_bride"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:luminous_bride",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
@@ -3469,6 +3819,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/glowflower_brew"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:glowflower_brew",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "tags": [
@@ -3498,6 +3858,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sauvignon_blanc_dry_white"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "tags": [
           "kaleidoscope_tavern:cocktail_ingredient",
@@ -3525,6 +3895,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/vinegar"
       },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:vinegar",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
+      },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_bottle"
       }
@@ -3547,6 +3927,16 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/watermelon_juice"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_drink",
+        "furniture": "kaleidoscope_tavern:watermelon_juice",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_bottle"

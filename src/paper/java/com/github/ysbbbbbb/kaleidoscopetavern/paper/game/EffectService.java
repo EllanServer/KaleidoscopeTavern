@@ -47,9 +47,12 @@ import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
@@ -102,8 +105,12 @@ public final class EffectService implements Listener {
     private final NamespacedKey splashPreparedKey;
     private final NamespacedKey splashCustomEffectsKey;
     private final Map<UUID, Map<String, ActiveEffect>> active = new HashMap<>();
+    private final Map<UUID, LivingEntity> activeEntities = new HashMap<>();
     private final Map<UUID, BossBar> effectHudBars = new HashMap<>();
     private final Map<UUID, String> effectHudLines = new HashMap<>();
+    private final Set<UUID> privateTipsyVisual = new HashSet<>();
+    private final Map<UUID, Map<UUID, Long>> visionPacketExpiry = new HashMap<>();
+    private final Map<UUID, Set<UUID>> upsideDownPacketTargets = new HashMap<>();
     private final Set<UUID> stealthHidden = new HashSet<>();
     private final Map<String, Color> effectColorCache = new HashMap<>();
     private final Map<String, CompiledBlockTag> blockTagCache = new HashMap<>();
@@ -113,6 +120,7 @@ public final class EffectService implements Listener {
     private final int hudGuiHalfWidth;
     private long elapsedTicks;
     private BukkitTask task;
+    private boolean upsideDownPacketsAvailable = true;
 
     public EffectService(JavaPlugin plugin, ContentCatalog catalog, ItemService items) {
         this.plugin = plugin;
@@ -151,8 +159,7 @@ public final class EffectService implements Listener {
                 }
             }
         }
-        // Forge evaluates active effects and EffectEvent once per game tick.
-        task = Bukkit.getScheduler().runTaskTimer(plugin, () -> tick(1L), 1L, 1L);
+        ensureTickTask();
     }
 
     public void stop() {
@@ -161,8 +168,11 @@ public final class EffectService implements Listener {
             task = null;
         }
         for (UUID uuid : new ArrayList<>(active.keySet())) {
-            Entity entity = Bukkit.getEntity(uuid);
-            if (entity instanceof LivingEntity living) {
+            LivingEntity living = activeEntities.get(uuid);
+            if (living == null && Bukkit.getEntity(uuid) instanceof LivingEntity recovered) {
+                living = recovered;
+            }
+            if (living != null) {
                 save(living);
                 removeAttributeModifiers(living);
             }
@@ -173,14 +183,25 @@ public final class EffectService implements Listener {
                 player.hideBossBar(entry.getValue());
             }
         }
+        for (UUID uuid : new ArrayList<>(privateTipsyVisual)) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                restorePrivateTipsyVisual(player);
+            }
+        }
         effectHudBars.clear();
         effectHudLines.clear();
+        privateTipsyVisual.clear();
         for (UUID uuid : new ArrayList<>(stealthHidden)) {
             if (Bukkit.getEntity(uuid) instanceof LivingEntity living) {
                 living.setInvisible(false);
             }
         }
         stealthHidden.clear();
+        visionPacketExpiry.clear();
+        restoreUpsideDownPackets();
+        upsideDownPacketTargets.clear();
+        activeEntities.clear();
         active.clear();
     }
 
@@ -279,7 +300,40 @@ public final class EffectService implements Listener {
         save(event.getPlayer());
         hideEffectHud(event.getPlayer());
         restoreStealthVisibility(event.getPlayer());
+        privateTipsyVisual.remove(event.getPlayer().getUniqueId());
+        visionPacketExpiry.remove(event.getPlayer().getUniqueId());
+        upsideDownPacketTargets.remove(event.getPlayer().getUniqueId());
+        activeEntities.remove(event.getPlayer().getUniqueId());
         active.remove(event.getPlayer().getUniqueId());
+        stopTickTaskIfIdle();
+    }
+
+    @EventHandler
+    public void onChangedWorld(PlayerChangedWorldEvent event) {
+        resetPrivateTipsyVisual(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent event) {
+        resetPrivateTipsyVisual(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onTrack(PlayerTrackEntityEvent event) {
+        Player viewer = event.getPlayer();
+        Entity target = event.getEntity();
+        Set<UUID> inverted = upsideDownPacketTargets.get(viewer.getUniqueId());
+        if (!(target instanceof Mob) || inverted == null
+                || !inverted.contains(target.getUniqueId())) {
+            return;
+        }
+        // The tracking event precedes the initial metadata on some Paper
+        // revisions. Replay one tick later so our viewer-only name wins.
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (viewer.isOnline() && target.isValid() && target.isTrackedBy(viewer)) {
+                sendUpsideDownPacket(viewer, target);
+            }
+        });
     }
 
     @EventHandler
@@ -298,14 +352,19 @@ public final class EffectService implements Listener {
             if (entity instanceof LivingEntity living && active.containsKey(living.getUniqueId())) {
                 save(living);
                 restoreStealthVisibility(living);
+                activeEntities.remove(living.getUniqueId());
                 active.remove(living.getUniqueId());
             }
         }
+        stopTickTaskIfIdle();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDeath(EntityDeathEvent event) {
         LivingEntity target = event.getEntity();
+        for (Set<UUID> inverted : upsideDownPacketTargets.values()) {
+            inverted.remove(target.getUniqueId());
+        }
         EntityDamageEvent lastDamage = target.getLastDamageCause();
         LivingEntity killer = lastDamage == null ? null : attackingLiving(lastDamage);
         if (killer != null && !killer.equals(target) && has(killer, PREFIX + "bloody_mary")) {
@@ -499,10 +558,13 @@ public final class EffectService implements Listener {
             return;
         }
         effects.put(spec.effect(), new ActiveEffect(spec.effect(), merged));
+        activeEntities.put(target.getUniqueId(), target);
+        ensureTickTask();
         save(target);
         reconcileAttributes(target, effects);
         if (target instanceof Player player) {
             updateEffectHud(player, effects);
+            syncPrivateTipsyVisual(player, effects);
         }
     }
 
@@ -521,14 +583,31 @@ public final class EffectService implements Listener {
         Iterator<Map.Entry<UUID, Map<String, ActiveEffect>>> iterator = active.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<UUID, Map<String, ActiveEffect>> entry = iterator.next();
-            Entity entity = Bukkit.getEntity(entry.getKey());
-            if (!(entity instanceof LivingEntity living) || !entity.isValid() || living.isDead()) {
+            LivingEntity living = activeEntities.get(entry.getKey());
+            if (living == null) {
+                // Recovery-only fallback for an unforeseen lifecycle ordering;
+                // the normal path is populated by apply/load and performs no
+                // global Bukkit UUID lookup per effect per tick.
+                Entity entity = Bukkit.getEntity(entry.getKey());
+                if (entity instanceof LivingEntity recovered) {
+                    living = recovered;
+                    activeEntities.put(entry.getKey(), recovered);
+                }
+            }
+            if (living == null || !living.isValid() || living.isDead()) {
+                iterator.remove();
+                activeEntities.remove(entry.getKey());
                 continue;
             }
             Map<String, ActiveEffect> effects = entry.getValue();
             boolean changed = false;
-            for (ActiveEffect effect : new ArrayList<>(effects.values())) {
-                if (!tickEffect(living, effect, effects)) {
+            Iterator<Map.Entry<String, ActiveEffect>> effectIterator =
+                    effects.entrySet().iterator();
+            while (effectIterator.hasNext()) {
+                Map.Entry<String, ActiveEffect> effectEntry = effectIterator.next();
+                ActiveEffect effect = effectEntry.getValue();
+                if (!tickEffect(living, effect)) {
+                    effectIterator.remove();
                     changed = true;
                     continue;
                 }
@@ -540,12 +619,16 @@ public final class EffectService implements Listener {
                     applyHunger(living, 600);
                 }
                 if (next == null) {
-                    effects.remove(effect.effect());
+                    effectIterator.remove();
                     changed = true;
                 } else {
-                    effects.put(effect.effect(), new ActiveEffect(effect.effect(), next));
+                    effectEntry.setValue(new ActiveEffect(effect.effect(), next));
                     changed |= visibleExpired;
                 }
+            }
+            if (living instanceof Player player
+                    && !effects.containsKey(PREFIX + "vision")) {
+                visionPacketExpiry.remove(player.getUniqueId());
             }
             updateStealthVisibility(living, effects);
             spawnEffectParticles(living, effects);
@@ -557,11 +640,30 @@ public final class EffectService implements Listener {
                 reconcileAttributes(living, effects);
                 if (living instanceof Player player) {
                     updateEffectHud(player, effects);
+                    syncPrivateTipsyVisual(player, effects);
                 }
             }
             if (effects.isEmpty()) {
                 iterator.remove();
+                activeEntities.remove(entry.getKey());
             }
+        }
+        stopTickTaskIfIdle();
+    }
+
+    private void ensureTickTask() {
+        if (task == null && !active.isEmpty()) {
+            // Forge evaluates active effects and EffectEvent once per game
+            // tick. Keep that cadence, but do not leave an empty global task
+            // running when the server has no Tavern effects at all.
+            task = Bukkit.getScheduler().runTaskTimer(plugin, () -> tick(1L), 1L, 1L);
+        }
+    }
+
+    private void stopTickTaskIfIdle() {
+        if (task != null && active.isEmpty()) {
+            task.cancel();
+            task = null;
         }
     }
 
@@ -630,8 +732,7 @@ public final class EffectService implements Listener {
                 1, 0.0, 0.0, 0.0, 0.0, color);
     }
 
-    private boolean tickEffect(LivingEntity living, ActiveEffect effect,
-                               Map<String, ActiveEffect> effects) {
+    private boolean tickEffect(LivingEntity living, ActiveEffect effect) {
         switch (effect.effect()) {
             case PREFIX + "vision" -> {
                 if (EffectSemantics.ticksAt(effect.remainingTicks(), 50)) {
@@ -653,9 +754,7 @@ public final class EffectService implements Listener {
             }
             case PREFIX + "ardent_heat" -> {
                 if (living instanceof Player player && !ardentHeat(player)) {
-                    effects.remove(effect.effect());
                     applyHunger(player, 600);
-                    save(player);
                     return false;
                 }
             }
@@ -671,18 +770,35 @@ public final class EffectService implements Listener {
     }
 
     private void vision(LivingEntity user, int amplifier) {
+        if (!(user instanceof Player viewer)) {
+            // This outline is a point-of-view effect. A non-player hit by a
+            // splash has no client to receive it and must not expose the
+            // outline globally to unrelated players.
+            return;
+        }
         double radius = Math.min(amplifier + 1, 3) * 6.0;
         boolean applied = false;
         PotionEffectType glowing = Registry.EFFECT.get(NamespacedKey.minecraft("glowing"));
         if (glowing == null) {
             return;
         }
+        Map<UUID, Long> packetExpiry = visionPacketExpiry.computeIfAbsent(
+                viewer.getUniqueId(), ignored -> new HashMap<>());
+        packetExpiry.values().removeIf(expiry -> expiry <= elapsedTicks);
         for (Entity entity : user.getNearbyEntities(radius, radius, radius)) {
             if (entity instanceof LivingEntity living && !living.equals(user) && !living.isDead()) {
-                if (!living.hasPotionEffect(glowing)) {
+                PotionEffect serverEffect = living.getPotionEffect(glowing);
+                long previousExpiry = packetExpiry.getOrDefault(
+                        living.getUniqueId(), Long.MIN_VALUE);
+                if (serverEffect == null && previousExpiry <= elapsedTicks) {
                     applied = true;
                 }
-                living.addPotionEffect(new PotionEffect(glowing, 60, 0, false, true, true));
+                if (living.isTrackedBy(viewer)
+                        && (serverEffect == null || serverEffect.getDuration() < 60)) {
+                    viewer.sendPotionEffectChange(living,
+                            new PotionEffect(glowing, 60, 0, false, true, true));
+                }
+                packetExpiry.put(living.getUniqueId(), elapsedTicks + 60);
             }
         }
         if (applied) {
@@ -871,14 +987,17 @@ public final class EffectService implements Listener {
     private void applyInstant(LivingEntity user, String effect) {
         switch (effect) {
             case PREFIX + "upside_down" -> {
-                if (user instanceof Mob self && !self.isDead()) {
-                    self.customName(Component.text("Grumm"));
-                    self.setCustomNameVisible(false);
+                if (!(user instanceof Player viewer)) {
+                    return;
                 }
+                Set<UUID> inverted = upsideDownPacketTargets.computeIfAbsent(
+                        viewer.getUniqueId(), ignored -> new HashSet<>());
                 for (Entity entity : user.getNearbyEntities(16, 16, 16)) {
                     if (entity instanceof Mob mob && !mob.isDead()) {
-                        mob.customName(Component.text("Grumm"));
-                        mob.setCustomNameVisible(false);
+                        inverted.add(mob.getUniqueId());
+                        if (mob.isTrackedBy(viewer)) {
+                            sendUpsideDownPacket(viewer, mob);
+                        }
                     }
                 }
             }
@@ -902,6 +1021,42 @@ public final class EffectService implements Listener {
             default -> {
                 // The caller only invokes registered instant effects.
             }
+        }
+    }
+
+    private void sendUpsideDownPacket(Player viewer, Entity target) {
+        if (!upsideDownPacketsAvailable) {
+            return;
+        }
+        try {
+            ViewerEffectPackets.showUpsideDown(viewer, target);
+        } catch (RuntimeException | LinkageError error) {
+            upsideDownPacketsAvailable = false;
+            plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "无法发送仅本人可见的 upside_down 实体数据包；已停用该视觉桥接", error);
+        }
+    }
+
+    private void restoreUpsideDownPackets() {
+        if (!upsideDownPacketsAvailable) {
+            return;
+        }
+        try {
+            for (Map.Entry<UUID, Set<UUID>> entry : upsideDownPacketTargets.entrySet()) {
+                Player viewer = Bukkit.getPlayer(entry.getKey());
+                if (viewer == null) {
+                    continue;
+                }
+                for (UUID targetId : entry.getValue()) {
+                    Entity target = Bukkit.getEntity(targetId);
+                    if (target != null && target.isValid() && target.isTrackedBy(viewer)) {
+                        ViewerEffectPackets.restoreCustomName(viewer, target);
+                    }
+                }
+            }
+        } catch (RuntimeException | LinkageError error) {
+            plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "无法恢复 upside_down 的客户端实体数据", error);
         }
     }
 
@@ -1030,13 +1185,17 @@ public final class EffectService implements Listener {
     private void load(LivingEntity living) {
         Map<String, ActiveEffect> effects = read(living);
         if (effects.isEmpty()) {
+            activeEntities.remove(living.getUniqueId());
             active.remove(living.getUniqueId());
         } else {
             active.put(living.getUniqueId(), effects);
+            activeEntities.put(living.getUniqueId(), living);
+            ensureTickTask();
         }
         reconcileAttributes(living, effects);
         if (living instanceof Player player) {
             updateEffectHud(player, effects);
+            syncPrivateTipsyVisual(player, effects);
         }
     }
 
@@ -1183,14 +1342,77 @@ public final class EffectService implements Listener {
         }
     }
 
+    /**
+     * The archived Forge client applied {@code slightly_tipsy} only to its
+     * local camera. Vanilla has no camera-roll packet, so a hidden, client-only
+     * nausea effect is the closest server-only approximation. This never enters
+     * the player's real potion-effect collection or leaks to other viewers.
+     */
+    private void syncPrivateTipsyVisual(Player player, Map<String, ActiveEffect> effects) {
+        PotionEffectType nausea = Registry.EFFECT.get(NamespacedKey.minecraft("nausea"));
+        if (nausea == null) {
+            return;
+        }
+        ActiveEffect tipsy = effects.get(PREFIX + "slightly_tipsy");
+        PotionEffect realNausea = player.getPotionEffect(nausea);
+        UUID uuid = player.getUniqueId();
+        if (tipsy == null || tipsy.remainingTicks() <= 0) {
+            if (privateTipsyVisual.remove(uuid)) {
+                restorePotionEffectView(player, nausea, realNausea);
+            }
+            return;
+        }
+        if (realNausea != null) {
+            if (privateTipsyVisual.remove(uuid)) {
+                player.sendPotionEffectChange(player, realNausea);
+            }
+            return;
+        }
+        if (privateTipsyVisual.add(uuid)) {
+            player.sendPotionEffectChange(player, new PotionEffect(
+                    nausea, PotionEffect.INFINITE_DURATION, 0, false, false, false));
+        }
+    }
+
+    private void restorePrivateTipsyVisual(Player player) {
+        PotionEffectType nausea = Registry.EFFECT.get(NamespacedKey.minecraft("nausea"));
+        if (nausea == null || !privateTipsyVisual.remove(player.getUniqueId())) {
+            return;
+        }
+        restorePotionEffectView(player, nausea, player.getPotionEffect(nausea));
+    }
+
+    private static void restorePotionEffectView(Player player, PotionEffectType type,
+                                                PotionEffect realEffect) {
+        if (realEffect == null) {
+            player.sendPotionEffectChangeRemove(player, type);
+        } else {
+            player.sendPotionEffectChange(player, realEffect);
+        }
+    }
+
+    private void resetPrivateTipsyVisual(Player player) {
+        restorePrivateTipsyVisual(player);
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (player.isOnline()) {
+                syncPrivateTipsyVisual(player,
+                        active.getOrDefault(player.getUniqueId(), Map.of()));
+            }
+        });
+    }
+
     private void clearEffects(LivingEntity living) {
+        activeEntities.remove(living.getUniqueId());
         active.remove(living.getUniqueId());
+        visionPacketExpiry.remove(living.getUniqueId());
         living.getPersistentDataContainer().remove(activeKey);
         removeAttributeModifiers(living);
         restoreStealthVisibility(living);
         if (living instanceof Player player) {
             hideEffectHud(player);
+            restorePrivateTipsyVisual(player);
         }
+        stopTickTaskIfIdle();
     }
 
     private record ActiveEffect(String effect, EffectSemantics.EffectState state) {

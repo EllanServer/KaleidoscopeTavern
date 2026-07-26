@@ -1,8 +1,6 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
-import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnitureBehavior;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Bukkit;
@@ -11,31 +9,17 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Tag;
-import org.bukkit.World;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.ZombieVillager;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.world.EntitiesLoadEvent;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 /** Restores the legacy ticking, redstone and ambient behavior of decorative furniture. */
-public final class AmbientFurnitureService implements Listener {
+public final class AmbientFurnitureService {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final Key MYSTERY_COCKTAIL = Key.of(PREFIX + "mystery_cocktail");
     private static final Key CIRCULAR_RACK = Key.of(PREFIX + "circular_rack");
@@ -51,88 +35,33 @@ public final class AmbientFurnitureService implements Listener {
                     new IncenseSpec(particle("FIREFLY"), particle("FIREFLY"), -0.67, 5.33))
     );
 
-    private final JavaPlugin plugin;
     private final DisplayStorageService displayStorage;
-    private final Set<UUID> tracked = new HashSet<>();
+    private final TickingFurnitureBehavior.Handler tickingHandler = this::tickFurniture;
     private Tag<EntityType> undeadTag;
-    private BukkitTask task;
 
-    public AmbientFurnitureService(JavaPlugin plugin, DisplayStorageService displayStorage) {
-        this.plugin = plugin;
+    public AmbientFurnitureService(DisplayStorageService displayStorage) {
         this.displayStorage = displayStorage;
     }
 
     public void start() {
-        task = Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 1L, 1L);
-        Bukkit.getScheduler().runTask(plugin, this::bootstrap);
+        TickingFurnitureBehavior.bind(
+                TickingFurnitureBehavior.Channel.AMBIENT, tickingHandler);
     }
 
     public void stop() {
-        if (task != null) {
-            task.cancel();
-            task = null;
-        }
-        tracked.clear();
+        TickingFurnitureBehavior.unbind(
+                TickingFurnitureBehavior.Channel.AMBIENT, tickingHandler);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlace(FurniturePlaceEvent event) {
-        track(event.furniture());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBreak(FurnitureBreakEvent event) {
-        Entity entity = event.furniture().bukkitEntity();
-        if (entity != null) {
-            tracked.remove(entity.getUniqueId());
-        }
-    }
-
-    @EventHandler
-    public void onEntitiesLoad(EntitiesLoadEvent event) {
-        for (Entity entity : event.getEntities()) {
-            if (entity instanceof ItemDisplay && CraftEngineFurniture.isFurniture(entity)) {
-                track(CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity));
-            }
-        }
-    }
-
-    private void tick() {
-        List<UUID> invalid = null;
-        for (UUID uuid : tracked) {
-            Entity entity = Bukkit.getEntity(uuid);
-            if (entity == null || !entity.isValid()) {
-                if (invalid == null) {
-                    invalid = new ArrayList<>();
-                }
-                invalid.add(uuid);
-                continue;
-            }
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (furniture == null || !furniture.isValid()) {
-                if (invalid == null) {
-                    invalid = new ArrayList<>();
-                }
-                invalid.add(uuid);
-                continue;
-            }
-            Key id = furniture.id();
-            IncenseSpec incense = INCENSE.get(id);
-            if (incense != null) {
-                tickIncense(furniture, incense);
-            } else if (id.equals(MYSTERY_COCKTAIL)) {
-                tickMysteryCocktail(furniture);
-            } else if (id.equals(CIRCULAR_RACK)) {
-                tickCircularRack(furniture);
-            } else {
-                if (invalid == null) {
-                    invalid = new ArrayList<>();
-                }
-                invalid.add(uuid);
-            }
-        }
-        if (invalid != null) {
-            tracked.removeAll(invalid);
+    private void tickFurniture(BukkitFurniture furniture) {
+        Key id = furniture.id();
+        IncenseSpec incense = INCENSE.get(id);
+        if (incense != null) {
+            tickIncense(furniture, incense);
+        } else if (id.equals(MYSTERY_COCKTAIL)) {
+            tickMysteryCocktail(furniture);
+        } else if (id.equals(CIRCULAR_RACK)) {
+            tickCircularRack(furniture);
         }
     }
 
@@ -154,7 +83,7 @@ public final class AmbientFurnitureService implements Listener {
             return;
         }
         // The *_open furniture variant is the single source of truth for a
-        // lit incense; both the CE toggle events and the redstone poll set it.
+        // lit incense; both CE toggle events and the CE redstone behavior set it.
         boolean open = furniture.currentVariant().name().endsWith("_open");
         if (burstTick && open) {
             hurtNearbyUndead(furniture);
@@ -202,6 +131,7 @@ public final class AmbientFurnitureService implements Listener {
             living.damage(1.0, magic);
             if (living instanceof ZombieVillager zombieVillager
                     && zombieVillager.getHealth() <= 1.0) {
+                zombieVillager.setConversionPlayer(null);
                 zombieVillager.setConversionTime(60);
             }
         }
@@ -248,30 +178,6 @@ public final class AmbientFurnitureService implements Listener {
         Location point = base.clone().add(x, random.nextDouble(), z);
         point.getWorld().spawnParticle(Particle.END_ROD, point, 0,
                 0.01, 0.01, 0.01, 1);
-    }
-
-    private void track(BukkitFurniture furniture) {
-        if (furniture == null || !isManaged(furniture.id())) {
-            return;
-        }
-        Entity entity = furniture.bukkitEntity();
-        if (entity != null) {
-            tracked.add(entity.getUniqueId());
-        }
-    }
-
-    private void bootstrap() {
-        for (World world : Bukkit.getWorlds()) {
-            for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
-                if (CraftEngineFurniture.isFurniture(display)) {
-                    track(CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display));
-                }
-            }
-        }
-    }
-
-    private static boolean isManaged(Key id) {
-        return INCENSE.containsKey(id) || id.equals(MYSTERY_COCKTAIL) || id.equals(CIRCULAR_RACK);
     }
 
     private static IncenseSpec incense(String small, String large) {

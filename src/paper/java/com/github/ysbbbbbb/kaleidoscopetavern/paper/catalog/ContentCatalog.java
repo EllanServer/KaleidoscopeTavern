@@ -40,6 +40,11 @@ public final class ContentCatalog {
     private final Map<String, PressingRecipe> pressingByFluid;
     private final Map<String, PressingRecipe> pressingByBucket;
     private final Map<String, BarrelRecipe> barrelById;
+    private final Map<String, Map<IngredientKey, BarrelRecipe>> barrelByIngredients;
+    private final Map<String, Set<IngredientKey>> barrelPartialByFluid;
+    private final Set<IngredientKey> barrelPartialAnyFluid;
+    private final Map<IngredientKey, ShakerRecipe> shakerByIngredients;
+    private final Set<IngredientKey> shakerPartial;
     private final Set<String> cocktailItems;
     private final Map<String, Integer> cocktailColors;
 
@@ -78,6 +83,36 @@ public final class ContentCatalog {
         Map<String, BarrelRecipe> barrelIndex = new LinkedHashMap<>();
         this.barrelRecipes.forEach(recipe -> barrelIndex.putIfAbsent(recipe.id(), recipe));
         this.barrelById = Collections.unmodifiableMap(barrelIndex);
+
+        Map<String, Map<IngredientKey, BarrelRecipe>> barrelIngredients = new LinkedHashMap<>();
+        Map<String, Set<IngredientKey>> barrelPartials = new LinkedHashMap<>();
+        Set<IngredientKey> allBarrelPartials = new LinkedHashSet<>();
+        for (BarrelRecipe recipe : this.barrelRecipes) {
+            Map<IngredientKey, BarrelRecipe> exact = barrelIngredients.computeIfAbsent(
+                    recipe.fluid(), ignored -> new LinkedHashMap<>());
+            ingredientKeys(recipe.ingredients(), false).forEach(
+                    key -> exact.putIfAbsent(key, recipe));
+            Set<IngredientKey> partial = barrelPartials.computeIfAbsent(
+                    recipe.fluid(), ignored -> new LinkedHashSet<>());
+            Set<IngredientKey> recipePartials = ingredientKeys(recipe.ingredients(), true);
+            partial.addAll(recipePartials);
+            allBarrelPartials.addAll(recipePartials);
+        }
+        barrelIngredients.replaceAll((fluid, index) -> Collections.unmodifiableMap(index));
+        barrelPartials.replaceAll((fluid, index) -> Collections.unmodifiableSet(index));
+        this.barrelByIngredients = Collections.unmodifiableMap(barrelIngredients);
+        this.barrelPartialByFluid = Collections.unmodifiableMap(barrelPartials);
+        this.barrelPartialAnyFluid = Collections.unmodifiableSet(allBarrelPartials);
+
+        Map<IngredientKey, ShakerRecipe> shakerIngredients = new LinkedHashMap<>();
+        Set<IngredientKey> shakerPartials = new LinkedHashSet<>();
+        for (ShakerRecipe recipe : this.shakerRecipes) {
+            ingredientKeys(recipe.ingredients(), false).forEach(
+                    key -> shakerIngredients.putIfAbsent(key, recipe));
+            shakerPartials.addAll(ingredientKeys(recipe.ingredients(), true));
+        }
+        this.shakerByIngredients = Collections.unmodifiableMap(shakerIngredients);
+        this.shakerPartial = Collections.unmodifiableSet(shakerPartials);
 
         Set<String> cocktails = new LinkedHashSet<>();
         cocktails.add("kaleidoscope_tavern:signature_cocktail");
@@ -177,10 +212,10 @@ public final class ContentCatalog {
     }
 
     public Optional<BarrelRecipe> barrel(String fluid, List<String> ingredients) {
-        return barrelRecipes.stream()
-                .filter(recipe -> recipe.fluid().equals(fluid))
-                .filter(recipe -> exactMatch(recipe.ingredients(), ingredients))
-                .findFirst();
+        Map<IngredientKey, BarrelRecipe> byIngredients = barrelByIngredients.get(fluid);
+        return byIngredients == null
+                ? Optional.empty()
+                : Optional.ofNullable(byIngredients.get(IngredientKey.of(ingredients)));
     }
 
     public Optional<BarrelRecipe> barrelById(String recipeId) {
@@ -190,21 +225,21 @@ public final class ContentCatalog {
     public boolean mayBeBarrelIngredient(String fluid, List<String> current, String candidate) {
         List<String> proposed = new ArrayList<>(current);
         proposed.add(candidate);
-        return barrelRecipes.stream()
-                .filter(recipe -> fluid == null || recipe.fluid().equals(fluid))
-                .anyMatch(recipe -> partialMatch(recipe.ingredients(), proposed));
+        IngredientKey key = IngredientKey.of(proposed);
+        if (fluid == null) {
+            return barrelPartialAnyFluid.contains(key);
+        }
+        return barrelPartialByFluid.getOrDefault(fluid, Set.of()).contains(key);
     }
 
     public Optional<ShakerRecipe> shaker(List<String> ingredients) {
-        return shakerRecipes.stream()
-                .filter(recipe -> exactMatch(recipe.ingredients(), ingredients))
-                .findFirst();
+        return Optional.ofNullable(shakerByIngredients.get(IngredientKey.of(ingredients)));
     }
 
     public boolean mayBeShakerIngredient(List<String> current, String candidate) {
         List<String> proposed = new ArrayList<>(current);
         proposed.add(candidate);
-        return shakerRecipes.stream().anyMatch(recipe -> partialMatch(recipe.ingredients(), proposed));
+        return shakerPartial.contains(IngredientKey.of(proposed));
     }
 
     public List<EffectSpec> effects(String itemId, int level) {
@@ -273,34 +308,38 @@ public final class ContentCatalog {
                 : tag(selector.value()).contains(item);
     }
 
-    private boolean exactMatch(List<Selector> selectors, List<String> items) {
-        return selectors.size() == items.size() && matchBacktracking(selectors, items, 0, new boolean[selectors.size()]);
-    }
-
-    private boolean partialMatch(List<Selector> selectors, List<String> items) {
-        return selectors.size() >= items.size() && matchBacktrackingForItems(selectors, items, 0, new boolean[selectors.size()]);
-    }
-
-    private boolean matchBacktracking(List<Selector> selectors, List<String> items, int itemIndex, boolean[] used) {
-        if (itemIndex == items.size()) {
-            return true;
+    private Set<IngredientKey> ingredientKeys(List<Selector> selectors, boolean includePartial) {
+        if (selectors.size() >= Integer.SIZE - 1) {
+            throw new IllegalArgumentException("Too many station recipe ingredients: " + selectors.size());
         }
-        String item = items.get(itemIndex);
-        for (int selectorIndex = 0; selectorIndex < selectors.size(); selectorIndex++) {
-            if (!used[selectorIndex] && matches(selectors.get(selectorIndex), item)) {
-                used[selectorIndex] = true;
-                if (matchBacktracking(selectors, items, itemIndex + 1, used)) {
-                    return true;
-                }
-                used[selectorIndex] = false;
-            }
+        Set<IngredientKey> result = new LinkedHashSet<>();
+        int fullMask = (1 << selectors.size()) - 1;
+        int firstMask = includePartial ? 0 : fullMask;
+        for (int mask = firstMask; mask <= fullMask; mask++) {
+            expandIngredientKey(selectors, mask, 0, new ArrayList<>(), result);
         }
-        return false;
+        return result;
     }
 
-    private boolean matchBacktrackingForItems(List<Selector> selectors, List<String> items, int itemIndex,
-                                              boolean[] used) {
-        return matchBacktracking(selectors, items, itemIndex, used);
+    private void expandIngredientKey(List<Selector> selectors, int selectedMask, int index,
+                                     List<String> ingredients, Set<IngredientKey> result) {
+        if (index == selectors.size()) {
+            result.add(IngredientKey.of(ingredients));
+            return;
+        }
+        if ((selectedMask & 1 << index) == 0) {
+            expandIngredientKey(selectors, selectedMask, index + 1, ingredients, result);
+            return;
+        }
+        Selector selector = selectors.get(index);
+        Set<String> members = selector.kind() == SelectorKind.ITEM
+                ? Set.of(selector.value())
+                : tags.getOrDefault(selector.value(), Set.of());
+        for (String member : members) {
+            ingredients.add(member);
+            expandIngredientKey(selectors, selectedMask, index + 1, ingredients, result);
+            ingredients.removeLast();
+        }
     }
 
     private static List<Selector> selectors(String cell) throws IOException {
@@ -447,5 +486,13 @@ public final class ContentCatalog {
     }
 
     public record EffectSpec(String effect, int durationTicks, int amplifier, double probability) {
+    }
+
+    private record IngredientKey(List<String> ingredients) {
+        private static IngredientKey of(List<String> ingredients) {
+            List<String> canonical = new ArrayList<>(ingredients);
+            canonical.sort(String::compareTo);
+            return new IngredientKey(List.copyOf(canonical));
+        }
     }
 }

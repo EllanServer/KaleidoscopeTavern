@@ -1,34 +1,29 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureInteractEvent;
-import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
+import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Levelled;
 import org.bukkit.block.data.Waterlogged;
 import org.bukkit.block.data.type.Beehive;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -38,28 +33,49 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 /** Restores the tap's source/destination pipeline while keeping bottles and barrels as furniture. */
-public final class TapService implements Listener {
+public final class TapService {
     private static final String PREFIX = "kaleidoscope_tavern:";
-    private static final String TAP = PREFIX + "tap";
     private static final String BARREL = PREFIX + "barrel";
     private static final String EMPTY_BOTTLE = PREFIX + "empty_bottle";
-    private static final Key TAP_KEY = Key.of(TAP);
-    private static final Key BARREL_KEY = Key.of(BARREL);
     private final JavaPlugin plugin;
     private final StationService stations;
     private final ItemService items;
-    private final Set<UUID> loadedTaps = new HashSet<>();
     private final Map<UUID, BukkitTask> running = new HashMap<>();
-    private final Map<UUID, Boolean> tapTriggered = new HashMap<>();
-    private BukkitTask redstoneTask;
+    private final RedstoneFurnitureBehavior.Handler tapRedstoneHandler =
+            new RedstoneFurnitureBehavior.Handler() {
+                @Override
+                public void onReady(BukkitFurniture furniture) {
+                    if (!running.containsKey(furniture.uuid())
+                            && furniture.currentVariant().name().endsWith("_open")) {
+                        setOpen(furniture, false);
+                    }
+                }
+
+                @Override
+                public void onPowerState(BukkitFurniture furniture, boolean powered, boolean initial) {
+                    if (powered) {
+                        openTap(furniture, null);
+                    }
+                }
+
+                @Override
+                public void onUnload(BukkitFurniture furniture, boolean isStopping) {
+                    cancelRunning(furniture);
+                }
+
+                @Override
+                public void onRemove(BukkitFurniture furniture) {
+                    closeTap(furniture, false);
+                }
+            };
+    private final RedstoneFurnitureBehavior.InteractionHandler tapInteractionHandler =
+            this::interact;
 
     public TapService(JavaPlugin plugin, StationService stations, ItemService items) {
         this.plugin = plugin;
@@ -68,17 +84,17 @@ public final class TapService implements Listener {
     }
 
     public void start() {
-        Bukkit.getScheduler().runTask(plugin, this::bootstrapTaps);
-        // This is the same 1,3,5... tick phase previously produced by an
-        // every-tick task plus a parity guard, without scheduling empty calls.
-        redstoneTask = Bukkit.getScheduler().runTaskTimer(plugin, this::pollRedstone, 1L, 2L);
+        RedstoneFurnitureBehavior.bind(
+                RedstoneFurnitureBehavior.Channel.TAP, tapRedstoneHandler);
+        RedstoneFurnitureBehavior.bindInteraction(
+                RedstoneFurnitureBehavior.Channel.TAP, tapInteractionHandler);
     }
 
     public void stop() {
-        if (redstoneTask != null) {
-            redstoneTask.cancel();
-            redstoneTask = null;
-        }
+        RedstoneFurnitureBehavior.unbindInteraction(
+                RedstoneFurnitureBehavior.Channel.TAP, tapInteractionHandler);
+        RedstoneFurnitureBehavior.unbind(
+                RedstoneFurnitureBehavior.Channel.TAP, tapRedstoneHandler);
         for (UUID id : new ArrayList<>(running.keySet())) {
             if (Bukkit.getEntity(id) instanceof ItemDisplay display) {
                 BukkitFurniture tap = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
@@ -89,60 +105,32 @@ public final class TapService implements Listener {
         }
         new ArrayList<>(running.values()).forEach(BukkitTask::cancel);
         running.clear();
-        loadedTaps.clear();
-        tapTriggered.clear();
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onInteract(FurnitureInteractEvent event) {
-        if (event.hand() != InteractionHand.MAIN_HAND
-                || !event.furniture().id().equals(TAP_KEY)) {
-            return;
+    private InteractionResult interact(BukkitFurniture furniture,
+                                       InteractEntityContext context) {
+        if (context.getHand() != InteractionHand.MAIN_HAND) {
+            return InteractionResult.PASS;
         }
-        event.setCancelled(true);
-        UUID id = event.furniture().uuid();
+        UUID id = furniture.uuid();
         if (running.containsKey(id)) {
-            closeTap(event.furniture(), true);
+            closeTap(furniture, true);
         } else {
-            openTap(event.furniture(), event.player());
+            openTap(furniture, (Player) context.getPlayer().platformPlayer());
         }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlace(FurniturePlaceEvent event) {
-        if (event.furniture().id().equals(TAP_KEY)) {
-            loadedTaps.add(event.furniture().uuid());
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBreak(FurnitureBreakEvent event) {
-        if (event.furniture().id().equals(TAP_KEY)) {
-            closeTap(event.furniture(), false);
-            loadedTaps.remove(event.furniture().uuid());
-        }
-    }
-
-    @EventHandler
-    public void onEntitiesLoad(EntitiesLoadEvent event) {
-        for (Entity entity : event.getEntities()) {
-            if (!(entity instanceof ItemDisplay) || !CraftEngineFurniture.isFurniture(entity)) {
-                continue;
-            }
-            BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (furniture != null && furniture.id().equals(TAP_KEY)) {
-                loadedTaps.add(entity.getUniqueId());
-            }
-        }
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     private void openTap(BukkitFurniture tap, Player player) {
         if (!tap.isValid() || running.containsKey(tap.uuid())) {
             return;
         }
-        TapPlan initial = resolve(tap, player);
+        UUID tapId = tap.uuid();
+        TapGeometry initialGeometry = geometry(tap);
+        TapPlan initial = resolve(tap, player, initialGeometry);
         boolean extracting = initial != null;
         int duration = extracting ? TapSemantics.TAKE_TICKS : TapSemantics.EMPTY_OPEN_TICKS;
+        Location dripOrigin = initialGeometry.tapBlock().getLocation().add(0.5, 0.25, 0.5);
         setOpen(tap, true);
         tap.location().getWorld().playSound(tap.location(), Sound.BLOCK_IRON_TRAPDOOR_OPEN,
                 SoundCategory.BLOCKS, 1F, 0.8F);
@@ -155,26 +143,26 @@ public final class TapService implements Listener {
                 if (!tap.isValid()) {
                     // Chunk unloads mid-extraction: drop the running marker or
                     // the reloaded tap swallows its next click.
-                    running.remove(tap.uuid());
+                    running.remove(tapId);
                     cancel();
                     return;
                 }
-                if (!running.containsKey(tap.uuid())) {
+                if (!running.containsKey(tapId)) {
                     cancel();
                     return;
                 }
                 ticks++;
                 if (extracting && ticks <= TapSemantics.TAKE_PARTICLE_TICKS
                         || !extracting && TapSemantics.emitsEmptyCloud(ticks)) {
-                    spawnDrip(tap, extracting, extracting && initial.hot());
+                    spawnDrip(dripOrigin, extracting, extracting && initial.hot());
                 }
                 if (extracting && ticks <= TapSemantics.TAKE_PARTICLE_TICKS + DRIP_LIFETIME_TICKS) {
-                    spawnFallingDrip(tap, initial.hot());
+                    spawnFallingDrip(dripOrigin, initial.hot());
                 }
                 if (ticks < duration) {
                     return;
                 }
-                running.remove(tap.uuid());
+                running.remove(tapId);
                 cancel();
                 if (extracting) {
                     TapPlan current = resolve(tap, null);
@@ -186,14 +174,17 @@ public final class TapService implements Listener {
             }
         };
         BukkitTask task = runnable.runTaskTimer(plugin, 1L, 1L);
-        running.put(tap.uuid(), task);
+        running.put(tapId, task);
     }
 
     /** TapDripParticle: each hanging drip lives for 18 ticks. */
     private static final int DRIP_LIFETIME_TICKS = 18;
 
     private TapPlan resolve(BukkitFurniture tap, Player feedback) {
-        TapGeometry geometry = geometry(tap);
+        return resolve(tap, feedback, geometry(tap));
+    }
+
+    private TapPlan resolve(BukkitFurniture tap, Player feedback, TapGeometry geometry) {
         Block source = geometry.source();
         Block destination = geometry.destination();
         // Every archived ITapBehavior except BarrelBlockEntity matched an
@@ -397,7 +388,6 @@ public final class TapService implements Listener {
         bottle.setSourceItem(BukkitAdaptor.adapt(source));
         bottle.refreshElements();
         bottle.setUnsaved();
-        new FurnitureState(plugin, bottle).items("bottle_items", List.of(source));
     }
 
     private static void consumeDroppedBottle(org.bukkit.entity.Item bottle) {
@@ -442,14 +432,18 @@ public final class TapService implements Listener {
     }
 
     private void closeTap(BukkitFurniture tap, boolean sound) {
-        BukkitTask task = running.remove(tap.uuid());
-        if (task != null) {
-            task.cancel();
-        }
+        cancelRunning(tap);
         setOpen(tap, false);
         if (sound && tap.isValid()) {
             tap.location().getWorld().playSound(tap.location(), Sound.BLOCK_IRON_TRAPDOOR_CLOSE,
                     SoundCategory.BLOCKS, 1F, 0.8F);
+        }
+    }
+
+    private void cancelRunning(BukkitFurniture tap) {
+        BukkitTask task = running.remove(tap.uuid());
+        if (task != null) {
+            task.cancel();
         }
     }
 
@@ -472,9 +466,8 @@ public final class TapService implements Listener {
         tap.setVariant(open ? base + "_open" : base, true);
     }
 
-    private static void spawnDrip(BukkitFurniture tap, boolean extracting, boolean hot) {
+    private static void spawnDrip(Location location, boolean extracting, boolean hot) {
         // TapBlockEntity emits at the tap block's horizontal centre, +0.25 up.
-        Location location = tapBlock(tap).getLocation().add(0.5, 0.25, 0.5);
         if (extracting) {
             Particle particle = hot ? Particle.DRIPPING_LAVA : Particle.DRIPPING_WATER;
             location.getWorld().spawnParticle(particle, location, 1, 0, 0, 0, 0);
@@ -487,68 +480,10 @@ public final class TapService implements Listener {
      * TapDripParticle spawns a falling dripstone particle on every tick of a
      * hanging drip's 18-tick life, forming the visible stream below the tap.
      */
-    private static void spawnFallingDrip(BukkitFurniture tap, boolean hot) {
-        Location location = tapBlock(tap).getLocation().add(0.5, 0.25, 0.5);
+    private static void spawnFallingDrip(Location location, boolean hot) {
         Particle particle = hot
                 ? Particle.FALLING_DRIPSTONE_LAVA : Particle.FALLING_DRIPSTONE_WATER;
         location.getWorld().spawnParticle(particle, location, 1, 0, 0, 0, 0);
-    }
-
-    private void pollRedstone() {
-        List<UUID> invalid = null;
-        for (UUID id : loadedTaps) {
-            Entity entity = Bukkit.getEntity(id);
-            if (entity == null || !entity.isValid()) {
-                if (invalid == null) {
-                    invalid = new ArrayList<>();
-                }
-                invalid.add(id);
-                continue;
-            }
-            BukkitFurniture tap = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(entity);
-            if (tap == null || !tap.id().equals(TAP_KEY)) {
-                if (invalid == null) {
-                    invalid = new ArrayList<>();
-                }
-                invalid.add(id);
-                continue;
-            }
-            Block block = tapBlock(tap);
-            // TapBlock#neighborChanged uses hasNeighborSignal - weak power.
-            boolean powered = block.isBlockIndirectlyPowered()
-                    || block.getRelative(BlockFace.UP).isBlockIndirectlyPowered();
-            Boolean cached = tapTriggered.get(id);
-            boolean triggered = cached != null
-                    ? cached : new FurnitureState(plugin, tap).bool("tap_triggered");
-            if (powered && !triggered) {
-                tapTriggered.put(id, true);
-                new FurnitureState(plugin, tap).bool("tap_triggered", true);
-                openTap(tap, null);
-            } else if (!powered && triggered) {
-                tapTriggered.put(id, false);
-                new FurnitureState(plugin, tap).bool("tap_triggered", false);
-            } else if (cached == null) {
-                tapTriggered.put(id, triggered);
-            }
-        }
-        if (invalid != null) {
-            loadedTaps.removeAll(invalid);
-            invalid.forEach(tapTriggered::remove);
-        }
-    }
-
-    private void bootstrapTaps() {
-        for (World world : Bukkit.getWorlds()) {
-            for (ItemDisplay display : world.getEntitiesByClass(ItemDisplay.class)) {
-                if (!CraftEngineFurniture.isFurniture(display)) {
-                    continue;
-                }
-                BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(display);
-                if (furniture != null && furniture.id().equals(TAP_KEY)) {
-                    loadedTaps.add(display.getUniqueId());
-                }
-            }
-        }
     }
 
     private static TapGeometry geometry(BukkitFurniture tap) {
@@ -564,19 +499,9 @@ public final class TapService implements Listener {
         return new TapGeometry(source, tapBlock, tapBlock.getRelative(BlockFace.DOWN));
     }
 
-    private static Block tapBlock(BukkitFurniture tap) {
-        Location origin = tap.location().clone();
-        Vector outward = origin.getDirection().setY(0);
-        if (outward.lengthSquared() < 0.001) {
-            outward = new Vector(0, 0, 1);
-        } else {
-            outward.normalize();
-        }
-        return origin.add(outward.multiply(0.05)).getBlock();
-    }
-
     private Optional<BottleCarrier> findPlacedBottleCarrier(Block block) {
-        Optional<BukkitFurniture> placed = findFurnitureAtBlock(block, EMPTY_BOTTLE);
+        Optional<BukkitFurniture> placed = LifecycleFurnitureBehavior.atBlock(
+                LifecycleFurnitureBehavior.Channel.TAP_BOTTLE, block);
         return placed.map(furniture -> new BottleCarrier(furniture, null));
     }
 
@@ -593,21 +518,6 @@ public final class TapService implements Listener {
                                 && items.id(dropped.getItemStack()).equals(EMPTY_BOTTLE))
                 .stream()
                 .map(entity -> new BottleCarrier(null, (org.bukkit.entity.Item) entity))
-                .findFirst();
-    }
-
-    private static Optional<BukkitFurniture> findFurnitureAtBlock(Block block, String id) {
-        Location center = block.getLocation().add(0.5, 0.5, 0.5);
-        Key furnitureId = Key.of(id);
-        return center.getWorld().getNearbyEntities(center, 1.0, 1.0, 1.0).stream()
-                .filter(CraftEngineFurniture::isFurniture)
-                .map(CraftEngineFurniture::getLoadedFurnitureByMetaEntity)
-                .filter(java.util.Objects::nonNull)
-                .filter(BukkitFurniture::isValid)
-                .filter(furniture -> furniture.id().equals(furnitureId))
-                .filter(furniture -> furniture.location().getBlockX() == block.getX()
-                        && furniture.location().getBlockY() == block.getY()
-                        && furniture.location().getBlockZ() == block.getZ())
                 .findFirst();
     }
 
@@ -630,12 +540,9 @@ public final class TapService implements Listener {
         int tapFacingX = (int) tapDirection.getX();
         int tapFacingZ = (int) tapDirection.getZ();
         Block source = geometry.source();
-        return center.getWorld().getNearbyEntities(center, 3.25, 3.25, 3.25).stream()
-                .filter(CraftEngineFurniture::isFurniture)
-                .map(CraftEngineFurniture::getLoadedFurnitureByMetaEntity)
-                .filter(java.util.Objects::nonNull)
-                .filter(BukkitFurniture::isValid)
-                .filter(furniture -> furniture.id().equals(BARREL_KEY))
+        return LifecycleFurnitureBehavior.nearby(
+                        LifecycleFurnitureBehavior.Channel.BARREL,
+                        center, 3.25, 3.25).stream()
                 .filter(barrel -> {
                     Location origin = barrel.location();
                     Vector barrelDirection = horizontalCardinal(origin);
