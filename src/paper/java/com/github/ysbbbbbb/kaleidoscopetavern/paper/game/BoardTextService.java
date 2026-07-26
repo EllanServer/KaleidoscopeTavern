@@ -369,8 +369,6 @@ public final class BoardTextService implements Listener {
     }
 
     private void tryMergeChalkboards(BukkitFurniture placed) {
-        // Ground and wall boards merge within their own variant family only;
-        // a board on the floor never joins boards hanging on a wall.
         String variant = placed.currentVariant().name();
         if (!placed.isValid() || !(variant.equals("ground") || variant.equals("wall"))
                 || !new FurnitureState(plugin, placed).string("board_text", "").isBlank()) {
@@ -378,7 +376,10 @@ public final class BoardTextService implements Listener {
         }
         List<BukkitFurniture> candidates = nearbyFurniture(placed.location(), 2.25).stream()
                 .filter(furniture -> furniture.id().toString().equals(CHALKBOARD))
-                .filter(furniture -> furniture.currentVariant().name().equals(variant))
+                .filter(furniture -> {
+                    String candidateVariant = furniture.currentVariant().name();
+                    return candidateVariant.equals("ground") || candidateVariant.equals("wall");
+                })
                 .filter(furniture -> new FurnitureState(plugin, furniture).string("board_text", "").isBlank())
                 .filter(furniture -> yawDistance(furniture.location().getYaw(), placed.location().getYaw()) < 1F)
                 .toList();
@@ -396,7 +397,7 @@ public final class BoardTextService implements Listener {
             removeDisplay(new FurnitureState(plugin, rightBoard));
             CraftEngineFurniture.remove(left, false, false);
             CraftEngineFurniture.remove(rightBoard, false, false);
-            center.setVariant(variant + "_large", true);
+            center.setVariant(center.currentVariant().name() + "_large", true);
             new FurnitureState(plugin, center).integer("board_large_count", 3);
             refreshDisplay(center);
             center.location().getWorld().playSound(center.location(), Sound.BLOCK_WOOD_PLACE, 1F, 0.9F);
@@ -406,14 +407,14 @@ public final class BoardTextService implements Listener {
 
     private static BukkitFurniture sideAt(List<BukkitFurniture> candidates, BukkitFurniture center,
                                           Vector right, int side) {
-        Location origin = center.location();
+        Location origin = chalkboardMergeOrigin(center);
         BukkitFurniture best = null;
         double bestError = Double.MAX_VALUE;
         for (BukkitFurniture candidate : candidates) {
             if (candidate == center) {
                 continue;
             }
-            Vector delta = candidate.location().toVector().subtract(origin.toVector());
+            Vector delta = chalkboardMergeOrigin(candidate).toVector().subtract(origin.toVector());
             double projection = delta.dot(right);
             Vector lateral = delta.clone().subtract(right.clone().multiply(projection));
             double error = Math.abs(projection - side) + lateral.length() * 2;
@@ -423,6 +424,21 @@ public final class BoardTextService implements Listener {
             }
         }
         return best;
+    }
+
+    private static Location chalkboardMergeOrigin(BukkitFurniture furniture) {
+        Location origin = furniture.location().clone();
+        if (!isWallBoard(furniture)) {
+            return origin;
+        }
+        // CE stores a centred wall anchor half a block above and half a block
+        // behind the equivalent ground anchor.  Normalise to the rendered panel
+        // so boards placed through either Forge-supported gesture share a row.
+        Vector forward = origin.getDirection().setY(0);
+        if (forward.lengthSquared() > 0) {
+            origin.add(forward.normalize().multiply(0.5));
+        }
+        return origin.subtract(0, 0.5, 0);
     }
 
     private void refreshDisplay(BukkitFurniture furniture) {

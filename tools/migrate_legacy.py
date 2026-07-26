@@ -2342,18 +2342,24 @@ def build_furniture(
                 # Forge only occupied a 3x1 row).
                 # The wall anchor's centre alignment lifts the furniture origin
                 # to n+0.5, so wall boxes drop half a block to cover the same
-                # world span as their ground counterparts.  Half of a centred
-                # wall box overlaps the supporting wall, which the placement
-                # obstruction check would reject, so wall boxes must not block
-                # building -- the paintings use the same escape hatch.
+                # world span as their ground counterparts.  A full centred wall
+                # box would overlap the supporting wall and reject every
+                # placement.  Split each column into two half-width boxes in
+                # front of the wall instead: their z span is 0..0.5, so they
+                # retain CE's block/entity/furniture obstruction checks without
+                # intersecting the support block.
                 shift = -8 if anchor == "wall" else 0
                 hitboxes = []
                 for column in columns:
-                    box = interaction_box(
-                        (column, 2 + shift, 0, column + 16, 30 + shift, 16), "ground")
                     if anchor == "wall":
-                        box["blocks_building"] = False
-                    hitboxes.append(box)
+                        for half_start in (column, column + 8):
+                            hitboxes.append(interaction_box(
+                                (half_start, 2 + shift, 8,
+                                 half_start + 8, 30 + shift, 16),
+                                "ground"))
+                    else:
+                        hitboxes.append(interaction_box(
+                            (column, 2, 0, column + 16, 30, 16), "ground"))
                 return hitboxes
 
             def chalkboard_element(
@@ -2897,10 +2903,11 @@ def build_items(
                 # standing close enough to click the support block.
                 furniture_behavior["ignore_placer"] = True
             elif item_id == "chalkboard":
-                # ChalkboardBlock placed like any BlockItem, without an entity
-                # obstruction check.  The board's centred two-block interaction
-                # column would otherwise collide with the placing player, who
-                # is always standing next to the target cell.
+                # Forge checks entities against a 1/16-thick panel at the far
+                # edge of the target cell.  CE has square horizontal interaction
+                # boxes; even the wall-safe approximation is 1/2 block deep and
+                # can overlap the player who is close enough to place it.  Ignore
+                # only the placer while keeping every other obstruction check.
                 furniture_behavior["ignore_placer"] = True
             behaviors.append(furniture_behavior)
         elif item_id in block_ids:

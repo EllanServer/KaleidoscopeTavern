@@ -776,55 +776,82 @@ def validate() -> dict[str, int]:
 
     # ChalkboardBlock parity: the board occupies its own column(s), never the
     # cell in front of the panel; the large board is a 3x1 row, not a 3x3
-    # square; horizontal clicks place a wall variant; and placement ignores
-    # the placing player just like Forge's entity-check-free BlockItem path.
+    # square; horizontal clicks place a wall variant; wall boxes remain wholly
+    # in front of their support so CE still performs obstruction checks; and
+    # placement ignores only the placing player to approximate Forge's thin
+    # panel collision with CE's necessarily deeper square interaction boxes.
     chalkboard = furniture[f"{NAMESPACE}:chalkboard"]
     chalkboard_variants = chalkboard.get("variants", {})
     if set(chalkboard_variants) != {"ground", "ground_large", "wall", "wall_large"}:
         raise AssertionError(
             "Chalkboard must expose ground, ground_large, wall and wall_large "
             f"variants, found {sorted(chalkboard_variants)}")
-    expected_chalkboard_columns = {
+    expected_chalkboard_hitboxes = {
         "ground": ("0,0.125,0",),
         "ground_large": ("-1,0.125,0", "0,0.125,0", "1,0.125,0"),
-        "wall": ("0,-0.375,0",),
-        "wall_large": ("-1,-0.375,0", "0,-0.375,0", "1,-0.375,0"),
+        "wall": ("-0.25,-0.375,0.25", "0.25,-0.375,0.25"),
+        "wall_large": (
+            "-1.25,-0.375,0.25", "-0.75,-0.375,0.25",
+            "-0.25,-0.375,0.25", "0.25,-0.375,0.25",
+            "0.75,-0.375,0.25", "1.25,-0.375,0.25",
+        ),
     }
-    for variant_name, expected_positions in expected_chalkboard_columns.items():
+    for variant_name, expected_positions in expected_chalkboard_hitboxes.items():
         hitboxes = chalkboard_variants[variant_name].get("hitboxes", [])
         positions = tuple(sorted(hitbox.get("position") for hitbox in hitboxes))
         if positions != tuple(sorted(expected_positions)):
             raise AssertionError(
-                f"Chalkboard {variant_name} must keep one centred column box per "
-                f"occupied column, found positions={positions}")
+                f"Chalkboard {variant_name} hitbox layout drifted, "
+                f"found positions={positions}")
         for hitbox in hitboxes:
             wall_variant = variant_name.startswith("wall")
             if (hitbox.get("type") != "interaction"
-                    or hitbox.get("width") != 1.0
+                    or hitbox.get("width") != (0.5 if wall_variant else 1.0)
                     or hitbox.get("height") != 1.75
-                    or hitbox.get("blocks_building") is not (not wall_variant)):
+                    or hitbox.get("blocks_building") is not True
+                    or hitbox.get("interactive") is not True
+                    or hitbox.get("can_use_item_on") is not True
+                    or hitbox.get("can_be_hit_by_projectile") is not True):
                 raise AssertionError(
-                    f"Chalkboard {variant_name} hitboxes must be 1x1.75 interaction "
-                    "columns (wall variants non-building), found "
+                    f"Chalkboard {variant_name} hitboxes must retain their "
+                    "interactive, obstruction-checking geometry, found "
                     f"{hitbox}")
     for anchor in ("ground", "wall"):
         small = chalkboard_variants[anchor]["elements"][0].get("item")
         large = chalkboard_variants[f"{anchor}_large"]["elements"][0].get("item")
         if small == large or not small or not large:
             raise AssertionError("Chalkboard variants must reference the small/large render items")
-    if (chalkboard_variants["wall"]["elements"][0].get("item")
-            != chalkboard_variants["ground"]["elements"][0].get("item")):
-        raise AssertionError("Chalkboard wall variant must reuse the ground board model")
+    for suffix in ("", "_large"):
+        ground_element = chalkboard_variants[f"ground{suffix}"]["elements"][0]
+        wall_element = chalkboard_variants[f"wall{suffix}"]["elements"][0]
+        if (wall_element.get("item") != ground_element.get("item")
+                or wall_element.get("translation") != "0,0,-0.49"
+                or wall_element.get("position") != "0,0,0.01"):
+            raise AssertionError(
+                f"Chalkboard wall{suffix} must reuse and correctly align the "
+                "ground model")
     chalkboard_item_behavior = items[f"{NAMESPACE}:chalkboard"].get("behavior", {})
     if chalkboard_item_behavior.get("type") != "furniture_item":
         raise AssertionError("Chalkboard item must keep its furniture_item behavior")
     if chalkboard_item_behavior.get("ignore_placer") is not True:
         raise AssertionError(
-            "Chalkboard placement must ignore the placing player (Forge parity)")
+            "Chalkboard placement must ignore the placer for CE square-box approximation")
     chalkboard_rules = chalkboard_item_behavior.get("rules", {})
-    if not {"ground", "wall"} <= set(chalkboard_rules):
+    expected_chalkboard_rules = {
+        "ground": {"rotation": "four", "alignment": "center"},
+        "wall": {"rotation": "four", "alignment": "center"},
+    }
+    if chalkboard_rules != expected_chalkboard_rules:
         raise AssertionError(
-            f"Chalkboard placement rules must cover ground and wall, found {sorted(chalkboard_rules)}")
+            "Chalkboard ground/wall placement must retain four-way rotation and "
+            f"centre alignment, found {chalkboard_rules}")
+    for merge_token in (
+            "chalkboardMergeOrigin(center)",
+            "chalkboardMergeOrigin(candidate)",
+            'center.currentVariant().name() + "_large"'):
+        if merge_token not in board_text_source:
+            raise AssertionError(
+                "Ground- and wall-placed chalkboards must remain merge-compatible")
 
     trellis = blocks[f"{NAMESPACE}:trellis"]
     if "support_shape" in trellis.get("settings", {}):

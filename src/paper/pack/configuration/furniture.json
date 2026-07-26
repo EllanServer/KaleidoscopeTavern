@@ -8350,13 +8350,23 @@
           "hitboxes": [
             {
               "type": "interaction",
-              "position": "0,-0.375,0",
-              "width": 1.0,
+              "position": "-0.25,-0.375,0.25",
+              "width": 0.5,
               "height": 1.75,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": false
+              "blocks_building": true
+            },
+            {
+              "type": "interaction",
+              "position": "0.25,-0.375,0.25",
+              "width": 0.5,
+              "height": 1.75,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
             }
           ]
         },
@@ -8375,33 +8385,63 @@
           "hitboxes": [
             {
               "type": "interaction",
-              "position": "-1,-0.375,0",
-              "width": 1.0,
+              "position": "-1.25,-0.375,0.25",
+              "width": 0.5,
               "height": 1.75,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": false
+              "blocks_building": true
             },
             {
               "type": "interaction",
-              "position": "0,-0.375,0",
-              "width": 1.0,
+              "position": "-0.75,-0.375,0.25",
+              "width": 0.5,
               "height": 1.75,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": false
+              "blocks_building": true
             },
             {
               "type": "interaction",
-              "position": "1,-0.375,0",
-              "width": 1.0,
+              "position": "-0.25,-0.375,0.25",
+              "width": 0.5,
               "height": 1.75,
               "can_use_item_on": true,
               "can_be_hit_by_projectile": true,
               "interactive": true,
-              "blocks_building": false
+              "blocks_building": true
+            },
+            {
+              "type": "interaction",
+              "position": "0.25,-0.375,0.25",
+              "width": 0.5,
+              "height": 1.75,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "interaction",
+              "position": "0.75,-0.375,0.25",
+              "width": 0.5,
+              "height": 1.75,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "interaction",
+              "position": "1.25,-0.375,0.25",
+              "width": 0.5,
+              "height": 1.75,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
             }
           ]
         }
