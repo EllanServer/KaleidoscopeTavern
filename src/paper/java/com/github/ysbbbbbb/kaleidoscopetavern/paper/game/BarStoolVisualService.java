@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDismountEvent;
@@ -29,7 +30,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /** Recreates the passenger-following stool body with a CE packet-only element. */
-public final class BarStoolVisualService implements Listener {
+public final class BarStoolVisualService {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String SUFFIX = "_bar_stool";
 
@@ -40,8 +41,10 @@ public final class BarStoolVisualService implements Listener {
     private final Map<UUID, Float> bodyYaws = new HashMap<>();
     private final Map<String, Item> renderItems = new HashMap<>();
     private final AnimatedItemFurnitureBehavior.Handler visualHandler = this::visuals;
+    private final SeatEventListener seatEventListener = new SeatEventListener();
     private final LifecycleFurnitureBehavior.Handler lifecycleHandler;
     private BukkitTask rotationTask;
+    private boolean seatEventsRegistered;
     private boolean missingRenderItemLogged;
 
     public BarStoolVisualService(JavaPlugin plugin, ItemService items) {
@@ -52,6 +55,7 @@ public final class BarStoolVisualService implements Listener {
             public void onReady(BukkitFurniture furniture,
                                 LifecycleFurnitureBehavior.ReadyReason reason) {
                 loaded.put(furniture.uuid(), furniture);
+                ensureSeatEventsRegistered();
             }
 
             @Override
@@ -62,6 +66,7 @@ public final class BarStoolVisualService implements Listener {
                 bodyYaws.remove(owner);
                 occupied.values().removeIf(owner::equals);
                 stopRotationTaskIfIdle();
+                stopSeatEventsIfIdle();
             }
         };
     }
@@ -74,6 +79,8 @@ public final class BarStoolVisualService implements Listener {
     }
 
     public void stop() {
+        HandlerList.unregisterAll(seatEventListener);
+        seatEventsRegistered = false;
         occupied.values().stream().distinct().toList().forEach(this::resetBody);
         if (rotationTask != null) {
             rotationTask.cancel();
@@ -89,8 +96,7 @@ public final class BarStoolVisualService implements Listener {
         renderItems.clear();
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onMount(EntityMountEvent event) {
+    private void onMount(EntityMountEvent event) {
         if (!(event.getEntity() instanceof LivingEntity)) {
             return;
         }
@@ -100,14 +106,45 @@ public final class BarStoolVisualService implements Listener {
         Bukkit.getScheduler().runTask(plugin, () -> activate(rider, mount));
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onDismount(EntityDismountEvent event) {
+    private void onDismount(EntityDismountEvent event) {
         deactivate(event.getEntity().getUniqueId());
     }
 
-    @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
+    private void onQuit(PlayerQuitEvent event) {
         deactivate(event.getPlayer().getUniqueId());
+    }
+
+    private void ensureSeatEventsRegistered() {
+        if (seatEventsRegistered || loaded.isEmpty()) {
+            return;
+        }
+        plugin.getServer().getPluginManager().registerEvents(seatEventListener, plugin);
+        seatEventsRegistered = true;
+    }
+
+    private void stopSeatEventsIfIdle() {
+        if (!seatEventsRegistered || !loaded.isEmpty()) {
+            return;
+        }
+        HandlerList.unregisterAll(seatEventListener);
+        seatEventsRegistered = false;
+    }
+
+    private final class SeatEventListener implements Listener {
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        public void onMount(EntityMountEvent event) {
+            BarStoolVisualService.this.onMount(event);
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        public void onDismount(EntityDismountEvent event) {
+            BarStoolVisualService.this.onDismount(event);
+        }
+
+        @EventHandler
+        public void onQuit(PlayerQuitEvent event) {
+            BarStoolVisualService.this.onQuit(event);
+        }
     }
 
     private void activate(UUID riderId, Location mount) {

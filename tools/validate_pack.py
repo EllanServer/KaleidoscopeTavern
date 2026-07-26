@@ -1207,6 +1207,27 @@ def validate() -> dict[str, int]:
             or "registerEvents(shakerVisuals, this)" in plugin_source):
         raise AssertionError(
             "Shaker visuals are CE lifecycle-driven and must not retain an empty Bukkit listener")
+    bar_stool_visual_source = (
+        game_package / "BarStoolVisualService.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "private final class SeatEventListener implements Listener",
+            "registerEvents(seatEventListener, plugin)",
+            "HandlerList.unregisterAll(seatEventListener)",
+            "private void ensureSeatEventsRegistered()",
+            "private void stopSeatEventsIfIdle()",
+            "loaded.put(furniture.uuid(), furniture);",
+            "ensureSeatEventsRegistered();",
+            "loaded.remove(owner, furniture);",
+            "stopSeatEventsIfIdle();"):
+        if required_token not in bar_stool_visual_source:
+            raise AssertionError(
+                "Bar-stool mount events must follow CE loaded furniture availability; "
+                f"missing token: {required_token}")
+    if ("BarStoolVisualService implements Listener" in bar_stool_visual_source
+            or "registerEvents(barStoolVisuals, this)" in plugin_source):
+        raise AssertionError(
+            "Bar-stool mount events must not remain globally registered without loaded stools")
 
     station_source = (game_package / "StationService.java").read_text(
         encoding="utf-8-sig")
