@@ -218,7 +218,7 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
                 DisplayData.LeftRotation.addEntityDataIfNotDefaultValue(
                         visual.leftRotation(), metadata);
                 DisplayData.ViewRange.addEntityDataIfNotDefaultValue(
-                        viewRange * player.displayEntityViewDistance(), metadata);
+                        (float) (viewRange * player.displayEntityViewDistance()), metadata);
                 packets.add(ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
                         entityIds[index], metadata));
             }
