@@ -223,15 +223,23 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length > 0 && args[0].equalsIgnoreCase("recipes")) {
+            if (!sender.hasPermission("kaleidoscopetavern.recipes")) {
+                sender.sendMessage(Component.text("你没有权限查看配方。"));
+                return true;
+            }
+            return recipes(sender, label, args);
+        }
+        if (!sender.hasPermission("kaleidoscopetavern.admin")) {
+            sender.sendMessage(Component.text("用法：/" + label + " recipes <barrel|pressing|shaker> [页码]"));
+            return true;
+        }
         if (args.length == 0 || args[0].equalsIgnoreCase("status")) {
             sendStatus(sender);
             return true;
         }
         if (args[0].equalsIgnoreCase("give")) {
             return give(sender, args);
-        }
-        if (args[0].equalsIgnoreCase("recipes")) {
-            return recipes(sender, label, args);
         }
         if (args[0].equalsIgnoreCase("reload")) {
             reloadConfig();
@@ -508,8 +516,20 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        boolean admin = sender.hasPermission("kaleidoscopetavern.admin");
         if (args.length == 1) {
-            return matching(List.of("status", "give", "reload", "recipes"), args[0]);
+            List<String> subcommands;
+            if (admin) {
+                subcommands = List.of("status", "give", "reload", "recipes");
+            } else if (sender.hasPermission("kaleidoscopetavern.recipes")) {
+                subcommands = List.of("recipes");
+            } else {
+                subcommands = List.of();
+            }
+            return matching(subcommands, args[0]);
+        }
+        if (!admin && !args[0].equalsIgnoreCase("recipes")) {
+            return List.of();
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
             List<String> ids = CraftEngineItems.loadedItems().keySet().stream()
