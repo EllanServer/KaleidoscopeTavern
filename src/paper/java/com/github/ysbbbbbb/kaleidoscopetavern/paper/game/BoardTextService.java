@@ -1,6 +1,7 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BoardTextFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
@@ -14,20 +15,15 @@ import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -35,16 +31,10 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.MinecraftFont;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
-import org.joml.AxisAngle4f;
-import org.joml.Vector3f;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -95,24 +85,19 @@ public final class BoardTextService implements Listener {
 
     private final JavaPlugin plugin;
     private final ItemService items;
-    private final NamespacedKey boardOwnerKey;
-    private final NamespacedKey boardLineKey;
     private final LifecycleFurnitureBehavior.Handler lifecycleHandler;
+    private final BoardTextFurnitureBehavior.Handler boardVisualHandler =
+            this::boardVisuals;
     // AsyncChatEvent removes entries off the main thread.
     private final Map<UUID, EditSession> editors = new ConcurrentHashMap<>();
 
     public BoardTextService(JavaPlugin plugin, ItemService items) {
         this.plugin = plugin;
         this.items = items;
-        this.boardOwnerKey = new NamespacedKey(plugin, "board_owner");
-        this.boardLineKey = new NamespacedKey(plugin, "board_line");
         this.lifecycleHandler = new LifecycleFurnitureBehavior.Handler() {
             @Override
             public void onReady(BukkitFurniture furniture,
                                 LifecycleFurnitureBehavior.ReadyReason reason) {
-                if (reason == LifecycleFurnitureBehavior.ReadyReason.LOAD) {
-                    Bukkit.getScheduler().runTask(plugin, () -> refreshDisplay(furniture));
-                }
             }
 
             @Override
@@ -126,11 +111,13 @@ public final class BoardTextService implements Listener {
     }
 
     public void start() {
+        BoardTextFurnitureBehavior.bind(boardVisualHandler);
         LifecycleFurnitureBehavior.bind(
                 LifecycleFurnitureBehavior.Channel.BOARD, lifecycleHandler);
     }
 
     public void stop() {
+        BoardTextFurnitureBehavior.unbind(boardVisualHandler);
         LifecycleFurnitureBehavior.unbind(
                 LifecycleFurnitureBehavior.Channel.BOARD, lifecycleHandler);
         editors.clear();
@@ -236,7 +223,6 @@ public final class BoardTextService implements Listener {
             return;
         }
         FurnitureState state = new FurnitureState(event.furniture());
-        removeDisplay(event.furniture(), state);
         Entity entity = event.furniture().bukkitEntity();
         if (entity != null) {
             editors.entrySet().removeIf(entry -> entry.getValue().furniture().equals(entity.getUniqueId()));
@@ -346,7 +332,6 @@ public final class BoardTextService implements Listener {
         }
         BoardStateSnapshot snapshot = BoardStateSnapshot.capture(oldState);
         Location location = furniture.location().clone();
-        removeDisplay(furniture, oldState);
         CraftEngineFurniture.remove(furniture, false, false);
         BukkitFurniture replacement = CraftEngineFurniture.place(location, Key.of(targetId), "ground", false);
         if (replacement == null) {
@@ -390,8 +375,6 @@ public final class BoardTextService implements Listener {
             if (left == null || rightBoard == null || left == rightBoard) {
                 continue;
             }
-            removeDisplay(left, new FurnitureState(left));
-            removeDisplay(rightBoard, new FurnitureState(rightBoard));
             CraftEngineFurniture.remove(left, false, false);
             CraftEngineFurniture.remove(rightBoard, false, false);
             center.setVariant(center.currentVariant().name() + "_large", true);
@@ -439,18 +422,20 @@ public final class BoardTextService implements Listener {
     }
 
     private void refreshDisplay(BukkitFurniture furniture) {
+        if (furniture.isValid()) {
+            furniture.refreshElements();
+        }
+    }
+
+    private List<BoardTextFurnitureBehavior.Visual> boardVisuals(
+            BukkitFurniture furniture) {
         if (!furniture.isValid()) {
-            return;
+            return List.of();
         }
         FurnitureState state = new FurnitureState(furniture);
         String text = state.string("board_text", "");
         if (text.isBlank()) {
-            removeDisplay(furniture, state);
-            return;
-        }
-        Entity owner = furniture.bukkitEntity();
-        if (owner == null) {
-            return;
+            return List.of();
         }
 
         boolean sandwich = isSandwichBoard(furniture);
@@ -461,128 +446,36 @@ public final class BoardTextService implements Listener {
                 text, maxWidthUnits, maxLines,
                 codePoint -> minecraftGlyphAdvanceUnits(codePoint, sandwich));
 
-        List<TextDisplay> existing = findDisplays(furniture, state);
-        Map<Integer, TextDisplay> indexed = new HashMap<>();
-        List<TextDisplay> reusable = new ArrayList<>();
-        for (TextDisplay display : existing) {
-            Integer lineIndex = display.getPersistentDataContainer().get(
-                    boardLineKey, PersistentDataType.INTEGER);
-            if (lineIndex != null && lineIndex >= 0 && lineIndex < maxLines
-                    && indexed.putIfAbsent(lineIndex, display) == null) {
-                continue;
-            }
-            reusable.add(display);
-        }
-
         DyeColor dye = parseDye(state.string("board_color", "WHITE"));
         boolean glowing = state.bool("board_glowing");
         int rgb = dye.getColor().asRGB();
         if (!glowing) {
             rgb = darken(rgb, 0.6);
         }
-        TextDisplay.TextAlignment alignment = parseAlignment(
+        BoardAlignment alignment = parseAlignment(
                 state.string("board_alignment", "center"));
-        List<TextDisplay> active = new ArrayList<>(lines.size());
+        float displayScale = legacyTextScale(furniture) / VANILLA_TEXT_SCALE;
+        List<BoardTextFurnitureBehavior.Visual> result =
+                new ArrayList<>(lines.size());
         for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
             BoardTextLayout.Line line = lines.get(lineIndex);
             if (line.text().isBlank()) {
                 continue;
             }
-            TextDisplay display = indexed.remove(lineIndex);
-            if (display == null && !reusable.isEmpty()) {
-                display = reusable.remove(reusable.size() - 1);
-            }
             Location position = textLineLocation(
                     furniture, lineIndex, line.width(), maxWidthUnits, alignment);
-            if (display == null) {
-                display = position.getWorld().spawn(position, TextDisplay.class, spawned -> {
-                    spawned.setPersistent(true);
-                    spawned.setGravity(false);
-                    spawned.setInvulnerable(true);
-                    spawned.setSilent(true);
-                });
-            } else {
-                display.teleport(position);
-            }
-            display.getPersistentDataContainer().set(
-                    boardOwnerKey, PersistentDataType.STRING, owner.getUniqueId().toString());
-            display.getPersistentDataContainer().set(
-                    boardLineKey, PersistentDataType.INTEGER, lineIndex);
-
             Component component = Component.text(line.text(), TextColor.color(rgb));
             if (sandwich) {
-                component = component.decorate(net.kyori.adventure.text.format.TextDecoration.BOLD);
+                component = component.decorate(
+                        net.kyori.adventure.text.format.TextDecoration.BOLD);
             }
-            display.text(component);
-            display.setAlignment(TextDisplay.TextAlignment.CENTER);
-            // Lines are already wrapped to the archived renderer's pixel width.
-            // Keeping this effectively unbounded prevents a client-side second wrap.
-            display.setLineWidth(Integer.MAX_VALUE);
-            display.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
-            display.setDefaultBackground(false);
-            display.setShadowed(false);
-            display.setSeeThrough(false);
-            display.setBillboard(Display.Billboard.FIXED);
-            display.setTransformation(textTransformation(furniture));
-            // TextBlockEntityRender culls text beyond 48 blocks.
-            display.setViewRange(0.75F);
-            display.setShadowRadius(0F);
-            display.setGlowing(glowing);
-            display.setGlowColorOverride(glowing ? dye.getColor() : null);
-            active.add(display);
+            result.add(new BoardTextFurnitureBehavior.Visual(
+                    component,
+                    position.getX(), position.getY(), position.getZ(),
+                    position.getYaw(), position.getPitch(), displayScale,
+                    glowing, dye.getColor().asRGB()));
         }
-
-        indexed.values().forEach(Entity::remove);
-        reusable.forEach(Entity::remove);
-        state.uuids("board_displays", active.stream()
-                .map(Entity::getUniqueId)
-                .toList());
-    }
-
-    private List<TextDisplay> findDisplays(BukkitFurniture furniture, FurnitureState state) {
-        Map<UUID, TextDisplay> displays = new LinkedHashMap<>();
-        Entity owner = furniture.bukkitEntity();
-        if (owner == null) {
-            return List.of();
-        }
-        String ownerId = owner.getUniqueId().toString();
-        boolean storedComplete = addStoredDisplays(
-                state.uuids("board_displays"), ownerId, displays);
-        boolean recover = !state.bool("board_displays_resolved") || !storedComplete;
-        if (recover) {
-            for (Entity entity : furniture.location().getWorld().getNearbyEntities(
-                    furniture.location(), 3, 3, 3,
-                    nearby -> nearby instanceof TextDisplay)) {
-                String candidate = entity.getPersistentDataContainer().get(
-                        boardOwnerKey, PersistentDataType.STRING);
-                if (ownerId.equals(candidate) && entity.isValid()) {
-                    displays.putIfAbsent(entity.getUniqueId(), (TextDisplay) entity);
-                }
-            }
-            state.bool("board_displays_resolved", true);
-        }
-        return new ArrayList<>(displays.values());
-    }
-
-    private boolean addStoredDisplays(List<UUID> stored, String ownerId,
-                                      Map<UUID, TextDisplay> displays) {
-        boolean complete = true;
-        for (UUID id : stored) {
-            Entity entity = Bukkit.getEntity(id);
-            if (entity instanceof TextDisplay textDisplay && entity.isValid()
-                    && ownerId.equals(entity.getPersistentDataContainer().get(
-                    boardOwnerKey, PersistentDataType.STRING))) {
-                displays.putIfAbsent(entity.getUniqueId(), textDisplay);
-            } else {
-                complete = false;
-            }
-        }
-        return complete;
-    }
-
-    private void removeDisplay(BukkitFurniture furniture, FurnitureState state) {
-        findDisplays(furniture, state).forEach(Entity::remove);
-        state.clear("board_displays");
+        return result;
     }
 
     private List<BukkitFurniture> nearbyFurniture(Location center, double radius) {
@@ -597,7 +490,7 @@ public final class BoardTextService implements Listener {
 
     private static Location textLineLocation(BukkitFurniture furniture, int lineIndex,
                                              int lineWidthUnits, int maxWidthUnits,
-                                             TextDisplay.TextAlignment alignment) {
+                                             BoardAlignment alignment) {
         Location origin = furniture.location().clone();
         boolean sandwich = isSandwichBoard(furniture);
         boolean wall = !sandwich && isWallBoard(furniture);
@@ -635,16 +528,6 @@ public final class BoardTextService implements Listener {
         origin.add(horizontalRight(origin.getYaw()).multiply((alignedCenterPixels - 1.0) * scale));
         origin.setPitch(sandwich ? -22.5F : 0F);
         return origin;
-    }
-
-    private static Transformation textTransformation(BukkitFurniture furniture) {
-        float legacyScale = legacyTextScale(furniture);
-        float displayScale = legacyScale / VANILLA_TEXT_SCALE;
-        return new Transformation(
-                new Vector3f(),
-                new AxisAngle4f(),
-                new Vector3f(displayScale),
-                new AxisAngle4f());
     }
 
     private static float legacyTextScale(BukkitFurniture furniture) {
@@ -772,11 +655,11 @@ public final class BoardTextService implements Listener {
         }
     }
 
-    private static TextDisplay.TextAlignment parseAlignment(String name) {
+    private static BoardAlignment parseAlignment(String name) {
         return switch (name.toLowerCase(Locale.ROOT)) {
-            case "left" -> TextDisplay.TextAlignment.LEFT;
-            case "right" -> TextDisplay.TextAlignment.RIGHT;
-            default -> TextDisplay.TextAlignment.CENTER;
+            case "left" -> BoardAlignment.LEFT;
+            case "right" -> BoardAlignment.RIGHT;
+            default -> BoardAlignment.CENTER;
         };
     }
 
@@ -791,6 +674,12 @@ public final class BoardTextService implements Listener {
         if (player.getGameMode() != GameMode.CREATIVE) {
             stack.subtract(1);
         }
+    }
+
+    private enum BoardAlignment {
+        LEFT,
+        CENTER,
+        RIGHT
     }
 
     private record EditSession(UUID furniture) {

@@ -8674,6 +8674,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 11,
+          "view_range": 0.75
         }
       ]
     },
@@ -10182,6 +10187,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -10260,6 +10270,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -10338,6 +10353,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -10416,6 +10436,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -10494,6 +10519,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -10572,6 +10602,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -10650,6 +10685,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -10728,6 +10768,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -10806,6 +10851,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -10884,6 +10934,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -10962,6 +11017,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -11040,6 +11100,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -11118,6 +11183,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },
@@ -11196,6 +11266,11 @@
         {
           "type": "kaleidoscope_tavern:lifecycle_furniture",
           "channel": "board"
+        },
+        {
+          "type": "kaleidoscope_tavern:board_text_furniture",
+          "max_lines": 8,
+          "view_range": 0.75
         }
       ]
     },

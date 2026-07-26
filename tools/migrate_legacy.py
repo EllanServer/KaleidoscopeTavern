@@ -2239,6 +2239,18 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
             "channel": channel,
         })
 
+    board_text_max_lines: int | None = None
+    if block_id == "chalkboard":
+        board_text_max_lines = 11
+    elif block_id.endswith("_sandwich_board"):
+        board_text_max_lines = 8
+    if board_text_max_lines is not None:
+        behaviors.append({
+            "type": f"{NAMESPACE}:board_text_furniture",
+            "max_lines": board_text_max_lines,
+            "view_range": 0.75,
+        })
+
     def display_slots(
         positions: list[str],
         width: float,

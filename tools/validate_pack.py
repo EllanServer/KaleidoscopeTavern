@@ -179,7 +179,7 @@ RENDERER_COVERAGE = {
     "SandwichBlockEntityRender.java": ("BoardTextService.java", "sandwich"),
     "ShakerBlockEntityRender.java": ("ShakerVisualService.java", "ShakerAnimationSemantics"),
     "StorageBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
-    "TextBlockEntityRender.java": ("BoardTextService.java", "TextDisplay"),
+    "TextBlockEntityRender.java": ("BoardTextService.java", "boardVisuals"),
     "TiltedRackBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
 }
 
@@ -709,6 +709,24 @@ def validate() -> dict[str, int]:
             or "validateEditDistance(event.getPlayer())" not in board_text_source):
         raise AssertionError(
             "Board edit distance must be event-driven, not a global per-tick player scan")
+    for required_token in (
+            "BoardTextFurnitureBehavior.bind(boardVisualHandler)",
+            "BoardTextFurnitureBehavior.unbind(boardVisualHandler)",
+            "private List<BoardTextFurnitureBehavior.Visual> boardVisuals",
+            "furniture.refreshElements()",
+            "LifecycleFurnitureBehavior.Channel.BOARD, lifecycleHandler"):
+        if required_token not in board_text_source:
+            raise AssertionError(
+                "Board text must use CE packet-only elements while retaining its spatial "
+                f"lifecycle index; missing token: {required_token}")
+    for stale_token in (
+            "org.bukkit.entity.TextDisplay", "PersistentDataType", "NamespacedKey",
+            "board_owner", "board_line", "board_displays", "getNearbyEntities(",
+            "removeDisplay(", "TextDisplay.TextAlignment"):
+        if stale_token in board_text_source:
+            raise AssertionError(
+                "Board text must not recreate persistent Bukkit display entities or helper "
+                f"PDC; stale token found: {stale_token}")
 
     expected_grid_blocks = {
         f"{NAMESPACE}:wild_grapevine",
@@ -838,6 +856,9 @@ def validate() -> dict[str, int]:
     if "StationVisualFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register station_visual_furniture before pack loading")
+    if "BoardTextFurnitureBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register board_text_furniture before pack loading")
 
     stale_ambient_scan_tokens = (
         "runTaskTimer", "Bukkit.getEntity", "CraftEngineFurniture",
@@ -953,6 +974,31 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "lifecycle_furniture must route CE readiness and unavailability; "
                 f"missing token: {required_token}")
+
+    board_text_behavior_source = (
+        game_package / "furniture" / "BoardTextFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "implements FurnitureElement",
+            "EntityTypesProxy.TEXT_DISPLAY",
+            "ComponentUtils.adventureToMinecraft",
+            "DisplayData.TextDisplayData.Text.addEntityData",
+            "DisplayData.TextDisplayData.LineWidth",
+            "DisplayData.TextDisplayData.BackgroundColor",
+            "ClientboundAddEntityPacketProxy.INSTANCE.newInstance",
+            "ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance",
+            "player.sendPackets",
+            "public void gatherElements"):
+        if required_token not in board_text_behavior_source:
+            raise AssertionError(
+                "board_text_furniture must use CE-tracked packet-only text elements; "
+                f"missing token: {required_token}")
+    for stale_token in (
+            "org.bukkit.entity.TextDisplay", "PersistentDataType", "World.spawn"):
+        if stale_token in board_text_behavior_source:
+            raise AssertionError(
+                "board_text_furniture must never create persistent Bukkit entities; "
+                f"stale token found: {stale_token}")
 
     lifecycle_services = {
         "BarStoolVisualService.java": "BAR_STOOL",
@@ -2362,6 +2408,51 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{furniture_id}: lifecycle order drifted: "
                 f"indices={actual_indices}, behaviors={actual_behaviors}")
+
+    board_text_type = f"{NAMESPACE}:board_text_furniture"
+    expected_board_text = {
+        "chalkboard": 11,
+        **{
+            block_id: 8
+            for block_id in EXPECTED_STATE_FURNITURE
+            if block_id.endswith("_sandwich_board")
+        },
+    }
+    configured_board_text: dict[str, tuple[int, dict[str, Any]]] = {}
+    for furniture_id, definition in furniture.items():
+        all_behaviors = list(definition.get("behaviors", []))
+        single_behavior = definition.get("behavior")
+        if single_behavior is not None:
+            all_behaviors.append(single_behavior)
+        matches = [
+            (index, behavior) for index, behavior in enumerate(all_behaviors)
+            if behavior.get("type") == board_text_type
+        ]
+        if len(matches) > 1:
+            raise AssertionError(f"{furniture_id}: duplicate board_text_furniture behaviors")
+        if matches:
+            configured_board_text[furniture_id] = matches[0]
+    expected_board_ids = {
+        f"{NAMESPACE}:{block_id}" for block_id in expected_board_text
+    }
+    if set(configured_board_text) != expected_board_ids:
+        missing = sorted(expected_board_ids - set(configured_board_text))
+        unexpected = sorted(set(configured_board_text) - expected_board_ids)
+        raise AssertionError(
+            "Board text furniture coverage drift: "
+            f"missing={missing}, unexpected={unexpected}")
+    for block_id, max_lines in expected_board_text.items():
+        furniture_id = f"{NAMESPACE}:{block_id}"
+        index, behavior = configured_board_text[furniture_id]
+        expected_behavior = {
+            "type": board_text_type,
+            "max_lines": max_lines,
+            "view_range": 0.75,
+        }
+        if index != 2 or behavior != expected_behavior:
+            raise AssertionError(
+                f"{furniture_id}: board_text_furniture order/config drifted: "
+                f"index={index}, behavior={behavior}")
 
     pressing_id = f"{NAMESPACE}:pressing_tub"
     pressing_behaviors = list(furniture[pressing_id].get("behaviors", []))
