@@ -398,7 +398,7 @@ BLOCK_ENTITY_COVERAGE = {
     "TextBlockEntity.java": (("BoardTextService.java", "board_text"),),
     "TiltedRackBlockEntity.java": (("DisplayStorageService.java", "TILTED_RACK"),),
     "ShakerBlockEntity.java": (
-        ("StationService.java", "shaker_ingredients"),
+        ("StationService.java", "updateShakerSource"),
         ("ShakerVisualService.java", "animatePut"),
     ),
     "SignatureCocktailBlockEntity.java": (
@@ -680,6 +680,23 @@ def validate() -> dict[str, int]:
         if native_bottle_state_token not in bottle_furniture_source:
             raise AssertionError(
                 "Single bottles must use CE sourceItem and only stacked bottles may store a list")
+    station_source = (game_package / "StationService.java").read_text(
+        encoding="utf-8-sig")
+    if ('state.items("shaker_ingredients"' in station_source
+            or 'state.item("shaker_result"' in station_source
+            or "loadPortableShaker" in station_source):
+        raise AssertionError(
+            "Placed shaker contents must not be duplicated outside CE sourceItem")
+    for shaker_source_token in (
+            "Item source = furniture.sourceItem()",
+            "items.shakerIngredients(shaker)",
+            "items.shakerResult(shaker)",
+            "private void updateShakerSource",
+            "furniture.setSourceItem(BukkitAdaptor.adapt(shaker))",
+            "furniture.setUnsaved()"):
+        if shaker_source_token not in station_source:
+            raise AssertionError(
+                f"Placed shaker CE sourceItem lifecycle is missing {shaker_source_token}")
 
     board_text_source = (game_package / "BoardTextService.java").read_text(
         encoding="utf-8-sig")

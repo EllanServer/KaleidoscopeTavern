@@ -188,8 +188,6 @@ public final class StationService implements Listener {
         String id = event.furniture().id().toString();
         if (id.equals(BARREL)) {
             Bukkit.getScheduler().runTask(plugin, () -> setBarrelOpen(event.furniture(), true, false));
-        } else if (id.equals(SHAKER)) {
-            loadPortableShaker(event.furniture());
         }
     }
 
@@ -223,7 +221,7 @@ public final class StationService implements Listener {
             }
             case SHAKER -> {
                 Optional<ItemStack> shaker = event.dropItems()
-                        ? buildShakerItem(new FurnitureState(furniture), event.player())
+                        ? shakerItem(furniture, event.player())
                         : Optional.empty();
                 if (shaker.isPresent()) {
                     event.setDropItems(false);
@@ -1023,19 +1021,25 @@ public final class StationService implements Listener {
     }
 
     private boolean interactShaker(Player player, BukkitFurniture furniture) {
-        FurnitureState state = new FurnitureState(furniture);
         ItemStack hand = player.getInventory().getItemInMainHand();
         String handId = items.id(hand);
         // ShakerBlock only accepts ingredients while placed. Empty hand picks
         // up the entire shaker; mixing itself belongs exclusively to the item.
         if (hand.isEmpty()) {
-            return takeShaker(player, furniture, state);
+            return takeShaker(player, furniture,
+                    shakerItem(furniture, player).orElse(null));
         }
         if (!catalog.tag(NAMESPACE + "cocktail_ingredient").contains(handId)) {
             return false;
         }
-        List<ItemStack> ingredients = state.items("shaker_ingredients");
-        if (state.item("shaker_result") != null || ingredients.size() >= 3) {
+        Optional<ItemStack> source = shakerItem(furniture, player);
+        if (source.isEmpty()) {
+            messages.send(player, "pack-missing");
+            return true;
+        }
+        ItemStack shaker = source.get();
+        List<ItemStack> ingredients = new ArrayList<>(items.shakerIngredients(shaker));
+        if (items.shakerResult(shaker) != null || ingredients.size() >= 3) {
             return true;
         }
         if (catalog.hasDrinkEffects(handId) && items.brewLevel(hand) < 4) {
@@ -1049,7 +1053,7 @@ public final class StationService implements Listener {
             return true;
         }
         ingredients.add(captured);
-        state.items("shaker_ingredients", ingredients);
+        updateShakerSource(furniture, shaker, ingredients, null);
         shakerVisuals.animatePut(furniture);
         if (catalog.hasDrinkEffects(handId)) {
             items.returnedContainer(handId, catalog.isCocktail(handId)).flatMap(id -> items.build(id, player))
@@ -1106,14 +1110,13 @@ public final class StationService implements Listener {
         return Optional.of(result);
     }
 
-    private boolean takeShaker(Player player, BukkitFurniture furniture, FurnitureState state) {
-        Optional<ItemStack> portable = buildShakerItem(state, player);
-        if (portable.isEmpty()) {
+    private boolean takeShaker(Player player, BukkitFurniture furniture, ItemStack portable) {
+        if (portable == null) {
             messages.send(player, "pack-missing");
             return true;
         }
         Location location = furniture.location().clone();
-        items.give(player, portable.get());
+        items.give(player, portable);
         // Programmatic removal does not emit FurnitureBreakEvent, so the
         // split base/lid ItemDisplays must be removed explicitly on pickup.
         shakerVisuals.removeFurnitureVisuals(furniture);
@@ -1125,27 +1128,22 @@ public final class StationService implements Listener {
         return true;
     }
 
-    private Optional<ItemStack> buildShakerItem(FurnitureState state, Player context) {
-        List<ItemStack> ingredients = state.items("shaker_ingredients");
-        ItemStack result = state.item("shaker_result");
-        return items.build(SHAKER, context)
-                .map(stack -> items.withShakerState(stack, ingredients, result));
+    private Optional<ItemStack> shakerItem(BukkitFurniture furniture, Player context) {
+        Item source = furniture.sourceItem();
+        if (source instanceof BukkitItem bukkitItem && !source.isEmpty()) {
+            ItemStack stack = bukkitItem.getBukkitItem().clone();
+            stack.setAmount(1);
+            return Optional.of(stack);
+        }
+        return items.build(SHAKER, context);
     }
 
-    private void loadPortableShaker(BukkitFurniture furniture) {
-        Item source = furniture.sourceItem();
-        if (!(source instanceof BukkitItem bukkitItem) || source.isEmpty()) {
-            return;
-        }
-        ItemStack stack = bukkitItem.getBukkitItem();
-        List<ItemStack> ingredients = items.shakerIngredients(stack);
-        ItemStack result = items.shakerResult(stack);
-        if (ingredients.isEmpty() && result == null) {
-            return;
-        }
-        FurnitureState state = new FurnitureState(furniture);
-        state.items("shaker_ingredients", ingredients);
-        state.item("shaker_result", result);
+    private void updateShakerSource(BukkitFurniture furniture, ItemStack shaker,
+                                    List<ItemStack> ingredients, ItemStack result) {
+        items.withShakerState(shaker, ingredients, result);
+        shaker.setAmount(1);
+        furniture.setSourceItem(BukkitAdaptor.adapt(shaker));
+        furniture.setUnsaved();
     }
 
     private boolean pourPortableShaker(Player player, BukkitFurniture glassware, InteractionHand interactionHand) {
