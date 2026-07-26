@@ -217,7 +217,10 @@ public final class BottleFurnitureService implements Listener {
         ItemStack removed = stored.removeLast();
         items.give(event.player(), removed);
         if (stored.isEmpty()) {
-            CraftEngineFurniture.remove(furniture, event.player(), false, true);
+            // BottleBlock#use removes via silent setBlock; the pickup
+            // sound below is the only audible cue, so CE's furniture
+            // break sound (glass shatter) must stay muted here.
+            CraftEngineFurniture.remove(furniture, event.player(), false, false);
         } else {
             new FurnitureState(plugin, furniture).items("bottle_items", stored);
             setBottleCount(furniture, stored.size());
