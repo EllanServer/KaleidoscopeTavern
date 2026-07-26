@@ -46,4 +46,15 @@ class TapSemanticsTest {
         assertFalse(TapSemantics.isHotBarrelOutput("kaleidoscope_tavern:wine"));
         assertFalse(TapSemantics.isHotBarrelOutput(null));
     }
+
+    @Test
+    void sneakingWithTapDelegatesBarrelInteractionToCraftEnginePlacement() {
+        assertTrue(TapSemantics.shouldDelegateBarrelTapPlacement(
+                true, "kaleidoscope_tavern:tap"));
+        assertFalse(TapSemantics.shouldDelegateBarrelTapPlacement(
+                false, "kaleidoscope_tavern:tap"));
+        assertFalse(TapSemantics.shouldDelegateBarrelTapPlacement(
+                true, "kaleidoscope_tavern:barrel"));
+        assertFalse(TapSemantics.shouldDelegateBarrelTapPlacement(true, null));
+    }
 }
