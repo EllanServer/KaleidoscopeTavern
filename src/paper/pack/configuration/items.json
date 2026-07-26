@@ -2790,8 +2790,16 @@
         }
       },
       "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:item/molotov"
+        "type": "minecraft:condition",
+        "property": "minecraft:using_item",
+        "on_true": {
+          "type": "minecraft:model",
+          "path": "kaleidoscope_tavern:item/molotov_charging"
+        },
+        "on_false": {
+          "type": "minecraft:model",
+          "path": "kaleidoscope_tavern:item/molotov"
+        }
       },
       "behavior": {
         "type": "furniture_item",

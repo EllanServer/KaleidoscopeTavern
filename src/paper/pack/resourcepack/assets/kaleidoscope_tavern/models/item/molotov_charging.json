@@ -1,0 +1,73 @@
+{
+  "parent": "kaleidoscope_tavern:item/molotov",
+  "display": {
+    "firstperson_righthand": {
+      "rotation": [
+        -40,
+        0,
+        -15
+      ],
+      "translation": [
+        1.13,
+        5.2,
+        1.13
+      ],
+      "scale": [
+        0.68,
+        0.68,
+        0.68
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        -40,
+        0,
+        15
+      ],
+      "translation": [
+        -1.13,
+        5.2,
+        1.13
+      ],
+      "scale": [
+        0.68,
+        0.68,
+        0.68
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        -80,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        5.5,
+        2
+      ],
+      "scale": [
+        0.55,
+        0.55,
+        0.55
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        -80,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        5.5,
+        2
+      ],
+      "scale": [
+        0.55,
+        0.55,
+        0.55
+      ]
+    }
+  }
+}
