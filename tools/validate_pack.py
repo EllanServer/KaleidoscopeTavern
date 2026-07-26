@@ -17,19 +17,19 @@ PLUGIN_CONFIG = ROOT / "src/paper/resources/config.yml"
 NAMESPACE = "kaleidoscope_tavern"
 EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
 EXPECTED_REDSTONE_FURNITURE = {
-    "tap": ("tap", 2),
-    "sakura_incense": ("incense", 1),
-    "pine_incense": ("incense", 1),
-    "ginkgo_incense": ("incense", 1),
-    "snow_incense": ("incense", 1),
-    "spore_incense": ("incense", 1),
-    "catnip_incense": ("incense", 1),
-    "butterfly_incense": ("incense", 1),
-    "firefly_incense": ("incense", 1),
-    "cellar_cabinet": ("storage", 1),
-    "tilted_rack": ("storage", 1),
-    "circular_rack": ("storage", 1),
-    "holder": ("storage", 1),
+    "tap": "tap",
+    "sakura_incense": "incense",
+    "pine_incense": "incense",
+    "ginkgo_incense": "incense",
+    "snow_incense": "incense",
+    "spore_incense": "incense",
+    "catnip_incense": "incense",
+    "butterfly_incense": "incense",
+    "firefly_incense": "incense",
+    "cellar_cabinet": "storage",
+    "tilted_rack": "storage",
+    "circular_rack": "storage",
+    "holder": "storage",
 }
 EXPECTED_TICKING_FURNITURE = {
     "sakura_incense": ("ambient", 1),
@@ -213,7 +213,7 @@ RUNTIME_METHODS = (
 )
 RUNTIME_BEHAVIOR_COVERAGE = {
     "AbstractStorageBlock.java": (
-        ("furniture/RedstoneFurnitureBehavior.java", "createFurnitureTicker"),
+        ("furniture/RedstoneFurnitureBehavior.java", "BlockRedstoneEvent"),
         ("DisplayStorageService.java", "RedstoneFurnitureBehavior.bind("),
         ("DisplayStorageService.java", "RedstoneFurnitureBehavior.Channel.STORAGE"),
     ),
@@ -976,6 +976,12 @@ def validate() -> dict[str, int]:
     if "RedstoneFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register redstone_furniture before pack loading")
+    for lifecycle_call in ("RedstoneFurnitureBehavior.start(this)",
+                           "RedstoneFurnitureBehavior.stop()"):
+        if lifecycle_call not in plugin_source:
+            raise AssertionError(
+                "KaleidoscopeTavernPlugin must manage the event-driven redstone bridge; "
+                f"missing {lifecycle_call}")
     if "TickingFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register ticking_furniture before pack loading")
@@ -1487,10 +1493,13 @@ def validate() -> dict[str, int]:
             "public static void bindInteraction(",
             "public static void unbindInteraction(",
             "public InteractionResult useOnFurniture(",
-            "INTERACTION_HANDLERS.get(channel)",
+            "channel.interactionHandler",
             "handler.interact(bukkitFurniture, context)",
             "public void preRemove(Player player)",
             "handler.onRemove(bukkitFurniture)",
+            "BlockRedstoneEvent",
+            "queuePowerChange(event.getBlock())",
+            "FALLBACK_INTERVAL_TICKS",
             "case INCENSE, STORAGE -> primaryPowerBlock.isBlockIndirectlyPowered()"):
         if required_token not in redstone_behavior_source:
             raise AssertionError(
@@ -1500,6 +1509,10 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "CE redstone furniture must sample the source mod's hasNeighborSignal "
             "semantics once, without a duplicate direct-signal scan")
+    if "createFurnitureTicker" in redstone_behavior_source:
+        raise AssertionError(
+            "Redstone furniture must use indexed change notifications instead of one CE ticker "
+            "per furniture")
     if "registerEvents(taps, this)" in plugin_source:
         raise AssertionError(
             "TapService has no Paper events after CE interaction/removal migration")
@@ -3066,12 +3079,11 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Redstone furniture coverage drift: "
             f"missing={missing}, unexpected={unexpected}")
-    for block_id, (channel, interval) in EXPECTED_REDSTONE_FURNITURE.items():
+    for block_id, channel in EXPECTED_REDSTONE_FURNITURE.items():
         furniture_id = f"{NAMESPACE}:{block_id}"
         expected_behavior = {
             "type": redstone_type,
             "channel": channel,
-            "interval": interval,
             "data_key": f"{NAMESPACE}:redstone_{block_id}",
         }
         if configured_redstone[furniture_id] != expected_behavior:

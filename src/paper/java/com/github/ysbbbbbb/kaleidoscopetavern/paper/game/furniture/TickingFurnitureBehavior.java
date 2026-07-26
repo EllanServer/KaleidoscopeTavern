@@ -12,8 +12,6 @@ import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Locale;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Lets CraftEngine drive periodic gameplay directly from loaded furniture. */
@@ -21,7 +19,6 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
     public static final String TYPE = "kaleidoscope_tavern:ticking_furniture";
 
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
-    private static final ConcurrentMap<Channel, Handler> HANDLERS = new ConcurrentHashMap<>();
 
     private final Channel channel;
     private final int interval;
@@ -39,13 +36,21 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
     }
 
     public static void bind(Channel channel, Handler handler) {
-        HANDLERS.put(Objects.requireNonNull(channel, "channel"),
-                Objects.requireNonNull(handler, "handler"));
+        Channel boundChannel = Objects.requireNonNull(channel, "channel");
+        Handler boundHandler = Objects.requireNonNull(handler, "handler");
+        synchronized (boundChannel) {
+            boundChannel.handler = boundHandler;
+        }
     }
 
     public static void unbind(Channel channel, Handler handler) {
-        HANDLERS.remove(Objects.requireNonNull(channel, "channel"),
-                Objects.requireNonNull(handler, "handler"));
+        Channel boundChannel = Objects.requireNonNull(channel, "channel");
+        Handler boundHandler = Objects.requireNonNull(handler, "handler");
+        synchronized (boundChannel) {
+            if (boundChannel.handler == boundHandler) {
+                boundChannel.handler = null;
+            }
+        }
     }
 
     @Override
@@ -69,7 +74,13 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
 
     public enum Channel {
         AMBIENT,
-        BARREL
+        BARREL;
+
+        // Channels are a closed enum and plugin lifecycle writes happen on
+        // the main thread. A volatile slot avoids a ConcurrentHashMap lookup
+        // for every loaded ticking furniture on every server tick while still
+        // making reload-time handler replacement visible.
+        private volatile Handler handler;
     }
 
     @FunctionalInterface
@@ -116,7 +127,7 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
 
         private void tickManagedFurniture() {
-            Handler handler = HANDLERS.get(channel);
+            Handler handler = channel.handler;
             if (handler == null) {
                 deliveredHandler = null;
                 ticksUntilRun = -1;

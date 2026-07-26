@@ -174,6 +174,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         getServer().getPluginManager().registerEvents(boards, this);
         getServer().getPluginManager().registerEvents(stations, this);
         getServer().getPluginManager().registerEvents(effects, this);
+        RedstoneFurnitureBehavior.start(this);
         blocks.start();
         stations.start();
         effects.start();
@@ -247,6 +248,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (furnitureConnections != null) {
             furnitureConnections.stop();
         }
+        RedstoneFurnitureBehavior.stop();
     }
 
     @EventHandler
