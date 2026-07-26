@@ -1403,6 +1403,30 @@ def validate() -> dict[str, int]:
                 f"stale token: {stale_station_element_token}")
     tap_source = (game_package / "TapService.java").read_text(
         encoding="utf-8-sig")
+    tap_semantics_source = (game_package / "TapSemantics.java").read_text(
+        encoding="utf-8-sig")
+    for required_token in (
+            "TapSemantics.shouldDelegateBarrelTapPlacement(",
+            "context.isSecondaryUseActive()",
+            "items.id(player.getInventory().getItemInMainHand())"):
+        if required_token not in station_source:
+            raise AssertionError(
+                "Sneaking with a tap on barrel furniture must yield to CE placement; "
+                f"missing token: {required_token}")
+    if 'secondaryUse && TAP_ITEM.equals(heldItemId)' not in tap_semantics_source:
+        raise AssertionError(
+            "Barrel tap placement must retain Forge's secondary-use bypass rule")
+    tap_item_behavior = items[f"{NAMESPACE}:tap"].get("behavior", {})
+    if (tap_item_behavior.get("type") != "furniture_item"
+            or tap_item_behavior.get("furniture") != f"{NAMESPACE}:tap"
+            or "wall" not in tap_item_behavior.get("rules", {})):
+        raise AssertionError(
+            "Tap installation must remain owned by CE's wall furniture_item behavior")
+    for variant_name, variant in furniture[f"{NAMESPACE}:barrel"]["variants"].items():
+        if any(hitbox.get("can_use_item_on") is not True
+               for hitbox in variant.get("hitboxes", [])):
+            raise AssertionError(
+                f"Barrel {variant_name} hitboxes must allow CE furniture-item placement")
     for required_token in (
             "LifecycleFurnitureBehavior.Channel.TAP_BOTTLE, block",
             "LifecycleFurnitureBehavior.Channel.BARREL,",

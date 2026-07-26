@@ -2,6 +2,7 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 /** Source-level geometry and timing rules shared by the Paper tap adapter. */
 final class TapSemantics {
+    private static final String TAP_ITEM = "kaleidoscope_tavern:tap";
     static final int TAKE_TICKS = 30;
     static final int TAKE_PARTICLE_TICKS = 5;
     static final int EMPTY_OPEN_TICKS = 6;
@@ -21,6 +22,16 @@ final class TapSemantics {
     /** BarrelTapBehavior uses lava drips only when its current output is Molotov. */
     static boolean isHotBarrelOutput(String resultId) {
         return "kaleidoscope_tavern:molotov".equals(resultId);
+    }
+
+    /**
+     * Forge skips the barrel block's own use action while the player is
+     * sneaking, allowing TapBlockItem placement to continue.  A CE barrel is
+     * furniture, so its controller must explicitly yield the same interaction
+     * to CE's native furniture-item behavior.
+     */
+    static boolean shouldDelegateBarrelTapPlacement(boolean secondaryUse, String heldItemId) {
+        return secondaryUse && TAP_ITEM.equals(heldItemId);
     }
 
     /**

@@ -169,6 +169,14 @@ public final class StationService implements Listener {
             return InteractionResult.PASS;
         }
         Player player = (Player) context.getPlayer().platformPlayer();
+        if (id.equals(BARREL) && TapSemantics.shouldDelegateBarrelTapPlacement(
+                context.isSecondaryUseActive(),
+                items.id(player.getInventory().getItemInMainHand()))) {
+            // Yield to CE's furniture_item behavior.  The barrel hitboxes have
+            // can_use_item_on enabled, so CE keeps ownership of collision,
+            // placement events, item consumption, hand swing and place sound.
+            return InteractionResult.PASS;
+        }
         boolean handled = switch (id) {
             case PRESSING_TUB -> interactPress(player, furniture, context.getHand());
             case BARREL -> {
