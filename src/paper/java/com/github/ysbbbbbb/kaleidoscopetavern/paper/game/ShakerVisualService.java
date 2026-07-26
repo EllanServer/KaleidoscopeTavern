@@ -6,7 +6,6 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.item.Item;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -20,7 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /** Recreates the source ShakerModel animation with CE packet-only elements. */
-public final class ShakerVisualService implements Listener {
+public final class ShakerVisualService {
     private static final String SHAKER = "kaleidoscope_tavern:shaker";
     private static final String BASE_ITEM = "kaleidoscope_tavern:_render/shaker_base";
     private static final String LID_ITEM = "kaleidoscope_tavern:_render/shaker_lid";

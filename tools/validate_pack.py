@@ -1200,6 +1200,13 @@ def validate() -> dict[str, int]:
                 raise AssertionError(
                     "Animated furniture visuals must not retain Bukkit helper entities or "
                     f"recovery state; {service_name} contains {stale_token}")
+    shaker_visual_service_source = (
+        game_package / "ShakerVisualService.java"
+    ).read_text(encoding="utf-8-sig")
+    if ("implements Listener" in shaker_visual_service_source
+            or "registerEvents(shakerVisuals, this)" in plugin_source):
+        raise AssertionError(
+            "Shaker visuals are CE lifecycle-driven and must not retain an empty Bukkit listener")
 
     station_source = (game_package / "StationService.java").read_text(
         encoding="utf-8-sig")
