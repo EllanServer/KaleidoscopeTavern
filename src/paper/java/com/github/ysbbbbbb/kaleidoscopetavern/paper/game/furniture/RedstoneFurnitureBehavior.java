@@ -28,13 +28,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -46,10 +46,15 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
     private static final long FALLBACK_INTERVAL_TICKS = 20L;
 
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
-    private static final ConcurrentMap<UUID, ConcurrentMap<Long, Set<Controller>>> POWER_INDEX =
-            new ConcurrentHashMap<>();
-    private static final Set<PowerLocation> PENDING_POWER_CHANGES =
-            ConcurrentHashMap.newKeySet();
+    private static final Controller[] NO_CONTROLLERS = new Controller[0];
+    private static final Channel[] CHANNELS = Channel.values();
+    // Paper furniture lifecycle callbacks, Bukkit redstone events and this
+    // fallback task all run on the server thread. Plain collections avoid the
+    // concurrent-map traversal visible in Spark without weakening the
+    // fixed Paper target's threading contract.
+    private static final Map<UUID, Map<Long, Set<Controller>>> POWER_INDEX =
+            new HashMap<>();
+    private static final Set<Controller> PENDING_CONTROLLERS = new HashSet<>();
     private static final Object RUNTIME_LOCK = new Object();
 
     private static JavaPlugin runtimePlugin;
@@ -106,7 +111,7 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
         runtimePlugin = null;
         flushScheduled = false;
-        PENDING_POWER_CHANGES.clear();
+        PENDING_CONTROLLERS.clear();
     }
 
     public static void bind(Channel channel, Handler handler) {
@@ -115,7 +120,9 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         synchronized (boundChannel) {
             boundChannel.handler = boundHandler;
         }
-        boundChannel.activeControllers.forEach(controller -> controller.deliver(boundHandler));
+        for (Controller controller : boundChannel.activeSnapshot()) {
+            controller.deliver(boundHandler);
+        }
     }
 
     public static void unbind(Channel channel, Handler handler) {
@@ -127,7 +134,9 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
             }
             boundChannel.handler = null;
         }
-        boundChannel.activeControllers.forEach(controller -> controller.forget(boundHandler));
+        for (Controller controller : boundChannel.activeSnapshot()) {
+            controller.forget(boundHandler);
+        }
     }
 
     public static void bindInteraction(Channel channel, InteractionHandler handler) {
@@ -172,9 +181,28 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         TAP,
         STORAGE;
 
-        private final Set<Controller> activeControllers = ConcurrentHashMap.newKeySet();
+        private final Set<Controller> activeControllers = new HashSet<>();
+        private Controller[] activeSnapshot = NO_CONTROLLERS;
         private volatile Handler handler;
         private volatile InteractionHandler interactionHandler;
+
+        private void add(Controller controller) {
+            if (activeControllers.add(controller)) {
+                activeSnapshot = activeControllers.toArray(Controller[]::new);
+            }
+        }
+
+        private void remove(Controller controller) {
+            if (activeControllers.remove(controller)) {
+                activeSnapshot = activeControllers.isEmpty()
+                        ? NO_CONTROLLERS
+                        : activeControllers.toArray(Controller[]::new);
+            }
+        }
+
+        private Controller[] activeSnapshot() {
+            return activeSnapshot;
+        }
     }
 
     @FunctionalInterface
@@ -276,6 +304,10 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         @Override
         public void preRemove(Player player) {
             Handler handler = channel.handler;
+            // CE calls preRemove before invalidating the furniture and onUnload
+            // for chunk removal. Remove it from both indexes immediately so
+            // queued/fallback refreshes only ever see live controllers.
+            deactivate();
             if (handler != null) {
                 handler.onRemove(bukkitFurniture);
             }
@@ -294,14 +326,13 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
                 addProbeChanges(keys, secondaryPowerBlock);
             }
             indexedPowerChanges = keys.stream().mapToLong(Long::longValue).toArray();
-            ConcurrentMap<Long, Set<Controller>> worldIndex = POWER_INDEX.computeIfAbsent(
-                    worldId, ignored -> new ConcurrentHashMap<>());
+            Map<Long, Set<Controller>> worldIndex = POWER_INDEX.computeIfAbsent(
+                    worldId, ignored -> new HashMap<>());
             for (long key : indexedPowerChanges) {
-                worldIndex.computeIfAbsent(key,
-                        ignored -> ConcurrentHashMap.<Controller>newKeySet()).add(this);
+                worldIndex.computeIfAbsent(key, ignored -> new HashSet<>()).add(this);
             }
             active = true;
-            channel.activeControllers.add(this);
+            channel.add(this);
             deliver(channel.handler);
         }
 
@@ -309,8 +340,8 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
             if (!active) {
                 return;
             }
-            channel.activeControllers.remove(this);
-            ConcurrentMap<Long, Set<Controller>> worldIndex = POWER_INDEX.get(worldId);
+            channel.remove(this);
+            Map<Long, Set<Controller>> worldIndex = POWER_INDEX.get(worldId);
             if (worldIndex != null) {
                 for (long key : indexedPowerChanges) {
                     Set<Controller> controllers = worldIndex.get(key);
@@ -332,7 +363,7 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
 
         private void refreshPower() {
-            if (!active || !bukkitFurniture.isValid()) {
+            if (!active) {
                 return;
             }
             Handler handler = channel.handler;
@@ -447,11 +478,18 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
     private static void queuePowerChange(Block block) {
         UUID worldId = block.getWorld().getUID();
         long key = packBlock(block.getX(), block.getY(), block.getZ());
-        ConcurrentMap<Long, Set<Controller>> worldIndex = POWER_INDEX.get(worldId);
-        if (worldIndex == null || !worldIndex.containsKey(key)) {
+        Map<Long, Set<Controller>> worldIndex = POWER_INDEX.get(worldId);
+        if (worldIndex == null) {
             return;
         }
-        PENDING_POWER_CHANGES.add(new PowerLocation(worldId, key));
+        Set<Controller> affected = worldIndex.get(key);
+        if (affected == null || affected.isEmpty()) {
+            return;
+        }
+        // Snapshot controller membership now. A controller loaded before the
+        // flush samples its current power during activate(), while a removed
+        // controller is rejected by its active flag.
+        PENDING_CONTROLLERS.addAll(affected);
         synchronized (RUNTIME_LOCK) {
             if (flushScheduled || runtimePlugin == null) {
                 return;
@@ -463,32 +501,20 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
     }
 
     private static void flushPowerChanges() {
-        Set<PowerLocation> changed = new HashSet<>(PENDING_POWER_CHANGES);
-        PENDING_POWER_CHANGES.removeAll(changed);
+        Set<Controller> affected = new HashSet<>(PENDING_CONTROLLERS);
+        PENDING_CONTROLLERS.removeAll(affected);
         synchronized (RUNTIME_LOCK) {
             flushScheduled = false;
-        }
-        Set<Controller> affected = new HashSet<>();
-        for (PowerLocation location : changed) {
-            ConcurrentMap<Long, Set<Controller>> worldIndex = POWER_INDEX.get(location.worldId());
-            if (worldIndex == null) {
-                continue;
-            }
-            Set<Controller> controllers = worldIndex.get(location.blockKey());
-            if (controllers != null) {
-                affected.addAll(controllers);
-            }
         }
         affected.forEach(Controller::refreshPower);
     }
 
     private static void pollActiveControllers() {
-        for (Channel channel : Channel.values()) {
-            channel.activeControllers.forEach(Controller::refreshPower);
+        for (Channel channel : CHANNELS) {
+            for (Controller controller : channel.activeSnapshot()) {
+                controller.refreshPower();
+            }
         }
-    }
-
-    private record PowerLocation(UUID worldId, long blockKey) {
     }
 
     private static final class PowerListener implements Listener {

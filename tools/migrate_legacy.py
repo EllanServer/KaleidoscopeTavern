@@ -2633,10 +2633,6 @@ def build_furniture(
             # Same override as the open variant so opening a barrel does not make
             # it visibly change shade.
             closed["brightness"] = {"block_light": 6, "sky_light": 6}
-            variants["ground"] = {
-                "elements": [closed],
-                "hitboxes": furniture_hitboxes(block_id, "ground"),
-            }
             body = furniture_element(
                 render_items, block_id, "open body", body_model, "ground", "0,1,0")
             lid = furniture_element(
@@ -2653,8 +2649,16 @@ def build_furniture(
             # dim enough that the barrel never looks emissive in a dark cellar.
             body["brightness"] = {"block_light": 6, "sky_light": 6}
             lid["brightness"] = {"block_light": 6, "sky_light": 6}
-            variants["ground_open"] = {
+            # CE's native furniture_item always places the anchor variant named
+            # "ground". Make that the source barrel's initial open state so the
+            # Paper layer does not have to replace the variant (and all 27
+            # colliders) one tick after every placement.
+            variants["ground"] = {
                 "elements": [body, lid],
+                "hitboxes": furniture_hitboxes(block_id, "ground"),
+            }
+            variants["ground_closed"] = {
+                "elements": [closed],
                 "hitboxes": furniture_hitboxes(block_id, "ground"),
             }
         elif block_id == "stepladder":

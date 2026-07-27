@@ -16527,11 +16527,24 @@
           "elements": [
             {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/barrel/96ec1c35a2",
+              "item": "kaleidoscope_tavern:_render/barrel/8480edecc1",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 2.5,
               "translation": "0,1.5,0",
+              "brightness": {
+                "block_light": 6,
+                "sky_light": 6
+              }
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/barrel/e8bc22e99b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 2.5,
+              "translation": "0,3,0.5",
+              "rotation": "72.5,0,0",
               "brightness": {
                 "block_light": 6,
                 "sky_light": 6
@@ -16811,28 +16824,15 @@
             }
           ]
         },
-        "ground_open": {
+        "ground_closed": {
           "elements": [
             {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/barrel/8480edecc1",
+              "item": "kaleidoscope_tavern:_render/barrel/96ec1c35a2",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 2.5,
               "translation": "0,1.5,0",
-              "brightness": {
-                "block_light": 6,
-                "sky_light": 6
-              }
-            },
-            {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/barrel/e8bc22e99b",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 2.5,
-              "translation": "0,3,0.5",
-              "rotation": "72.5,0,0",
               "brightness": {
                 "block_light": 6,
                 "sky_light": 6

@@ -26,7 +26,9 @@ import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.world.context.UseOnContext;
 import net.momirealms.craftengine.libraries.antigrieflib.Flag;
+import net.momirealms.craftengine.proxy.minecraft.core.MutableBlockPosProxy;
 import net.momirealms.craftengine.proxy.minecraft.core.Vec3iProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.level.BlockGetterProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -146,7 +148,7 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         if (plant != null && !GrapeSeasonGate.permitsRandomGrowth(plant, location)) {
             return;
         }
-        grow(location, state);
+        grow(location, state, level, position);
     }
 
     @Override
@@ -197,6 +199,11 @@ public final class TrellisBehavior extends BukkitBlockBehavior
 
     /** Exact {@code GrapevineTrellisBlock.doGrow} step used by random ticks and bone meal. */
     public static boolean grow(Location location, ImmutableBlockState source) {
+        return grow(location, source, null, null);
+    }
+
+    private static boolean grow(Location location, ImmutableBlockState source,
+                                Object level, Object sourcePosition) {
         Property<?> rawAge = source.getProperty("age");
         if (!(rawAge instanceof IntegerProperty age)) {
             return false;
@@ -209,9 +216,26 @@ public final class TrellisBehavior extends BukkitBlockBehavior
             return CraftEngineBlocks.place(location, source.with(age, nextAge), false);
         }
 
+        // RandomTickBlock already receives the NMS level and position. Reuse
+        // one mutable position for all neighbour probes instead of routing
+        // every direction through CraftEngineBlocks' Bukkit conversion, which
+        // allocates a BlockPos proxy for each lookup. Bone meal continues to
+        // use the public Bukkit-compatible path.
+        Object mutablePosition = level == null || sourcePosition == null
+                ? null : MutableBlockPosProxy.INSTANCE.newInstance();
         for (BlockFace direction : GROW_DIRECTIONS) {
             Block target = location.getBlock().getRelative(direction);
-            ImmutableBlockState targetState = CraftEngineBlocks.getCustomBlockState(target);
+            ImmutableBlockState targetState;
+            if (mutablePosition == null) {
+                targetState = CraftEngineBlocks.getCustomBlockState(target);
+            } else {
+                Object targetPosition = MutableBlockPosProxy.INSTANCE.setWithOffset(
+                        mutablePosition, sourcePosition,
+                        direction.getModX(), direction.getModY(), direction.getModZ());
+                targetState = BlockStateUtils.getOptionalCustomBlockState(
+                        BlockGetterProxy.INSTANCE.getBlockState(level, targetPosition))
+                        .orElse(null);
+            }
             if (targetState == null || !PLAIN_TRELLIS.equals(id(targetState)) || bool(targetState, "waxed")) {
                 continue;
             }

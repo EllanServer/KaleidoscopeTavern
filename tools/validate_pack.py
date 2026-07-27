@@ -643,6 +643,8 @@ def validate() -> dict[str, int]:
     if "Material.BONE_MEAL" in block_service_source:
         raise AssertionError(
             "Bone meal must use CraftEngine BonemealableBlock behavior, not a cancelled Bukkit event")
+    trellis_behavior_source = (
+        game_package / "block/TrellisBehavior.java").read_text(encoding="utf-8-sig")
     for behavior_source_path in (
             game_package / "block/TrellisBehavior.java",
             game_package / "block/WildGrapevineBehavior.java"):
@@ -652,6 +654,14 @@ def validate() -> dict[str, int]:
                 or "return InteractionResult.SUCCESS;" not in behavior_source):
             raise AssertionError(
                 f"{behavior_source_path.name}: CE bone-meal interaction must acknowledge use and swing the hand")
+    for required_token in (
+            "MutableBlockPosProxy.INSTANCE.newInstance()",
+            "MutableBlockPosProxy.INSTANCE.setWithOffset(",
+            "BlockGetterProxy.INSTANCE.getBlockState(level, targetPosition)"):
+        if required_token not in trellis_behavior_source:
+            raise AssertionError(
+                "Trellis random ticks must reuse their NMS position instead of allocating "
+                f"one Bukkit-to-CE BlockPos bridge per neighbour; missing {required_token}")
     wild_behavior_source = (
         game_package / "block/WildGrapevineBehavior.java").read_text(encoding="utf-8-sig")
     for leaf_attachment_token in (
@@ -1405,10 +1415,7 @@ def validate() -> dict[str, int]:
     for required_token in (
             "StationInteractionFurnitureBehavior.bind(stationInteractionHandler)",
             "StationInteractionFurnitureBehavior.unbind(stationInteractionHandler)",
-            "StationInteractionFurnitureBehavior.bindPlacement(stationPlacementHandler)",
-            "StationInteractionFurnitureBehavior.unbindPlacement(stationPlacementHandler)",
             "private InteractionResult interactStation(",
-            "private void onStationPlaced(",
             "context.getHand() != InteractionHand.MAIN_HAND",
             "Vec3d click = context.getClickLocation()",
             "InteractionResult.SUCCESS_AND_CANCEL",
@@ -1429,7 +1436,9 @@ def validate() -> dict[str, int]:
             "falling.containsKey(player.getUniqueId())",
             "falling.containsKey(living.getUniqueId())",
             "trackPressLanding(living, event.getTo(), fallDistance)",
-            "furniture.refreshElements()"):
+            "furniture.refreshElements()",
+            'open ? "ground" : "ground_closed"',
+            'currentVariant().name().equals("ground")'):
         if required_token not in station_source:
             raise AssertionError(
                 "StationService must retain only the source-compatible fallOn bridge; "
@@ -1443,7 +1452,10 @@ def validate() -> dict[str, int]:
             "lookups only after observing an actual fall")
     for stale_token in (
             "FurnitureInteractEvent", "public void onFurnitureInteract(",
-            "FurniturePlaceEvent", "public void onFurniturePlace("):
+            "FurniturePlaceEvent", "public void onFurniturePlace(",
+            "stationPlacementHandler", "private void onStationPlaced(",
+            "StationInteractionFurnitureBehavior.bindPlacement(",
+            "StationInteractionFurnitureBehavior.unbindPlacement("):
         if stale_token in station_source:
             raise AssertionError(
                 "StationService must not retain a global Paper furniture interaction listener; "
@@ -1451,18 +1463,16 @@ def validate() -> dict[str, int]:
     for required_token in (
             "extends FurnitureBehaviorTemplate",
             "FurnitureBehaviors.register(Key.of(TYPE)",
-            "public static void bindPlacement(",
-            "public static void unbindPlacement(",
             "public InteractionResult useOnFurniture(",
-            "current.interact(bukkitFurniture, context)",
-            "current.onPlace(bukkitFurniture)"):
+            "current.interact(bukkitFurniture, context)"):
         if required_token not in station_interaction_behavior_source:
             raise AssertionError(
                 "Station CE interaction adapter is incomplete; "
                 f"missing token: {required_token}")
     for forbidden_token in (
             "org.bukkit.event", "PersistentDataType", "NamespacedKey",
-            "getNearbyEntities(", "runTaskTimer"):
+            "getNearbyEntities(", "runTaskTimer", "PlacementHandler",
+            "bindPlacement(", "onPlace("):
         if forbidden_token in station_interaction_behavior_source:
             raise AssertionError(
                 "Station CE interaction adapter must not own Paper polling/PDC; "
@@ -1584,6 +1594,10 @@ def validate() -> dict[str, int]:
             "BlockRedstoneEvent",
             "queuePowerChange(event.getBlock())",
             "FALLBACK_INTERVAL_TICKS",
+            "private static final Channel[] CHANNELS = Channel.values()",
+            "private static final Set<Controller> PENDING_CONTROLLERS",
+            "activeControllers.toArray(Controller[]::new)",
+            "for (Controller controller : channel.activeSnapshot())",
             "case INCENSE, STORAGE -> primaryPowerBlock.isBlockIndirectlyPowered()"):
         if required_token not in redstone_behavior_source:
             raise AssertionError(
@@ -1593,6 +1607,13 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "CE redstone furniture must sample the source mod's hasNeighborSignal "
             "semantics once, without a duplicate direct-signal scan")
+    for hot_path_token in (
+            "bukkitFurniture.isValid()", "ConcurrentHashMap", "ConcurrentMap",
+            "PowerLocation"):
+        if hot_path_token in redstone_behavior_source:
+            raise AssertionError(
+                "CE lifecycle and the Paper server thread must keep the redstone fallback "
+                f"free of redundant validity/concurrent-map traversal; found {hot_path_token}")
     if "createFurnitureTicker" in redstone_behavior_source:
         raise AssertionError(
             "Redstone furniture must use indexed change notifications instead of one CE ticker "
@@ -2396,16 +2417,18 @@ def validate() -> dict[str, int]:
             "Shaker must use the 2D icon only in GUI/FIXED display contexts")
 
     barrel_variants = furniture[f"{NAMESPACE}:barrel"]["variants"]
-    if set(barrel_variants) != {"ground", "ground_open"}:
-        raise AssertionError("The source barrel must expose closed and open lid states")
-    barrel = barrel_variants["ground"]
-    open_barrel = barrel_variants["ground_open"]
-    if len(barrel.get("hitboxes", [])) != 27 or len(open_barrel.get("hitboxes", [])) != 27:
+    if set(barrel_variants) != {"ground", "ground_closed"}:
+        raise AssertionError(
+            "The source barrel must place open through CE's native ground variant")
+    open_barrel = barrel_variants["ground"]
+    closed_barrel = barrel_variants["ground_closed"]
+    if (len(open_barrel.get("hitboxes", [])) != 27
+            or len(closed_barrel.get("hitboxes", [])) != 27):
         raise AssertionError("The legacy barrel must retain its 3x3x3 furniture footprint")
     if any(hitbox.get("peek") != 0 for variant in barrel_variants.values()
            for hitbox in variant["hitboxes"]):
         raise AssertionError("The 3x3x3 barrel model/collision must span y=0..3 exactly")
-    closed_element = barrel["elements"][0]
+    closed_element = closed_barrel["elements"][0]
     open_body, open_lid = open_barrel["elements"]
     barrel_models = [
         render_items[element["item"]]["model"]["path"]

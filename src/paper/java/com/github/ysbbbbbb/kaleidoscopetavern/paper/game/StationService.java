@@ -102,8 +102,6 @@ public final class StationService implements Listener {
             this::stationVisuals;
     private final StationInteractionFurnitureBehavior.Handler stationInteractionHandler =
             this::interactStation;
-    private final StationInteractionFurnitureBehavior.PlacementHandler stationPlacementHandler =
-            this::onStationPlaced;
     private final ShakerItemBehavior.Handler shakerItemHandler =
             this::usePortableShaker;
     private final TickingFurnitureBehavior.Handler barrelTickingHandler =
@@ -130,7 +128,6 @@ public final class StationService implements Listener {
 
     public void start() {
         StationInteractionFurnitureBehavior.bind(stationInteractionHandler);
-        StationInteractionFurnitureBehavior.bindPlacement(stationPlacementHandler);
         ShakerItemBehavior.bind(shakerItemHandler);
         StationVisualFurnitureBehavior.bind(stationVisualHandler);
         RedstoneFurnitureBehavior.bind(
@@ -141,7 +138,6 @@ public final class StationService implements Listener {
     }
 
     public void stop() {
-        StationInteractionFurnitureBehavior.unbindPlacement(stationPlacementHandler);
         StationInteractionFurnitureBehavior.unbind(stationInteractionHandler);
         ShakerItemBehavior.unbind(shakerItemHandler);
         StationVisualFurnitureBehavior.unbind(stationVisualHandler);
@@ -197,13 +193,6 @@ public final class StationService implements Listener {
             default -> false;
         };
         return handled ? InteractionResult.SUCCESS_AND_CANCEL : InteractionResult.PASS;
-    }
-
-    private void onStationPlaced(BukkitFurniture furniture) {
-        if (furniture.id().toString().equals(BARREL)) {
-            Bukkit.getScheduler().runTask(
-                    plugin, () -> setBarrelOpen(furniture, true, false));
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -926,7 +915,7 @@ public final class StationService implements Listener {
             return;
         }
         boolean variantChanged = furniture.setVariant(
-                open ? "ground_open" : "ground", true);
+                open ? "ground" : "ground_closed", true);
         if (playSound) {
             // The Forge implementation intentionally uses BARREL_OPEN for
             // both transitions and plays it at the lid, two blocks above.
@@ -942,7 +931,7 @@ public final class StationService implements Listener {
     }
 
     private static boolean isBarrelOpen(BukkitFurniture furniture) {
-        return furniture.currentVariant().name().endsWith("_open");
+        return furniture.currentVariant().name().equals("ground");
     }
 
     private static BarrelSemantics.Hit barrelHit(BukkitFurniture furniture, Location point) {
