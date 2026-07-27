@@ -8,9 +8,13 @@ version = providers.gradleProperty("plugin_version").get()
 val customCropsVersion = providers.gradleProperty("custom_crops_version")
 
 repositories {
+    // CI publishes the current CraftEngine dev checkout here before compiling
+    // Tavern. Stable builds still resolve the pinned release from Momirealms.
+    mavenLocal()
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.momirealms.net/releases/")
+    maven("https://repo.momirealms.net/snapshots/")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
 }
 

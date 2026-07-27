@@ -14,10 +14,14 @@
 | --- | --- |
 | Minecraft / Paper | **26.2 only** |
 | Java | **25** |
-| CraftEngine | **26.7.4** |
+| CraftEngine | **26.7.4 + dev（暂时双版本兼容）** |
 | CustomCrops | **3.6.52** |
 
 本项目以 CraftEngine 官方 Wiki 的 [自定义方块](https://xiao-momi.github.io/craft-engine-wiki/configuration/block/)、[家具](https://xiao-momi.github.io/craft-engine-wiki/configuration/furniture/) 和 [API](https://xiao-momi.github.io/craft-engine-wiki/api/) 模型为准，并没有把所有旧 Forge `Block` 机械地迁成 CE 方块。
+
+CI 会直接检出并构建 CraftEngine `dev`，然后用该构件重新编译和校验本项目；检查范围包括公开 API、
+Bukkit/Proxy 内部类、反射桥接和 CE 服务端方块状态组。`26.7.4` 是过渡兼容版本：承载当前 `dev` API 的
+稳定版本发布后将删除旧版本线路，不再长期维护双版本分支。
 
 ## 内容映射
 
@@ -49,7 +53,7 @@
 ## 安装
 
 1. 使用 Java 25 启动 Paper 26.2 服务端。
-2. 安装 CraftEngine 26.7.4。
+2. 安装 CraftEngine 26.7.4，或使用已通过本项目 CI 的 CraftEngine `dev` 构建。
 3. 安装 CustomCrops 3.6.52。
 4. 将 `KaleidoscopeTavern-Paper-2.0.0-paper26.2.jar` 放入 `plugins/`。
 5. 启动服务端。插件会在依赖启用前，把内置 CE 项目同步到 `plugins/CraftEngine/resources/kaleidoscope_tavern/`，并把葡萄定义同步到 `plugins/CustomCrops/contents/crops/kaleidoscope_tavern.yml`。

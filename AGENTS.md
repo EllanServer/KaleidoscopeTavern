@@ -8,7 +8,8 @@
 
 ## 当前项目事实
 
-- 运行目标仅为 Minecraft / Paper `26.2`，使用 Java 25、CraftEngine `26.7.4` 与 CustomCrops `3.6.52`。
+- 运行目标仅为 Minecraft / Paper `26.2`，使用 Java 25、CustomCrops `3.6.52`，临时同时支持 CraftEngine
+  `26.7.4` 与上游 `dev`（当前为 `26.8-SNAPSHOT`）。
 - 这是服务端插件重写，不再编译或加载 Forge。Paper 主源码位于 `src/paper/java`，插件资源位于
   `src/paper/resources`，CraftEngine 项目位于 `src/paper/pack`，测试位于 `src/paperTest/java`。
 - 入口类是
@@ -27,8 +28,10 @@
   执行饮用；雪克杯在物品态与家具态之间迁移其原料和产物数据。
 - 家具业务状态使用家具元实体 PDC；CE 方块业务状态使用方块实体 NBT。基础碰撞箱、座位、发光、储物和
   展示槽优先使用 CraftEngine 原生行为。
-- CraftEngine API 以 `26.7.4` 固定版本为准。展示槽清空/发射桥接和自定义方块行为会接触该固定版本的
-  非稳定实现，升级 CraftEngine 前必须重新编译并做服务器实测。
+- CraftEngine 的公开 API、Bukkit/Proxy 内部实现、展示实体元数据、家具快照与服务端方块状态都属于兼容面。
+  GitHub CI 必须同时通过 `26.7.4` 和直接从 `Xiao-MoMi/craft-engine:dev` 构建的版本；升级前仍须服务器实测。
+- **临时兼容清理提醒：**CraftEngine `26.8`（或承载当前 `dev` API 的后续稳定版）正式发布后，删除
+  `26.7.4` 兼容和对应 CI 线路，把默认依赖提升到该稳定版，并重新做完整内容加载与服务器交互验收。
 - CustomCrops 负责悬挂葡萄的成长刻、阶段、骨粉、交互、掉落和持久化；Tavern 只保留棚架连线、藤蔓
   传播与悬挂存活规则。托管配置源位于 `src/paper/customcrops`，不要在 Java 中重复这些作物机制。
 

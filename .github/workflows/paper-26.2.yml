@@ -47,3 +47,54 @@ jobs:
             !build/libs/*-sources.jar
           if-no-files-found: error
           retention-days: 14
+
+  craftengine-dev-compatibility:
+    name: CraftEngine dev compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout KaleidoscopeTavern
+        uses: actions/checkout@v4
+        with:
+          path: kaleidoscope-tavern
+
+      - name: Checkout CraftEngine dev
+        uses: actions/checkout@v4
+        with:
+          repository: Xiao-MoMi/craft-engine
+          ref: dev
+          path: craft-engine-dev
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Verify CraftEngine internal contracts
+        working-directory: kaleidoscope-tavern
+        run: python tools/verify_craftengine_compat.py ../craft-engine-dev
+
+      - name: Publish CraftEngine dev libraries for compatibility build
+        working-directory: craft-engine-dev
+        run: |
+          chmod +x gradlew
+          ./gradlew \
+            :core:publishToMavenLocal \
+            :bukkit:publishToMavenLocal \
+            :bukkit:proxy:publishToMavenLocal \
+            --stacktrace
+
+      - name: Compile, test and validate against CraftEngine dev
+        working-directory: kaleidoscope-tavern
+        run: |
+          chmod +x gradlew
+          ./gradlew clean build \
+            -Pcraft_engine_version=26.8-SNAPSHOT \
+            -Pcraft_engine_proxy_version=26.8-SNAPSHOT \
+            --refresh-dependencies \
+            --stacktrace
