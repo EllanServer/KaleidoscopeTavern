@@ -217,6 +217,12 @@ STURDY_BLOCKS = {"trellis"}
 GRAPE_CARRIER_TYPE = "cave_vines"
 GRAPE_CARRIER_ID = "kaleidoscope-tavern-wild-grapevine-transparent"
 
+# CraftEngine's bundled sofa uses the native invisible barrier state and renders
+# the authored geometry through an ItemDisplay.  Unlike an explicit copper-stair
+# carrier, barrier does not consume a model-overridable state and therefore
+# cannot collide with another CraftEngine project's stair allocation.
+SOFA_CARRIER_STATE = "minecraft:barrier"
+
 PAINTINGS = {
     "ysbb_painting",
     "tartaric_acid_painting",
@@ -566,6 +572,7 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
         "count": "1",
         "rotation": "0",
         "connection": "single",
+        "shape": "straight",
         "position": "0",
         "half": "bottom",
         "face": "floor",
@@ -577,6 +584,8 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
         return {"type": "boolean", "default": default}
     if name == "facing" and set(ordered) <= {"north", "east", "south", "west"}:
         return {"type": "horizontal_direction", "default": default, "values": ordered}
+    if name == "shape" and set(ordered) <= {"straight", "inner_left", "inner_right"}:
+        return {"type": "sofa_shape", "default": default, "values": ordered}
     if name == "facing" and set(ordered) <= {"north", "east", "south", "west", "up", "down"}:
         return {"type": "direction", "default": default, "values": ordered}
     if name == "axis" and set(ordered) <= {"x", "y", "z"}:
@@ -645,36 +654,6 @@ def trellis_carrier_state(trellis_type: str, waterlogged: str) -> str:
     )
 
 
-def sofa_carrier_state(
-    facing: str,
-    connection: str,
-    waterlogged: str,
-) -> str:
-    """Use CE's released copper-stair states as the client-side sofa shape.
-
-    The source sofa's FACING points away from its 5/16-deep backrest, whereas a
-    vanilla stair faces toward its raised half, so the carrier direction is the
-    opposite. Inner stair states make both corner backrests aimable on the
-    client; SofaBlockShape replaces their broader server collision with the
-    source's exact 5/16 strips and 18/16 height.
-    """
-    carrier_facing = {
-        "north": "south",
-        "south": "north",
-        "west": "east",
-        "east": "west",
-    }[facing]
-    shape = {
-        "left_corner": "inner_left",
-        "right_corner": "inner_right",
-    }.get(connection, "straight")
-    return (
-        "minecraft:cut_copper_stairs"
-        f"[facing={carrier_facing},half=bottom,shape={shape},"
-        f"waterlogged={waterlogged}]"
-    )
-
-
 def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
     if isinstance(raw, list):
         if not raw:
@@ -694,7 +673,7 @@ def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
 def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | list[dict[str, Any]] | None:
     if block_id.endswith("_sofa"):
         return [
-            {"type": f"{NAMESPACE}:connected_sofa"},
+            {"type": "sofa_block"},
             {
                 "type": "seat_block",
                 "seats": [f"0,{seat_offset(8 / 16):g},0 0"],
@@ -814,6 +793,7 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
             "burnable": True,
             "burn_chance": 5,
             "fire_spread_chance": 20,
+            "support_shape": "minecraft:cobweb",
         })
     if has_item:
         settings["item"] = f"{NAMESPACE}:{block_id}"
@@ -882,6 +862,41 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
         if not variants:
             raise ValueError(f"No variants in {state_path}")
 
+        is_sofa = block_id.endswith("_sofa")
+        if is_sofa:
+            # CraftEngine's native sofa behavior derives its complete connected
+            # layout from three shapes. Map the matching authored dry models to
+            # those shapes and let CE own all neighbour updates.
+            native_shapes = {
+                "single": "straight",
+                "left_corner": "inner_left",
+                "right_corner": "inner_right",
+            }
+            native_variants: dict[str, Any] = {}
+            for variant_key, raw_model in variants.items():
+                variant_properties = parse_variant_key(variant_key)
+                waterlogged = variant_properties.pop("waterlogged", None)
+                if waterlogged != "false":
+                    continue
+                connection = variant_properties.pop("connection", None)
+                shape = native_shapes.get(connection)
+                if shape is None:
+                    continue
+                variant_properties["shape"] = shape
+                native_key = ",".join(
+                    f"{name}={value}"
+                    for name, value in variant_properties.items()
+                )
+                previous = native_variants.setdefault(native_key, raw_model)
+                if previous != raw_model:
+                    raise ValueError(
+                        f"{block_id}: conflicting native sofa variant {native_key}")
+            if len(native_variants) != 12:
+                raise ValueError(
+                    f"{block_id}: expected 12 native sofa variants, "
+                    f"found {len(native_variants)}")
+            variants = native_variants
+
         property_values: dict[str, list[str]] = defaultdict(list)
         for key in variants:
             for name, value in parse_variant_key(key).items():
@@ -897,9 +912,8 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             property_values["sheared"] = ["false", "true"]
 
         carrier, carrier_id = carrier_type(block_id)
-        is_sofa = block_id.endswith("_sofa")
         uses_waterlogged_carrier = (
-            block_id == "tap" or block_id in TRELLIS_BLOCKS or is_sofa
+            block_id == "tap" or block_id in TRELLIS_BLOCKS
         )
         appearance_names: dict[Any, str] = {}
         appearances: dict[str, Any] = {}
@@ -970,11 +984,10 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                         f"[facing={facing},powered=false,waterlogged={waterlogged}]"
                     )
                 elif is_sofa:
-                    appearance["state"] = sofa_carrier_state(
-                        variant_properties["facing"],
-                        variant_properties["connection"],
-                        variant_properties["waterlogged"],
-                    )
+                    # Match CE's bundled sofa: barrier is already invisible,
+                    # so do not mark this appearance transparent (which would
+                    # try to bind CE's empty model to the shared vanilla state).
+                    appearance["state"] = SOFA_CARRIER_STATE
                 elif block_id in INCENSE_BLOCKS:
                     # CE 26.7.4 explicitly releases the un-waxed source state
                     # and remaps it to the waxed client state. Its compact,
@@ -999,7 +1012,8 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                     }
                 else:
                     appearance["auto_state"] = {"type": carrier, "id": carrier_id}
-                appearance["transparent"] = True
+                if not is_sofa:
+                    appearance["transparent"] = True
                 appearance["entity_renderer"] = renderer
                 appearances[appearance_name] = appearance
             if property_values:

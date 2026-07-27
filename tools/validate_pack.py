@@ -154,7 +154,7 @@ OBSOLETE_VANILLA_IDS = {"minecraft:chain", "minecraft:grass"}
 SOURCE_STATE_OWNERS = {
     "age": "CustomCrops stage blocks",
     "axis": "FurnitureConnectionService yaw/line selection",
-    "connection": "CE sofa/storage block states plus FurnitureConnectionService",
+    "connection": "legacy sofa migration/storage block states plus FurnitureConnectionService",
     "count": "BottleFurnitureService",
     "face": "CE ground/wall/ceiling placement rules",
     "facing": "CE tap/storage/sofa block state and four-way/sixteen-way furniture rotation",
@@ -166,7 +166,7 @@ SOURCE_STATE_OWNERS = {
     "tilt": "ground/wall pressing-tub placement variants",
     "triggered": "CE TapBlockBehavior redstone edge latch",
     "type": "CE trellis state variants",
-    "waterlogged": "CE tap/trellis/sofa fluid state plus non-displacing carrier semantics",
+    "waterlogged": "CE tap/trellis fluid state plus non-displacing carrier semantics",
     "waxed": "CE trellis state variants plus blocks.json wax events",
 }
 
@@ -296,9 +296,9 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("ShakerSemantics.java", "AUTO_RELEASE_AFTER_TICKS"),
     ),
     "SofaBlock.java": (
-        ("block/SofaBlockBehavior.java", "updateStateForPlacement"),
-        ("block/SofaBlockBehavior.java", "public Object updateShape"),
-        ("block/SofaBlockShape.java", "new Box(0, 8, 11, 16, 18, 16)"),
+        ("src/paper/pack/configuration/blocks.json", '"type": "sofa_block"'),
+        ("src/paper/pack/configuration/blocks.json", '"type": "sofa_shape"'),
+        ("src/paper/pack/configuration/blocks.json", '"state": "minecraft:barrier"'),
     ),
     "StringLightsBlock.java": (("src/paper/pack/configuration/blocks.json", "item.dye.use"),),
     "StringLightsBlockItem.java": (
@@ -613,8 +613,8 @@ def validate() -> dict[str, int]:
         raise AssertionError(f"Expected 70 grid/state blocks, found {len(blocks)}")
     if len(furniture) != 104:
         raise AssertionError(f"Expected 104 furniture definitions, found {len(furniture)}")
-    if len(render_items) != 554:
-        raise AssertionError(f"Expected 554 private render items, found {len(render_items)}")
+    if len(render_items) != 506:
+        raise AssertionError(f"Expected 506 private render items, found {len(render_items)}")
     if len(recipes) != 114:
         raise AssertionError(f"Expected 114 crafting recipes, found {len(recipes)}")
 
@@ -1069,12 +1069,10 @@ def validate() -> dict[str, int]:
     if "StorageBlockBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register CE storage blocks before pack loading")
-    if "SofaBlockBehavior.register()" not in plugin_source:
-        raise AssertionError(
-            "KaleidoscopeTavernPlugin must register CE connected sofas before pack loading")
-    if "SofaBlockShape.install()" not in plugin_source:
-        raise AssertionError(
-            "KaleidoscopeTavernPlugin must install exact sofa shapes after CE loading")
+    for stale_token in ("SofaBlockBehavior", "SofaBlockShape"):
+        if stale_token in plugin_source:
+            raise AssertionError(
+                f"KaleidoscopeTavernPlugin must leave sofas to native CE configuration: {stale_token}")
     incense_behavior_source = (
         game_package / "block/IncenseBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
@@ -1342,38 +1340,13 @@ def validate() -> dict[str, int]:
             "CE block neighbor updates own sofa connections; "
             "FurnitureConnectionService must not index sofas")
 
-    sofa_behavior_source = (
-        game_package / "block" / "SofaBlockBehavior.java"
-    ).read_text(encoding="utf-8-sig")
-    for required_token in (
-            "extends WaterloggedBlockBehavior",
-            "BlockBehaviors.register(TYPE, SofaBlockBehavior::new)",
-            "context.getHorizontalDirection().opposite()",
-            "public Object updateShape",
-            "update.axis() == facing.clockWise().axis()",
-            "connectionFor(level, pos, facing)",
-            "state.behavior().getFirst(SofaBlockBehavior.class)"):
-        if required_token not in sofa_behavior_source:
+    for obsolete_sofa_source in (
+            "SofaBlockBehavior.java",
+            "SofaBlockShape.java",
+            "SofaConnectionSemantics.java"):
+        if (game_package / "block" / obsolete_sofa_source).exists():
             raise AssertionError(
-                "Connected sofas must use CE block neighbor callbacks with the "
-                f"source six-state semantics; missing token: {required_token}")
-    sofa_shape_source = (
-        game_package / "block" / "SofaBlockShape.java"
-    ).read_text(encoding="utf-8-sig")
-    for required_token in (
-            "implements BlockShape",
-            "CraftEngineBlocks.byId",
-            "definition.defaultState()",
-            "getOptionalCustomBlockState(minecraftState)",
-            "collisionConnection(",
-            "getCollisionShape",
-            "getSupportShape",
-            "new Box(0, 8, 11, 16, 18, 16)",
-            "new Box(11, 8, 0, 16, 18, 16)"):
-        if required_token not in sofa_shape_source:
-            raise AssertionError(
-                "CE sofa carrier delegates must retain the source VoxelShape; "
-                f"missing token: {required_token}")
+                f"{obsolete_sofa_source}: sofas must use pure CraftEngine configuration")
 
     trellis_shape_source = (
         game_package / "block" / "TrellisBlockShape.java"
@@ -3811,14 +3784,10 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{storage_id}: storage visual controller must follow its native slot controllers")
 
-    sofa_connections = {
-        "single", "left", "right", "middle", "left_corner", "right_corner",
-    }
-    opposite_facing = {
-        "north": "south", "south": "north", "west": "east", "east": "west",
-    }
+    sofa_shapes = {"straight", "inner_left", "inner_right"}
+    sofa_facings = {"north", "south", "west", "east"}
     expected_sofa_behaviors = [
-        {"type": f"{NAMESPACE}:connected_sofa"},
+        {"type": "sofa_block"},
         {"type": "seat_block", "seats": ["0,-0.1,0 0"]},
     ]
     expected_sofa_sounds = {
@@ -3835,66 +3804,53 @@ def validate() -> dict[str, int]:
         if definition is None:
             raise AssertionError(f"{sofa_id}: missing CE block definition")
         properties = definition.get("states", {}).get("properties", {})
-        if set(properties) != {"connection", "facing", "waterlogged"}:
+        if set(properties) != {"facing", "shape"}:
             raise AssertionError(
-                f"{sofa_id}: source state properties drifted: {sorted(properties)}")
-        connection_property = properties["connection"]
+                f"{sofa_id}: native CE state properties drifted: {sorted(properties)}")
+        shape_property = properties["shape"]
         facing_property = properties["facing"]
-        waterlogged_property = properties["waterlogged"]
-        if (connection_property.get("type") != "string"
-                or connection_property.get("default") != "single"
-                or set(connection_property.get("values", [])) != sofa_connections):
+        if (shape_property.get("type") != "sofa_shape"
+                or shape_property.get("default") != "straight"
+                or set(shape_property.get("values", [])) != sofa_shapes):
             raise AssertionError(
-                f"{sofa_id}: all six source connection states must remain explicit")
+                f"{sofa_id}: CE must own the three native sofa shapes")
         if (facing_property.get("type") != "horizontal_direction"
                 or facing_property.get("default") != "north"
                 or set(facing_property.get("values", []))
                 != {"north", "east", "south", "west"}):
             raise AssertionError(
                 f"{sofa_id}: source horizontal facing states drifted")
-        if waterlogged_property != {"type": "boolean", "default": "false"}:
-            raise AssertionError(
-                f"{sofa_id}: source waterlogged state drifted")
         if definition.get("behaviors") != expected_sofa_behaviors:
             raise AssertionError(
-                f"{sofa_id}: CE must own seats while Tavern only adds six-state connection")
+                f"{sofa_id}: CE must own both sofa connections and seats")
 
         appearances = definition["states"].get("appearances", {})
         variants = definition["states"].get("variants", {})
-        if len(appearances) != 48 or len(variants) != 48:
+        if len(appearances) != 12 or len(variants) != 12:
             raise AssertionError(
-                f"{sofa_id}: expected 4 facing x 6 connection x 2 water states, "
+                f"{sofa_id}: expected 4 facing x 3 native shapes, "
                 f"found {len(appearances)}/{len(variants)}")
         render_ids: set[str] = set()
-        seen_states: set[tuple[str, str, str]] = set()
+        seen_states: set[tuple[str, str]] = set()
         for variant_key, variant in variants.items():
             values = dict(part.split("=", 1) for part in variant_key.split(","))
             facing = values.get("facing")
-            connection = values.get("connection")
-            waterlogged = values.get("waterlogged")
-            if (facing not in opposite_facing
-                    or connection not in sofa_connections
-                    or waterlogged not in {"false", "true"}):
+            shape = values.get("shape")
+            if (set(values) != {"facing", "shape"}
+                    or facing not in sofa_facings
+                    or shape not in sofa_shapes):
                 raise AssertionError(
-                    f"{sofa_id}: malformed source state {variant_key}")
-            seen_states.add((facing, connection, waterlogged))
+                    f"{sofa_id}: malformed native state {variant_key}")
+            seen_states.add((facing, shape))
             appearance = appearances.get(variant.get("appearance"))
             if not isinstance(appearance, dict):
                 raise AssertionError(
                     f"{sofa_id}: missing appearance for {variant_key}")
-            stair_shape = {
-                "left_corner": "inner_left",
-                "right_corner": "inner_right",
-            }.get(connection, "straight")
-            expected_carrier = (
-                "minecraft:cut_copper_stairs"
-                f"[facing={opposite_facing[facing]},half=bottom,"
-                f"shape={stair_shape},waterlogged={waterlogged}]"
-            )
-            if (appearance.get("state") != expected_carrier
-                    or appearance.get("transparent") is not True):
+            if (appearance.get("state") != "minecraft:barrier"
+                    or "transparent" in appearance
+                    or "auto_state" in appearance):
                 raise AssertionError(
-                    f"{sofa_id}: CE stair carrier drifted for {variant_key}")
+                    f"{sofa_id}: CE default barrier carrier drifted for {variant_key}")
             renderer = appearance.get("entity_renderer", {})
             render_id = renderer.get("item")
             if (renderer.get("type") != "item_display"
@@ -3904,15 +3860,12 @@ def validate() -> dict[str, int]:
                 raise AssertionError(
                     f"{sofa_id}: authored model must use a private CE ItemDisplay")
             render_ids.add(render_id)
-            expected_variant_settings = (
-                {"fluid_state": "water"} if waterlogged == "true" else None
-            )
-            if variant.get("settings") != expected_variant_settings:
+            if "settings" in variant:
                 raise AssertionError(
-                    f"{sofa_id}: water state does not expose CE fluid semantics")
-        if len(seen_states) != 48 or len(render_ids) != 6:
+                    f"{sofa_id}: abandoned water state leaked into {variant_key}")
+        if len(seen_states) != 12 or len(render_ids) != 3:
             raise AssertionError(
-                f"{sofa_id}: expected 48 states and six shared source models, "
+                f"{sofa_id}: expected 12 states and three native-shape models, "
                 f"found {len(seen_states)}/{len(render_ids)}")
 
         settings = definition.get("settings", {})
@@ -3932,6 +3885,7 @@ def validate() -> dict[str, int]:
             "burnable": True,
             "burn_chance": 5,
             "fire_spread_chance": 20,
+            "support_shape": "minecraft:cobweb",
             "item": full_id,
         }
         if settings != expected_sofa_settings:
@@ -3953,7 +3907,7 @@ def validate() -> dict[str, int]:
                 f"{sofa_id}: placement must use CE's native block_item")
 
     for expected_token in (
-            "EXPECTED_ITEMS = 711",
+            "EXPECTED_ITEMS = 663",
             "EXPECTED_BLOCKS = 70",
             "EXPECTED_FURNITURE = 104"):
         if expected_token not in plugin_source:
