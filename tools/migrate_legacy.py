@@ -3058,6 +3058,11 @@ def build_items(
                 "animation": "eat",
             }
         if item_id in furniture_ids:
+            if item_id == "shaker":
+                # Right-click air is owned by CE's existing item-use listener;
+                # the following native furniture behavior still owns block
+                # placement. Paper only observes release to finish the mix.
+                behaviors.append({"type": f"{NAMESPACE}:shaker_item"})
             furniture_behavior: dict[str, Any] = {
                 "type": (f"{NAMESPACE}:sneak_place_drink"
                          if manually_placed_drink else "furniture_item"),

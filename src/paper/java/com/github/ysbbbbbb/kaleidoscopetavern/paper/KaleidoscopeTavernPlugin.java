@@ -40,6 +40,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridg
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.EffectHudPlaceholder;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.GrapevineItemBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.ShakerItemBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.SneakPlaceDrinkItemBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.pack.CustomCropsInstaller;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.pack.PackInstaller;
@@ -114,6 +115,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             StorageInteractionFurnitureBehavior.register();
             StorageVisualFurnitureBehavior.register();
             GrapevineItemBehavior.register();
+            ShakerItemBehavior.register();
             SneakPlaceDrinkItemBehavior.register();
             if (getConfig().getBoolean("pack.install-on-startup", true)) {
                 packResult = PackInstaller.install(this);

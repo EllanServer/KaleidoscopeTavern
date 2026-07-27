@@ -12,6 +12,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationIntera
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.ShakerItemBehavior;
 import io.papermc.paper.event.entity.EntityMoveEvent;
 import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
@@ -103,6 +104,8 @@ public final class StationService implements Listener {
             this::interactStation;
     private final StationInteractionFurnitureBehavior.PlacementHandler stationPlacementHandler =
             this::onStationPlaced;
+    private final ShakerItemBehavior.Handler shakerItemHandler =
+            this::usePortableShaker;
     private final TickingFurnitureBehavior.Handler barrelTickingHandler =
             new TickingFurnitureBehavior.Handler() {
                 @Override
@@ -128,6 +131,7 @@ public final class StationService implements Listener {
     public void start() {
         StationInteractionFurnitureBehavior.bind(stationInteractionHandler);
         StationInteractionFurnitureBehavior.bindPlacement(stationPlacementHandler);
+        ShakerItemBehavior.bind(shakerItemHandler);
         StationVisualFurnitureBehavior.bind(stationVisualHandler);
         RedstoneFurnitureBehavior.bind(
                 RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
@@ -139,6 +143,7 @@ public final class StationService implements Listener {
     public void stop() {
         StationInteractionFurnitureBehavior.unbindPlacement(stationPlacementHandler);
         StationInteractionFurnitureBehavior.unbind(stationInteractionHandler);
+        ShakerItemBehavior.unbind(shakerItemHandler);
         StationVisualFurnitureBehavior.unbind(stationVisualHandler);
         RedstoneFurnitureBehavior.unbind(
                 RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
@@ -363,32 +368,34 @@ public final class StationService implements Listener {
                 "minecraft:item.bottle.fill", SoundCategory.PLAYERS, 1.0F, 1.0F);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onUsePortableShaker(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_AIR || event.getHand() == null
-                || event.getItem() == null || !items.id(event.getItem()).equals(SHAKER)) {
-            return;
+    private InteractionResult usePortableShaker(
+            net.momirealms.craftengine.core.entity.player.Player cePlayer,
+            InteractionHand interactionHand) {
+        if (!(cePlayer.platformPlayer() instanceof Player player)) {
+            return InteractionResult.PASS;
+        }
+        EquipmentSlot hand = interactionHand == InteractionHand.MAIN_HAND
+                ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+        ItemStack shaker = handItem(player, hand);
+        if (!items.id(shaker).equals(SHAKER)) {
+            return InteractionResult.PASS;
         }
         // The migrated shaker uses a long consumable component solely to
         // expose the original brush-style use animation. Always suppress the
         // vanilla item use; only a valid three-ingredient shaker is started
         // explicitly below.
-        event.setCancelled(true);
-        ItemStack shaker = event.getItem();
         if (items.shakerResult(shaker) != null) {
-            return;
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
         int ingredientCount = items.shakerIngredients(shaker).size();
         if (ingredientCount != 3) {
             if (ingredientCount > 0) {
-                event.getPlayer().sendActionBar(net.kyori.adventure.text.Component.translatable(
+                player.sendActionBar(net.kyori.adventure.text.Component.translatable(
                         "message.kaleidoscope_tavern.shaker.amount_too_low"));
             }
-            return;
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
 
-        Player player = event.getPlayer();
-        EquipmentSlot hand = event.getHand();
         Bukkit.getScheduler().runTask(plugin, () -> {
             ItemStack current = handItem(player, hand);
             if (!player.isOnline() || !items.id(current).equals(SHAKER)
@@ -402,6 +409,7 @@ public final class StationService implements Listener {
             player.startUsingItem(hand);
             player.setActiveItemRemainingTime(72_000);
         });
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

@@ -305,7 +305,9 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     "SandwichBoardBlock.java": (("BoardTextService.java", "transformSandwichBoard"),),
     "ShakerBlock.java": (("StationService.java", "interactShaker"),),
     "ShakerItem.java": (
-        ("StationService.java", "onUsePortableShaker"),
+        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+         "ShakerItemBehavior.java", "InteractionResult use(World world"),
+        ("StationService.java", "usePortableShaker"),
         ("ShakerSemantics.java", "AUTO_RELEASE_AFTER_TICKS"),
     ),
     "SofaBlock.java": (
@@ -1333,6 +1335,40 @@ def validate() -> dict[str, int]:
 
     station_source = (game_package / "StationService.java").read_text(
         encoding="utf-8-sig")
+    shaker_item_behavior_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+        "ShakerItemBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            'TYPE = Key.of("kaleidoscope_tavern", "shaker_item")',
+            "ItemBehaviors.register(TYPE",
+            "InteractionResult use(World world",
+            "current.use(player, hand)"):
+        if required_token not in shaker_item_behavior_source:
+            raise AssertionError(
+                "Portable shaker right-click must use CE's existing item-use pipeline; "
+                f"missing token: {required_token}")
+    for required_token in (
+            "ShakerItemBehavior.register()",
+            "ShakerItemBehavior.bind(shakerItemHandler)",
+            "ShakerItemBehavior.unbind(shakerItemHandler)",
+            "private InteractionResult usePortableShaker("):
+        if required_token not in plugin_source + station_source:
+            raise AssertionError(
+                "Portable shaker CE item lifecycle is incomplete; "
+                f"missing token: {required_token}")
+    if "onUsePortableShaker(PlayerInteractEvent" in station_source:
+        raise AssertionError(
+            "Portable shaker right-click must not retain a duplicate global Paper listener")
+    shaker_behaviors = items[f"{NAMESPACE}:shaker"].get("behaviors", [])
+    if ([behavior.get("type") for behavior in shaker_behaviors]
+            != [f"{NAMESPACE}:shaker_item", "furniture_item"]
+            or shaker_behaviors[1].get("furniture") != f"{NAMESPACE}:shaker"
+            or shaker_behaviors[1].get("rules") != {
+                "ground": {"rotation": "four", "alignment": "center"}
+            }):
+        raise AssertionError(
+            "Shaker must run CE portable use before native furniture placement")
     for stale_token in (
             "bootstrapPressVisuals", "onEntitiesLoad(EntitiesLoadEvent event)",
             "pressingTubBelow", "getNearbyEntities(feet"):

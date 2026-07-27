@@ -2914,16 +2914,21 @@
           "path": "kaleidoscope_tavern:item/shaker_3d"
         }
       },
-      "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:shaker",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:shaker_item"
+        },
+        {
+          "type": "furniture_item",
+          "furniture": "kaleidoscope_tavern:shaker",
+          "rules": {
+            "ground": {
+              "rotation": "four",
+              "alignment": "center"
+            }
           }
         }
-      }
+      ]
     },
     "kaleidoscope_tavern:glassware_holder": {
       "material": "paper",
