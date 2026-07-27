@@ -80,6 +80,10 @@ class StorageSemanticsTest {
         assertEquals(1, StorageSemantics.clickedSlot(GLASSWARE_HOLDER, 0.75, 0.5, 0.25, false));
         assertEquals(2, StorageSemantics.clickedSlot(GLASSWARE_HOLDER, 0.25, 0.5, 0.75, false));
         assertEquals(3, StorageSemantics.clickedSlot(GLASSWARE_HOLDER, 0.75, 0.5, 0.75, false));
+        assertEquals(0, StorageSemantics.clickedSlot(GLASSWARE_HOLDER, 0.25, -0.25, 0.25, false));
+        assertEquals(3, StorageSemantics.clickedSlot(GLASSWARE_HOLDER, 0.75, 1.25, 0.75, false));
+        assertEquals(-1, StorageSemantics.clickedSlot(GLASSWARE_HOLDER, -0.25, 0.5, 0.25, false));
+        assertEquals(-1, StorageSemantics.clickedSlot(GLASSWARE_HOLDER, 0.25, 0.5, 1.25, false));
     }
 
     private static void assertVisual(StorageSemantics.Visual actual,

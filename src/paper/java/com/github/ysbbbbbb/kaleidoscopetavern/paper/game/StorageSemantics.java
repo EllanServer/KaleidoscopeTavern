@@ -48,7 +48,13 @@ public final class StorageSemantics {
 
     static int clickedSlot(Kind kind, double sourceX, double sourceY, double sourceZ,
                            boolean facingAxisX) {
-        if (!inside(sourceX) || !inside(sourceY) || !inside(sourceZ)) {
+        // GlasswareHolderBlock#getSlotFromHit only used the hit's block-local
+        // X/Z quadrants. A ceiling furniture's interaction entity has a
+        // different vertical origin from the archived block, so rejecting its
+        // world hit by sourceY makes every otherwise valid click miss.
+        boolean insideSource = inside(sourceX) && inside(sourceZ)
+                && (kind == Kind.GLASSWARE_HOLDER || inside(sourceY));
+        if (!insideSource) {
             return -1;
         }
         double x = clamp(sourceX);
