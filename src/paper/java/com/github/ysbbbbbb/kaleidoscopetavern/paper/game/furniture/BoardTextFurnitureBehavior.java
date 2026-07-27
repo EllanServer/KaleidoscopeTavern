@@ -2,7 +2,6 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.momirealms.craftengine.bukkit.entity.data.DisplayData;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
@@ -65,13 +64,24 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
 
     public static void bind(Handler newHandler) {
         handler = Objects.requireNonNull(newHandler, "newHandler");
-        LOADED.values().forEach(controller -> controller.bukkitFurniture.refreshElements());
+        LOADED.values().forEach(Controller::refresh);
     }
 
     public static void unbind(Handler oldHandler) {
         if (handler == oldHandler) {
             handler = null;
-            LOADED.values().forEach(controller -> controller.bukkitFurniture.refreshElements());
+            LOADED.values().forEach(Controller::refresh);
+        }
+    }
+
+    /** Invalidates player-independent text layout before CE redistributes it. */
+    public static void refresh(BukkitFurniture furniture) {
+        Objects.requireNonNull(furniture, "furniture");
+        Controller controller = LOADED.get(furniture.uuid());
+        if (controller != null) {
+            controller.refresh();
+        } else {
+            furniture.refreshElements();
         }
     }
 
@@ -127,10 +137,15 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
         }
     }
 
+    private record PreparedVisual(Visual visual, Object minecraftText) {
+    }
+
     private static final class Controller extends FurnitureController {
         private final BukkitFurniture bukkitFurniture;
         private final int maxLines;
         private final float viewRange;
+        private List<PreparedVisual> cachedVisuals = List.of();
+        private boolean visualsDirty = true;
 
         private Controller(BukkitFurniture furniture, int maxLines, float viewRange) {
             super(furniture);
@@ -141,7 +156,8 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
 
         @Override
         public void gatherElements(Consumer<FurnitureElement> consumer) {
-            consumer.accept(new BoardTextElement(bukkitFurniture, maxLines, viewRange));
+            invalidateVisuals();
+            consumer.accept(new BoardTextElement(this, maxLines, viewRange));
         }
 
         @Override
@@ -176,9 +192,39 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
         public void onUnload(boolean isStopping) {
             LOADED.remove(bukkitFurniture.uuid(), this);
         }
+
+        private void refresh() {
+            invalidateVisuals();
+            bukkitFurniture.refreshElements();
+        }
+
+        private void invalidateVisuals() {
+            cachedVisuals = List.of();
+            visualsDirty = true;
+        }
+
+        private List<PreparedVisual> visuals() {
+            if (visualsDirty) {
+                Handler currentHandler = handler;
+                if (currentHandler == null) {
+                    cachedVisuals = List.of();
+                } else {
+                    List<Visual> current = currentHandler.visuals(bukkitFurniture);
+                    List<PreparedVisual> prepared = new ArrayList<>(current.size());
+                    for (Visual visual : current) {
+                        prepared.add(new PreparedVisual(
+                                visual, ComponentUtils.adventureToMinecraft(visual.text())));
+                    }
+                    cachedVisuals = List.copyOf(prepared);
+                }
+                visualsDirty = false;
+            }
+            return cachedVisuals;
+        }
     }
 
     private static final class BoardTextElement implements FurnitureElement {
+        private final Controller controller;
         private final BukkitFurniture furniture;
         private final int maxLines;
         private final float viewRange;
@@ -186,8 +232,9 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
         private final UUID[] entityUuids;
         private final Object removePacket;
 
-        private BoardTextElement(BukkitFurniture furniture, int maxLines, float viewRange) {
-            this.furniture = furniture;
+        private BoardTextElement(Controller controller, int maxLines, float viewRange) {
+            this.controller = controller;
+            this.furniture = controller.bukkitFurniture;
             this.maxLines = maxLines;
             this.viewRange = viewRange;
             this.entityIds = new int[maxLines];
@@ -220,9 +267,7 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
         }
 
         private void sendVisuals(Player player, boolean replace) {
-            Handler currentHandler = handler;
-            List<Visual> current = currentHandler == null
-                    ? List.of() : currentHandler.visuals(furniture);
+            List<PreparedVisual> current = controller.visuals();
             int count = Math.min(maxLines, current.size());
             if (count == 0) {
                 if (replace) {
@@ -236,7 +281,8 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
                 packets.add(removePacket);
             }
             for (int index = 0; index < count; index++) {
-                Visual visual = current.get(index);
+                PreparedVisual prepared = current.get(index);
+                Visual visual = prepared.visual();
                 packets.add(ClientboundAddEntityPacketProxy.INSTANCE.newInstance(
                         entityIds[index], entityUuids[index],
                         visual.x(), visual.y(), visual.z(),
@@ -253,9 +299,7 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
                 DisplayData.TextDisplayData.Scale.addEntityDataIfNotDefaultValue(
                         new Vector3f(visual.scale()), metadata);
                 DisplayData.TextDisplayData.Text.addEntityData(
-                        ComponentUtils.jsonToMinecraft(
-                                GsonComponentSerializer.gson().serialize(visual.text())),
-                        metadata);
+                        prepared.minecraftText(), metadata);
                 DisplayData.TextDisplayData.LineWidth.addEntityDataIfNotDefaultValue(
                         Integer.MAX_VALUE, metadata);
                 DisplayData.TextDisplayData.BackgroundColor.addEntityDataIfNotDefaultValue(

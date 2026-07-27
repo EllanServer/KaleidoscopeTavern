@@ -862,7 +862,7 @@ def validate() -> dict[str, int]:
             "context.getHand() != InteractionHand.MAIN_HAND",
             "InteractionResult.SUCCESS_AND_CANCEL",
             "private List<BoardTextFurnitureBehavior.Visual> boardVisuals",
-            "furniture.refreshElements()",
+            "BoardTextFurnitureBehavior.refresh(furniture)",
             "LifecycleFurnitureBehavior.Channel.BOARD, lifecycleHandler"):
         if required_token not in board_text_source:
             raise AssertionError(
@@ -1199,8 +1199,10 @@ def validate() -> dict[str, int]:
     for required_token in (
             "implements FurnitureElement",
             "EntityTypesProxy.TEXT_DISPLAY",
-            "ComponentUtils.jsonToMinecraft",
-            "GsonComponentSerializer.gson().serialize",
+            "public static void refresh(BukkitFurniture furniture)",
+            "private List<PreparedVisual> cachedVisuals = List.of()",
+            "ComponentUtils.adventureToMinecraft(visual.text())",
+            "List<PreparedVisual> current = controller.visuals()",
             "DisplayData.TextDisplayData.Text.addEntityData",
             "DisplayData.TextDisplayData.LineWidth",
             "DisplayData.TextDisplayData.BackgroundColor",
@@ -1220,7 +1222,8 @@ def validate() -> dict[str, int]:
                 "board_text_furniture must use CE-tracked packet-only text elements; "
                 f"missing token: {required_token}")
     for stale_token in (
-            "org.bukkit.entity.TextDisplay", "PersistentDataType", "World.spawn"):
+            "org.bukkit.entity.TextDisplay", "PersistentDataType", "World.spawn",
+            "ComponentUtils.jsonToMinecraft", "GsonComponentSerializer"):
         if stale_token in board_text_behavior_source:
             raise AssertionError(
                 "board_text_furniture must never create persistent Bukkit entities; "
@@ -1277,6 +1280,9 @@ def validate() -> dict[str, int]:
     for required_token in (
             "implements FurnitureElement",
             "EntityTypesProxy.ITEM_DISPLAY",
+            "private static final Map<UUID, Controller> LOADED = new HashMap<>()",
+            "private List<Visual> cachedVisuals = List.of()",
+            "return controller.visuals()",
             "DisplayData.ItemDisplayData.ItemStack.addEntityData",
             "DisplayData.Translation.addEntityData",
             "DisplayData.LeftRotation.addEntityData",
@@ -1289,7 +1295,8 @@ def validate() -> dict[str, int]:
                 "animated_item_furniture must use CE tracking and transform-only packets; "
                 f"missing token: {required_token}")
     for stale_token in (
-            "org.bukkit.entity.ItemDisplay", "PersistentDataType", "World.spawn"):
+            "org.bukkit.entity.ItemDisplay", "PersistentDataType", "World.spawn",
+            "ConcurrentHashMap", "ConcurrentMap", "synchronized (HANDLERS)"):
         if stale_token in animated_visual_source:
             raise AssertionError(
                 "animated_item_furniture must never create persistent Bukkit entities; "

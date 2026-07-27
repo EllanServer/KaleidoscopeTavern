@@ -456,7 +456,7 @@ public final class BoardTextService implements Listener {
 
     private void refreshDisplay(BukkitFurniture furniture) {
         if (furniture.isValid()) {
-            furniture.refreshElements();
+            BoardTextFurnitureBehavior.refresh(furniture);
         }
     }
 
