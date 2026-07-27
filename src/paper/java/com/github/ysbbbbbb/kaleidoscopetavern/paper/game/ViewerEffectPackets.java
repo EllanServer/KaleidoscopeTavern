@@ -30,6 +30,11 @@ final class ViewerEffectPackets {
     // project is pinned to Paper 26.2 and CE 26.7.4, just like the other proxy
     // bridges in this plugin.
     private static final int CUSTOM_NAME_DATA_ID = 2;
+    private static final List<Object> UPSIDE_DOWN_NAME_DATA = List.of(
+            SynchedEntityDataProxy.DataValueProxy.INSTANCE.newInstance(
+                    CUSTOM_NAME_DATA_ID,
+                    EntityDataSerializersProxy.OPTIONAL_COMPONENT,
+                    Optional.of(ComponentProxy.INSTANCE.literal("Grumm"))));
 
     private ViewerEffectPackets() {
     }
@@ -40,16 +45,7 @@ final class ViewerEffectPackets {
      */
     static void showUpsideDown(Player viewer, Entity target) {
         Object targetHandle = CraftEntityProxy.INSTANCE.getEntity(target);
-        Object entityData = EntityProxy.INSTANCE.getEntityData(targetHandle);
-        Object currentName = findDataValue(
-                SynchedEntityDataProxy.INSTANCE.packAll(entityData), CUSTOM_NAME_DATA_ID);
-        Object serializer = currentName == null
-                ? EntityDataSerializersProxy.OPTIONAL_COMPONENT
-                : SynchedEntityDataProxy.DataValueProxy.INSTANCE.getSerializer(currentName);
-        Object grumm = ComponentProxy.INSTANCE.literal("Grumm");
-        Object dataValue = SynchedEntityDataProxy.DataValueProxy.INSTANCE.newInstance(
-                CUSTOM_NAME_DATA_ID, serializer, Optional.of(grumm));
-        sendDataValue(viewer, targetHandle, dataValue);
+        sendDataValues(viewer, targetHandle, UPSIDE_DOWN_NAME_DATA);
     }
 
     /** Restores the target's real server-side custom name for one viewer. */
@@ -100,8 +96,12 @@ final class ViewerEffectPackets {
     }
 
     private static void sendDataValue(Player viewer, Object targetHandle, Object dataValue) {
+        sendDataValues(viewer, targetHandle, List.of(dataValue));
+    }
+
+    private static void sendDataValues(Player viewer, Object targetHandle, List<Object> dataValues) {
         Object packet = ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
-                EntityProxy.INSTANCE.getId(targetHandle), List.of(dataValue));
+                EntityProxy.INSTANCE.getId(targetHandle), dataValues);
 
         Object viewerHandle = CraftEntityProxy.INSTANCE.getEntity(viewer);
         Object connection = ServerPlayerProxy.INSTANCE.getConnection(viewerHandle);
