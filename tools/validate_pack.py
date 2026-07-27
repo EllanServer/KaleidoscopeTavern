@@ -3786,6 +3786,20 @@ def validate() -> dict[str, int]:
 
     sofa_shapes = {"straight", "inner_left", "inner_right"}
     sofa_facings = {"north", "south", "west", "east"}
+    sofa_models = {
+        "straight": "middle",
+        "inner_left": "left_corner",
+        "inner_right": "right_corner",
+    }
+    # CE places with the player's horizontal direction, while the source sofa
+    # faced the opposite direction. These are the authored source rotations
+    # after the required 180-degree ItemDisplay compensation.
+    sofa_rotations = {
+        "north": "0,180,0",
+        "east": "0,270,0",
+        "south": None,
+        "west": "0,90,0",
+    }
     expected_sofa_behaviors = [
         {"type": "sofa_block"},
         {"type": "seat_block", "seats": ["0,-0.1,0 0"]},
@@ -3860,6 +3874,18 @@ def validate() -> dict[str, int]:
                 raise AssertionError(
                     f"{sofa_id}: authored model must use a private CE ItemDisplay")
             render_ids.add(render_id)
+            render_item = render_items.get(render_id, {})
+            expected_model = (
+                f"{NAMESPACE}:block/deco/sofa/{color}/"
+                f"{sofa_models[shape]}"
+            )
+            if render_item.get("model", {}).get("path") != expected_model:
+                raise AssertionError(
+                    f"{sofa_id}: {shape} must use {expected_model}")
+            if renderer.get("rotation") != sofa_rotations[facing]:
+                raise AssertionError(
+                    f"{sofa_id}: {variant_key} must retain the source-facing "
+                    f"rotation {sofa_rotations[facing]!r}")
             if "settings" in variant:
                 raise AssertionError(
                     f"{sofa_id}: abandoned water state leaked into {variant_key}")

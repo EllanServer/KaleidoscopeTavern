@@ -864,11 +864,13 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
 
         is_sofa = block_id.endswith("_sofa")
         if is_sofa:
-            # CraftEngine's native sofa behavior derives its complete connected
-            # layout from three shapes. Map the matching authored dry models to
-            # those shapes and let CE own all neighbour updates.
+            # CE's native sofa exposes three shapes. Use the source middle
+            # model for every straight state so adjacent blocks have no arms
+            # between them, and retain the two authored inner-corner models.
+            # A native straight state cannot distinguish an isolated sofa from
+            # a row segment; seamless rows are the intended compromise.
             native_shapes = {
-                "single": "straight",
+                "middle": "straight",
                 "left_corner": "inner_left",
                 "right_corner": "inner_right",
             }
@@ -924,6 +926,12 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 metrics["weighted_variants_reduced"] += 1
             variant_properties = parse_variant_key(variant_key)
             model = normalize_model_entry(raw_model)
+            if is_sofa:
+                # CE places sofa facing in the player's horizontal direction;
+                # the source block faced the opposite direction. Rotate only
+                # the ItemDisplay so its visible front retains source behavior.
+                model = (model[0], model[1], (model[2] + 180) % 360,
+                         model[3], model[4])
             if (block_id == "tap"
                     and variant_properties.get("facing") in {"north", "south"}):
                 # The migrated wall block's north/south visual was reversed

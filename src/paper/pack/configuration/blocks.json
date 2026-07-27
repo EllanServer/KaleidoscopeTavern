@@ -18,8 +18,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -32,7 +32,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -42,7 +42,8 @@
               "item": "kaleidoscope_tavern:_render/white_sofa/1185d52414",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -52,8 +53,7 @@
               "item": "kaleidoscope_tavern:_render/white_sofa/1185d52414",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -64,45 +64,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/white_sofa/59515db81d",
+              "item": "kaleidoscope_tavern:_render/white_sofa/19ee3ebe99",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/white_sofa/59515db81d",
+              "item": "kaleidoscope_tavern:_render/white_sofa/19ee3ebe99",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/white_sofa/59515db81d",
+              "item": "kaleidoscope_tavern:_render/white_sofa/19ee3ebe99",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/19ee3ebe99",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/white_sofa/59515db81d",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -110,47 +121,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/white_sofa/4f710cf373",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/white_sofa/4f710cf373",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/white_sofa/4f710cf373",
+              "item": "kaleidoscope_tavern:_render/white_sofa/59515db81d",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/59515db81d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/white_sofa/4f710cf373",
+              "item": "kaleidoscope_tavern:_render/white_sofa/59515db81d",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -167,28 +167,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -268,8 +268,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -282,7 +282,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -292,7 +292,8 @@
               "item": "kaleidoscope_tavern:_render/light_gray_sofa/fead27c809",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -302,8 +303,7 @@
               "item": "kaleidoscope_tavern:_render/light_gray_sofa/fead27c809",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -314,45 +314,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_gray_sofa/2150f6a6dc",
+              "item": "kaleidoscope_tavern:_render/light_gray_sofa/808450e143",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_gray_sofa/2150f6a6dc",
+              "item": "kaleidoscope_tavern:_render/light_gray_sofa/808450e143",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_gray_sofa/2150f6a6dc",
+              "item": "kaleidoscope_tavern:_render/light_gray_sofa/808450e143",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/light_gray_sofa/808450e143",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/light_gray_sofa/2150f6a6dc",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -360,47 +371,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_gray_sofa/7b66c3e35f",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_gray_sofa/7b66c3e35f",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_gray_sofa/7b66c3e35f",
+              "item": "kaleidoscope_tavern:_render/light_gray_sofa/2150f6a6dc",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/light_gray_sofa/2150f6a6dc",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_gray_sofa/7b66c3e35f",
+              "item": "kaleidoscope_tavern:_render/light_gray_sofa/2150f6a6dc",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -417,28 +417,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -518,8 +518,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -532,7 +532,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -542,7 +542,8 @@
               "item": "kaleidoscope_tavern:_render/gray_sofa/8b060705fc",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -552,8 +553,7 @@
               "item": "kaleidoscope_tavern:_render/gray_sofa/8b060705fc",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -564,45 +564,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/gray_sofa/9364eb32f9",
+              "item": "kaleidoscope_tavern:_render/gray_sofa/169527da8f",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/gray_sofa/9364eb32f9",
+              "item": "kaleidoscope_tavern:_render/gray_sofa/169527da8f",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/gray_sofa/9364eb32f9",
+              "item": "kaleidoscope_tavern:_render/gray_sofa/169527da8f",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gray_sofa/169527da8f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/gray_sofa/9364eb32f9",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -610,47 +621,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/gray_sofa/3b558f13f8",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/gray_sofa/3b558f13f8",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/gray_sofa/3b558f13f8",
+              "item": "kaleidoscope_tavern:_render/gray_sofa/9364eb32f9",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gray_sofa/9364eb32f9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/gray_sofa/3b558f13f8",
+              "item": "kaleidoscope_tavern:_render/gray_sofa/9364eb32f9",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -667,28 +667,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -768,8 +768,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -782,7 +782,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -792,7 +792,8 @@
               "item": "kaleidoscope_tavern:_render/black_sofa/a1de62b91a",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -802,8 +803,7 @@
               "item": "kaleidoscope_tavern:_render/black_sofa/a1de62b91a",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -814,45 +814,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/black_sofa/49f64eee51",
+              "item": "kaleidoscope_tavern:_render/black_sofa/697f4dd40f",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/black_sofa/49f64eee51",
+              "item": "kaleidoscope_tavern:_render/black_sofa/697f4dd40f",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/black_sofa/49f64eee51",
+              "item": "kaleidoscope_tavern:_render/black_sofa/697f4dd40f",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/black_sofa/697f4dd40f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/black_sofa/49f64eee51",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -860,47 +871,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/black_sofa/af223452e6",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/black_sofa/af223452e6",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/black_sofa/af223452e6",
+              "item": "kaleidoscope_tavern:_render/black_sofa/49f64eee51",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/black_sofa/49f64eee51",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/black_sofa/af223452e6",
+              "item": "kaleidoscope_tavern:_render/black_sofa/49f64eee51",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -917,28 +917,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -1018,8 +1018,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -1032,7 +1032,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -1042,7 +1042,8 @@
               "item": "kaleidoscope_tavern:_render/brown_sofa/d78ae04030",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -1052,8 +1053,7 @@
               "item": "kaleidoscope_tavern:_render/brown_sofa/d78ae04030",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -1064,45 +1064,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/brown_sofa/2c08928dbb",
+              "item": "kaleidoscope_tavern:_render/brown_sofa/6489715069",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/brown_sofa/2c08928dbb",
+              "item": "kaleidoscope_tavern:_render/brown_sofa/6489715069",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/brown_sofa/2c08928dbb",
+              "item": "kaleidoscope_tavern:_render/brown_sofa/6489715069",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/brown_sofa/6489715069",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/brown_sofa/2c08928dbb",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -1110,47 +1121,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/brown_sofa/eb995cc586",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/brown_sofa/eb995cc586",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/brown_sofa/eb995cc586",
+              "item": "kaleidoscope_tavern:_render/brown_sofa/2c08928dbb",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/brown_sofa/2c08928dbb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/brown_sofa/eb995cc586",
+              "item": "kaleidoscope_tavern:_render/brown_sofa/2c08928dbb",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -1167,28 +1167,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -1268,8 +1268,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -1282,7 +1282,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -1292,7 +1292,8 @@
               "item": "kaleidoscope_tavern:_render/red_sofa/b88d1e55d0",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -1302,8 +1303,7 @@
               "item": "kaleidoscope_tavern:_render/red_sofa/b88d1e55d0",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -1314,45 +1314,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/red_sofa/8e949024fc",
+              "item": "kaleidoscope_tavern:_render/red_sofa/ffc021e4a3",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/red_sofa/8e949024fc",
+              "item": "kaleidoscope_tavern:_render/red_sofa/ffc021e4a3",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/red_sofa/8e949024fc",
+              "item": "kaleidoscope_tavern:_render/red_sofa/ffc021e4a3",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/red_sofa/ffc021e4a3",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/red_sofa/8e949024fc",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -1360,47 +1371,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/red_sofa/692181d057",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/red_sofa/692181d057",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/red_sofa/692181d057",
+              "item": "kaleidoscope_tavern:_render/red_sofa/8e949024fc",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/red_sofa/8e949024fc",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/red_sofa/692181d057",
+              "item": "kaleidoscope_tavern:_render/red_sofa/8e949024fc",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -1417,28 +1417,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -1518,8 +1518,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -1532,7 +1532,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -1542,7 +1542,8 @@
               "item": "kaleidoscope_tavern:_render/orange_sofa/dc990575a3",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -1552,8 +1553,7 @@
               "item": "kaleidoscope_tavern:_render/orange_sofa/dc990575a3",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -1564,45 +1564,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/orange_sofa/2374221293",
+              "item": "kaleidoscope_tavern:_render/orange_sofa/dcaabe3980",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/orange_sofa/2374221293",
+              "item": "kaleidoscope_tavern:_render/orange_sofa/dcaabe3980",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/orange_sofa/2374221293",
+              "item": "kaleidoscope_tavern:_render/orange_sofa/dcaabe3980",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/orange_sofa/dcaabe3980",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/orange_sofa/2374221293",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -1610,47 +1621,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/orange_sofa/be8b2c155a",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/orange_sofa/be8b2c155a",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/orange_sofa/be8b2c155a",
+              "item": "kaleidoscope_tavern:_render/orange_sofa/2374221293",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/orange_sofa/2374221293",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/orange_sofa/be8b2c155a",
+              "item": "kaleidoscope_tavern:_render/orange_sofa/2374221293",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -1667,28 +1667,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -1768,8 +1768,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -1782,7 +1782,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -1792,7 +1792,8 @@
               "item": "kaleidoscope_tavern:_render/yellow_sofa/51ac121352",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -1802,8 +1803,7 @@
               "item": "kaleidoscope_tavern:_render/yellow_sofa/51ac121352",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -1814,45 +1814,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/yellow_sofa/f722fc3bf4",
+              "item": "kaleidoscope_tavern:_render/yellow_sofa/30d7f0d696",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/yellow_sofa/f722fc3bf4",
+              "item": "kaleidoscope_tavern:_render/yellow_sofa/30d7f0d696",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/yellow_sofa/f722fc3bf4",
+              "item": "kaleidoscope_tavern:_render/yellow_sofa/30d7f0d696",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/yellow_sofa/30d7f0d696",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/yellow_sofa/f722fc3bf4",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -1860,47 +1871,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/yellow_sofa/a7133434ce",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/yellow_sofa/a7133434ce",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/yellow_sofa/a7133434ce",
+              "item": "kaleidoscope_tavern:_render/yellow_sofa/f722fc3bf4",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/yellow_sofa/f722fc3bf4",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/yellow_sofa/a7133434ce",
+              "item": "kaleidoscope_tavern:_render/yellow_sofa/f722fc3bf4",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -1917,28 +1917,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -2018,8 +2018,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -2032,7 +2032,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -2042,7 +2042,8 @@
               "item": "kaleidoscope_tavern:_render/lime_sofa/d3debc96d8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -2052,8 +2053,7 @@
               "item": "kaleidoscope_tavern:_render/lime_sofa/d3debc96d8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -2064,45 +2064,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/lime_sofa/98f6b83c3a",
+              "item": "kaleidoscope_tavern:_render/lime_sofa/7464f4da59",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/lime_sofa/98f6b83c3a",
+              "item": "kaleidoscope_tavern:_render/lime_sofa/7464f4da59",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/lime_sofa/98f6b83c3a",
+              "item": "kaleidoscope_tavern:_render/lime_sofa/7464f4da59",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/lime_sofa/7464f4da59",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/lime_sofa/98f6b83c3a",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -2110,47 +2121,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/lime_sofa/f217630dc5",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/lime_sofa/f217630dc5",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/lime_sofa/f217630dc5",
+              "item": "kaleidoscope_tavern:_render/lime_sofa/98f6b83c3a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/lime_sofa/98f6b83c3a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/lime_sofa/f217630dc5",
+              "item": "kaleidoscope_tavern:_render/lime_sofa/98f6b83c3a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -2167,28 +2167,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -2268,8 +2268,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -2282,7 +2282,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -2292,7 +2292,8 @@
               "item": "kaleidoscope_tavern:_render/green_sofa/e7558ca5da",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -2302,8 +2303,7 @@
               "item": "kaleidoscope_tavern:_render/green_sofa/e7558ca5da",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -2314,45 +2314,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/green_sofa/ae7b173bea",
+              "item": "kaleidoscope_tavern:_render/green_sofa/d8017a90ef",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/green_sofa/ae7b173bea",
+              "item": "kaleidoscope_tavern:_render/green_sofa/d8017a90ef",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/green_sofa/ae7b173bea",
+              "item": "kaleidoscope_tavern:_render/green_sofa/d8017a90ef",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/green_sofa/d8017a90ef",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/green_sofa/ae7b173bea",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -2360,47 +2371,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/green_sofa/e03d7ea462",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/green_sofa/e03d7ea462",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/green_sofa/e03d7ea462",
+              "item": "kaleidoscope_tavern:_render/green_sofa/ae7b173bea",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/green_sofa/ae7b173bea",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/green_sofa/e03d7ea462",
+              "item": "kaleidoscope_tavern:_render/green_sofa/ae7b173bea",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -2417,28 +2417,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -2518,8 +2518,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -2532,7 +2532,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -2542,7 +2542,8 @@
               "item": "kaleidoscope_tavern:_render/cyan_sofa/c1980ec218",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -2552,8 +2553,7 @@
               "item": "kaleidoscope_tavern:_render/cyan_sofa/c1980ec218",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -2564,45 +2564,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cyan_sofa/eeb2874a05",
+              "item": "kaleidoscope_tavern:_render/cyan_sofa/0ab631387e",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cyan_sofa/eeb2874a05",
+              "item": "kaleidoscope_tavern:_render/cyan_sofa/0ab631387e",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cyan_sofa/eeb2874a05",
+              "item": "kaleidoscope_tavern:_render/cyan_sofa/0ab631387e",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/cyan_sofa/0ab631387e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/cyan_sofa/eeb2874a05",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -2610,47 +2621,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cyan_sofa/143cc0c02f",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cyan_sofa/143cc0c02f",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cyan_sofa/143cc0c02f",
+              "item": "kaleidoscope_tavern:_render/cyan_sofa/eeb2874a05",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/cyan_sofa/eeb2874a05",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cyan_sofa/143cc0c02f",
+              "item": "kaleidoscope_tavern:_render/cyan_sofa/eeb2874a05",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -2667,28 +2667,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -2768,8 +2768,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -2782,7 +2782,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -2792,7 +2792,8 @@
               "item": "kaleidoscope_tavern:_render/light_blue_sofa/d8c4a655f0",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -2802,8 +2803,7 @@
               "item": "kaleidoscope_tavern:_render/light_blue_sofa/d8c4a655f0",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -2814,45 +2814,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_blue_sofa/ab261c2c9a",
+              "item": "kaleidoscope_tavern:_render/light_blue_sofa/ddd37e8a7b",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_blue_sofa/ab261c2c9a",
+              "item": "kaleidoscope_tavern:_render/light_blue_sofa/ddd37e8a7b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_blue_sofa/ab261c2c9a",
+              "item": "kaleidoscope_tavern:_render/light_blue_sofa/ddd37e8a7b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/light_blue_sofa/ddd37e8a7b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/light_blue_sofa/ab261c2c9a",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -2860,47 +2871,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_blue_sofa/662db3a45f",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_blue_sofa/662db3a45f",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_blue_sofa/662db3a45f",
+              "item": "kaleidoscope_tavern:_render/light_blue_sofa/ab261c2c9a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/light_blue_sofa/ab261c2c9a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/light_blue_sofa/662db3a45f",
+              "item": "kaleidoscope_tavern:_render/light_blue_sofa/ab261c2c9a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -2917,28 +2917,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -3018,8 +3018,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -3032,7 +3032,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -3042,7 +3042,8 @@
               "item": "kaleidoscope_tavern:_render/blue_sofa/edee85debb",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -3052,8 +3053,7 @@
               "item": "kaleidoscope_tavern:_render/blue_sofa/edee85debb",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -3064,45 +3064,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/blue_sofa/f693b49aa8",
+              "item": "kaleidoscope_tavern:_render/blue_sofa/efcc3baa65",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/blue_sofa/f693b49aa8",
+              "item": "kaleidoscope_tavern:_render/blue_sofa/efcc3baa65",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/blue_sofa/f693b49aa8",
+              "item": "kaleidoscope_tavern:_render/blue_sofa/efcc3baa65",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/blue_sofa/efcc3baa65",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/blue_sofa/f693b49aa8",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -3110,47 +3121,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/blue_sofa/4604d8ce8c",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/blue_sofa/4604d8ce8c",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/blue_sofa/4604d8ce8c",
+              "item": "kaleidoscope_tavern:_render/blue_sofa/f693b49aa8",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/blue_sofa/f693b49aa8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/blue_sofa/4604d8ce8c",
+              "item": "kaleidoscope_tavern:_render/blue_sofa/f693b49aa8",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -3167,28 +3167,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -3268,8 +3268,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -3282,7 +3282,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -3292,7 +3292,8 @@
               "item": "kaleidoscope_tavern:_render/purple_sofa/b9560cc5d5",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -3302,8 +3303,7 @@
               "item": "kaleidoscope_tavern:_render/purple_sofa/b9560cc5d5",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -3314,45 +3314,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/purple_sofa/21936ede9c",
+              "item": "kaleidoscope_tavern:_render/purple_sofa/d51e2bc22d",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/purple_sofa/21936ede9c",
+              "item": "kaleidoscope_tavern:_render/purple_sofa/d51e2bc22d",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/purple_sofa/21936ede9c",
+              "item": "kaleidoscope_tavern:_render/purple_sofa/d51e2bc22d",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/purple_sofa/d51e2bc22d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/purple_sofa/21936ede9c",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -3360,47 +3371,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/purple_sofa/1572d8b0be",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/purple_sofa/1572d8b0be",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/purple_sofa/1572d8b0be",
+              "item": "kaleidoscope_tavern:_render/purple_sofa/21936ede9c",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/purple_sofa/21936ede9c",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/purple_sofa/1572d8b0be",
+              "item": "kaleidoscope_tavern:_render/purple_sofa/21936ede9c",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -3417,28 +3417,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -3518,8 +3518,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -3532,7 +3532,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -3542,7 +3542,8 @@
               "item": "kaleidoscope_tavern:_render/magenta_sofa/84c316cf48",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -3552,8 +3553,7 @@
               "item": "kaleidoscope_tavern:_render/magenta_sofa/84c316cf48",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -3564,45 +3564,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/magenta_sofa/e2a4b44c2e",
+              "item": "kaleidoscope_tavern:_render/magenta_sofa/943e14f882",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/magenta_sofa/e2a4b44c2e",
+              "item": "kaleidoscope_tavern:_render/magenta_sofa/943e14f882",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/magenta_sofa/e2a4b44c2e",
+              "item": "kaleidoscope_tavern:_render/magenta_sofa/943e14f882",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/magenta_sofa/943e14f882",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/magenta_sofa/e2a4b44c2e",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -3610,47 +3621,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/magenta_sofa/9462b0d342",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/magenta_sofa/9462b0d342",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/magenta_sofa/9462b0d342",
+              "item": "kaleidoscope_tavern:_render/magenta_sofa/e2a4b44c2e",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/magenta_sofa/e2a4b44c2e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/magenta_sofa/9462b0d342",
+              "item": "kaleidoscope_tavern:_render/magenta_sofa/e2a4b44c2e",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -3667,28 +3667,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
@@ -3768,8 +3768,8 @@
             "default": "straight",
             "values": [
               "inner_left",
-              "inner_right",
-              "straight"
+              "straight",
+              "inner_right"
             ]
           }
         },
@@ -3782,7 +3782,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
@@ -3792,7 +3792,8 @@
               "item": "kaleidoscope_tavern:_render/pink_sofa/6e4c091e57",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -3802,8 +3803,7 @@
               "item": "kaleidoscope_tavern:_render/pink_sofa/6e4c091e57",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -3814,45 +3814,56 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_4": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/pink_sofa/98492ef8fb",
+              "item": "kaleidoscope_tavern:_render/pink_sofa/d4bf3fed1b",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_5": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/pink_sofa/98492ef8fb",
+              "item": "kaleidoscope_tavern:_render/pink_sofa/d4bf3fed1b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/pink_sofa/98492ef8fb",
+              "item": "kaleidoscope_tavern:_render/pink_sofa/d4bf3fed1b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pink_sofa/d4bf3fed1b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
               "item": "kaleidoscope_tavern:_render/pink_sofa/98492ef8fb",
               "display_transform": "none",
               "shadow_radius": 0,
@@ -3860,47 +3871,36 @@
               "rotation": "0,270,0"
             }
           },
-          "appearance_8": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/pink_sofa/2442b9d843",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,90,0"
-            }
-          },
           "appearance_9": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/pink_sofa/2442b9d843",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:barrier",
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/pink_sofa/2442b9d843",
+              "item": "kaleidoscope_tavern:_render/pink_sofa/98492ef8fb",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pink_sofa/98492ef8fb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_11": {
             "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/pink_sofa/2442b9d843",
+              "item": "kaleidoscope_tavern:_render/pink_sofa/98492ef8fb",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -3917,28 +3917,28 @@
           "facing=west,shape=inner_left": {
             "appearance": "appearance_3"
           },
-          "facing=east,shape=inner_right": {
+          "facing=east,shape=straight": {
             "appearance": "appearance_4"
           },
-          "facing=north,shape=inner_right": {
+          "facing=north,shape=straight": {
             "appearance": "appearance_5"
           },
-          "facing=south,shape=inner_right": {
+          "facing=south,shape=straight": {
             "appearance": "appearance_6"
           },
-          "facing=west,shape=inner_right": {
+          "facing=west,shape=straight": {
             "appearance": "appearance_7"
           },
-          "facing=east,shape=straight": {
+          "facing=east,shape=inner_right": {
             "appearance": "appearance_8"
           },
-          "facing=north,shape=straight": {
+          "facing=north,shape=inner_right": {
             "appearance": "appearance_9"
           },
-          "facing=south,shape=straight": {
+          "facing=south,shape=inner_right": {
             "appearance": "appearance_10"
           },
-          "facing=west,shape=straight": {
+          "facing=west,shape=inner_right": {
             "appearance": "appearance_11"
           }
         }
