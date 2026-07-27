@@ -2174,32 +2174,53 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Paper entity lifecycle events must keep custom-effect ticks free of repeated "
                 f"validity/UUID probes; found {stale_effect_entity_probe}")
-    for tracked_particle_token in (
-            "Set<Player> trackedBy = living.getTrackedBy()",
-            "if (trackedBy.isEmpty() && !includeSelf)",
-            "effectParticleOptionCache.get(chosen)",
-            "effectParticleOptionCache.put(chosen, particleOption)",
-            "ViewerEffectPackets.sendEntityEffectParticle(",
-            "spawnParticle(Particle.ENTITY_EFFECT, receivers, null",
-            "living.getX() + (random.nextDouble() - 0.5) * living.getWidth()"):
-        if tracked_particle_token not in effect_service_source:
+    for event_particle_token in (
+            "private final Map<UUID, List<Object>> effectParticleDataCache",
+            "private final Set<UUID> pendingEffectParticleRefresh",
+            "scheduleEffectParticleRefresh(event.getEntity(), 2L)",
+            "syncEffectParticleMetadata(target, effects)",
+            "syncEffectParticleMetadata(living, effects)",
+            "sendEffectParticleMetadata(viewer, living)",
+            "restoreAllEffectParticleMetadata()",
+            "if (!particleMetadataAvailable) {\n                spawnEffectParticles(living, effects);",
+            "effect.tickKind() != TickKind.NONE",
+            "private final TickKind tickKind",
+            "elapsedTicks % 3L != 0",
+            "living.isInvisible() && elapsedTicks % 15L != 0"):
+        if event_particle_token not in effect_service_source:
             raise AssertionError(
-                "Custom effect particles must target only actual entity observers; "
-                f"missing {tracked_particle_token}")
+                "Custom effect particles must use event-driven client metadata and keep the "
+                f"legacy tick path as failure-only fallback; missing {event_particle_token}")
     if "living.getWorld().spawnParticle(Particle.ENTITY_EFFECT,\n                box." in effect_service_source:
         raise AssertionError(
             "Custom effect particles must not scan every player in the world")
-    for particle_bridge_token in (
+    for metadata_bridge_token in (
+            "EntityDataSerializersProxy.PARTICLES",
+            "findDataValueBySerializer(",
+            "mergedParticles.addAll(vanillaParticles)",
+            "mergedParticles.addAll(customParticles)",
+            "EntityDataSerializersProxy.BOOLEAN, false",
+            "sendEffectParticleMetadata(Collection<Player> viewers"):
+        if metadata_bridge_token not in viewer_packet_source:
+            raise AssertionError(
+                "Custom effect particles must merge Paper's real potion metadata and let "
+                f"clients render it; missing {metadata_bridge_token}")
+    for fallback_particle_bridge_token in (
+            "Set<Player> trackedBy = living.getTrackedBy()",
+            "effectParticleOptionCache.get(chosen)",
+            "ViewerEffectPackets.sendEntityEffectParticle(",
+            "spawnParticle(Particle.ENTITY_EFFECT, receivers, null",
             'Class.forName("org.bukkit.craftbukkit.CraftParticle")',
             '"createParticleParam", Particle.class, Object.class',
             "ServerLevelProxy.CLASS.getMethods()",
             'method.getName().equals("sendParticlesSource")',
             "CraftWorldProxy.INSTANCE.getWorld(world)",
             "CraftEntityProxy.INSTANCE.getEntity(receiver)"):
-        if particle_bridge_token not in viewer_packet_source:
+        sources = effect_service_source + viewer_packet_source
+        if fallback_particle_bridge_token not in sources:
             raise AssertionError(
-                "Custom effect particles must reuse Paper's receiver-aware native packet path; "
-                f"missing {particle_bridge_token}")
+                "Custom effect particles must retain the receiver-aware server packet fallback; "
+                f"missing {fallback_particle_bridge_token}")
     for allocation_free_tick_token in (
             "Iterator<Map.Entry<String, ActiveEffect>> effectIterator",
             "effectIterator.remove()",
