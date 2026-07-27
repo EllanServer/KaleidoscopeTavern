@@ -152,8 +152,6 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
     }
 
     public enum Channel {
-        INCENSE_EFFECT,
-        INCENSE_PARTICLE,
         MYSTERY_PARTICLE,
         RACK_PARTICLE,
         BARREL;

@@ -151,6 +151,19 @@ COMMON_TAG_FALLBACKS: dict[str, list[str]] = {
 }
 
 
+INCENSE_SPECS: dict[str, tuple[str, str, float, float]] = {
+    "sakura_incense": ("CHERRY_LEAVES", "CHERRY_LEAVES", -2.0, 16.0),
+    "pine_incense": ("SMOKE", "CAMPFIRE_COSY_SMOKE", -2.0, 16.0),
+    "ginkgo_incense": ("WAX_OFF", "COMPOSTER", -2.0, 16.0),
+    "spore_incense": ("SPORE_BLOSSOM_AIR", "SPORE_BLOSSOM_AIR", -2.0, 16.0),
+    "catnip_incense": ("HAPPY_VILLAGER", "HAPPY_VILLAGER", -2.0, 16.0),
+    "snow_incense": ("SNOWFLAKE", "SNOWFLAKE", -2.0, 16.0),
+    "butterfly_incense": ("GLOW", "GLOW", -2.0, 16.0),
+    "firefly_incense": ("FIREFLY", "FIREFLY", -0.67, 5.33),
+}
+INCENSE_BLOCKS = frozenset(INCENSE_SPECS)
+
+
 def is_grid_block(block_id: str) -> bool:
     """Content that benefits from real block state/physics stays a block.
 
@@ -161,6 +174,7 @@ def is_grid_block(block_id: str) -> bool:
 
     return (
         block_id.startswith("string_lights_")
+        or block_id in INCENSE_BLOCKS
         or block_id in {
             "wild_grapevine", "wild_grapevine_plant", "trellis",
             "grapevine_trellis", "grape_crop",
@@ -630,6 +644,15 @@ def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
 
 
 def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | list[dict[str, Any]] | None:
+    if block_id in INCENSE_BLOCKS:
+        small, large, y_offset, y_range = INCENSE_SPECS[block_id]
+        return {
+            "type": f"{NAMESPACE}:incense",
+            "small_particle": small,
+            "large_particle": large,
+            "large_particle_y_offset": y_offset,
+            "large_particle_y_range": y_range,
+        }
     if block_id == "wild_grapevine":
         # A single Tavern behavior wraps CE's native vine-head lifecycle and
         # adds the legacy sheared growth lock. Keeping both behaviors in a CE
@@ -690,12 +713,13 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
             "fall": "minecraft:block.grass.fall",
         }
     else:
-        family = "chain" if is_string_lights else "wood"
+        family = ("decorated_pot" if block_id in INCENSE_BLOCKS
+                  else "chain" if is_string_lights else "wood")
         sound_type = {
             action: f"minecraft:block.{family}.{action}"
             for action in ("break", "step", "place", "hit", "fall")
         }
-    hardness = 0.0 if is_wild_vine or is_crop else 0.8
+    hardness = 0.0 if is_wild_vine or is_crop or block_id in INCENSE_BLOCKS else 0.8
     settings: dict[str, Any] = {
         "hardness": hardness,
         "resistance": hardness,
@@ -707,15 +731,13 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
         "propagate_skylight": True,
         "sounds": sound_type,
         "tags": (["minecraft:mineable/pickaxe"] if is_string_lights
-                 else [] if is_wild_vine or is_crop
+                 else [] if is_wild_vine or is_crop or block_id in INCENSE_BLOCKS
                  else ["minecraft:mineable/axe"]),
     }
     if has_item:
         settings["item"] = f"{NAMESPACE}:{block_id}"
     if "lamp" in block_id or is_string_lights:
         settings["luminance"] = 15
-    if block_id.endswith("_incense"):
-        settings["luminance"] = 7
     return settings
 
 
@@ -807,9 +829,11 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 appearance_name = f"appearance_{len(appearance_names)}"
                 appearance_names[model] = appearance_name
                 appearance: dict[str, Any] = {}
-                render_hash = hashlib.sha1(
-                    "|".join(map(str, model)).encode("utf-8")
-                ).hexdigest()[:10]
+                # Incense facing is an ItemDisplay transform, not a distinct
+                # item model. Reuse the same two render helpers for all four
+                # directions just as the former furniture definitions did.
+                render_identity = model[0] if block_id in INCENSE_BLOCKS else "|".join(map(str, model))
+                render_hash = hashlib.sha1(render_identity.encode("utf-8")).hexdigest()[:10]
                 render_path = f"_render/{block_id}/{render_hash}"
                 render_id = f"{NAMESPACE}:{render_path}"
                 render_items[render_id] = {
@@ -828,7 +852,16 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 if any(model[1:4]):
                     renderer["rotation"] = f"{model[1]},{model[2]},{model[3]}"
 
-                if trellis_type is not None:
+                if block_id in INCENSE_BLOCKS:
+                    # CE 26.7.4 explicitly releases the un-waxed source state
+                    # and remaps it to the waxed client state. Its compact,
+                    # aimable standing-lantern shape replaces the former CE
+                    # Interaction plus shulker furniture hitboxes.
+                    appearance["state"] = (
+                        "minecraft:copper_lantern"
+                        "[hanging=false,waterlogged=false]"
+                    )
+                elif trellis_type is not None:
                     appearance["state"] = trellis_carrier_state(trellis_type)
                     metrics["collidable_trellises"] += 1
                 elif (block_id in {"wild_grapevine", "wild_grapevine_plant"}
@@ -1117,8 +1150,6 @@ def source_boxes(block_id: str, anchor: str, properties: dict[str, str]) -> list
             "wall": [(1, 1, 0, 15, 15, 1)],
             "ceiling": [(1, 15, 1, 15, 16, 15)],
         }[anchor]
-    if block_id.endswith("_incense"):
-        return [(5, 0, 5, 11, 7, 11)]
     if block_id == "pressing_tub":
         if anchor == "ground":
             # SHAPE is a half-block tub with a four-pixel floor and walls.
@@ -1535,7 +1566,7 @@ def furniture_hitboxes(
         return hitboxes
     if block_id in {"tilted_rack", "holder"}:
         return [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
-    if block_id in SMALL_FURNITURE or block_id.endswith("_incense"):
+    if block_id in SMALL_FURNITURE:
         return [interaction_box(aggregate, anchor), *(hitbox for box in boxes for hitbox in physical_box(box, anchor))]
     if block_id == "pressing_tub":
         return [
@@ -1871,50 +1902,6 @@ def grapevine_trellis_shear_events() -> list[dict[str, Any]]:
             {"type": "damage_item", "amount": 1},
             {"type": "play_sound", "sound": "minecraft:block.beehive.shear",
              "source": "block", "target": "self"},
-            {"type": "swing_hand"},
-            {"type": "cancel_event"},
-        ],
-    }]
-
-
-def incense_toggle_events() -> list[dict[str, Any]]:
-    """IncenseBlock#use lit toggling as a CraftEngine furniture event.
-
-    The *_open furniture variant is the single source of truth for a lit
-    incense, so the toggle must be atomic: two mutually exclusive events on
-    the same trigger would both run in order (the second sees the variant the
-    first just set and flips it straight back).  A single if_else runs only
-    the first matching branch.  Message texts mirror the plugin's config.yml
-    incense-on/incense-off entries, prefix included; the redstone edge toggle
-    stays in StationService and writes the same variant.
-    """
-    prefix = "<dark_aqua>[森罗酒馆]</dark_aqua> "
-    return [{
-        "on": "right_click",
-        "conditions": [{"type": "hand", "hand": "main_hand"}],
-        "functions": [
-            {"type": "if_else", "rules": [
-                {"conditions": [{"type": "match_furniture_variant",
-                                 "variant": "ground"}],
-                 "functions": [
-                     {"type": "set_furniture_variant", "variant": "ground_open"},
-                     {"type": "play_sound",
-                      "sound": "minecraft:block.stone_button.click_on",
-                      "source": "block"},
-                     {"type": "message",
-                      "message": f"{prefix}<green>香炉已点燃。</green>"},
-                 ]},
-                {"conditions": [{"type": "match_furniture_variant",
-                                 "variant": "ground_open"}],
-                 "functions": [
-                     {"type": "set_furniture_variant", "variant": "ground"},
-                     {"type": "play_sound",
-                      "sound": "minecraft:block.stone_button.click_off",
-                      "source": "block"},
-                     {"type": "message",
-                      "message": f"{prefix}<gray>香炉已熄灭。</gray>"},
-                 ]},
-            ]},
             {"type": "swing_hand"},
             {"type": "cancel_event"},
         ],
@@ -2451,8 +2438,6 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     redstone_channel: str | None = None
     if block_id == "tap":
         redstone_channel = "tap"
-    elif block_id.endswith("_incense"):
-        redstone_channel = "incense"
     elif block_id in {"cellar_cabinet", "tilted_rack", "circular_rack", "holder"}:
         redstone_channel = "storage"
     if redstone_channel is not None:
@@ -2465,20 +2450,7 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
             "data_key": f"{NAMESPACE}:redstone_{block_id}",
         })
 
-    if block_id.endswith("_incense"):
-        behaviors.extend(({
-            "type": f"{NAMESPACE}:ticking_furniture",
-            "channel": "incense_effect",
-            "interval": 120,
-            "phase": "global",
-        }, {
-            "type": f"{NAMESPACE}:ticking_furniture",
-            "channel": "incense_particle",
-            # Client animateTick reaches a given nearby block at about 1/49
-            # per tick. The controller samples the equivalent geometric wait.
-            "chance": 49,
-        }))
-    elif block_id == "mystery_cocktail":
+    if block_id == "mystery_cocktail":
         behaviors.append({
             "type": f"{NAMESPACE}:ticking_furniture",
             "channel": "mystery_particle",
@@ -2519,8 +2491,6 @@ def furniture_settings(block_id: str) -> dict[str, Any]:
         family = "wool"
     elif block_id in PENDANT_LAMPS:
         family = "chain"
-    elif block_id.endswith("_incense"):
-        family = "decorated_pot"
     elif block_id in {"tap", "glassware_holder"}:
         family = "metal"
     elif block_id == "shaker":
@@ -2532,7 +2502,6 @@ def furniture_settings(block_id: str) -> dict[str, Any]:
     instant_break = (
         block_id in BOTTLE_AND_GLASS_ITEMS
         or block_id == "shaker"
-        or block_id.endswith("_incense")
     )
     sounds: dict[str, Any] = {
         action: f"minecraft:block.{family}.{action}"
@@ -2805,8 +2774,6 @@ def build_furniture(
             config["behavior"] = behaviors[0]
         elif behaviors:
             config["behaviors"] = behaviors
-        if block_id.endswith("_incense"):
-            config["events"] = incense_toggle_events()
         furniture[full_id] = config
         metrics["furniture_variants"] += len(variants)
 

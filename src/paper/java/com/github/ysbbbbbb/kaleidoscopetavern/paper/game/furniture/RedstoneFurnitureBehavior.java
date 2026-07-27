@@ -228,7 +228,6 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
     }
 
     public enum Channel {
-        INCENSE,
         TAP,
         STORAGE;
 
@@ -487,8 +486,8 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
                 // exposes that exact NMS query as isBlockIndirectlyPowered();
                 // isBlockPowered() performs a second, stronger-signal scan and
                 // would both widen the source behavior and duplicate hot-path
-                // work for every loaded incense and launcher each tick.
-                case INCENSE, STORAGE -> SignalGetterProxy.INSTANCE.hasNeighborSignal(
+                // work for every loaded storage controller each tick.
+                case STORAGE -> SignalGetterProxy.INSTANCE.hasNeighborSignal(
                         minecraftWorld, primaryPowerPos);
                 case TAP -> SignalGetterProxy.INSTANCE.hasNeighborSignal(
                         minecraftWorld, primaryPowerPos)

@@ -7,7 +7,6 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.Effec
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.PressingRecipe;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.PressingTubFurnitureBehavior;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnitureBehavior;
@@ -100,8 +99,6 @@ public final class StationService implements Listener {
     private final Consumer<Boolean> pressLandingAvailabilityHandler =
             this::setPressLandingEventsActive;
     private boolean pressLandingEventsActive;
-    private final RedstoneFurnitureBehavior.Handler incenseRedstoneHandler =
-            (furniture, powered, initial) -> setIncenseActive(furniture, powered, !initial);
     private final StationVisualFurnitureBehavior.Handler stationVisualHandler =
             this::stationVisuals;
     private final StationInteractionFurnitureBehavior.Handler stationInteractionHandler =
@@ -139,8 +136,6 @@ public final class StationService implements Listener {
         StationInteractionFurnitureBehavior.bind(stationInteractionHandler);
         ShakerItemBehavior.bind(shakerItemHandler);
         StationVisualFurnitureBehavior.bind(stationVisualHandler);
-        RedstoneFurnitureBehavior.bind(
-                RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
         TickingFurnitureBehavior.bind(
                 TickingFurnitureBehavior.Channel.BARREL, barrelTickingHandler);
         PressingTubFurnitureBehavior.bindAvailability(pressLandingAvailabilityHandler);
@@ -150,8 +145,6 @@ public final class StationService implements Listener {
         StationInteractionFurnitureBehavior.unbind(stationInteractionHandler);
         ShakerItemBehavior.unbind(shakerItemHandler);
         StationVisualFurnitureBehavior.unbind(stationVisualHandler);
-        RedstoneFurnitureBehavior.unbind(
-                RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
         TickingFurnitureBehavior.unbind(
                 TickingFurnitureBehavior.Channel.BARREL, barrelTickingHandler);
         PressingTubFurnitureBehavior.unbindAvailability(
@@ -1263,27 +1256,6 @@ public final class StationService implements Listener {
                     "barrel_started", "barrel_level", "barrel_time");
         }
         return true;
-    }
-
-    /**
-     * Manual toggling now lives in the generated CE furniture events; the
-     * {@code *_open} furniture variant is the single source of truth for a
-     * lit incense. This setter remains for the redstone edge toggle and the
-     * placement initializer, both of which write the same variant.
-     */
-    private void setIncenseActive(BukkitFurniture furniture, boolean active, boolean playSound) {
-        String current = furniture.currentVariant().name();
-        boolean wasActive = current.endsWith("_open");
-        if (wasActive != active) {
-            String base = wasActive ? current.substring(0, current.length() - 5) : current;
-            furniture.setVariant(active ? base + "_open" : base, true);
-        }
-        if (playSound && wasActive != active) {
-            furniture.location().getWorld().playSound(furniture.location(),
-                    active ? "minecraft:block.stone_button.click_on"
-                            : "minecraft:block.stone_button.click_off",
-                    1.0F, 1.0F);
-        }
     }
 
     private void cleanupFalling() {

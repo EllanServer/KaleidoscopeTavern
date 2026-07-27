@@ -18,30 +18,12 @@ NAMESPACE = "kaleidoscope_tavern"
 EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
 EXPECTED_REDSTONE_FURNITURE = {
     "tap": "tap",
-    "sakura_incense": "incense",
-    "pine_incense": "incense",
-    "ginkgo_incense": "incense",
-    "snow_incense": "incense",
-    "spore_incense": "incense",
-    "catnip_incense": "incense",
-    "butterfly_incense": "incense",
-    "firefly_incense": "incense",
     "cellar_cabinet": "storage",
     "tilted_rack": "storage",
     "circular_rack": "storage",
     "holder": "storage",
 }
 EXPECTED_TICKING_FURNITURE = {
-    **{
-        incense: (
-            {"channel": "incense_effect", "interval": 120, "phase": "global"},
-            {"channel": "incense_particle", "chance": 49},
-        )
-        for incense in (
-            "sakura_incense", "pine_incense", "ginkgo_incense", "snow_incense",
-            "spore_incense", "catnip_incense", "butterfly_incense", "firefly_incense",
-        )
-    },
     "mystery_cocktail": (
         {"channel": "mystery_particle", "chance": 49},
     ),
@@ -51,6 +33,16 @@ EXPECTED_TICKING_FURNITURE = {
     "barrel": (
         {"channel": "barrel", "interval": 97, "phase": "identity"},
     ),
+}
+INCENSE_BLOCK_SPECS = {
+    "sakura_incense": ("CHERRY_LEAVES", "CHERRY_LEAVES", -2.0, 16.0),
+    "pine_incense": ("SMOKE", "CAMPFIRE_COSY_SMOKE", -2.0, 16.0),
+    "ginkgo_incense": ("WAX_OFF", "COMPOSTER", -2.0, 16.0),
+    "spore_incense": ("SPORE_BLOSSOM_AIR", "SPORE_BLOSSOM_AIR", -2.0, 16.0),
+    "catnip_incense": ("HAPPY_VILLAGER", "HAPPY_VILLAGER", -2.0, 16.0),
+    "snow_incense": ("SNOWFLAKE", "SNOWFLAKE", -2.0, 16.0),
+    "butterfly_incense": ("GLOW", "GLOW", -2.0, 16.0),
+    "firefly_incense": ("FIREFLY", "FIREFLY", -0.67, 5.33),
 }
 EXPECTED_STATE_FURNITURE = {
     "chalkboard",
@@ -176,9 +168,9 @@ SOURCE_STATE_OWNERS = {
     "face": "CE ground/wall/ceiling placement rules",
     "facing": "CE four-way/sixteen-way furniture rotation",
     "half": "composite multi-element furniture variants",
-    "open": "furniture.json incense toggle events, StationService and TapService",
+    "open": "CE incense block state and TapService furniture state",
     "position": "FurnitureConnectionService",
-    "powered": "RedstoneFurnitureBehavior CE controller state and service callbacks",
+    "powered": "CE incense block state and RedstoneFurnitureBehavior callbacks",
     "rotation": "CE sixteen-way sandwich-board rotation",
     "tilt": "ground/wall pressing-tub placement variants",
     "triggered": "RedstoneFurnitureBehavior tap edge latch",
@@ -282,12 +274,11 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "HolderBlock.java": (("DisplayStorageService.java", "HOLDER"),),
     "IncenseBlock.java": (
-        ("src/paper/pack/configuration/furniture.json", "set_furniture_variant"),
-        ("furniture/RedstoneFurnitureBehavior.java", "onPowerState"),
-        ("StationService.java", "RedstoneFurnitureBehavior.bind("),
-        ("StationService.java", "RedstoneFurnitureBehavior.Channel.INCENSE"),
-        ("AmbientFurnitureService.java", "tickIncense"),
-        ("AmbientFurnitureService.java", "TickingFurnitureBehavior.bind("),
+        ("src/paper/pack/configuration/blocks.json", "minecraft:copper_lantern"),
+        ("block/IncenseBlockBehavior.java", "updateStateForPlacement"),
+        ("block/IncenseBlockBehavior.java", "neighborChanged"),
+        ("block/IncenseBlockBehavior.java", "useOnBlock"),
+        ("block/IncenseBlockBehavior.java", "spawnParticles"),
     ),
     "JuiceBucketItem.java": (("tools/migrate_legacy.py", "milk_bucket"),),
     "MolotovBlock.java": (("MolotovService.java", "onProjectileHit"),),
@@ -418,8 +409,8 @@ BLOCK_ENTITY_COVERAGE = {
     "GlasswareHolderBlockEntity.java": (("DisplayStorageService.java", "GLASSWARE_HOLDER"),),
     "HolderBlockEntity.java": (("DisplayStorageService.java", "HOLDER"),),
     "IncenseBlockEntity.java": (
-        ("AmbientFurnitureService.java", "tickIncenseEffect"),
-        ("furniture/TickingFurnitureBehavior.java", "INCENSE_EFFECT"),
+        ("block/IncenseBlockBehavior.java", "hurtNearbyUndead"),
+        ("block/IncenseBlockBehavior.java", "world.getGameTime() % 120L"),
     ),
     "SandwichBlockEntity.java": (("BoardTextService.java", "isSandwichBoard"),),
     "StorageBlockEntity.java": (("DisplayStorageService.java", "StorageSpec"),),
@@ -617,10 +608,10 @@ def validate() -> dict[str, int]:
 
     if len(items) != 157:
         raise AssertionError(f"Expected 157 public items, found {len(items)}")
-    if len(blocks) != 41:
-        raise AssertionError(f"Expected 41 grid/state blocks, found {len(blocks)}")
-    if len(furniture) != 133:
-        raise AssertionError(f"Expected 133 furniture definitions, found {len(furniture)}")
+    if len(blocks) != 49:
+        raise AssertionError(f"Expected 49 grid/state blocks, found {len(blocks)}")
+    if len(furniture) != 125:
+        raise AssertionError(f"Expected 125 furniture definitions, found {len(furniture)}")
     if len(render_items) != 554:
         raise AssertionError(f"Expected 554 private render items, found {len(render_items)}")
     if len(recipes) != 114:
@@ -908,6 +899,7 @@ def validate() -> dict[str, int]:
             "colorless", "white", "light_gray", "gray", "black", "brown", "red", "orange",
             "yellow", "lime", "green", "cyan", "light_blue", "blue", "purple", "magenta", "pink",
         )),
+        *(f"{NAMESPACE}:{incense}" for incense in INCENSE_BLOCK_SPECS),
     }
     if set(blocks) != expected_grid_blocks:
         unexpected = sorted(set(blocks) - expected_grid_blocks)
@@ -1027,11 +1019,12 @@ def validate() -> dict[str, int]:
         encoding="utf-8-sig")
     for owner_name, owner_source in (("StationService", station_source),
                                      ("AmbientFurnitureService", ambient_source)):
-        for stale_state in ("incense_active", "interactIncense"):
+        for stale_state in ("incense_active", "interactIncense", "tickIncense",
+                            "Channel.INCENSE"):
             if stale_state in owner_source:
                 raise AssertionError(
-                    f"{owner_name}: the *_open furniture variant is the only lit-incense "
-                    f"state; {stale_state} must stay deleted")
+                    f"{owner_name}: CE blocks own incense state/ticks; "
+                    f"{stale_state} must stay deleted")
 
     plugin_source = (game_package.parent / "KaleidoscopeTavernPlugin.java").read_text(
         encoding="utf-8-sig")
@@ -1044,6 +1037,32 @@ def validate() -> dict[str, int]:
     if "PressingTubFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register pressing_tub_furniture before pack loading")
+    if "IncenseBlockBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register the CE incense block behavior before pack loading")
+    incense_behavior_source = (
+        game_package / "block/IncenseBlockBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "implements EntityBlock",
+            "BlockBehaviors.register(TYPE, IncenseBlockBehavior::new)",
+            "state.with(openProperty, powered).with(poweredProperty, powered)",
+            "powered == state.get(poweredProperty)",
+            "state.with(poweredProperty, powered)",
+            "state.with(openProperty, open)",
+            "random.nextInt(49) == 0",
+            "random.nextInt(3) == 0",
+            "world.getGameTime() % 120L == 0L",
+            "world.getNearbyLivingEntities(center, 32.5)",
+            "zombieVillager.setConversionTime(60)"):
+        if required_token not in incense_behavior_source:
+            raise AssertionError(
+                "CE incense behavior no longer preserves source interaction/tick semantics; "
+                f"missing {required_token}")
+    for stale_token in ("PersistentDataContainer", "BukkitTask", "runTaskTimer"):
+        if stale_token in incense_behavior_source:
+            raise AssertionError(
+                f"CE incense state/lifecycle must not be duplicated through {stale_token}")
     if "RedstoneFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register redstone_furniture before pack loading")
@@ -2825,8 +2844,8 @@ def validate() -> dict[str, int]:
                     f"string_lights_{color}: dye event needs match_item plus hand")
 
     # Trellis waxing/scraping and both kinds of grapevine shearing are CE block
-    # events; incense toggling is a CE furniture event. The global Java block
-    # interaction listener is deliberately gone and must not come back.
+    # events. Incense interaction is owned by its CE BlockBehavior. The global
+    # Java block interaction listener is deliberately gone and must not return.
     trellis_events = blocks[f"{NAMESPACE}:trellis"].get("events", [])
     if len(trellis_events) != 2:
         raise AssertionError("trellis: expected exactly wax-on plus wax-off events")
@@ -2908,30 +2927,62 @@ def validate() -> dict[str, int]:
             or consumed.get("functions") != [{"type": "cancel_event"}]):
         raise AssertionError("wild_grapevine: already-sheared click must only be consumed")
 
-    incense_ids = sorted(fid for fid in furniture if fid.endswith("_incense"))
-    if len(incense_ids) != 8:
-        raise AssertionError(f"Expected 8 incense furniture definitions, found {len(incense_ids)}")
-    for incense_id in incense_ids:
-        incense_events = furniture[incense_id].get("events", [])
-        if len(incense_events) != 1 or incense_events[0].get("on") != "right_click":
-            raise AssertionError(f"{incense_id}: expected one right_click toggle event")
-        toggle_functions = {f["type"]: f for f in incense_events[0]["functions"]}
-        # Two sibling events on the same trigger would both run in order (the
-        # second sees the variant the first just set and flips it straight
-        # back); only a single if_else keeps the toggle atomic.
-        if "if_else" not in toggle_functions or "cancel_event" not in toggle_functions:
+    if any(fid.endswith("_incense") for fid in furniture):
+        raise AssertionError("Incense must not retain CE furniture definitions")
+    copper_lantern = "minecraft:copper_lantern[hanging=false,waterlogged=false]"
+    for incense_name, particle_spec in INCENSE_BLOCK_SPECS.items():
+        incense_id = f"{NAMESPACE}:{incense_name}"
+        definition = blocks.get(incense_id)
+        if definition is None:
+            raise AssertionError(f"{incense_id}: missing CE block definition")
+        states = definition.get("states", {})
+        properties = states.get("properties", {})
+        if (set(properties) != {"facing", "open", "powered"}
+                or properties["facing"].get("type") != "horizontal_direction"
+                or properties["open"] != {"type": "boolean", "default": "false"}
+                or properties["powered"] != {"type": "boolean", "default": "false"}):
+            raise AssertionError(f"{incense_id}: facing/open/powered state schema drifted")
+        appearances = states.get("appearances", {})
+        variants = states.get("variants", {})
+        if len(appearances) != 8 or len(variants) != 16:
             raise AssertionError(
-                f"{incense_id}: toggle must be an atomic if_else plus cancel_event")
-        transitions = {}
-        for rule in toggle_functions["if_else"]["rules"]:
-            source = next(c for c in rule["conditions"]
-                          if c["type"] == "match_furniture_variant")["variant"]
-            rule_functions = {f["type"]: f for f in rule["functions"]}
-            transitions[source] = rule_functions["set_furniture_variant"].get("variant")
-            if "play_sound" not in rule_functions or "message" not in rule_functions:
-                raise AssertionError(f"{incense_id}: toggle branch missing sound or message")
-        if transitions != {"ground": "ground_open", "ground_open": "ground"}:
-            raise AssertionError(f"{incense_id}: toggle must swap ground and ground_open")
+                f"{incense_id}: expected 8 visual appearances and 16 state variants")
+        render_helpers = set()
+        for appearance in appearances.values():
+            renderer = appearance.get("entity_renderer", {})
+            if (appearance.get("state") != copper_lantern
+                    or appearance.get("transparent") is not True
+                    or renderer.get("type") != "item_display"):
+                raise AssertionError(
+                    f"{incense_id}: must use the released standing copper-lantern carrier")
+            render_helpers.add(renderer.get("item"))
+        if len(render_helpers) != 2 or None in render_helpers:
+            raise AssertionError(
+                f"{incense_id}: closed/open directions must share exactly two render items")
+        expected_behavior = {
+            "type": f"{NAMESPACE}:incense",
+            "small_particle": particle_spec[0],
+            "large_particle": particle_spec[1],
+            "large_particle_y_offset": particle_spec[2],
+            "large_particle_y_range": particle_spec[3],
+        }
+        if definition.get("behavior") != expected_behavior:
+            raise AssertionError(
+                f"{incense_id}: incense CE behavior config drifted")
+        settings = definition.get("settings", {})
+        expected_sounds = {
+            action: f"minecraft:block.decorated_pot.{action}"
+            for action in ("break", "step", "place", "hit", "fall")
+        }
+        if (settings.get("hardness") != 0.0
+                or settings.get("resistance") != 0.0
+                or settings.get("sounds") != expected_sounds
+                or "luminance" in settings):
+            raise AssertionError(
+                f"{incense_id}: source instant-break, sound or non-luminous settings drifted")
+        item_behavior = items[incense_id].get("behavior", {})
+        if item_behavior != {"type": "block_item", "block": incense_id}:
+            raise AssertionError(f"{incense_id}: item must place the CE block directly")
 
     # Wild grapevine worldgen rides CraftEngine's feature pipeline now; the
     # plugin must not re-implement a Bukkit-side generator.
@@ -3027,7 +3078,6 @@ def validate() -> dict[str, int]:
     material_examples = {
         "white_sofa": ("wool", 3),
         "bell_pendant_lamp": ("chain", 3),
-        "sakura_incense": ("decorated_pot", 1),
         "tap": ("metal", 3),
         "glassware_holder": ("metal", 3),
         "shaker": ("lantern", 1),

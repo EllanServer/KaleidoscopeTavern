@@ -3960,14 +3960,8 @@
         "path": "kaleidoscope_tavern:item/sakura_incense"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:sakura_incense",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:sakura_incense"
       }
     },
     "kaleidoscope_tavern:pine_incense": {
@@ -3980,14 +3974,8 @@
         "path": "kaleidoscope_tavern:item/pine_incense"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:pine_incense",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:pine_incense"
       }
     },
     "kaleidoscope_tavern:ginkgo_incense": {
@@ -4000,14 +3988,8 @@
         "path": "kaleidoscope_tavern:item/ginkgo_incense"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:ginkgo_incense",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:ginkgo_incense"
       }
     },
     "kaleidoscope_tavern:spore_incense": {
@@ -4020,14 +4002,8 @@
         "path": "kaleidoscope_tavern:item/spore_incense"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:spore_incense",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:spore_incense"
       }
     },
     "kaleidoscope_tavern:catnip_incense": {
@@ -4040,14 +4016,8 @@
         "path": "kaleidoscope_tavern:item/catnip_incense"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:catnip_incense",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:catnip_incense"
       }
     },
     "kaleidoscope_tavern:snow_incense": {
@@ -4060,14 +4030,8 @@
         "path": "kaleidoscope_tavern:item/snow_incense"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:snow_incense",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:snow_incense"
       }
     },
     "kaleidoscope_tavern:butterfly_incense": {
@@ -4080,14 +4044,8 @@
         "path": "kaleidoscope_tavern:item/butterfly_incense"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:butterfly_incense",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:butterfly_incense"
       }
     },
     "kaleidoscope_tavern:firefly_incense": {
@@ -4100,14 +4058,8 @@
         "path": "kaleidoscope_tavern:item/firefly_incense"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:firefly_incense",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:firefly_incense"
       }
     }
   }

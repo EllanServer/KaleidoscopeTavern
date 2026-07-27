@@ -21,6 +21,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.TapService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.BlockService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.GrapeSeasonGate;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.IncenseBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBlockShape;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.WildGrapevineBehavior;
@@ -74,8 +75,8 @@ import java.util.logging.Level;
 public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listener, TabExecutor {
     private static final String NAMESPACE = "kaleidoscope_tavern";
     private static final int EXPECTED_ITEMS = 711; // 157 public items + 554 private render helpers
-    private static final int EXPECTED_BLOCKS = 41;
-    private static final int EXPECTED_FURNITURE = 133;
+    private static final int EXPECTED_BLOCKS = 49;
+    private static final int EXPECTED_FURNITURE = 125;
 
     private PackInstaller.Result packResult;
     private CustomCropsInstaller.Result customCropsResult;
@@ -102,6 +103,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             TrellisBehavior.register();
             HangingGrapeCropBehavior.register();
             WildGrapevineBehavior.register();
+            IncenseBlockBehavior.register();
             StateFurnitureBehavior.register();
             AnimatedItemFurnitureBehavior.register();
             BoardTextFurnitureBehavior.register();
