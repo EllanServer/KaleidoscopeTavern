@@ -975,8 +975,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_colorless"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_colorless"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_colorless",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -994,8 +1001,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_white"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_white"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_white",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1013,8 +1027,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_light_gray"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_light_gray"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_light_gray",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1032,8 +1053,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_gray"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_gray"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_gray",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1051,8 +1079,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_black"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_black"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_black",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1070,8 +1105,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_brown"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_brown"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_brown",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1089,8 +1131,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_red"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_red"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_red",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1108,8 +1157,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_orange"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_orange"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_orange",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1127,8 +1183,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_yellow"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_yellow"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_yellow",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1146,8 +1209,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_lime"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_lime"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_lime",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1165,8 +1235,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_green"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_green"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_green",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1184,8 +1261,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_cyan"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_cyan"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_cyan",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1203,8 +1287,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_light_blue"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_light_blue"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_light_blue",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1222,8 +1313,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_blue"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_blue"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_blue",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1241,8 +1339,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_purple"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_purple"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_purple",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1260,8 +1365,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_magenta"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_magenta"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_magenta",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [
@@ -1279,8 +1391,15 @@
         "path": "kaleidoscope_tavern:item/string_lights_pink"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:string_lights_pink"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:string_lights_pink",
+        "rules": {
+          "wall": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        },
+        "ignore_placer": true
       },
       "settings": {
         "tags": [

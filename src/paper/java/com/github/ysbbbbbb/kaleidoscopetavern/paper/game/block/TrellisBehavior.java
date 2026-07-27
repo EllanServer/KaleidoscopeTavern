@@ -2,7 +2,7 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
-import net.momirealms.craftengine.bukkit.block.behavior.WaterloggedBlockBehavior;
+import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Kaleidoscope Tavern's trellis. Fruit lifecycle is delegated to CustomCrops;
  * this behavior only models the supporting vine structure.
  */
-public final class TrellisBehavior extends WaterloggedBlockBehavior
+public final class TrellisBehavior extends BukkitBlockBehavior
         implements BonemealableBlock, RandomTickBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "trellis");
     private static final String PREFIX = "kaleidoscope_tavern:";
@@ -65,14 +65,16 @@ public final class TrellisBehavior extends WaterloggedBlockBehavior
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
 
     private final Property<String> typeProperty;
+    private final Property<Boolean> waterloggedProperty;
     private final IntegerProperty ageProperty;
     private final float spreadChance;
 
     private TrellisBehavior(BlockDefinition block, ConfigSection section) {
-        super(block, BlockBehaviorFactory.getProperty(
-                section.path(), block, "waterlogged", Boolean.class));
+        super(block);
         this.typeProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "type", String.class);
+        this.waterloggedProperty = BlockBehaviorFactory.getProperty(
+                section.path(), block, "waterlogged", Boolean.class);
         Property<?> age = block.getProperty("age");
         this.ageProperty = age instanceof IntegerProperty integer ? integer : null;
         this.spreadChance = section.getFloat("spread_chance", 0.25F);

@@ -73,6 +73,10 @@ EXPECTED_BOTTLE_FURNITURE = {
     "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
     "watermelon_juice",
 }
+SIMPLE_BOTTLES = {
+    "water_bottle", "honey_bottle", "dragon_breath_bottle",
+    "potion_bottle", "xp_bottle",
+}
 EXPECTED_STORAGE_INTERACTION_FURNITURE = {
     "bar_cabinet", "glass_bar_cabinet", "glassware_holder",
 }
@@ -160,7 +164,7 @@ SOURCE_STATE_OWNERS = {
     "connection": "FurnitureConnectionService sofa/furniture variants and storage block states",
     "count": "BottleFurnitureService",
     "face": "CE ground/wall/ceiling placement rules",
-    "facing": "CE tap/storage block state and four-way/sixteen-way furniture rotation",
+    "facing": "CE tap/storage state plus native wall and four-way/sixteen-way furniture rotation",
     "half": "composite multi-element furniture variants",
     "open": "CE incense/tap block state",
     "position": "CE storage block connection state plus FurnitureConnectionService",
@@ -169,7 +173,7 @@ SOURCE_STATE_OWNERS = {
     "tilt": "ground/wall pressing-tub placement variants",
     "triggered": "CE TapBlockBehavior redstone edge latch",
     "type": "CE trellis state variants",
-    "waterlogged": "CE tap/trellis fluid state plus non-displacing carrier semantics",
+    "waterlogged": "CE tap/trellis state plus water-preserving glowing string-light furniture",
     "waxed": "CE trellis state variants plus blocks.json wax events",
 }
 
@@ -271,9 +275,9 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "IncenseBlock.java": (
         ("src/paper/pack/configuration/blocks.json", "minecraft:copper_lantern"),
+        ("tools/migrate_legacy.py", "incense_toggle_events"),
         ("block/IncenseBlockBehavior.java", "updateStateForPlacement"),
         ("block/IncenseBlockBehavior.java", "neighborChanged"),
-        ("block/IncenseBlockBehavior.java", "useOnBlock"),
         ("block/IncenseBlockBehavior.java", "spawnParticles"),
     ),
     "JuiceBucketItem.java": (("tools/migrate_legacy.py", "milk_bucket"),),
@@ -302,9 +306,15 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("tools/migrate_legacy.py", "_sofa"),
         ("FurnitureConnectionService.java", "connectionFor"),
     ),
-    "StringLightsBlock.java": (("src/paper/pack/configuration/blocks.json", "item.dye.use"),),
+    "StringLightsBlock.java": (
+        ("tools/migrate_legacy.py", 'variants["wall"]'),
+        ("tools/migrate_legacy.py", '"type": "glowing_furniture"'),
+        ("tools/migrate_legacy.py", "string_lights_dye_events"),
+        ("tools/migrate_legacy.py", '"type": "replace_furniture"'),
+    ),
     "StringLightsBlockItem.java": (
         ("src/paper/resources/catalog/tags.tsv", "curios:charm"),
+        ("src/paper/pack/configuration/items.json", '"type": "furniture_item"'),
     ),
     "TapBlock.java": (
         ("src/paper/pack/configuration/blocks.json", "minecraft:lightning_rod"),
@@ -611,14 +621,29 @@ def validate() -> dict[str, int]:
 
     if len(items) != 157:
         raise AssertionError(f"Expected 157 public items, found {len(items)}")
-    if len(blocks) != 54:
-        raise AssertionError(f"Expected 54 grid/state blocks, found {len(blocks)}")
-    if len(furniture) != 120:
-        raise AssertionError(f"Expected 120 furniture definitions, found {len(furniture)}")
-    if len(render_items) != 554:
-        raise AssertionError(f"Expected 554 private render items, found {len(render_items)}")
+    if len(blocks) != 37:
+        raise AssertionError(f"Expected 37 grid/state blocks, found {len(blocks)}")
+    if len(furniture) != 137:
+        raise AssertionError(f"Expected 137 furniture definitions, found {len(furniture)}")
+    if len(render_items) != 503:
+        raise AssertionError(f"Expected 503 private render items, found {len(render_items)}")
     if len(recipes) != 114:
         raise AssertionError(f"Expected 114 crafting recipes, found {len(recipes)}")
+
+    source_item_loot = {
+        "pools": [{
+            "rolls": 1,
+            "entries": [{"type": "furniture_item"}],
+        }]
+    }
+    for bottle_id in SIMPLE_BOTTLES:
+        config = furniture[f"{NAMESPACE}:{bottle_id}"]
+        if config.get("loot") != source_item_loot:
+            raise AssertionError(
+                f"{bottle_id}: vanilla-source bottle must use CE sourceItem furniture loot")
+        if "item" in config.get("settings", {}):
+            raise AssertionError(
+                f"{bottle_id}: vanilla-source bottle must not invent a duplicate CE item")
 
     game_package = (
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game")
@@ -658,13 +683,17 @@ def validate() -> dict[str, int]:
                 "Trellis random ticks must reuse their NMS position instead of allocating "
                 f"one Bukkit-to-CE BlockPos bridge per neighbour; missing {required_token}")
     for required_token in (
-            "extends WaterloggedBlockBehavior",
+            "extends BukkitBlockBehavior",
+            "private final Property<Boolean> waterloggedProperty",
             "FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER",
             "LevelAccessorProxy.INSTANCE.scheduleTick$1("):
         if required_token not in trellis_behavior_source:
             raise AssertionError(
-                "TrellisBehavior must retain CE-native placement, bucket and fluid-tick "
-                f"waterlogging; missing {required_token}")
+                "TrellisBehavior must supplement CE's native bucket behavior with placement "
+                f"and fluid-tick waterlogging; missing {required_token}")
+    if "extends WaterloggedBlockBehavior" in trellis_behavior_source:
+        raise AssertionError(
+            "TrellisBehavior must not duplicate CE's automatically attached bucket behavior")
     wild_behavior_source = (
         game_package / "block/WildGrapevineBehavior.java").read_text(encoding="utf-8-sig")
     for leaf_attachment_token in (
@@ -805,10 +834,15 @@ def validate() -> dict[str, int]:
             "Item source = furniture.sourceItem()",
             "if (maxBottleCount(furniture) > 1)",
             "BottleFurnitureSemantics.needsExpandedItemState(stored.size())",
-            '? stored : List.of()'):
+            '? stored : List.of()',
+            "new FurnitureState(event.furniture())",
+            '.items("bottle_items")'):
         if native_bottle_state_token not in bottle_furniture_source:
             raise AssertionError(
                 "Single bottles must bypass custom state; only stacked bottles may store a list")
+    if "List<ItemStack> stored = storedItems(event.furniture());" in bottle_furniture_source:
+        raise AssertionError(
+            "Single-bottle breaks must use CE furniture_item loot instead of a manual duplicate drop")
     station_source = (game_package / "StationService.java").read_text(
         encoding="utf-8-sig")
     station_interaction_behavior_source = (
@@ -910,10 +944,6 @@ def validate() -> dict[str, int]:
         *(f"{NAMESPACE}:_crop/{crop}/stage_{point}"
           for crop in ("grape_crop", "ice_grape_crop", "gold_grape_crop")
           for point in range(1, 6)),
-        *(f"{NAMESPACE}:string_lights_{color}" for color in (
-            "colorless", "white", "light_gray", "gray", "black", "brown", "red", "orange",
-            "yellow", "lime", "green", "cyan", "light_blue", "blue", "purple", "magenta", "pink",
-        )),
         *(f"{NAMESPACE}:{incense}" for incense in INCENSE_BLOCK_SPECS),
         *(f"{NAMESPACE}:{storage}" for storage in STORAGE_BLOCK_SPECS),
     }
@@ -1083,7 +1113,6 @@ def validate() -> dict[str, int]:
             "state.with(openProperty, powered).with(poweredProperty, powered)",
             "powered == state.get(poweredProperty)",
             "state.with(poweredProperty, powered)",
-            "state.with(openProperty, open)",
             "random.nextInt(49) == 0",
             "random.nextInt(3) == 0",
             "world.getGameTime() % 120L == 0L",
@@ -1093,7 +1122,8 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "CE incense behavior no longer preserves source interaction/tick semantics; "
                 f"missing {required_token}")
-    for stale_token in ("PersistentDataContainer", "BukkitTask", "runTaskTimer"):
+    for stale_token in ("PersistentDataContainer", "BukkitTask", "runTaskTimer",
+                        "public InteractionResult useOnBlock"):
         if stale_token in incense_behavior_source:
             raise AssertionError(
                 f"CE incense state/lifecycle must not be duplicated through {stale_token}")
@@ -1792,8 +1822,9 @@ def validate() -> dict[str, int]:
             "TapService must not rediscover indexed placed bottles through Bukkit entities")
 
     for required_token in (
-            "extends WaterloggedBlockBehavior",
+            "extends BukkitBlockBehavior",
             "implements EntityBlock",
+            "private final Property<Boolean> waterloggedProperty",
             "BlockBehaviors.register(TYPE, TapBlockBehavior::new)",
             "context.getHand() != InteractionHand.MAIN_HAND",
             "clickedFace.axis().isHorizontal()",
@@ -1817,6 +1848,9 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "TapBlockBehavior must own source-equivalent state, redstone and timing; "
                 f"missing token: {required_token}")
+    if "extends WaterloggedBlockBehavior" in tap_block_source:
+        raise AssertionError(
+            "TapBlockBehavior must not duplicate CE's automatically attached bucket behavior")
     if "if (!state.get(behavior.openProperty))" in tap_block_source:
         raise AssertionError(
             "TapBlockBehavior must cache its open state instead of resolving the CE "
@@ -2507,15 +2541,6 @@ def validate() -> dict[str, int]:
             or wild_settings.get("sounds", {}).get("break")
             != "minecraft:block.cave_vines.break"):
         raise AssertionError("Wild grapevine must retain instant break and cave-vine sounds")
-    string_settings = blocks[f"{NAMESPACE}:string_lights_white"]["settings"]
-    if (string_settings.get("hardness") != 0.8
-            or string_settings.get("resistance") != 0.8
-            or string_settings.get("push_reaction") != "NORMAL"
-            or string_settings.get("sounds", {}).get("break")
-            != "minecraft:block.chain.break"
-            or string_settings.get("tags") != ["minecraft:mineable/pickaxe"]):
-        raise AssertionError("String lights must retain source chain material semantics")
-
     with EN_US.open("r", encoding="utf-8-sig") as stream:
         language_keys = set(json.load(stream))
     with ZH_CN.open("r", encoding="utf-8-sig") as stream:
@@ -3066,27 +3091,230 @@ def validate() -> dict[str, int]:
     if "consume_replacement" in empty_glassware.get("settings", {}):
         raise AssertionError("empty_glassware must not return itself as a consume replacement")
 
-    # String-lights dyeing is expressed as CE block events.
+    # String lights are wall-only CE furniture. Native furniture_item selects
+    # the clicked horizontal face and rotates one north-authored model onto all
+    # four walls; native furniture events also own every dye transformation.
     dye_colors = ("white", "orange", "magenta", "light_blue", "yellow", "lime",
                   "pink", "gray", "light_gray", "cyan", "purple", "blue",
                   "brown", "green", "red", "black")
-    for color in dye_colors:
-        lights = blocks[f"{NAMESPACE}:string_lights_{color}"]
-        light_events = lights.get("events", [])
-        if len(light_events) != len(dye_colors) - 1:
+    expected_hitboxes = [
+        {
+            "type": "interaction",
+            "position": f"{x},-0.25,0.1875",
+            "width": 0.375,
+            "height": 0.75,
+            "can_use_item_on": True,
+            "can_be_hit_by_projectile": True,
+            "interactive": True,
+            "blocks_building": True,
+        }
+        for x in ("-0.3125", "0", "0.3125")
+    ]
+    expected_string_sounds = {
+        action: f"minecraft:block.chain.{action}"
+        for action in ("break", "place", "hit")
+    }
+    string_ids = {
+        f"{NAMESPACE}:string_lights_{color}"
+        for color in ("colorless", *dye_colors)
+    }
+    if string_ids & set(blocks):
+        raise AssertionError("String lights must not retain CE custom-block definitions")
+    for color in ("colorless", *dye_colors):
+        full_id = f"{NAMESPACE}:string_lights_{color}"
+        lights = furniture.get(full_id)
+        if lights is None:
+            raise AssertionError(f"string_lights_{color}: missing CE furniture")
+        if lights.get("settings") != {
+                "hit_times": 3,
+                "sounds": expected_string_sounds,
+                "item": full_id,
+        }:
             raise AssertionError(
-                f"string_lights_{color}: expected {len(dye_colors) - 1} dye events")
-        for entry in light_events:
-            functions = {f["type"] for f in entry["functions"]}
-            if not {"transform_block", "cancel_event", "set_count"} <= functions:
+                f"string_lights_{color}: chain furniture settings drifted")
+        variants = lights.get("variants", {})
+        if set(variants) != {"wall"}:
+            raise AssertionError(
+                f"string_lights_{color}: must expose only CE's native wall anchor")
+        wall = variants["wall"]
+        elements = wall.get("elements", [])
+        if len(elements) != 1 or wall.get("hitboxes") != expected_hitboxes:
+            raise AssertionError(
+                f"string_lights_{color}: thin three-part wall interaction shape drifted")
+        element = elements[0]
+        render_id = element.get("item")
+        if (element.get("type") != "item_display"
+                or element.get("display_transform") != "none"
+                or element.get("position") != "0,0,0.01"
+                or element.get("translation") != "0,0,0.49"
+                or any(key in element for key in ("rotation", "scale"))
+                or not isinstance(render_id, str)):
+            raise AssertionError(
+                f"string_lights_{color}: wall item-display transform drifted")
+        expected_model = f"{NAMESPACE}:block/deco/string_lights/{color}"
+        source_model = (ROOT / "src/main/resources"
+                        / f"assets/{NAMESPACE}/models/block/deco/string_lights/{color}.json")
+        if not source_model.is_file():
+            raise AssertionError(f"string_lights_{color}: archived source model is missing")
+        model = render_items.get(render_id, {}).get("model", {})
+        if (model.get("type") != "minecraft:model"
+                or model.get("path") != expected_model):
+            raise AssertionError(
+                f"string_lights_{color}: furniture must render its archived source model")
+        if lights.get("loot") != {
+                "pools": [{
+                    "rolls": 1,
+                    "entries": [{"type": "furniture_item", "item": full_id}],
+                }],
+        }:
+            raise AssertionError(
+                f"string_lights_{color}: CE native furniture loot drifted")
+        if (lights.get("behavior") != {
+                "type": "glowing_furniture", "lights": ["0,0,0.5 15"]}
+                or "behaviors" in lights):
+            raise AssertionError(
+                f"string_lights_{color}: light must use only CE glowing_furniture")
+        if items[full_id].get("behavior") != {
+                "type": "furniture_item",
+                "furniture": full_id,
+                "rules": {
+                    "wall": {"rotation": "four", "alignment": "center"},
+                },
+                "ignore_placer": True,
+        }:
+            raise AssertionError(
+                f"string_lights_{color}: placement must use native CE furniture_item")
+
+        expected_dyes = {dye for dye in dye_colors if dye != color}
+        dye_events = lights.get("events", [])
+        if len(dye_events) != len(expected_dyes):
+            raise AssertionError(
+                f"string_lights_{color}: expected {len(expected_dyes)} CE dye events")
+        seen_dyes: set[str] = set()
+        expected_particle_positions = {
+            "0.0": ("<arg:position.x>", "<arg:position.z> + 0.5"),
+            "180.0": ("<arg:position.x>", "<arg:position.z> - 0.5"),
+            "90.0": ("<arg:position.x> - 0.5", "<arg:position.z>"),
+            "-90.0": ("<arg:position.x> + 0.5", "<arg:position.z>"),
+        }
+
+        def validate_dye_particle(particle: dict[str, Any], x: str, z: str) -> bool:
+            return particle == {
+                "type": "particle",
+                "particle": "minecraft:happy_villager",
+                "x": x,
+                "y": "<arg:position.y>",
+                "z": z,
+                "count": 15,
+                "offset_x": 0.5,
+                "offset_y": 0.375,
+                "offset_z": 0.5,
+            }
+
+        for dye_event in dye_events:
+            conditions = dye_event.get("conditions", [])
+            if (dye_event.get("on") != "right_click"
+                    or len(conditions) != 2
+                    or conditions[0].get("type") != "match_item"
+                    or conditions[1] != {"type": "hand", "hand": "main_hand"}):
                 raise AssertionError(
-                    f"string_lights_{color}: dye event missing core functions")
-            if {c["type"] for c in entry["conditions"]} != {"match_item", "hand"}:
+                    f"string_lights_{color}: CE dye event conditions drifted")
+            dye_item = conditions[0].get("item", "")
+            match = re.fullmatch(r"minecraft:(.+)_dye", dye_item)
+            if match is None or match.group(1) not in expected_dyes:
                 raise AssertionError(
-                    f"string_lights_{color}: dye event needs match_item plus hand")
+                    f"string_lights_{color}: unexpected dye event {dye_item}")
+            dye = match.group(1)
+            if dye in seen_dyes:
+                raise AssertionError(
+                    f"string_lights_{color}: duplicate CE event for {dye_item}")
+            seen_dyes.add(dye)
+
+            event_functions = dye_event.get("functions", [])
+            if len(event_functions) != 1 or event_functions[0].get("type") != "if_else":
+                raise AssertionError(
+                    f"string_lights_{color}: protection must use CE if_else")
+            rules = event_functions[0].get("rules", [])
+            if len(rules) != 2:
+                raise AssertionError(
+                    f"string_lights_{color}: CE dye protection branches drifted")
+            allowed, denied = rules
+            if allowed.get("conditions") != [{"type": "test_flag", "flag": "interact"}]:
+                raise AssertionError(
+                    f"string_lights_{color}: dye event must use CE interact protection")
+            functions = allowed.get("functions", [])
+            if [function.get("type") for function in functions] != [
+                    "update_interaction_tick", "set_count", "play_sound", "when",
+                    "swing_hand", "replace_furniture"]:
+                raise AssertionError(
+                    f"string_lights_{color}: native dye function sequence drifted")
+            if functions[1] != {
+                    "type": "set_count", "add": True, "count": -1,
+                    "conditions": [{
+                        "type": "!equals",
+                        "value1": "<arg:player.gamemode>",
+                        "value2": "CREATIVE",
+                    }],
+            }:
+                raise AssertionError(
+                    f"string_lights_{color}: CE must consume dye outside creative mode")
+            if functions[2] != {
+                    "type": "play_sound", "sound": "minecraft:item.dye.use",
+                    "source": "block"}:
+                raise AssertionError(
+                    f"string_lights_{color}: CE dye sound drifted")
+            particle_switch = functions[3]
+            cases = particle_switch.get("cases", [])
+            if (particle_switch.get("source") != "<arg:furniture.yaw>"
+                    or len(cases) != 4):
+                raise AssertionError(
+                    f"string_lights_{color}: wall-relative CE particles drifted")
+            for case in cases:
+                yaw = str(case.get("when"))
+                position = expected_particle_positions.get(yaw)
+                case_functions = case.get("functions", [])
+                if (position is None or len(case_functions) != 1
+                        or not validate_dye_particle(
+                            case_functions[0], position[0], position[1])):
+                    raise AssertionError(
+                        f"string_lights_{color}: invalid particle case for yaw {yaw}")
+            fallback = particle_switch.get("fallback", [])
+            if (len(fallback) != 1 or not validate_dye_particle(
+                    fallback[0], "<arg:position.x>", "<arg:position.z>")):
+                raise AssertionError(
+                    f"string_lights_{color}: CE particle fallback drifted")
+            if functions[5] != {
+                    "type": "replace_furniture",
+                    "furniture": f"{NAMESPACE}:string_lights_{dye}",
+                    "variant": "wall",
+                    "drop_loot": False,
+                    "play_sound": False,
+            }:
+                raise AssertionError(
+                    f"string_lights_{color}: CE replacement target drifted for {dye}")
+            if denied != {
+                    "functions": [{"type": "update_interaction_tick"}]}:
+                raise AssertionError(
+                    f"string_lights_{color}: denied dye click must remain claimed")
+        if seen_dyes != expected_dyes:
+            raise AssertionError(
+                f"string_lights_{color}: CE dye coverage is incomplete")
+
+    stale_string_sources = (
+        game_package / "furniture/StringLightsFurnitureBehavior.java",
+        game_package / "furniture/StringLightsSemantics.java",
+        ROOT / "src/paperTest/java/com/github/ysbbbbbb/kaleidoscopetavern/"
+               "paper/game/furniture/StringLightsFurnitureBehaviorTest.java",
+    )
+    if ("StringLightsFurnitureBehavior" in plugin_source
+            or "StringLightsBlockBehavior" in plugin_source
+            or any(path.exists() for path in stale_string_sources)
+            or (game_package / "block/StringLightsBlockBehavior.java").exists()):
+        raise AssertionError(
+            "String-light placement, glow and dye interactions must remain entirely native CE")
 
     # Trellis waxing/scraping and both kinds of grapevine shearing are CE block
-    # events. Incense interaction is owned by its CE BlockBehavior. The global
+    # events. Incense interaction is also a CE block event. The global
     # Java block interaction listener is deliberately gone and must not return.
     trellis_events = blocks[f"{NAMESPACE}:trellis"].get("events", [])
     if len(trellis_events) != 2:
@@ -3172,6 +3400,65 @@ def validate() -> dict[str, int]:
     if any(fid.endswith("_incense") for fid in furniture):
         raise AssertionError("Incense must not retain CE furniture definitions")
     copper_lantern = "minecraft:copper_lantern[hanging=false,waterlogged=false]"
+    ordinary_incense_use = {
+        "type": "any_of",
+        "terms": [
+            {
+                "type": "!equals",
+                "value1": "<arg:player.is_sneaking>",
+                "value2": "true",
+            },
+            {
+                "type": "all_of",
+                "terms": [
+                    {
+                        "type": "equals",
+                        "value1": "<arg:player.main_hand_item.count>",
+                        "value2": "0",
+                    },
+                    {
+                        "type": "equals",
+                        "value1": "<arg:player.off_hand_item.count>",
+                        "value2": "0",
+                    },
+                ],
+            },
+        ],
+    }
+    expected_incense_events = []
+    for before, after, sound in (
+            ("false", "true", "minecraft:block.stone_button.click_on"),
+            ("true", "false", "minecraft:block.stone_button.click_off")):
+        expected_incense_events.append({
+            "on": "right_click",
+            "conditions": [
+                ordinary_incense_use,
+                {"type": "match_block_property", "properties": {"open": before}},
+                {"type": "test_flag", "flag": "interact"},
+            ],
+            "functions": [
+                {"type": "update_interaction_tick"},
+                {
+                    "type": "update_block_property",
+                    "properties": {"open": after},
+                    "update_flags": 2,
+                },
+                {"type": "play_sound", "sound": sound, "source": "block"},
+                {"type": "swing_hand"},
+                {"type": "cancel_event"},
+            ],
+        })
+    expected_incense_events.append({
+        "on": "right_click",
+        "conditions": [
+            ordinary_incense_use,
+            {"type": "!test_flag", "flag": "interact"},
+        ],
+        "functions": [
+            {"type": "update_interaction_tick"},
+            {"type": "cancel_event"},
+        ],
+    })
     for incense_name, particle_spec in INCENSE_BLOCK_SPECS.items():
         incense_id = f"{NAMESPACE}:{incense_name}"
         definition = blocks.get(incense_id)
@@ -3211,6 +3498,9 @@ def validate() -> dict[str, int]:
         if definition.get("behavior") != expected_behavior:
             raise AssertionError(
                 f"{incense_id}: incense CE behavior config drifted")
+        if definition.get("events") != expected_incense_events:
+            raise AssertionError(
+                f"{incense_id}: manual toggle/protection must use native CE events")
         settings = definition.get("settings", {})
         expected_sounds = {
             action: f"minecraft:block.decorated_pot.{action}"
@@ -3915,9 +4205,9 @@ def validate() -> dict[str, int]:
                 f"{sofa_id}: expected six private source models, found {len(render_ids)}")
 
     for expected_token in (
-            "EXPECTED_ITEMS = 711",
-            "EXPECTED_BLOCKS = 54",
-            "EXPECTED_FURNITURE = 120"):
+            "EXPECTED_ITEMS = 660",
+            "EXPECTED_BLOCKS = 37",
+            "EXPECTED_FURNITURE = 137"):
         if expected_token not in plugin_source:
             raise AssertionError(
                 f"Runtime CE content count guard is stale: {expected_token}")

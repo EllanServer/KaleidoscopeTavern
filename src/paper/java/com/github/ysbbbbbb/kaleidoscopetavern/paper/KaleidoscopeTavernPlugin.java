@@ -75,9 +75,9 @@ import java.util.logging.Level;
 /** Paper 26.2 entry point for the CraftEngine rewrite. */
 public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listener, TabExecutor {
     private static final String NAMESPACE = "kaleidoscope_tavern";
-    private static final int EXPECTED_ITEMS = 711; // 157 public items + 554 private render helpers
-    private static final int EXPECTED_BLOCKS = 54;
-    private static final int EXPECTED_FURNITURE = 120;
+    private static final int EXPECTED_ITEMS = 660; // 157 public items + 503 private render helpers
+    private static final int EXPECTED_BLOCKS = 37;
+    private static final int EXPECTED_FURNITURE = 137;
 
     private PackInstaller.Result packResult;
     private CustomCropsInstaller.Result customCropsResult;

@@ -1,7 +1,7 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
-import net.momirealms.craftengine.bukkit.block.behavior.WaterloggedBlockBehavior;
+import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * block. The controller owns only the source's transient 6/30-tick extraction
  * cycle; source/destination business behavior remains in {@link Handler}.</p>
  */
-public final class TapBlockBehavior extends WaterloggedBlockBehavior implements EntityBlock {
+public final class TapBlockBehavior extends BukkitBlockBehavior implements EntityBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "tap");
     public static final int TAKE_TICKS = 30;
     public static final int TAKE_PARTICLE_TICKS = 5;
@@ -67,16 +67,18 @@ public final class TapBlockBehavior extends WaterloggedBlockBehavior implements 
     private final Property<Direction> facingProperty;
     private final Property<Boolean> openProperty;
     private final Property<Boolean> triggeredProperty;
+    private final Property<Boolean> waterloggedProperty;
 
     private TapBlockBehavior(BlockDefinition block, ConfigSection section) {
-        super(block, BlockBehaviorFactory.getProperty(
-                section.path(), block, "waterlogged", Boolean.class));
+        super(block);
         this.facingProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "facing", Direction.class);
         this.openProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "open", Boolean.class);
         this.triggeredProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "triggered", Boolean.class);
+        this.waterloggedProperty = BlockBehaviorFactory.getProperty(
+                section.path(), block, "waterlogged", Boolean.class);
     }
 
     public static void register() {
