@@ -1241,7 +1241,9 @@ def validate() -> dict[str, int]:
             "public void preRemove(Player player)",
             "public void postRemove(Player player)",
             "public void onUnload(boolean isStopping)",
-            "handler.onReady(bukkitFurniture, readyReason)",
+            "default void onReady(BukkitFurniture furniture, ReadyReason reason, Player placingPlayer)",
+            "ready(ReadyReason.PLACE, player)",
+            "handler.onReady(bukkitFurniture, readyReason, placingPlayer)",
             "currentHandler.onUnavailable(bukkitFurniture, removed, stopping)",
             "public static List<BukkitFurniture> nearby(",
             "public static Optional<BukkitFurniture> atBlock(",
@@ -1343,7 +1345,9 @@ def validate() -> dict[str, int]:
             "public void onReady(BukkitFurniture furniture,",
             "public void onUnavailable(BukkitFurniture furniture,",
             "scheduleRefresh(furniture.location())",
-            "Bukkit.getScheduler().runTask(plugin, () -> refresh(captured))"):
+            "scheduleRefresh(furniture.location(), furniture, placingPlayer)",
+            "boolean placedVariantChanged = refresh(captured, placed)",
+            "placed.snapshotState().showHitboxes(placingPlayer)"):
         if required_token not in connection_source:
             raise AssertionError(
                 "FurnitureConnectionService must retain the six-state sofa connector; "

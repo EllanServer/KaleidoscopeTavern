@@ -169,6 +169,10 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
     public interface Handler {
         void onReady(BukkitFurniture furniture, ReadyReason reason);
 
+        default void onReady(BukkitFurniture furniture, ReadyReason reason, Player placingPlayer) {
+            onReady(furniture, reason);
+        }
+
         default void onUnavailable(BukkitFurniture furniture, boolean removed, boolean stopping) {
         }
     }
@@ -190,12 +194,12 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
 
         @Override
         public void onPlace(Player player) {
-            ready(ReadyReason.PLACE);
+            ready(ReadyReason.PLACE, player);
         }
 
         @Override
         public void onLoad() {
-            ready(ReadyReason.LOAD);
+            ready(ReadyReason.LOAD, null);
         }
 
         @Override
@@ -213,7 +217,7 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
             unavailable(false, isStopping);
         }
 
-        private void ready(ReadyReason reason) {
+        private void ready(ReadyReason reason, Player placingPlayer) {
             if (readyReason == null) {
                 Location location = bukkitFurniture.location();
                 worldId = location.getWorld().getUID();
@@ -228,7 +232,7 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
             readyReason = reason;
             READY.computeIfAbsent(channel,
                     ignored -> new HashSet<>()).add(this);
-            deliver(HANDLERS.get(channel));
+            deliver(HANDLERS.get(channel), placingPlayer);
         }
 
         private void unavailable(boolean removed, boolean stopping) {
@@ -271,13 +275,17 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
         }
 
         private void deliver(Handler handler) {
+            deliver(handler, null);
+        }
+
+        private void deliver(Handler handler, Player placingPlayer) {
             if (handler == null || readyReason == null
                     || (handler == deliveredHandler && readyReason == deliveredReason)) {
                 return;
             }
             deliveredHandler = handler;
             deliveredReason = readyReason;
-            handler.onReady(bukkitFurniture, readyReason);
+            handler.onReady(bukkitFurniture, readyReason, placingPlayer);
         }
 
         private void forget(Handler handler) {

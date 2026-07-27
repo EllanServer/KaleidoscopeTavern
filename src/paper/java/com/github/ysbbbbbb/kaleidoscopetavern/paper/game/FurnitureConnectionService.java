@@ -2,6 +2,7 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
+import net.momirealms.craftengine.core.entity.player.Player;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
@@ -32,6 +33,17 @@ public final class FurnitureConnectionService {
             }
 
             @Override
+            public void onReady(BukkitFurniture furniture,
+                                LifecycleFurnitureBehavior.ReadyReason reason,
+                                Player placingPlayer) {
+                if (reason == LifecycleFurnitureBehavior.ReadyReason.PLACE) {
+                    scheduleRefresh(furniture.location(), furniture, placingPlayer);
+                } else {
+                    scheduleRefresh(furniture.location());
+                }
+            }
+
+            @Override
             public void onUnavailable(BukkitFurniture furniture,
                                       boolean removed, boolean stopping) {
                 if (removed) {
@@ -52,16 +64,29 @@ public final class FurnitureConnectionService {
     }
 
     private void scheduleRefresh(Location center) {
-        Location captured = center.clone();
-        Bukkit.getScheduler().runTask(plugin, () -> refresh(captured));
+        scheduleRefresh(center, null, null);
     }
 
-    private static void refresh(Location center) {
+    private void scheduleRefresh(Location center, BukkitFurniture placed,
+                                 Player placingPlayer) {
+        Location captured = center.clone();
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            boolean placedVariantChanged = refresh(captured, placed);
+            if (placedVariantChanged && placingPlayer != null) {
+                // setVariant rebuilds CE hitboxes. During placement the player can still be
+                // absent from CE's trackedBy snapshot, so send the final interaction ids once.
+                placed.snapshotState().showHitboxes(placingPlayer);
+            }
+        });
+    }
+
+    private static boolean refresh(Location center, BukkitFurniture placed) {
         List<BukkitFurniture> furniture = LifecycleFurnitureBehavior.nearby(
                 LifecycleFurnitureBehavior.Channel.CONNECTION, center, 3.25, 1.25);
 
         Map<GridPosition, BukkitFurniture> byPosition = new HashMap<>();
         furniture.forEach(entry -> byPosition.put(GridPosition.of(entry.location()), entry));
+        boolean placedVariantChanged = false;
         // Corner states depend on adjacent corner states, so converge over a few cheap passes.
         for (int pass = 0; pass < 4; pass++) {
             boolean changed = false;
@@ -77,13 +102,16 @@ public final class FurnitureConnectionService {
                             ? "ground" : "ground_connection_" + connection;
                 }
                 if (!entry.currentVariant().name().equals(variant)) {
-                    changed |= entry.setVariant(variant, true);
+                    boolean variantChanged = entry.setVariant(variant, true);
+                    changed |= variantChanged;
+                    placedVariantChanged |= variantChanged && entry == placed;
                 }
             }
             if (!changed) {
                 break;
             }
         }
+        return placedVariantChanged;
     }
 
     private static String linearVariant(BukkitFurniture self, Map<GridPosition, BukkitFurniture> byPosition) {
