@@ -269,11 +269,13 @@ public final class TapBlockBehavior extends WaterloggedBlockBehavior implements 
         private Cycle cycle = Cycle.DEFAULT;
         private int ticks;
         private boolean hot;
+        private boolean open;
         private UUID actorId;
 
         private Controller(BlockEntity blockEntity, TapBlockBehavior behavior) {
             super(blockEntity);
             this.behavior = behavior;
+            this.open = blockEntity.blockState.get(behavior.openProperty);
         }
 
         private void begin(Block tapBlock, Direction facing, @Nullable Player player) {
@@ -299,6 +301,11 @@ public final class TapBlockBehavior extends WaterloggedBlockBehavior implements 
         }
 
         @Override
+        public void preBlockStateChange(ImmutableBlockState newState) {
+            open = newState.get(behavior.openProperty);
+        }
+
+        @Override
         public <C extends BlockEntityController> BlockEntityTicker<C> createBlockEntityTicker(
                 CEWorld world, ImmutableBlockState blockState) {
             return createTickerHelper(Controller::tick);
@@ -310,7 +317,7 @@ public final class TapBlockBehavior extends WaterloggedBlockBehavior implements 
         }
 
         private void tickCycle(CEWorld world, BlockPos pos, ImmutableBlockState state) {
-            if (!state.get(behavior.openProperty)) {
+            if (!open) {
                 if (cycle != Cycle.DEFAULT) {
                     reset();
                 }

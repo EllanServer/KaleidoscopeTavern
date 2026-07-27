@@ -1807,11 +1807,20 @@ def validate() -> dict[str, int]:
             "TAKE_PARTICLE_TICKS = 5",
             "EMPTY_OPEN_TICKS = 6",
             "DRIP_LIFETIME_TICKS = 18",
+            "private boolean open;",
+            "this.open = blockEntity.blockState.get(behavior.openProperty)",
+            "public void preBlockStateChange(ImmutableBlockState newState)",
+            "open = newState.get(behavior.openProperty)",
+            "if (!open)",
             "current.finish("):
         if required_token not in tap_block_source:
             raise AssertionError(
                 "TapBlockBehavior must own source-equivalent state, redstone and timing; "
                 f"missing token: {required_token}")
+    if "if (!state.get(behavior.openProperty))" in tap_block_source:
+        raise AssertionError(
+            "TapBlockBehavior must cache its open state instead of resolving the CE "
+            "property table from every loaded tap on every tick")
     for stale_token in ("BukkitTask", "runTaskTimer", "PersistentDataContainer",
                         "BukkitFurniture", "FurnitureInteractEvent"):
         if stale_token in tap_block_source:
@@ -1836,6 +1845,10 @@ def validate() -> dict[str, int]:
             "state.with(poweredProperty, powered)",
             "private static String cellarPosition",
             "private final Item[] items",
+            "private int occupiedSlots",
+            "occupiedSlots++",
+            "occupiedSlots--",
+            "return occupiedSlots != 0",
             "saveCustomData(CompoundTag tag)",
             "loadCustomData(CompoundTag tag)",
             "blockEntity.world.blockEntityChanged(blockEntity.pos)",
@@ -1846,6 +1859,10 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "CE storage blocks must own exact slots, rendering and redstone edges; "
                 f"missing token: {required_token}")
+    if "Arrays.stream(items)" in storage_block_source:
+        raise AssertionError(
+            "CE storage ticking must use the maintained occupied-slot count instead "
+            "of allocating and scanning a stream every tick")
     for stale_token in ("BukkitTask", "runTaskTimer", "PersistentDataContainer",
                         "BukkitFurniture", "ConcurrentHashMap", "BlockRedstoneEvent"):
         if stale_token in storage_block_source:
