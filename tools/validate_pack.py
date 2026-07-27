@@ -1201,7 +1201,8 @@ def validate() -> dict[str, int]:
             "EntityTypesProxy.TEXT_DISPLAY",
             "public static void refresh(BukkitFurniture furniture)",
             "private List<PreparedVisual> cachedVisuals = List.of()",
-            "ComponentUtils.adventureToMinecraft(visual.text())",
+            "ComponentUtils.jsonToMinecraft(",
+            "GsonComponentSerializer.gson().serialize(visual.text())",
             "List<PreparedVisual> current = controller.visuals()",
             "DisplayData.TextDisplayData.Text.addEntityData",
             "DisplayData.TextDisplayData.LineWidth",
@@ -1223,7 +1224,7 @@ def validate() -> dict[str, int]:
                 f"missing token: {required_token}")
     for stale_token in (
             "org.bukkit.entity.TextDisplay", "PersistentDataType", "World.spawn",
-            "ComponentUtils.jsonToMinecraft", "GsonComponentSerializer"):
+            "ComponentUtils.adventureToMinecraft"):
         if stale_token in board_text_behavior_source:
             raise AssertionError(
                 "board_text_furniture must never create persistent Bukkit entities; "

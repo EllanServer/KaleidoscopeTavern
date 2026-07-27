@@ -2,6 +2,7 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.momirealms.craftengine.bukkit.entity.data.DisplayData;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.util.ComponentUtils;
@@ -213,7 +214,8 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
                     List<PreparedVisual> prepared = new ArrayList<>(current.size());
                     for (Visual visual : current) {
                         prepared.add(new PreparedVisual(
-                                visual, ComponentUtils.adventureToMinecraft(visual.text())));
+                                visual, ComponentUtils.jsonToMinecraft(
+                                        GsonComponentSerializer.gson().serialize(visual.text()))));
                     }
                     cachedVisuals = List.copyOf(prepared);
                 }
