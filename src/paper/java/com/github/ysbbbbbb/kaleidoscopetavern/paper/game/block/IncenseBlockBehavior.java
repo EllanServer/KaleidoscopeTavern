@@ -1,7 +1,6 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
-import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.BlockDefinition;
@@ -14,15 +13,11 @@ import net.momirealms.craftengine.core.block.entity.BlockEntity;
 import net.momirealms.craftengine.core.block.entity.BlockEntityController;
 import net.momirealms.craftengine.core.block.entity.tick.BlockEntityTicker;
 import net.momirealms.craftengine.core.block.property.Property;
-import net.momirealms.craftengine.core.entity.player.InteractionResult;
-import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.context.BlockPlaceContext;
-import net.momirealms.craftengine.core.world.context.UseOnContext;
-import net.momirealms.craftengine.libraries.antigrieflib.Flag;
 import net.momirealms.craftengine.proxy.minecraft.server.level.ServerLevelProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelWriterProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.SignalGetterProxy;
@@ -91,27 +86,6 @@ public final class IncenseBlockBehavior extends BukkitBlockBehavior implements E
         boolean powered = SignalGetterProxy.INSTANCE.hasNeighborSignal(
                 level, LocationUtils.toBlockPos(context.getClickedPos()));
         return state.with(openProperty, powered).with(poweredProperty, powered);
-    }
-
-    @Override
-    public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
-        Player player = context.getPlayer();
-        BlockPos pos = context.getClickedPos();
-        net.momirealms.craftengine.core.world.World world = context.getLevel();
-        Location location = new Location((World) world.platformWorld(), pos.x(), pos.y(), pos.z());
-        if (player != null && !BukkitCraftEngine.instance().antiGriefProvider().test(
-                (org.bukkit.entity.Player) player.platformPlayer(), Flag.INTERACT, location)) {
-            return InteractionResult.SUCCESS_AND_CANCEL;
-        }
-
-        boolean open = !state.get(openProperty);
-        LevelWriterProxy.INSTANCE.setBlock(
-                world.minecraftWorld(), LocationUtils.toBlockPos(pos),
-                state.with(openProperty, open).customBlockState().minecraftState(),
-                UpdateFlags.UPDATE_CLIENTS);
-        playToggleSound(location, open);
-        Optional.ofNullable(player).ifPresent(value -> value.swingHand(context.getHand()));
-        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     @Override

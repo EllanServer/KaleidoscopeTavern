@@ -127,6 +127,8 @@ public final class BlockService {
             return;
         }
         ImmutableBlockState replacement = definition.defaultState();
+        replacement = TrellisBehavior.withNamed(
+                replacement, "axis", stringProperty(trellisState, "axis"));
         replacement = TrellisBehavior.withNamed(replacement, "type", stringProperty(trellisState, "type"));
         replacement = TrellisBehavior.withNamed(replacement, "waterlogged",
                 Boolean.toString(booleanProperty(trellisState, "waterlogged")));

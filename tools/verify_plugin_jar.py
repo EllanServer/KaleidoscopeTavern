@@ -15,6 +15,9 @@ REQUIRED_ENTRIES = (
     "META-INF/MANIFEST.MF",
     "tavern-pack/pack.yml",
     "tavern-pack/configuration/blocks.json",
+    "tavern-pack/configuration/furniture.json",
+    "tavern-pack/configuration/items.json",
+    "tavern-pack/configuration/render-items.json",
     "tavern-pack/configuration/worldgen.json",
     "customcrops/contents/crops/kaleidoscope_tavern.yml",
     "customnameplates/bossbar-tavern-effects.yml",
@@ -72,8 +75,26 @@ def main() -> int:
         blocks_document = json.loads(
             archive.read("tavern-pack/configuration/blocks.json").decode("utf-8-sig")
         )
-        if len(blocks_document.get("blocks", {})) != 54:
-            raise SystemExit("Embedded CraftEngine project must contain 54 block ids")
+        if len(blocks_document.get("blocks", {})) != 37:
+            raise SystemExit("Embedded CraftEngine project must contain 37 block ids")
+
+        furniture_document = json.loads(
+            archive.read("tavern-pack/configuration/furniture.json").decode("utf-8-sig")
+        )
+        if len(furniture_document.get("furniture", {})) != 137:
+            raise SystemExit("Embedded CraftEngine project must contain 137 furniture ids")
+
+        items_document = json.loads(
+            archive.read("tavern-pack/configuration/items.json").decode("utf-8-sig")
+        )
+        if len(items_document.get("items", {})) != 157:
+            raise SystemExit("Embedded CraftEngine project must contain 157 public item ids")
+
+        render_items_document = json.loads(
+            archive.read("tavern-pack/configuration/render-items.json").decode("utf-8-sig")
+        )
+        if len(render_items_document.get("items", {})) != 503:
+            raise SystemExit("Embedded CraftEngine project must contain 503 render item ids")
 
         worldgen_document = json.loads(
             archive.read("tavern-pack/configuration/worldgen.json").decode("utf-8-sig")

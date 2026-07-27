@@ -181,8 +181,7 @@ def is_grid_block(block_id: str) -> bool:
     """
 
     return (
-        block_id.startswith("string_lights_")
-        or block_id in INCENSE_BLOCKS
+        block_id in INCENSE_BLOCKS
         or block_id in STORAGE_BLOCKS
         or block_id == "tap"
         or block_id in {
@@ -338,6 +337,11 @@ BAR_STOOL_COLORS = (
     "black", "blue", "brown", "cyan", "gray", "green", "light_blue",
     "light_gray", "lime", "magenta", "orange", "pink", "purple", "red",
     "white", "yellow",
+)
+STRING_LIGHT_DYE_COLORS = (
+    "white", "orange", "magenta", "light_blue", "yellow", "lime",
+    "pink", "gray", "light_gray", "cyan", "purple", "blue",
+    "brown", "green", "red", "black",
 )
 
 # The Forge blocks below intentionally shared a generic description id.  Their
@@ -740,12 +744,11 @@ def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | li
 
 
 def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
-    is_string_lights = block_id.startswith("string_lights_")
     is_wild_vine = block_id in {"wild_grapevine", "wild_grapevine_plant"}
     is_crop = block_id.endswith("_grape_crop") or block_id == "grape_crop"
     is_storage = block_id in STORAGE_BLOCKS
     is_sofa = block_id.endswith("_sofa")
-    sturdy = block_id in STURDY_BLOCKS or is_string_lights or is_storage or is_sofa
+    sturdy = block_id in STURDY_BLOCKS or is_storage or is_sofa
     if is_wild_vine:
         sound_type = {
             action: f"minecraft:block.cave_vines.{action}"
@@ -762,7 +765,6 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
     else:
         family = ("metal" if block_id == "tap"
                   else "decorated_pot" if block_id in INCENSE_BLOCKS
-                  else "chain" if is_string_lights
                   else "wool" if is_sofa else "wood")
         sound_type = {
             action: f"minecraft:block.{family}.{action}"
@@ -780,7 +782,7 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
         "can_occlude": False,
         "propagate_skylight": True,
         "sounds": sound_type,
-        "tags": (["minecraft:mineable/pickaxe"] if is_string_lights or block_id == "tap"
+        "tags": (["minecraft:mineable/pickaxe"] if block_id == "tap"
                  or is_sofa
                  else [] if is_wild_vine or is_crop or block_id in INCENSE_BLOCKS
                  else ["minecraft:mineable/axe"]),
@@ -796,7 +798,7 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
         })
     if has_item:
         settings["item"] = f"{NAMESPACE}:{block_id}"
-    if "lamp" in block_id or is_string_lights:
+    if "lamp" in block_id:
         settings["luminance"] = 15
     elif block_id == "circular_rack":
         settings["luminance"] = 14
@@ -911,6 +913,12 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
         if block_id == "wild_grapevine":
             property_values["age"] = [str(age) for age in range(26)]
             property_values["sheared"] = ["false", "true"]
+
+        if block_id in TRELLIS_BLOCKS:
+            # `axis` is a CE hard-coded property name. CE writes the clicked
+            # face axis before the Tavern behavior runs, rotates/mirrors it
+            # natively, and Tavern only derives the connected visual `type`.
+            property_values["axis"] = ["x", "y", "z"]
 
         carrier, carrier_id = carrier_type(block_id)
         uses_waterlogged_carrier = (
@@ -1061,8 +1069,8 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             config["behaviors"] = behavior
         elif behavior is not None:
             config["behavior"] = behavior
-        if block_id.startswith("string_lights_"):
-            config["events"] = string_lights_dye_events(block_id)
+        if block_id in INCENSE_BLOCKS:
+            config["events"] = incense_toggle_events()
         elif block_id == "trellis":
             config["events"] = trellis_wax_events()
         elif block_id.endswith("_grapevine_trellis") or block_id == "grapevine_trellis":
@@ -1613,6 +1621,19 @@ def furniture_hitboxes(
     properties: dict[str, str] | None = None,
 ) -> list[dict[str, Any]]:
     properties = properties or {}
+
+    if block_id.startswith("string_lights_"):
+        # Interaction entities have a square horizontal footprint, so one
+        # 1-block-wide box would also be a full block deep. Three overlapping
+        # 6/16-wide boxes reproduce the source's 16x12x6 selection outline
+        # without turning this no-collision wall decoration into a deep slab.
+        # Local +z points away from the clicked support plane; CE rotates all
+        # three boxes with the native wall-anchor yaw.
+        return [
+            interaction_box((start, 4, 0, start + 6, 16, 6), "wall")
+            for start in (0, 5, 10)
+        ]
+
     boxes = source_boxes(block_id, anchor, properties)
     aggregate = aggregate_box(boxes)
 
@@ -1886,57 +1907,6 @@ def create_custom_effect_hud_assets() -> None:
     )
 
 
-DYE_COLORS = (
-    "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink",
-    "gray", "light_gray", "cyan", "purple", "blue", "brown", "green", "red",
-    "black",
-)
-
-
-def string_lights_dye_events(block_id: str) -> list[dict[str, Any]]:
-    """StringLightsBlock#use as CraftEngine block events.
-
-    Each foreign dye recolours the lights in place (transform_block copies
-    facing/waterlogged from the existing state), plays the dye-use sound,
-    pops the growth particles and consumes one dye outside creative mode.
-    The hand condition stops the duplicate off-hand interact event and
-    cancel_event suppresses the vanilla item use afterwards; dyeing the
-    current colour is intentionally absent, matching the source's no-op.
-    """
-    current = block_id.removeprefix("string_lights_")
-    events: list[dict[str, Any]] = []
-    for color in DYE_COLORS:
-        if color == current:
-            continue
-        events.append({
-            "on": "right_click",
-            "conditions": [
-                {"type": "match_item", "item": f"minecraft:{color}_dye"},
-                {"type": "hand", "hand": "main_hand"},
-            ],
-            "functions": [
-                {"type": "transform_block",
-                 "block": f"{NAMESPACE}:string_lights_{color}"},
-                {"type": "play_sound", "sound": "minecraft:item.dye.use",
-                 "source": "block"},
-                {"type": "particle", "particle": "minecraft:happy_villager",
-                 "x": "<arg:position.x> + 0.5",
-                 "y": "<arg:position.y> + 0.5",
-                 "z": "<arg:position.z> + 0.5",
-                 "count": 8,
-                 "offset_x": 0.25, "offset_y": 0.25, "offset_z": 0.25},
-                {"type": "set_count", "add": True, "count": -1,
-                 "conditions": [{
-                     "type": "expression",
-                     "expression": "'<arg:player.gamemode>' != 'CREATIVE'",
-                 }]},
-                {"type": "swing_hand"},
-                {"type": "cancel_event"},
-            ],
-        })
-    return events
-
-
 def trellis_wax_events() -> list[dict[str, Any]]:
     """TrellisBlock#use waxing branches as CraftEngine block events.
 
@@ -2025,10 +1995,10 @@ def grapevine_trellis_shear_events() -> list[dict[str, Any]]:
     """GrapevineTrellisBlock#use shearing as a CraftEngine block event.
 
     transform_block copies properties shared by the old and new definitions,
-    preserving ``type`` and ``waterlogged`` while dropping the vine-only
-    ``age`` property. Its default UPDATE_ALL flags also notify the hanging
-    crop below, whose CE survival behavior removes both the visual and the
-    CustomCrops record. The source accepts shears in either hand, so this
+    preserving ``axis``, ``type`` and ``waterlogged`` while dropping the
+    vine-only ``age`` property. Its default UPDATE_ALL flags also notify the
+    hanging crop below, whose CE survival behavior removes both the visual and
+    the CustomCrops record. The source accepts shears in either hand, so this
     event deliberately has no main-hand-only condition.
     """
     return [{
@@ -2049,6 +2019,176 @@ def grapevine_trellis_shear_events() -> list[dict[str, Any]]:
             {"type": "cancel_event"},
         ],
     }]
+
+
+def ordinary_block_use_condition() -> dict[str, Any]:
+    """Mirror CE's normal block-use gate for events that replace a behavior.
+
+    CraftEngine deliberately skips ``useOnBlock`` while a sneaking player has
+    an item in either hand. Block events run earlier than that gate, so the
+    equivalent condition must be explicit when an interaction moves to config.
+    """
+    return {
+        "type": "any_of",
+        "terms": [
+            {
+                "type": "!equals",
+                "value1": "<arg:player.is_sneaking>",
+                "value2": "true",
+            },
+            {
+                "type": "all_of",
+                "terms": [
+                    {
+                        "type": "equals",
+                        "value1": "<arg:player.main_hand_item.count>",
+                        "value2": "0",
+                    },
+                    {
+                        "type": "equals",
+                        "value1": "<arg:player.off_hand_item.count>",
+                        "value2": "0",
+                    },
+                ],
+            },
+        ],
+    }
+
+
+def incense_toggle_events() -> list[dict[str, Any]]:
+    """Move the incense's simple manual toggle into CE's native event engine.
+
+    Placement, redstone edge semantics and the conditional particle/damage
+    ticker remain in IncenseBlockBehavior because CE's released lamp and
+    particle behaviors do not model those rules.
+    """
+    events: list[dict[str, Any]] = []
+    for before, after, sound in (
+            ("false", "true", "minecraft:block.stone_button.click_on"),
+            ("true", "false", "minecraft:block.stone_button.click_off")):
+        events.append({
+            "on": "right_click",
+            "conditions": [
+                ordinary_block_use_condition(),
+                {"type": "match_block_property", "properties": {"open": before}},
+                {"type": "test_flag", "flag": "interact"},
+            ],
+            "functions": [
+                {"type": "update_interaction_tick"},
+                {
+                    "type": "update_block_property",
+                    "properties": {"open": after},
+                    # IncenseBlockBehavior previously used UPDATE_CLIENTS.
+                    "update_flags": 2,
+                },
+                {"type": "play_sound", "sound": sound, "source": "block"},
+                {"type": "swing_hand"},
+                {"type": "cancel_event"},
+            ],
+        })
+    # A protected click was consumed by the former behavior. Claim and cancel
+    # it here as well so a held vanilla item cannot fall through to its use.
+    events.append({
+        "on": "right_click",
+        "conditions": [
+            ordinary_block_use_condition(),
+            {"type": "!test_flag", "flag": "interact"},
+        ],
+        "functions": [
+            {"type": "update_interaction_tick"},
+            {"type": "cancel_event"},
+        ],
+    })
+    return events
+
+
+def string_light_particle_function() -> dict[str, Any]:
+    """Spawn dye particles half a block outward for each native wall yaw."""
+    def particle(x: str, z: str) -> dict[str, Any]:
+        return {
+            "type": "particle",
+            "particle": "minecraft:happy_villager",
+            "x": x,
+            "y": "<arg:position.y>",
+            "z": z,
+            "count": 15,
+            "offset_x": 0.5,
+            "offset_y": 0.375,
+            "offset_z": 0.5,
+        }
+
+    return {
+        "type": "when",
+        "source": "<arg:furniture.yaw>",
+        "cases": [
+            {"when": "0.0", "functions": [particle(
+                "<arg:position.x>", "<arg:position.z> + 0.5")]},
+            {"when": "180.0", "functions": [particle(
+                "<arg:position.x>", "<arg:position.z> - 0.5")]},
+            {"when": "90.0", "functions": [particle(
+                "<arg:position.x> - 0.5", "<arg:position.z>")]},
+            {"when": "-90.0", "functions": [particle(
+                "<arg:position.x> + 0.5", "<arg:position.z>")]},
+        ],
+        "fallback": [particle("<arg:position.x>", "<arg:position.z>")],
+    }
+
+
+def string_lights_dye_events(current_color: str) -> list[dict[str, Any]]:
+    """Express StringLightsBlock's dye transform entirely with CE functions."""
+    events: list[dict[str, Any]] = []
+    for color in STRING_LIGHT_DYE_COLORS:
+        if color == current_color:
+            continue
+        target = f"{NAMESPACE}:string_lights_{color}"
+        events.append({
+            "on": "right_click",
+            "conditions": [
+                {"type": "match_item", "item": f"minecraft:{color}_dye"},
+                # Furniture events in CE 26.7.4 expose ITEM_IN_HAND as the main
+                # hand stack, so claim only the hand whose item is inspected.
+                {"type": "hand", "hand": "main_hand"},
+            ],
+            "functions": [{
+                "type": "if_else",
+                "rules": [
+                    {
+                        "conditions": [{"type": "test_flag", "flag": "interact"}],
+                        "functions": [
+                            {"type": "update_interaction_tick"},
+                            {
+                                "type": "set_count",
+                                "add": True,
+                                "count": -1,
+                                "conditions": [{
+                                    "type": "!equals",
+                                    "value1": "<arg:player.gamemode>",
+                                    "value2": "CREATIVE",
+                                }],
+                            },
+                            {
+                                "type": "play_sound",
+                                "sound": "minecraft:item.dye.use",
+                                "source": "block",
+                            },
+                            string_light_particle_function(),
+                            {"type": "swing_hand"},
+                            {
+                                "type": "replace_furniture",
+                                "furniture": target,
+                                "variant": "wall",
+                                "drop_loot": False,
+                                "play_sound": False,
+                            },
+                        ],
+                    },
+                    {
+                        "functions": [{"type": "update_interaction_tick"}],
+                    },
+                ],
+            }],
+        })
+    return events
 
 
 def create_molotov_charging_model() -> None:
@@ -2549,7 +2689,12 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     if block_id in {"pressing_tub", "barrel", "shaker", "empty_glassware"}:
         behaviors.append({"type": f"{NAMESPACE}:station_interaction_furniture"})
 
-    if block_id in PENDANT_LAMPS:
+    if block_id.startswith("string_lights_"):
+        # Wall furniture is anchored on the support plane rather than at the
+        # target cell's floor corner. Half a block along local outward +z lands
+        # the waterloggable light block inside that target cell.
+        behaviors.append({"type": "glowing_furniture", "lights": ["0,0,0.5 15"]})
+    elif block_id in PENDANT_LAMPS:
         behaviors.append({"type": "glowing_furniture", "lights": ["0,-1,0 13"]})
     elif block_id == "glassware_holder":
         behaviors.append({"type": "glowing_furniture", "lights": ["0,0,0 8"]})
@@ -2586,7 +2731,9 @@ def furniture_rules(block_id: str, variant_names: list[str]) -> dict[str, Any]:
 
 def furniture_settings(block_id: str) -> dict[str, Any]:
     """Map each Forge block's declared SoundType and instant-break behavior."""
-    if block_id.endswith("_sofa"):
+    if block_id.startswith("string_lights_"):
+        family = "chain"
+    elif block_id.endswith("_sofa"):
         family = "wool"
     elif block_id in PENDANT_LAMPS:
         family = "chain"
@@ -2635,7 +2782,22 @@ def build_furniture(
         records = blockstate_records(block_id)
         variants: dict[str, Any] = {}
 
-        if block_id == "chalkboard":
+        if block_id.startswith("string_lights_"):
+            # The authored north state hugs the support side of its target
+            # cell. CE's native wall yaw rotates this one model onto all four
+            # clicked horizontal faces, so no directional render duplicates
+            # or Paper placement bridge are needed.
+            selected = select_record(records, {
+                "facing": "north", "waterlogged": "false",
+            })[1]
+            variants["wall"] = {
+                "elements": [
+                    furniture_element(
+                        render_items, block_id, "wall", selected, "wall")
+                ],
+                "hitboxes": furniture_hitboxes(block_id, "wall"),
+            }
+        elif block_id == "chalkboard":
             small_model = (f"{NAMESPACE}:furniture/chalkboard_small", 0, 0, 0, False)
             large_model = (f"{NAMESPACE}:furniture/chalkboard_large", 0, 0, 0, False)
 
@@ -2885,11 +3047,25 @@ def build_furniture(
                 }]
             }
             placement[block_id] = furniture_rules(block_id, list(variants))
+        elif block_id in SIMPLE_BOTTLES:
+            # These furniture definitions are spawned from vanilla bottle items,
+            # so they intentionally have no CE item id. CE still tracks the exact
+            # source item and furniture_item can return it without a Paper break
+            # bridge (including potion components).
+            config["loot"] = {
+                "pools": [{
+                    "rolls": 1,
+                    "entries": [{"type": "furniture_item"}],
+                }]
+            }
         behaviors = furniture_behaviors(block_id, list(variants))
         if len(behaviors) == 1:
             config["behavior"] = behaviors[0]
         elif behaviors:
             config["behaviors"] = behaviors
+        if block_id.startswith("string_lights_"):
+            config["events"] = string_lights_dye_events(
+                block_id.removeprefix("string_lights_"))
         furniture[full_id] = config
         metrics["furniture_variants"] += len(variants)
 
@@ -3230,7 +3406,12 @@ def build_items(
                 "furniture": f"{NAMESPACE}:{item_id}",
                 "rules": furniture_placement[item_id],
             }
-            if item_id in PAINTINGS:
+            if item_id.startswith("string_lights_"):
+                # The source block had an empty collision shape. Ignore only
+                # the player who is placing it while retaining CE's native
+                # checks against support/target blocks, entities and furniture.
+                furniture_behavior["ignore_placer"] = True
+            elif item_id in PAINTINGS:
                 # CE Interaction hitboxes cannot reproduce a 1/16-thick wall
                 # shape and otherwise reject placement while the player is
                 # standing close enough to click the support block.

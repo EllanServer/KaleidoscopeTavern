@@ -2,7 +2,7 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
-import net.momirealms.craftengine.bukkit.block.behavior.WaterloggedBlockBehavior;
+import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Kaleidoscope Tavern's trellis. Fruit lifecycle is delegated to CustomCrops;
  * this behavior only models the supporting vine structure.
  */
-public final class TrellisBehavior extends WaterloggedBlockBehavior
+public final class TrellisBehavior extends BukkitBlockBehavior
         implements BonemealableBlock, RandomTickBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "trellis");
     private static final String PREFIX = "kaleidoscope_tavern:";
@@ -64,15 +64,20 @@ public final class TrellisBehavior extends WaterloggedBlockBehavior
             BlockFace.UP, BlockFace.EAST, BlockFace.WEST, BlockFace.SOUTH, BlockFace.NORTH);
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
 
+    private final Property<Direction.Axis> axisProperty;
     private final Property<String> typeProperty;
+    private final Property<Boolean> waterloggedProperty;
     private final IntegerProperty ageProperty;
     private final float spreadChance;
 
     private TrellisBehavior(BlockDefinition block, ConfigSection section) {
-        super(block, BlockBehaviorFactory.getProperty(
-                section.path(), block, "waterlogged", Boolean.class));
+        super(block);
+        this.axisProperty = BlockBehaviorFactory.getProperty(
+                section.path(), block, "axis", Direction.Axis.class);
         this.typeProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "type", String.class);
+        this.waterloggedProperty = BlockBehaviorFactory.getProperty(
+                section.path(), block, "waterlogged", Boolean.class);
         Property<?> age = block.getProperty("age");
         this.ageProperty = age instanceof IntegerProperty integer ? integer : null;
         this.spreadChance = section.getFloat("spread_chance", 0.25F);
@@ -91,7 +96,12 @@ public final class TrellisBehavior extends WaterloggedBlockBehavior
         boolean x = axisHasTrellis(context, position, Direction.Axis.X);
         boolean y = axisHasTrellis(context, position, Direction.Axis.Y);
         boolean z = axisHasTrellis(context, position, Direction.Axis.Z);
-        String type = typeForPlacement(x, y, z, context.getClickedFace().axis());
+        // CE's hard-coded axis property behavior runs before configured block
+        // behaviors and has already copied the clicked face axis into state.
+        // Keep that native placement axis as the permanent base member while
+        // Tavern adds only the neighbouring trellis connections.
+        String type = TrellisConnectionSemantics.typeFor(
+                axisName(state.get(axisProperty)), x, y, z);
         Object fluid = BlockGetterProxy.INSTANCE.getFluidState(
                 context.getLevel().minecraftWorld(), LocationUtils.toBlockPos(position));
         return state.with(typeProperty, type).with(
@@ -119,11 +129,12 @@ public final class TrellisBehavior extends WaterloggedBlockBehavior
                     args[updateShape$level], args[updateShape$blockPos],
                     FluidsProxy.WATER, 5);
         }
-        String current = state.get(typeProperty);
-        String updated = updateType(current,
-                axisHasTrellis(world, x, y, z, Direction.Axis.X),
-                axisHasTrellis(world, x, y, z, Direction.Axis.Y),
-                axisHasTrellis(world, x, y, z, Direction.Axis.Z));
+        boolean xConnected = axisHasTrellis(world, x, y, z, Direction.Axis.X);
+        boolean yConnected = axisHasTrellis(world, x, y, z, Direction.Axis.Y);
+        boolean zConnected = axisHasTrellis(world, x, y, z, Direction.Axis.Z);
+        String baseAxis = axisName(state.get(axisProperty));
+        String updated = TrellisConnectionSemantics.typeFor(
+                baseAxis, xConnected, yConnected, zConnected);
         return state.with(typeProperty, updated).customBlockState().minecraftState();
     }
 
@@ -254,6 +265,7 @@ public final class TrellisBehavior extends WaterloggedBlockBehavior
                 continue;
             }
             ImmutableBlockState grown = source.owner().value().defaultState();
+            grown = copyNamed(targetState, grown, "axis");
             grown = copyNamed(targetState, grown, "type");
             grown = copyNamed(targetState, grown, "waterlogged");
             grown = withNamed(grown, "age", direction == BlockFace.UP ? "0" : Integer.toString(age.max));
@@ -338,57 +350,11 @@ public final class TrellisBehavior extends WaterloggedBlockBehavior
         return state != null && TRELLISES.contains(id(state));
     }
 
-    private static String typeForPlacement(boolean x, boolean y, boolean z, Direction.Axis clickAxis) {
-        if (x && y && z) return "six_direction";
-        if (x && y) return "cross_east_west";
-        if (y && z) return "cross_north_south";
-        if (x && z) return "cross_up_down";
-        if (x) {
-            return switch (clickAxis) {
-                case X -> "east_west";
-                case Y -> "cross_east_west";
-                case Z -> "cross_up_down";
-            };
-        }
-        if (y) {
-            return switch (clickAxis) {
-                case X -> "cross_east_west";
-                case Y -> "single";
-                case Z -> "cross_north_south";
-            };
-        }
-        if (z) {
-            return switch (clickAxis) {
-                case X -> "cross_up_down";
-                case Y -> "cross_north_south";
-                case Z -> "north_south";
-            };
-        }
-        return switch (clickAxis) {
-            case X -> "east_west";
-            case Y -> "single";
-            case Z -> "north_south";
-        };
-    }
-
-    private static String updateType(String current, boolean x, boolean y, boolean z) {
-        return switch (current) {
-            case "single" -> x && z ? "six_direction" : x ? "cross_east_west"
-                    : z ? "cross_north_south" : "single";
-            case "north_south" -> x && y ? "six_direction" : x ? "cross_up_down"
-                    : y ? "cross_north_south" : "north_south";
-            case "east_west" -> y && z ? "six_direction" : y ? "cross_east_west"
-                    : z ? "cross_up_down" : "east_west";
-            case "cross_north_south" -> x ? "six_direction" : z && y ? "cross_north_south"
-                    : z ? "north_south" : "single";
-            case "cross_east_west" -> z ? "six_direction" : x && y ? "cross_east_west"
-                    : x ? "east_west" : "single";
-            case "cross_up_down" -> y ? "six_direction" : x && z ? "cross_up_down"
-                    : x ? "east_west" : "north_south";
-            case "six_direction" -> x && y && z ? "six_direction" : x && y ? "cross_east_west"
-                    : y && z ? "cross_north_south" : x && z ? "cross_up_down"
-                    : x ? "east_west" : z ? "north_south" : "single";
-            default -> "single";
+    private static String axisName(Direction.Axis axis) {
+        return switch (axis) {
+            case X -> "x";
+            case Y -> "y";
+            case Z -> "z";
         };
     }
 

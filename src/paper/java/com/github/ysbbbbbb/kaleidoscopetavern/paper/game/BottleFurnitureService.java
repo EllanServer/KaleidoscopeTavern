@@ -98,7 +98,11 @@ public final class BottleFurnitureService implements Listener {
         if (!event.dropItems() || !isBottleOrGlass(event.furniture().id().toString())) {
             return;
         }
-        List<ItemStack> stored = storedItems(event.furniture());
+        // CE's furniture_item loot already returns the exact sourceItem for a
+        // single bottle. Only a genuinely expanded stack needs a custom drop
+        // list and suppression of CE's one-item loot table.
+        List<ItemStack> stored = new FurnitureState(event.furniture())
+                .items("bottle_items");
         if (stored.isEmpty()) {
             return;
         }
