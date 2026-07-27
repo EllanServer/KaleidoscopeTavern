@@ -174,7 +174,7 @@ SOURCE_STATE_OWNERS = {
     "tilt": "ground/wall pressing-tub placement variants",
     "triggered": "CE TapBlockBehavior redstone edge latch",
     "type": "CE trellis state variants",
-    "waterlogged": "CE tap state plus non-displacing carrier semantics",
+    "waterlogged": "CE tap/trellis fluid state plus non-displacing carrier semantics",
     "waxed": "CE trellis state variants plus blocks.json wax events",
 }
 
@@ -657,6 +657,14 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Trellis random ticks must reuse their NMS position instead of allocating "
                 f"one Bukkit-to-CE BlockPos bridge per neighbour; missing {required_token}")
+    for required_token in (
+            "extends WaterloggedBlockBehavior",
+            "FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER",
+            "LevelAccessorProxy.INSTANCE.scheduleTick$1("):
+        if required_token not in trellis_behavior_source:
+            raise AssertionError(
+                "TrellisBehavior must retain CE-native placement, bucket and fluid-tick "
+                f"waterlogging; missing {required_token}")
     wild_behavior_source = (
         game_package / "block/WildGrapevineBehavior.java").read_text(encoding="utf-8-sig")
     for leaf_attachment_token in (
@@ -1712,11 +1720,13 @@ def validate() -> dict[str, int]:
             "TapService must not rediscover indexed placed bottles through Bukkit entities")
 
     for required_token in (
+            "extends WaterloggedBlockBehavior",
             "implements EntityBlock",
             "BlockBehaviors.register(TYPE, TapBlockBehavior::new)",
             "context.getHand() != InteractionHand.MAIN_HAND",
             "clickedFace.axis().isHorizontal()",
             "FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER",
+            "LevelAccessorProxy.INSTANCE.scheduleTick$1(",
             "SignalGetterProxy.INSTANCE.hasNeighborSignal(level, minecraftPos)",
             "LocationUtils.above(minecraftPos)",
             "powered && !triggered",
@@ -2263,8 +2273,9 @@ def validate() -> dict[str, int]:
     # A carrier is all the client ever sees, so it decides both what the player
     # collides with and what can be aimed at. Every trellis appearance uses a
     # directional lightning-rod state: vertical members use facing=up, while
-    # horizontal members use their matching axis. The state is transparent to
-    # the authored ItemDisplay and remains collidable for connected shapes.
+    # horizontal members use their matching axis. Dry and waterlogged variants
+    # use matching carrier/fluid states; the carrier remains transparent to the
+    # authored ItemDisplay and collidable for connected shapes.
     collidable_trellises = 0
     for block_id in ("trellis", *vine_trellis_ids):
         definition = blocks[f"{NAMESPACE}:{block_id}"]
@@ -2276,13 +2287,25 @@ def validate() -> dict[str, int]:
             if not state.startswith("minecraft:lightning_rod["):
                 raise AssertionError(
                     f"{block_id}/{name}: every trellis shape needs a colliding lightning-rod carrier")
-            if "powered=false" not in state or "waterlogged=false" not in state:
+            if "powered=false" not in state or "waterlogged=" not in state:
                 raise AssertionError(
-                    f"{block_id}/{name}: trellis carrier must remain unpowered and dry")
+                    f"{block_id}/{name}: trellis carrier must remain unpowered and water-aware")
             collidable_trellises += 1
-    if collidable_trellises != 37:
+        for variant_key, mapped in states["variants"].items():
+            properties = dict(part.split("=", 1) for part in variant_key.split(","))
+            waterlogged = properties["waterlogged"]
+            appearance = states["appearances"][mapped["appearance"]]
+            if f"waterlogged={waterlogged}" not in appearance["state"]:
+                raise AssertionError(
+                    f"{block_id}/{variant_key}: carrier lost its waterlogged state")
+            expected_settings = ({"fluid_state": "water"}
+                                 if waterlogged == "true" else None)
+            if mapped.get("settings") != expected_settings:
+                raise AssertionError(
+                    f"{block_id}/{variant_key}: CE fluid state does not match waterlogged")
+    if collidable_trellises != 74:
         raise AssertionError(
-            f"Expected 37 collidable trellis appearances, found {collidable_trellises}")
+            f"Expected 74 dry/waterlogged trellis appearances, found {collidable_trellises}")
     for block_id in ("trellis", *vine_trellis_ids):
         definition = blocks[f"{NAMESPACE}:{block_id}"]
         settings = definition.get("settings", {})

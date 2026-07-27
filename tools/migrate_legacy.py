@@ -606,12 +606,11 @@ def carrier_type(block_id: str) -> tuple[str, str]:
 # hurting anyone, and why a lightning rod here neither draws strikes nor emits
 # redstone.
 #
-# Staying on waterlogged=false keeps dry trellises from rendering water, since one
-# appearance covers both waterlogged values and the carrier cannot encode it.
-# Appearances sharing a state is likewise fine: the carrier only supplies collision
-# and the aim target, while visible geometry always comes from each appearance's
-# own ItemDisplay.
-def trellis_carrier_state(trellis_type: str) -> str:
+# Each waterlogged value gets its matching released carrier state. Appearances
+# sharing a state is likewise fine: the carrier only supplies collision and the
+# aim target, while visible geometry always comes from each appearance's own
+# ItemDisplay.
+def trellis_carrier_state(trellis_type: str, waterlogged: str) -> str:
     """Pick the lightning-rod facing that matches this shape's main member."""
     # SINGLE and the crosses that include it stand on a full-height post; the
     # remaining shapes are a single horizontal beam along one axis.
@@ -624,7 +623,10 @@ def trellis_carrier_state(trellis_type: str) -> str:
         "east_west": "east",
         "cross_up_down": "north",
     }[trellis_type]
-    return f"minecraft:lightning_rod[facing={facing},powered=false,waterlogged=false]"
+    return (
+        "minecraft:lightning_rod"
+        f"[facing={facing},powered=false,waterlogged={waterlogged}]"
+    )
 
 
 def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
@@ -828,11 +830,12 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             variant_properties = parse_variant_key(variant_key)
             trellis_type = (variant_properties.get("type")
                             if block_id in TRELLIS_BLOCKS else None)
-            # Waterlogged tap variants share the same authored model but need
-            # distinct released lightning-rod carrier states so client water
+            # Waterlogged tap and trellis variants share their authored model
+            # but need distinct released carrier states so client water
             # rendering follows the source block state.
             appearance_key = ((model, variant_properties.get("waterlogged"))
-                              if block_id == "tap" else model)
+                              if block_id == "tap" or block_id in TRELLIS_BLOCKS
+                              else model)
             appearance_name = appearance_names.get(appearance_key)
             if appearance_name is None:
                 appearance_name = f"appearance_{len(appearance_names)}"
@@ -883,7 +886,8 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                         "[hanging=false,waterlogged=false]"
                     )
                 elif trellis_type is not None:
-                    appearance["state"] = trellis_carrier_state(trellis_type)
+                    appearance["state"] = trellis_carrier_state(
+                        trellis_type, variant_properties["waterlogged"])
                     metrics["collidable_trellises"] += 1
                 elif (block_id in {"wild_grapevine", "wild_grapevine_plant"}
                       or block_id in HANGING_GRAPE_CROPS):
@@ -901,7 +905,7 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 appearances[appearance_name] = appearance
             if property_values:
                 mapped_variant: dict[str, Any] = {"appearance": appearance_name}
-                if (block_id == "tap"
+                if ((block_id == "tap" or block_id in TRELLIS_BLOCKS)
                         and variant_properties.get("waterlogged") == "true"):
                     # The released vanilla state controls the client's shape
                     # and water rendering. CE's custom state still needs an

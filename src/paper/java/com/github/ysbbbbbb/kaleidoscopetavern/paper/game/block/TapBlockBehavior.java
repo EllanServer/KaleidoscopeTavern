@@ -1,7 +1,7 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
-import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
+import net.momirealms.craftengine.bukkit.block.behavior.WaterloggedBlockBehavior;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -28,6 +28,7 @@ import net.momirealms.craftengine.libraries.antigrieflib.Flag;
 import net.momirealms.craftengine.proxy.bukkit.craftbukkit.block.CraftBlockProxy;
 import net.momirealms.craftengine.proxy.minecraft.server.level.ServerLevelProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.BlockGetterProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.level.LevelAccessorProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelWriterProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.SignalGetterProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.material.FluidStateProxy;
@@ -53,7 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * block. The controller owns only the source's transient 6/30-tick extraction
  * cycle; source/destination business behavior remains in {@link Handler}.</p>
  */
-public final class TapBlockBehavior extends BukkitBlockBehavior implements EntityBlock {
+public final class TapBlockBehavior extends WaterloggedBlockBehavior implements EntityBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "tap");
     public static final int TAKE_TICKS = 30;
     public static final int TAKE_PARTICLE_TICKS = 5;
@@ -66,18 +67,16 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
     private final Property<Direction> facingProperty;
     private final Property<Boolean> openProperty;
     private final Property<Boolean> triggeredProperty;
-    private final Property<Boolean> waterloggedProperty;
 
     private TapBlockBehavior(BlockDefinition block, ConfigSection section) {
-        super(block);
+        super(block, BlockBehaviorFactory.getProperty(
+                section.path(), block, "waterlogged", Boolean.class));
         this.facingProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "facing", Direction.class);
         this.openProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "open", Boolean.class);
         this.triggeredProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "triggered", Boolean.class);
-        this.waterloggedProperty = BlockBehaviorFactory.getProperty(
-                section.path(), block, "waterlogged", Boolean.class);
     }
 
     public static void register() {
@@ -167,6 +166,18 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
         }
         BlockStateUtils.getOptionalCustomBlockState(args[0])
                 .ifPresent(state -> handlePower(args[1], args[2], state));
+    }
+
+    @Override
+    public Object updateShape(Object thisBlock, Object[] args) {
+        BlockStateUtils.getOptionalCustomBlockState(args[0]).ifPresent(state -> {
+            if (state.get(waterloggedProperty)) {
+                LevelAccessorProxy.INSTANCE.scheduleTick$1(
+                        args[updateShape$level], args[updateShape$blockPos],
+                        FluidsProxy.WATER, 5);
+            }
+        });
+        return args[0];
     }
 
     private void handlePower(Object level, Object minecraftPos, ImmutableBlockState state) {

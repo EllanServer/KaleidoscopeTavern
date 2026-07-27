@@ -17948,6 +17948,17 @@
             }
           },
           "appearance_1": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/trellis/842719448b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_2": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -17958,23 +17969,12 @@
               "view_range": 1.25
             }
           },
-          "appearance_2": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/trellis/037ec6eb54",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
           "appearance_3": {
-            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/trellis/8990decd61",
+              "item": "kaleidoscope_tavern:_render/trellis/24d63cec41",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
@@ -17985,13 +17985,68 @@
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/trellis/964db30dfd",
+              "item": "kaleidoscope_tavern:_render/trellis/037ec6eb54",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_5": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/trellis/037ec6eb54",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_6": {
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/trellis/8990decd61",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_7": {
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/trellis/8990decd61",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/trellis/964db30dfd",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_9": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/trellis/964db30dfd",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_10": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -18002,8 +18057,30 @@
               "view_range": 1.25
             }
           },
-          "appearance_6": {
+          "appearance_11": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/trellis/3c334350e9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_12": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/trellis/0cd4c638c0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_13": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -18022,82 +18099,124 @@
             "appearance": "appearance_0"
           },
           "type=cross_east_west,waterlogged=true,waxed=false": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=cross_east_west,waterlogged=true,waxed=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=cross_north_south,waterlogged=false,waxed=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "type=cross_north_south,waterlogged=false,waxed=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "type=cross_north_south,waterlogged=true,waxed=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=cross_north_south,waterlogged=true,waxed=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=cross_up_down,waterlogged=false,waxed=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "type=cross_up_down,waterlogged=false,waxed=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "type=cross_up_down,waterlogged=true,waxed=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=cross_up_down,waterlogged=true,waxed=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=east_west,waterlogged=false,waxed=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "type=east_west,waterlogged=false,waxed=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "type=east_west,waterlogged=true,waxed=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=east_west,waterlogged=true,waxed=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=north_south,waterlogged=false,waxed=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "type=north_south,waterlogged=false,waxed=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "type=north_south,waterlogged=true,waxed=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=north_south,waterlogged=true,waxed=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=single,waterlogged=false,waxed=false": {
-            "appearance": "appearance_5"
+            "appearance": "appearance_10"
           },
           "type=single,waterlogged=false,waxed=true": {
-            "appearance": "appearance_5"
+            "appearance": "appearance_10"
           },
           "type=single,waterlogged=true,waxed=false": {
-            "appearance": "appearance_5"
+            "appearance": "appearance_11",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=single,waterlogged=true,waxed=true": {
-            "appearance": "appearance_5"
+            "appearance": "appearance_11",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=six_direction,waterlogged=false,waxed=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "type=six_direction,waterlogged=false,waxed=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "type=six_direction,waterlogged=true,waxed=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "type=six_direction,waterlogged=true,waxed=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           }
         }
       },
@@ -18284,6 +18403,17 @@
             }
           },
           "appearance_1": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/b3d3c133f0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_2": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -18294,23 +18424,12 @@
               "view_range": 1.25
             }
           },
-          "appearance_2": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/grapevine_trellis/7ab129ba72",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
           "appearance_3": {
-            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/grapevine_trellis/b12b161ae0",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/e87f507192",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
@@ -18321,13 +18440,68 @@
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/grapevine_trellis/1b2dc2114c",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/7ab129ba72",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_5": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/7ab129ba72",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_6": {
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/b12b161ae0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_7": {
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/b12b161ae0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/1b2dc2114c",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_9": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/1b2dc2114c",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_10": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -18338,7 +18512,18 @@
               "view_range": 1.25
             }
           },
-          "appearance_6": {
+          "appearance_11": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/c1773b54f1",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_12": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -18349,7 +18534,18 @@
               "view_range": 1.25
             }
           },
-          "appearance_7": {
+          "appearance_13": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/0e9b62ba2e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_14": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -18360,7 +18556,18 @@
               "view_range": 1.25
             }
           },
-          "appearance_8": {
+          "appearance_15": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/6271d45189",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_16": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -18371,8 +18578,30 @@
               "view_range": 1.25
             }
           },
-          "appearance_9": {
+          "appearance_17": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/c49119957f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_18": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/grapevine_trellis/a84e5bcfe4",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_19": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -18388,169 +18617,253 @@
             "appearance": "appearance_0"
           },
           "age=0,type=cross_east_west,waterlogged=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=cross_north_south,waterlogged=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "age=0,type=cross_north_south,waterlogged=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=cross_up_down,waterlogged=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "age=0,type=cross_up_down,waterlogged=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=east_west,waterlogged=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "age=0,type=east_west,waterlogged=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=north_south,waterlogged=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "age=0,type=north_south,waterlogged=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=single,waterlogged=false": {
-            "appearance": "appearance_5"
+            "appearance": "appearance_10"
           },
           "age=0,type=single,waterlogged=true": {
-            "appearance": "appearance_5"
+            "appearance": "appearance_11",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=six_direction,waterlogged=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "age=0,type=six_direction,waterlogged=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=cross_east_west,waterlogged=false": {
             "appearance": "appearance_0"
           },
           "age=1,type=cross_east_west,waterlogged=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=cross_north_south,waterlogged=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "age=1,type=cross_north_south,waterlogged=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=cross_up_down,waterlogged=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "age=1,type=cross_up_down,waterlogged=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=east_west,waterlogged=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "age=1,type=east_west,waterlogged=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=north_south,waterlogged=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "age=1,type=north_south,waterlogged=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=single,waterlogged=false": {
-            "appearance": "appearance_7"
+            "appearance": "appearance_14"
           },
           "age=1,type=single,waterlogged=true": {
-            "appearance": "appearance_7"
+            "appearance": "appearance_15",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=six_direction,waterlogged=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "age=1,type=six_direction,waterlogged=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=cross_east_west,waterlogged=false": {
             "appearance": "appearance_0"
           },
           "age=2,type=cross_east_west,waterlogged=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=cross_north_south,waterlogged=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "age=2,type=cross_north_south,waterlogged=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=cross_up_down,waterlogged=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "age=2,type=cross_up_down,waterlogged=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=east_west,waterlogged=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "age=2,type=east_west,waterlogged=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=north_south,waterlogged=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "age=2,type=north_south,waterlogged=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=single,waterlogged=false": {
-            "appearance": "appearance_8"
+            "appearance": "appearance_16"
           },
           "age=2,type=single,waterlogged=true": {
-            "appearance": "appearance_8"
+            "appearance": "appearance_17",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=six_direction,waterlogged=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "age=2,type=six_direction,waterlogged=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=cross_east_west,waterlogged=false": {
             "appearance": "appearance_0"
           },
           "age=3,type=cross_east_west,waterlogged=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=cross_north_south,waterlogged=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "age=3,type=cross_north_south,waterlogged=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=cross_up_down,waterlogged=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "age=3,type=cross_up_down,waterlogged=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=east_west,waterlogged=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "age=3,type=east_west,waterlogged=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=north_south,waterlogged=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "age=3,type=north_south,waterlogged=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=single,waterlogged=false": {
-            "appearance": "appearance_9"
+            "appearance": "appearance_18"
           },
           "age=3,type=single,waterlogged=true": {
-            "appearance": "appearance_9"
+            "appearance": "appearance_19",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=six_direction,waterlogged=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "age=3,type=six_direction,waterlogged=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           }
         }
       },
@@ -18699,6 +19012,17 @@
             }
           },
           "appearance_1": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/aab090e761",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_2": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -18709,23 +19033,12 @@
               "view_range": 1.25
             }
           },
-          "appearance_2": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/fd0b39e60c",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
           "appearance_3": {
-            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/dfea2eb5c9",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/6b96beccd9",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
@@ -18736,13 +19049,68 @@
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/c2ede1a2b8",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/fd0b39e60c",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_5": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/fd0b39e60c",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_6": {
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/dfea2eb5c9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_7": {
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/dfea2eb5c9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/c2ede1a2b8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_9": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/c2ede1a2b8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_10": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -18753,7 +19121,18 @@
               "view_range": 1.25
             }
           },
-          "appearance_6": {
+          "appearance_11": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/0d9af9d0d9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_12": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -18764,7 +19143,18 @@
               "view_range": 1.25
             }
           },
-          "appearance_7": {
+          "appearance_13": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/f5dbff008e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_14": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -18775,7 +19165,18 @@
               "view_range": 1.25
             }
           },
-          "appearance_8": {
+          "appearance_15": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/249459bd6b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_16": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -18786,8 +19187,30 @@
               "view_range": 1.25
             }
           },
-          "appearance_9": {
+          "appearance_17": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/23a36ca3b9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_18": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_grapevine_trellis/d382c7673e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_19": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -18803,169 +19226,253 @@
             "appearance": "appearance_0"
           },
           "age=0,type=cross_east_west,waterlogged=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=cross_north_south,waterlogged=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "age=0,type=cross_north_south,waterlogged=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=cross_up_down,waterlogged=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "age=0,type=cross_up_down,waterlogged=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=east_west,waterlogged=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "age=0,type=east_west,waterlogged=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=north_south,waterlogged=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "age=0,type=north_south,waterlogged=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=single,waterlogged=false": {
-            "appearance": "appearance_5"
+            "appearance": "appearance_10"
           },
           "age=0,type=single,waterlogged=true": {
-            "appearance": "appearance_5"
+            "appearance": "appearance_11",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=six_direction,waterlogged=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "age=0,type=six_direction,waterlogged=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=cross_east_west,waterlogged=false": {
             "appearance": "appearance_0"
           },
           "age=1,type=cross_east_west,waterlogged=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=cross_north_south,waterlogged=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "age=1,type=cross_north_south,waterlogged=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=cross_up_down,waterlogged=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "age=1,type=cross_up_down,waterlogged=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=east_west,waterlogged=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "age=1,type=east_west,waterlogged=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=north_south,waterlogged=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "age=1,type=north_south,waterlogged=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=single,waterlogged=false": {
-            "appearance": "appearance_7"
+            "appearance": "appearance_14"
           },
           "age=1,type=single,waterlogged=true": {
-            "appearance": "appearance_7"
+            "appearance": "appearance_15",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=six_direction,waterlogged=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "age=1,type=six_direction,waterlogged=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=cross_east_west,waterlogged=false": {
             "appearance": "appearance_0"
           },
           "age=2,type=cross_east_west,waterlogged=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=cross_north_south,waterlogged=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "age=2,type=cross_north_south,waterlogged=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=cross_up_down,waterlogged=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "age=2,type=cross_up_down,waterlogged=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=east_west,waterlogged=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "age=2,type=east_west,waterlogged=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=north_south,waterlogged=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "age=2,type=north_south,waterlogged=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=single,waterlogged=false": {
-            "appearance": "appearance_8"
+            "appearance": "appearance_16"
           },
           "age=2,type=single,waterlogged=true": {
-            "appearance": "appearance_8"
+            "appearance": "appearance_17",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=six_direction,waterlogged=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "age=2,type=six_direction,waterlogged=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=cross_east_west,waterlogged=false": {
             "appearance": "appearance_0"
           },
           "age=3,type=cross_east_west,waterlogged=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=cross_north_south,waterlogged=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "age=3,type=cross_north_south,waterlogged=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=cross_up_down,waterlogged=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "age=3,type=cross_up_down,waterlogged=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=east_west,waterlogged=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "age=3,type=east_west,waterlogged=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=north_south,waterlogged=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "age=3,type=north_south,waterlogged=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=single,waterlogged=false": {
-            "appearance": "appearance_9"
+            "appearance": "appearance_18"
           },
           "age=3,type=single,waterlogged=true": {
-            "appearance": "appearance_9"
+            "appearance": "appearance_19",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=six_direction,waterlogged=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "age=3,type=six_direction,waterlogged=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           }
         }
       },
@@ -19114,6 +19621,17 @@
             }
           },
           "appearance_1": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/b5edaeedd8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_2": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -19124,23 +19642,12 @@
               "view_range": 1.25
             }
           },
-          "appearance_2": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/f11ed25140",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
           "appearance_3": {
-            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/5effaa3b23",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/592856239b",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
@@ -19151,13 +19658,68 @@
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/267f810a46",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/f11ed25140",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_5": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/f11ed25140",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_6": {
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/5effaa3b23",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_7": {
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/5effaa3b23",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/267f810a46",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_9": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/267f810a46",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_10": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -19168,7 +19730,18 @@
               "view_range": 1.25
             }
           },
-          "appearance_6": {
+          "appearance_11": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/d7734667da",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_12": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -19179,7 +19752,18 @@
               "view_range": 1.25
             }
           },
-          "appearance_7": {
+          "appearance_13": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/48b0e0b064",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_14": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -19190,7 +19774,18 @@
               "view_range": 1.25
             }
           },
-          "appearance_8": {
+          "appearance_15": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/675874c36a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_16": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
@@ -19201,8 +19796,30 @@
               "view_range": 1.25
             }
           },
-          "appearance_9": {
+          "appearance_17": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/65a1c683f9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_18": {
             "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gold_grapevine_trellis/d9d08bfef9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_19": {
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=true]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -19218,169 +19835,253 @@
             "appearance": "appearance_0"
           },
           "age=0,type=cross_east_west,waterlogged=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=cross_north_south,waterlogged=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "age=0,type=cross_north_south,waterlogged=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=cross_up_down,waterlogged=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "age=0,type=cross_up_down,waterlogged=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=east_west,waterlogged=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "age=0,type=east_west,waterlogged=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=north_south,waterlogged=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "age=0,type=north_south,waterlogged=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=single,waterlogged=false": {
-            "appearance": "appearance_5"
+            "appearance": "appearance_10"
           },
           "age=0,type=single,waterlogged=true": {
-            "appearance": "appearance_5"
+            "appearance": "appearance_11",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=0,type=six_direction,waterlogged=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "age=0,type=six_direction,waterlogged=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=cross_east_west,waterlogged=false": {
             "appearance": "appearance_0"
           },
           "age=1,type=cross_east_west,waterlogged=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=cross_north_south,waterlogged=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "age=1,type=cross_north_south,waterlogged=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=cross_up_down,waterlogged=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "age=1,type=cross_up_down,waterlogged=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=east_west,waterlogged=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "age=1,type=east_west,waterlogged=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=north_south,waterlogged=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "age=1,type=north_south,waterlogged=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=single,waterlogged=false": {
-            "appearance": "appearance_7"
+            "appearance": "appearance_14"
           },
           "age=1,type=single,waterlogged=true": {
-            "appearance": "appearance_7"
+            "appearance": "appearance_15",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=1,type=six_direction,waterlogged=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "age=1,type=six_direction,waterlogged=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=cross_east_west,waterlogged=false": {
             "appearance": "appearance_0"
           },
           "age=2,type=cross_east_west,waterlogged=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=cross_north_south,waterlogged=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "age=2,type=cross_north_south,waterlogged=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=cross_up_down,waterlogged=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "age=2,type=cross_up_down,waterlogged=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=east_west,waterlogged=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "age=2,type=east_west,waterlogged=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=north_south,waterlogged=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "age=2,type=north_south,waterlogged=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=single,waterlogged=false": {
-            "appearance": "appearance_8"
+            "appearance": "appearance_16"
           },
           "age=2,type=single,waterlogged=true": {
-            "appearance": "appearance_8"
+            "appearance": "appearance_17",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=2,type=six_direction,waterlogged=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "age=2,type=six_direction,waterlogged=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=cross_east_west,waterlogged=false": {
             "appearance": "appearance_0"
           },
           "age=3,type=cross_east_west,waterlogged=true": {
-            "appearance": "appearance_0"
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=cross_north_south,waterlogged=false": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_2"
           },
           "age=3,type=cross_north_south,waterlogged=true": {
-            "appearance": "appearance_1"
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=cross_up_down,waterlogged=false": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_4"
           },
           "age=3,type=cross_up_down,waterlogged=true": {
-            "appearance": "appearance_2"
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=east_west,waterlogged=false": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_6"
           },
           "age=3,type=east_west,waterlogged=true": {
-            "appearance": "appearance_3"
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=north_south,waterlogged=false": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_8"
           },
           "age=3,type=north_south,waterlogged=true": {
-            "appearance": "appearance_4"
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=single,waterlogged=false": {
-            "appearance": "appearance_9"
+            "appearance": "appearance_18"
           },
           "age=3,type=single,waterlogged=true": {
-            "appearance": "appearance_9"
+            "appearance": "appearance_19",
+            "settings": {
+              "fluid_state": "water"
+            }
           },
           "age=3,type=six_direction,waterlogged=false": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_12"
           },
           "age=3,type=six_direction,waterlogged=true": {
-            "appearance": "appearance_6"
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
           }
         }
       },

@@ -2,9 +2,10 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
-import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
+import net.momirealms.craftengine.bukkit.block.behavior.WaterloggedBlockBehavior;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.BlockDefinition;
 import net.momirealms.craftengine.core.block.BlockStateWrapper;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -29,7 +30,10 @@ import net.momirealms.craftengine.libraries.antigrieflib.Flag;
 import net.momirealms.craftengine.proxy.minecraft.core.MutableBlockPosProxy;
 import net.momirealms.craftengine.proxy.minecraft.core.Vec3iProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.BlockGetterProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.level.LevelAccessorProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.level.material.FluidStateProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.level.material.FluidsProxy;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -46,7 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Kaleidoscope Tavern's trellis. Fruit lifecycle is delegated to CustomCrops;
  * this behavior only models the supporting vine structure.
  */
-public final class TrellisBehavior extends BukkitBlockBehavior
+public final class TrellisBehavior extends WaterloggedBlockBehavior
         implements BonemealableBlock, RandomTickBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "trellis");
     private static final String PREFIX = "kaleidoscope_tavern:";
@@ -65,7 +69,8 @@ public final class TrellisBehavior extends BukkitBlockBehavior
     private final float spreadChance;
 
     private TrellisBehavior(BlockDefinition block, ConfigSection section) {
-        super(block);
+        super(block, BlockBehaviorFactory.getProperty(
+                section.path(), block, "waterlogged", Boolean.class));
         this.typeProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "type", String.class);
         Property<?> age = block.getProperty("age");
@@ -87,7 +92,11 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         boolean y = axisHasTrellis(context, position, Direction.Axis.Y);
         boolean z = axisHasTrellis(context, position, Direction.Axis.Z);
         String type = typeForPlacement(x, y, z, context.getClickedFace().axis());
-        return state.with(typeProperty, type);
+        Object fluid = BlockGetterProxy.INSTANCE.getFluidState(
+                context.getLevel().minecraftWorld(), LocationUtils.toBlockPos(position));
+        return state.with(typeProperty, type).with(
+                waterloggedProperty,
+                FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER);
     }
 
     @Override
@@ -105,6 +114,11 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         int y = Vec3iProxy.INSTANCE.getY(position);
         int z = Vec3iProxy.INSTANCE.getZ(position);
         ImmutableBlockState state = optional.get();
+        if (state.get(waterloggedProperty)) {
+            LevelAccessorProxy.INSTANCE.scheduleTick$1(
+                    args[updateShape$level], args[updateShape$blockPos],
+                    FluidsProxy.WATER, 5);
+        }
         String current = state.get(typeProperty);
         String updated = updateType(current,
                 axisHasTrellis(world, x, y, z, Direction.Axis.X),
