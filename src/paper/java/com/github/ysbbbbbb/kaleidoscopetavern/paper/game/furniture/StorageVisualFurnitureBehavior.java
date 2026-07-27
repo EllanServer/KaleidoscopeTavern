@@ -21,6 +21,7 @@ import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.Clientbo
 import net.momirealms.craftengine.proxy.minecraft.world.entity.EntityTypesProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.phys.Vec3Proxy;
 import org.bukkit.Location;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -233,14 +234,19 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
                 packets.add(ClientboundAddEntityPacketProxy.INSTANCE.newInstance(
                         entityIds[slot], entityUuids[slot],
                         position.x(), position.y(), position.z(),
-                        visual.xRot(), position.yRot(),
+                        0, position.yRot(),
                         EntityTypesProxy.ITEM_DISPLAY, 0, Vec3Proxy.ZERO, 0));
 
-                List<Object> metadata = new ArrayList<>(3);
+                List<Object> metadata = new ArrayList<>(4);
                 DisplayData.ItemDisplayData.ItemStack.addEntityData(
                         visual.item().minecraftItem(), metadata);
                 DisplayData.ItemDisplayData.Scale.addEntityDataIfNotDefaultValue(
                         new Vector3f(visual.scale()), metadata);
+                // CE item-display elements keep model pitch in the display
+                // transformation. Entity pitch is orientation state and turns
+                // a 180-degree hanging glass into a sideways model on clients.
+                DisplayData.ItemDisplayData.LeftRotation.addEntityDataIfNotDefaultValue(
+                        new Quaternionf().rotateX((float) Math.toRadians(visual.xRot())), metadata);
                 DisplayData.ItemDisplayData.ViewRange.addEntityDataIfNotDefaultValue(
                         (float) (VIEW_RANGE * player.displayEntityViewDistance()), metadata);
                 packets.add(ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(

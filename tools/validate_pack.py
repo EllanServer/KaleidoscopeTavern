@@ -1977,6 +1977,9 @@ def validate() -> dict[str, int]:
             "Visual visual = controller.visual(slot)",
             "packets.add(removePacket)",
             "DisplayData.ItemDisplayData.ItemStack.addEntityData",
+            "DisplayData.ItemDisplayData.LeftRotation.addEntityDataIfNotDefaultValue",
+            "new Quaternionf().rotateX((float) Math.toRadians(visual.xRot()))",
+            "0, position.yRot()",
             "ClientboundAddEntityPacketProxy.INSTANCE.newInstance",
             "player.sendPackets",
             "public void gatherElements"):
