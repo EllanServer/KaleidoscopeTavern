@@ -1412,12 +1412,19 @@ def furniture_hitboxes(
     aggregate = aggregate_box(boxes)
 
     if block_id == "barrel":
-        return [
-            shulker_box((x, y, z))
-            for y in range(3)
-            for x in (-1, 0, 1)
-            for z in (-1, 0, 1)
-        ]
+        # CE's happy-ghast hitbox is a four-block cube before scaling. A 0.75
+        # scale therefore reproduces the source barrel's exact x/z=-1.5..1.5,
+        # y=0..3 footprint with one hard collider instead of 27 shulker
+        # colliders (and one client entity instead of 54 virtual entities).
+        return [{
+            "type": "happy_ghast",
+            "position": "0,0,0",
+            "scale": 0.75,
+            "hard_collision": True,
+            "can_use_item_on": True,
+            "can_be_hit_by_projectile": True,
+            "blocks_building": True,
+        }]
     if block_id == "stepladder":
         # Keep the compact, server-tested layout. Only the base blocks building;
         # the upper rails remain physical without preventing adjacent placement.

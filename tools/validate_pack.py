@@ -2468,12 +2468,19 @@ def validate() -> dict[str, int]:
             "The source barrel must place open through CE's native ground variant")
     open_barrel = barrel_variants["ground"]
     closed_barrel = barrel_variants["ground_closed"]
-    if (len(open_barrel.get("hitboxes", [])) != 27
-            or len(closed_barrel.get("hitboxes", [])) != 27):
-        raise AssertionError("The legacy barrel must retain its 3x3x3 furniture footprint")
-    if any(hitbox.get("peek") != 0 for variant in barrel_variants.values()
-           for hitbox in variant["hitboxes"]):
-        raise AssertionError("The 3x3x3 barrel model/collision must span y=0..3 exactly")
+    expected_barrel_hitbox = [{
+        "type": "happy_ghast",
+        "position": "0,0,0",
+        "scale": 0.75,
+        "hard_collision": True,
+        "can_use_item_on": True,
+        "can_be_hit_by_projectile": True,
+        "blocks_building": True,
+    }]
+    if any(variant.get("hitboxes") != expected_barrel_hitbox
+           for variant in barrel_variants.values()):
+        raise AssertionError(
+            "The barrel must use one CE happy-ghast collider with the exact 3x3x3 footprint")
     closed_element = closed_barrel["elements"][0]
     open_body, open_lid = open_barrel["elements"]
     barrel_models = [
