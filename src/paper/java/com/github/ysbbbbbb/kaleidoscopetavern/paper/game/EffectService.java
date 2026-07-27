@@ -148,7 +148,6 @@ public final class EffectService implements Listener {
 
     public void start() {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            items.refreshInventory(player);
             load(player);
         }
         for (org.bukkit.World world : Bukkit.getWorlds()) {
@@ -291,7 +290,6 @@ public final class EffectService implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        items.refreshInventory(event.getPlayer());
         load(event.getPlayer());
     }
 

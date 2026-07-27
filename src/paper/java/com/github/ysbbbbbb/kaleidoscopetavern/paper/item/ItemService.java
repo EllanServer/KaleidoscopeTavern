@@ -20,12 +20,6 @@ import org.bukkit.Registry;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -35,10 +29,8 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionEffectTypeCategory;
-import org.bukkit.potion.PotionType;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -46,10 +38,9 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 /** Boundary between Bukkit inventory objects and CraftEngine item definitions. */
-public final class ItemService implements Listener {
+public final class ItemService {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final ListPersistentDataType<byte[], byte[]> BYTE_ARRAY_LIST =
             PersistentDataType.LIST.byteArrays();
@@ -75,7 +66,6 @@ public final class ItemService implements Listener {
     private final NamespacedKey signatureEffectValuesKey;
     private final NamespacedKey shakerIngredientsKey;
     private final NamespacedKey shakerResultKey;
-    private final Map<String, Set<String>> knownEffectKeys;
 
     public ItemService(JavaPlugin plugin, ContentCatalog catalog) {
         this.catalog = catalog;
@@ -86,18 +76,6 @@ public final class ItemService implements Listener {
         this.signatureEffectValuesKey = new NamespacedKey(plugin, "signature_effect_values");
         this.shakerIngredientsKey = new NamespacedKey(plugin, "shaker_ingredients");
         this.shakerResultKey = new NamespacedKey(plugin, "shaker_result");
-
-        Map<String, Set<String>> keysByItem = new LinkedHashMap<>();
-        for (String itemId : catalog.drinkItems()) {
-            Set<String> keys = new LinkedHashSet<>();
-            for (int level = 1; level <= 6; level++) {
-                for (EffectSpec spec : catalog.effects(itemId, level)) {
-                    keys.add(DrinkEffectLoreSemantics.effectKey(spec.effect()));
-                }
-            }
-            keysByItem.put(itemId, Set.copyOf(keys));
-        }
-        this.knownEffectKeys = Map.copyOf(keysByItem);
     }
 
     public String id(ItemStack stack) {
@@ -197,8 +175,6 @@ public final class ItemService implements Listener {
             return stack;
         }
 
-        repairLegacyDrinkMetadata(stack, itemId);
-
         int level = cocktail ? 1 : brewLevel(stack);
         if (specs.isEmpty() && level > 0) {
             specs = catalog.effects(itemId, level);
@@ -229,21 +205,9 @@ public final class ItemService implements Listener {
             managedLore.addAll(attributeLore(specs));
         }
 
-        Set<String> itemEffectKeys = knownEffectKeys.getOrDefault(itemId, Set.of());
-        Set<String> expandedEffectKeys = null;
-        for (EffectSpec known : specs) {
-            String effectKey = DrinkEffectLoreSemantics.effectKey(known.effect());
-            if (!itemEffectKeys.contains(effectKey)) {
-                if (expandedEffectKeys == null) {
-                    expandedEffectKeys = new LinkedHashSet<>(itemEffectKeys);
-                }
-                expandedEffectKeys.add(effectKey);
-            }
-        }
-        Set<String> effectiveKeys = expandedEffectKeys == null ? itemEffectKeys : expandedEffectKeys;
         List<Component> mergedLore = ManagedLoreSemantics.replace(
                 meta.lore(),
-                line -> DrinkLore.isManagedOrLegacyDrinkLine(line, effectiveKeys),
+                DrinkLore::isManagedDrinkLine,
                 Component.empty()::equals,
                 managedLore);
         List<Component> updatedLore = mergedLore.isEmpty() ? null : mergedLore;
@@ -253,32 +217,6 @@ public final class ItemService implements Listener {
         }
         hidePotionTooltip(stack);
         return stack;
-    }
-
-    private static void repairLegacyDrinkMetadata(ItemStack stack, String itemId) {
-        ItemMeta meta = stack.getItemMeta();
-        boolean changed = false;
-        if (!meta.hasCustomName()) {
-            BukkitItemDefinition definition = CraftEngineItems.byId(itemId);
-            if (definition != null) {
-                ItemMeta current = definition.buildBukkitItem().getItemMeta();
-                if (current.hasCustomName()) {
-                    meta.customName(current.customName());
-                    changed = true;
-                }
-            }
-        }
-        if (meta instanceof PotionMeta potionMeta && !potionMeta.hasBasePotionType()) {
-            Color customColor = potionMeta.hasColor() ? potionMeta.getColor() : null;
-            potionMeta.setBasePotionType(PotionType.WATER);
-            if (customColor != null) {
-                potionMeta.setColor(customColor);
-            }
-            changed = true;
-        }
-        if (changed) {
-            stack.setItemMeta(meta);
-        }
     }
 
     private static void hidePotionTooltip(ItemStack stack) {
@@ -294,42 +232,6 @@ public final class ItemService implements Listener {
         stack.setData(DataComponentTypes.TOOLTIP_DISPLAY, builder);
     }
 
-    public void refreshInventory(Player player) {
-        refreshInventory(player.getInventory());
-    }
-
-    private void refreshInventory(Inventory inventory) {
-        for (int slot = 0; slot < inventory.getSize(); slot++) {
-            ItemStack stack = inventory.getItem(slot);
-            if (stack != null && !stack.isEmpty()) {
-                String itemId = id(stack);
-                if (needsLoreRefresh(stack, itemId)) {
-                    inventory.setItem(slot, refreshLore(stack, itemId));
-                }
-            }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onInventoryOpen(InventoryOpenEvent event) {
-        // Lazily migrates old drinks in chests, barrels and shulker boxes at
-        // their first observable access instead of scanning every loaded
-        // container on startup.
-        refreshInventory(event.getInventory());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerPickup(EntityPickupItemEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
-            return;
-        }
-        ItemStack stack = event.getItem().getItemStack();
-        String itemId = id(stack);
-        if (needsLoreRefresh(stack, itemId)) {
-            event.getItem().setItemStack(refreshLore(stack, itemId));
-        }
-    }
-
     private ItemStack refreshLore(ItemStack stack) {
         return refreshLore(stack, id(stack));
     }
@@ -343,18 +245,11 @@ public final class ItemService implements Listener {
             if (result != null) {
                 refreshDrinkLore(result);
             }
-            // Re-encode repaired nested items as well as rebuilding the visible
-            // shaker tooltip; otherwise an old wine name survives inside PDC.
+            // Keep nested dynamic drink lore and the visible shaker tooltip in
+            // sync whenever portable shaker state is rebuilt.
             withShakerState(stack, ingredients, result);
         }
         return stack;
-    }
-
-    private boolean needsLoreRefresh(ItemStack stack, String itemId) {
-        return PREFIX.concat("shaker").equals(itemId)
-                || catalog.isCocktail(itemId)
-                || catalog.hasDrinkEffects(itemId)
-                || stack.getPersistentDataContainer().has(signatureEffectsKey, PersistentDataType.TAG_CONTAINER);
     }
 
     private static NamedTextColor effectColor(String effectId) {
@@ -506,7 +401,7 @@ public final class ItemService implements Listener {
         ItemMeta meta = stack.getItemMeta();
         List<Component> mergedLore = ManagedLoreSemantics.replace(
                 meta.lore(),
-                DrinkLore::isManagedOrLegacyShakerLine,
+                DrinkLore::isManagedShakerLine,
                 Component.empty()::equals,
                 managedLore);
         List<Component> updatedLore = mergedLore.isEmpty() ? null : mergedLore;

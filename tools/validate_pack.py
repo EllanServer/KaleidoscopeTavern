@@ -671,6 +671,40 @@ def validate() -> dict[str, int]:
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
         "KaleidoscopeTavernPlugin.java"
     ).read_text(encoding="utf-8-sig")
+    item_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
+        "item/ItemService.java"
+    ).read_text(encoding="utf-8-sig")
+    drink_lore_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
+        "item/DrinkLore.java"
+    ).read_text(encoding="utf-8-sig")
+    managed_lore_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
+        "item/ManagedLoreSemantics.java"
+    ).read_text(encoding="utf-8-sig")
+    effect_service_source = (game_package / "EffectService.java").read_text(
+        encoding="utf-8-sig")
+    stale_item_migration_tokens = {
+        "ItemService": (
+            "repairLegacyDrinkMetadata", "refreshInventory(", "InventoryOpenEvent",
+            "EntityPickupItemEvent", "knownEffectKeys"),
+        "DrinkLore": ("isManagedOrLegacy",),
+        "ManagedLoreSemantics": ("isLegacyShakerLine",),
+        "KaleidoscopeTavernPlugin": ("registerEvents(items, this)",),
+        "EffectService": ("items.refreshInventory",),
+    }
+    for owner, source in (
+            ("ItemService", item_source),
+            ("DrinkLore", drink_lore_source),
+            ("ManagedLoreSemantics", managed_lore_source),
+            ("KaleidoscopeTavernPlugin", plugin_source),
+            ("EffectService", effect_service_source)):
+        for stale_token in stale_item_migration_tokens[owner]:
+            if stale_token in source:
+                raise AssertionError(
+                    "New CE item definitions own drink names, potion metadata and static lore; "
+                    f"{owner} must not restore legacy inventory migration token {stale_token}")
     if ("bottle-placement.drinks" in bottle_placement_source
             or re.search(r"(?m)^\s+drinks:\s*", plugin_config)):
         raise AssertionError(
@@ -2208,6 +2242,9 @@ def validate() -> dict[str, int]:
                            for effect in expected_effects):
             raise AssertionError(
                 f"{item_id}: fixed cocktail creative preview is missing real effect lore")
+        if any("<insert:kaleidoscope_tavern_managed_lore>" not in line for line in lore):
+            raise AssertionError(
+                f"{item_id}: generated cocktail lore must carry the managed insertion marker")
 
     legacy_attribute_keys = {
         "attribute.name.generic.step_height",
