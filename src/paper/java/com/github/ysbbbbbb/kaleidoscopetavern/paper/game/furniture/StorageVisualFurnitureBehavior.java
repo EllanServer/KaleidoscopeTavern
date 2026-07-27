@@ -59,7 +59,7 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
     public static void register() {
         if (REGISTERED.compareAndSet(false, true)) {
             VirtualEntityIdentity.prewarm();
-            StorageItemElement.prewarm();
+            StorageVisualElement.prewarm();
             FurnitureBehaviors.register(Key.of(TYPE), StorageVisualFurnitureBehavior::new);
         }
     }
@@ -123,9 +123,10 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
         @Override
         public void gatherElements(Consumer<FurnitureElement> consumer) {
             invalidateVisuals();
-            for (int slot = 0; slot < slots; slot++) {
-                consumer.accept(new StorageItemElement(this, slot));
-            }
+            // One CE-tracked element owns every packet-only slot. This keeps
+            // CE's culling/lifecycle semantics while avoiding one element,
+            // update callback and packet batch per visible storage slot.
+            consumer.accept(new StorageVisualElement(this, slots));
         }
 
         @Override
@@ -172,24 +173,31 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
         }
     }
 
-    private static final class StorageItemElement implements FurnitureElement {
+    private static final class StorageVisualElement implements FurnitureElement {
         private static final float VIEW_RANGE = 1.25F;
 
         private final Controller controller;
         private final BukkitFurniture furniture;
-        private final int slot;
-        private final int entityId = EntityUtils.ENTITY_COUNTER.incrementAndGet();
-        private final UUID entityUuid = VirtualEntityIdentity.fromEntityId(entityId);
-        private final Object removePacket = ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(
-                new IntArrayList(new int[]{entityId}));
+        private final int slots;
+        private final int[] entityIds;
+        private final UUID[] entityUuids;
+        private final Object removePacket;
 
         private static void prewarm() {
         }
 
-        private StorageItemElement(Controller controller, int slot) {
+        private StorageVisualElement(Controller controller, int slots) {
             this.controller = controller;
             this.furniture = controller.bukkitFurniture;
-            this.slot = slot;
+            this.slots = slots;
+            this.entityIds = new int[slots];
+            this.entityUuids = new UUID[slots];
+            for (int slot = 0; slot < slots; slot++) {
+                entityIds[slot] = EntityUtils.ENTITY_COUNTER.incrementAndGet();
+                entityUuids[slot] = VirtualEntityIdentity.fromEntityId(entityIds[slot]);
+            }
+            this.removePacket = ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(
+                    new IntArrayList(entityIds));
         }
 
         @Override
@@ -198,10 +206,7 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
         @Override
         public void show(Player player) {
-            Visual current = currentVisual();
-            if (current != null && current.item() != null && !current.item().isEmpty()) {
-                sendVisual(player, current, false);
-            }
+            sendVisuals(player, false);
         }
 
         @Override
@@ -211,40 +216,38 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
         @Override
         public void update(Player player) {
-            Visual current = currentVisual();
-            if (current == null || current.item() == null || current.item().isEmpty()) {
-                hide(player);
-                return;
-            }
-            sendVisual(player, current, true);
+            sendVisuals(player, true);
         }
 
-        private Visual currentVisual() {
-            return controller.visual(slot);
-        }
-
-        private void sendVisual(Player player, Visual visual, boolean replace) {
-            RenderPosition position = renderPosition(furniture, visual);
-            Object spawnPacket = ClientboundAddEntityPacketProxy.INSTANCE.newInstance(
-                    entityId, entityUuid,
-                    position.x(), position.y(), position.z(),
-                    visual.xRot(), position.yRot(),
-                    EntityTypesProxy.ITEM_DISPLAY, 0, Vec3Proxy.ZERO, 0);
-
-            List<Object> metadata = new ArrayList<>();
-            DisplayData.ItemDisplayData.ItemStack.addEntityData(
-                    visual.item().minecraftItem(), metadata);
-            DisplayData.ItemDisplayData.Scale.addEntityDataIfNotDefaultValue(
-                    new Vector3f(visual.scale()), metadata);
-            DisplayData.ItemDisplayData.ViewRange.addEntityDataIfNotDefaultValue(
-                    (float) (VIEW_RANGE * player.displayEntityViewDistance()), metadata);
-            Object metadataPacket = ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
-                    entityId, metadata);
-
+        private void sendVisuals(Player player, boolean replace) {
+            List<Object> packets = new ArrayList<>(slots * 2 + (replace ? 1 : 0));
             if (replace) {
-                player.sendPackets(List.of(removePacket, spawnPacket, metadataPacket), false);
-            } else {
-                player.sendPackets(List.of(spawnPacket, metadataPacket), false);
+                packets.add(removePacket);
+            }
+            for (int slot = 0; slot < slots; slot++) {
+                Visual visual = controller.visual(slot);
+                if (visual == null || visual.item() == null || visual.item().isEmpty()) {
+                    continue;
+                }
+                RenderPosition position = renderPosition(furniture, visual);
+                packets.add(ClientboundAddEntityPacketProxy.INSTANCE.newInstance(
+                        entityIds[slot], entityUuids[slot],
+                        position.x(), position.y(), position.z(),
+                        visual.xRot(), position.yRot(),
+                        EntityTypesProxy.ITEM_DISPLAY, 0, Vec3Proxy.ZERO, 0));
+
+                List<Object> metadata = new ArrayList<>(3);
+                DisplayData.ItemDisplayData.ItemStack.addEntityData(
+                        visual.item().minecraftItem(), metadata);
+                DisplayData.ItemDisplayData.Scale.addEntityDataIfNotDefaultValue(
+                        new Vector3f(visual.scale()), metadata);
+                DisplayData.ItemDisplayData.ViewRange.addEntityDataIfNotDefaultValue(
+                        (float) (VIEW_RANGE * player.displayEntityViewDistance()), metadata);
+                packets.add(ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
+                        entityIds[slot], metadata));
+            }
+            if (!packets.isEmpty()) {
+                player.sendPackets(packets, false);
             }
         }
     }

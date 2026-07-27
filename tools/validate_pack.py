@@ -1749,17 +1749,22 @@ def validate() -> dict[str, int]:
             "public static void refresh(BukkitFurniture furniture)",
             "private final Visual[] cachedVisuals",
             "private final boolean[] visualsDirty",
-            "return controller.visual(slot)",
+            "consumer.accept(new StorageVisualElement(this, slots))",
+            "private final int[] entityIds",
+            "new IntArrayList(entityIds)",
+            "Visual visual = controller.visual(slot)",
+            "packets.add(removePacket)",
             "DisplayData.ItemDisplayData.ItemStack.addEntityData",
             "ClientboundAddEntityPacketProxy.INSTANCE.newInstance",
             "player.sendPackets",
             "public void gatherElements"):
         if required_storage_element_token not in storage_visual_source:
             raise AssertionError(
-                "storage_visual_furniture must use CE tracked packet-only elements; "
+                "storage_visual_furniture must use one batched CE tracked packet-only element; "
                 f"missing token: {required_storage_element_token}")
     for stale_storage_element_token in (
-            "org.bukkit.entity.ItemDisplay", "PersistentDataType", "World.spawn"):
+            "org.bukkit.entity.ItemDisplay", "PersistentDataType", "World.spawn",
+            "class StorageItemElement"):
         if stale_storage_element_token in storage_visual_source:
             raise AssertionError(
                 "storage_visual_furniture must never create persistent Bukkit entities; "
