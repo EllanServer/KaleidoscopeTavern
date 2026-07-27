@@ -46,6 +46,7 @@ public final class TapService {
     private final JavaPlugin plugin;
     private final StationService stations;
     private final ItemService items;
+    private final boolean infiniteLavaFromTap;
     private final Map<UUID, BukkitTask> running = new HashMap<>();
     private final RedstoneFurnitureBehavior.Handler tapRedstoneHandler =
             new RedstoneFurnitureBehavior.Handler() {
@@ -81,6 +82,8 @@ public final class TapService {
         this.plugin = plugin;
         this.stations = stations;
         this.items = items;
+        this.infiniteLavaFromTap = plugin.getConfig()
+                .getBoolean("gameplay.infinite-lava-from-tap", false);
     }
 
     public void start() {
@@ -203,8 +206,7 @@ public final class TapService {
             }
         }
         if (source.getType() == Material.LAVA_CAULDRON) {
-            if (plugin.getConfig().getBoolean("gameplay.infinite-lava-from-tap", true)
-                    && destination.getType() == Material.CAULDRON) {
+            if (destination.getType() == Material.CAULDRON) {
                 return new TapPlan(Kind.FILL_LAVA_CAULDRON, source, destination, null, null, true);
             }
             if (bottle != null) {
@@ -286,6 +288,10 @@ public final class TapService {
         };
         if (!completed) {
             return;
+        }
+        if (plan.isLavaCauldronExtraction()
+                && TapSemantics.shouldConsumeLavaSource(infiniteLavaFromTap)) {
+            consumeLavaCauldron(plan.source());
         }
         Location location = plan.destination().getLocation().add(0.5, 0.5, 0.5);
         if (plan.kind() != Kind.FILL_WATER_CAULDRON && plan.kind() != Kind.FILL_LAVA_CAULDRON) {
@@ -429,6 +435,12 @@ public final class TapService {
         destination.getWorld().playSound(destination.getLocation().add(0.5, 0.5, 0.5), Sound.BLOCK_LAVA_POP,
                 SoundCategory.BLOCKS, 1F, 1F);
         return true;
+    }
+
+    private static void consumeLavaCauldron(Block source) {
+        if (source.getType() == Material.LAVA_CAULDRON) {
+            source.setType(Material.CAULDRON, true);
+        }
     }
 
     private void closeTap(BukkitFurniture tap, boolean sound) {
@@ -581,5 +593,8 @@ public final class TapService {
 
     private record TapPlan(Kind kind, Block source, Block destination,
                            BukkitFurniture barrel, BottleCarrier bottle, boolean hot) {
+        private boolean isLavaCauldronExtraction() {
+            return kind == Kind.FILL_LAVA_CAULDRON || kind == Kind.BOTTLE_MOLOTOV;
+        }
     }
 }

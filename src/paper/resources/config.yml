@@ -27,7 +27,8 @@ effect-hud:
   gui-half-width: 240
 
 gameplay:
-  infinite-lava-from-tap: true
+  # true 保留旧模组的可选无限熔岩行为；默认有限，成功抽取后清空源炼药锅。
+  infinite-lava-from-tap: false
 
 # 四季生长限制（由 CustomCrops 的世界季节驱动）。
 # 各项默认值与 Forge 版“静谧四季（SereneSeasons）”方块标签一致

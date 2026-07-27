@@ -24,6 +24,11 @@ final class TapSemantics {
         return "kaleidoscope_tavern:molotov".equals(resultId);
     }
 
+    /** A lava cauldron is consumed after a successful extraction unless infinite mode is explicit. */
+    static boolean shouldConsumeLavaSource(boolean infiniteLavaFromTap) {
+        return !infiniteLavaFromTap;
+    }
+
     /**
      * Forge skips the barrel block's own use action while the player is
      * sneaking, allowing TapBlockItem placement to continue.  A CE barrel is
