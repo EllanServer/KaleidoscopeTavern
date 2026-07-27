@@ -173,6 +173,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         getServer().getPluginManager().registerEvents(bottleFurniture, this);
         getServer().getPluginManager().registerEvents(displayStorage, this);
         getServer().getPluginManager().registerEvents(boards, this);
+        getServer().getPluginManager().registerEvents(taps.lavaCauldronListener(), this);
         getServer().getPluginManager().registerEvents(stations, this);
         getServer().getPluginManager().registerEvents(effects, this);
         RedstoneFurnitureBehavior.start(this);

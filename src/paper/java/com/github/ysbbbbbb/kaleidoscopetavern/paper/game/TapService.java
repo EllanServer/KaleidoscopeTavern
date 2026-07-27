@@ -24,6 +24,7 @@ import org.bukkit.block.data.Waterlogged;
 import org.bukkit.block.data.type.Beehive;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -47,6 +48,7 @@ public final class TapService {
     private final StationService stations;
     private final ItemService items;
     private final boolean infiniteLavaFromTap;
+    private final LavaCauldronLevelStore lavaCauldronLevels;
     private final Map<UUID, BukkitTask> running = new HashMap<>();
     private final RedstoneFurnitureBehavior.Handler tapRedstoneHandler =
             new RedstoneFurnitureBehavior.Handler() {
@@ -84,6 +86,11 @@ public final class TapService {
         this.items = items;
         this.infiniteLavaFromTap = plugin.getConfig()
                 .getBoolean("gameplay.infinite-lava-from-tap", false);
+        this.lavaCauldronLevels = new LavaCauldronLevelStore(plugin);
+    }
+
+    public Listener lavaCauldronListener() {
+        return lavaCauldronLevels;
     }
 
     public void start() {
@@ -206,7 +213,9 @@ public final class TapService {
             }
         }
         if (source.getType() == Material.LAVA_CAULDRON) {
-            if (destination.getType() == Material.CAULDRON) {
+            if (destination.getType() == Material.CAULDRON
+                    && (infiniteLavaFromTap
+                    || lavaCauldronLevels.level(source) == TapSemantics.FULL_LAVA_CAULDRON_LEVEL)) {
                 return new TapPlan(Kind.FILL_LAVA_CAULDRON, source, destination, null, null, true);
             }
             if (bottle != null) {
@@ -289,9 +298,9 @@ public final class TapService {
         if (!completed) {
             return;
         }
-        if (plan.isLavaCauldronExtraction()
+        if (plan.lavaSourceLevels() > 0
                 && TapSemantics.shouldConsumeLavaSource(infiniteLavaFromTap)) {
-            consumeLavaCauldron(plan.source());
+            lavaCauldronLevels.consume(plan.source(), plan.lavaSourceLevels());
         }
         Location location = plan.destination().getLocation().add(0.5, 0.5, 0.5);
         if (plan.kind() != Kind.FILL_WATER_CAULDRON && plan.kind() != Kind.FILL_LAVA_CAULDRON) {
@@ -427,20 +436,15 @@ public final class TapService {
         return true;
     }
 
-    private static boolean fillLavaCauldron(Block destination) {
+    private boolean fillLavaCauldron(Block destination) {
         if (destination.getType() != Material.CAULDRON) {
             return false;
         }
+        lavaCauldronLevels.reset(destination);
         destination.setType(Material.LAVA_CAULDRON, true);
         destination.getWorld().playSound(destination.getLocation().add(0.5, 0.5, 0.5), Sound.BLOCK_LAVA_POP,
                 SoundCategory.BLOCKS, 1F, 1F);
         return true;
-    }
-
-    private static void consumeLavaCauldron(Block source) {
-        if (source.getType() == Material.LAVA_CAULDRON) {
-            source.setType(Material.CAULDRON, true);
-        }
     }
 
     private void closeTap(BukkitFurniture tap, boolean sound) {
@@ -593,8 +597,12 @@ public final class TapService {
 
     private record TapPlan(Kind kind, Block source, Block destination,
                            BukkitFurniture barrel, BottleCarrier bottle, boolean hot) {
-        private boolean isLavaCauldronExtraction() {
-            return kind == Kind.FILL_LAVA_CAULDRON || kind == Kind.BOTTLE_MOLOTOV;
+        private int lavaSourceLevels() {
+            return switch (kind) {
+                case BOTTLE_MOLOTOV -> 1;
+                case FILL_LAVA_CAULDRON -> TapSemantics.FULL_LAVA_CAULDRON_LEVEL;
+                default -> 0;
+            };
         }
     }
 }
