@@ -1035,6 +1035,21 @@
         ]
       }
     },
+    "kaleidoscope_tavern:_render/wild_grapevine_plant/29a0d486e0": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.wild_grapevine_plant>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/plant/wild_grapevine_plant"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
     "kaleidoscope_tavern:_render/trellis/842719448b": {
       "material": "paper",
       "data": {

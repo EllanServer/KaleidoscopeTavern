@@ -621,8 +621,8 @@ def validate() -> dict[str, int]:
         raise AssertionError(f"Expected 41 grid/state blocks, found {len(blocks)}")
     if len(furniture) != 133:
         raise AssertionError(f"Expected 133 furniture definitions, found {len(furniture)}")
-    if len(render_items) != 553:
-        raise AssertionError(f"Expected 553 private render items, found {len(render_items)}")
+    if len(render_items) != 554:
+        raise AssertionError(f"Expected 554 private render items, found {len(render_items)}")
     if len(recipes) != 114:
         raise AssertionError(f"Expected 114 crafting recipes, found {len(recipes)}")
 
@@ -684,6 +684,18 @@ def validate() -> dict[str, int]:
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
         "KaleidoscopeTavernPlugin.java"
     ).read_text(encoding="utf-8-sig")
+    runtime_counts = {
+        "ITEMS": len(items) + len(render_items),
+        "BLOCKS": len(blocks),
+        "FURNITURE": len(furniture),
+    }
+    for content_type, expected_count in runtime_counts.items():
+        declaration = (
+            f"private static final int EXPECTED_{content_type} = {expected_count};")
+        if declaration not in plugin_source:
+            raise AssertionError(
+                "KaleidoscopeTavernPlugin runtime content count is out of sync with "
+                f"the generated pack: expected {declaration}")
     item_source = (
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
         "item/ItemService.java"
@@ -2158,10 +2170,21 @@ def validate() -> dict[str, int]:
         raise AssertionError("Wild grapevine body must delegate native bone meal to its head")
     if "max_height" in wild_behavior:
         raise AssertionError("Wild grapevine must not retain the invented 16-block growth cap")
-    wild_body_appearance = blocks[f"{NAMESPACE}:wild_grapevine_plant"].get("state", {})
-    if wild_body_appearance != {"state": "minecraft:weeping_vines_plant"}:
+    wild_head_appearances = (
+        blocks[f"{NAMESPACE}:wild_grapevine"].get("states", {}).get("appearances", {}))
+    if (len(wild_head_appearances) != 1
+            or next(iter(wild_head_appearances.values())).get("state")
+            != "minecraft:weeping_vines[age=25]"):
         raise AssertionError(
-            "Wild grapevine body must use the native weeping-vine visual without an ItemDisplay")
+            "Wild grapevine head must use the native weeping-vine tip state carrier")
+    wild_body_appearance = blocks[f"{NAMESPACE}:wild_grapevine_plant"].get("state", {})
+    if (wild_body_appearance.get("state") != "minecraft:weeping_vines_plant"
+            or wild_body_appearance.get("transparent") is not True
+            or wild_body_appearance.get("entity_renderer", {}).get("item")
+            not in render_items):
+        raise AssertionError(
+            "Wild grapevine body must use the native weeping-vine state carrier "
+            "behind its authored model")
     wild_settings = blocks[f"{NAMESPACE}:wild_grapevine"]["settings"]
     if (wild_settings.get("hardness") != 0
             or wild_settings.get("resistance") != 0
@@ -2285,10 +2308,7 @@ def validate() -> dict[str, int]:
         for appearance in appearances.values():
             renderer = appearance.get("entity_renderer")
             if renderer is None:
-                if (block_id != f"{NAMESPACE}:wild_grapevine_plant"
-                        or appearance.get("state") != "minecraft:weeping_vines_plant"):
-                    raise AssertionError(f"{block_id}: missing entity renderer")
-                continue
+                raise AssertionError(f"{block_id}: missing entity renderer")
             render_id = renderer.get("item")
             if render_id not in render_items:
                 raise AssertionError(f"{block_id}: missing renderer item {render_id}")
