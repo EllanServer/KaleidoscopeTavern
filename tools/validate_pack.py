@@ -1643,6 +1643,11 @@ def validate() -> dict[str, int]:
             "FALLBACK_INTERVAL_TICKS",
             "private static final Channel[] CHANNELS = Channel.values()",
             "private static final Set<Controller> PENDING_CONTROLLERS",
+            "Long2ObjectOpenHashMap",
+            "LongOpenHashSet",
+            "startBridgeLockedIfNeeded()",
+            "ensureRuntimeActive();",
+            "stopRuntimeIfIdle();",
             "activeControllers.toArray(Controller[]::new)",
             "for (Controller controller : channel.activeSnapshot())",
             "CraftWorldProxy.INSTANCE.getWorld(primaryPowerBlock.getWorld())",
@@ -1658,7 +1663,7 @@ def validate() -> dict[str, int]:
             "semantics once, without a duplicate direct-signal scan")
     for hot_path_token in (
             "bukkitFurniture.isValid()", "ConcurrentHashMap", "ConcurrentMap",
-            "PowerLocation"):
+            "PowerLocation", "Map<Long,", "Set<Long>"):
         if hot_path_token in redstone_behavior_source:
             raise AssertionError(
                 "CE lifecycle and the Paper server thread must keep the redstone fallback "

@@ -1,5 +1,9 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.entity.furniture.Furniture;
@@ -55,7 +59,7 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
     // fallback task all run on the server thread. Plain collections avoid the
     // concurrent-map traversal visible in Spark without weakening the
     // fixed Paper target's threading contract.
-    private static final Map<UUID, Map<Long, Set<Controller>>> POWER_INDEX =
+    private static final Map<UUID, Long2ObjectMap<Set<Controller>>> POWER_INDEX =
             new HashMap<>();
     private static final Set<Controller> PENDING_CONTROLLERS = new HashSet<>();
     private static final Object RUNTIME_LOCK = new Object();
@@ -63,6 +67,7 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
     private static JavaPlugin runtimePlugin;
     private static PowerListener powerListener;
     private static BukkitTask fallbackTask;
+    private static BukkitTask flushTask;
     private static boolean flushScheduled;
 
     private final Channel channel;
@@ -80,20 +85,17 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
     }
 
-    /** Starts the event bridge and one low-frequency parity fallback. */
+    /** Records the runtime owner; the bridge starts only while relevant furniture is loaded. */
     public static void start(JavaPlugin plugin) {
         JavaPlugin owner = Objects.requireNonNull(plugin, "plugin");
         synchronized (RUNTIME_LOCK) {
-            if (runtimePlugin == owner && powerListener != null && fallbackTask != null) {
+            if (runtimePlugin == owner) {
+                startBridgeLockedIfNeeded();
                 return;
             }
             stopLocked();
             runtimePlugin = owner;
-            powerListener = new PowerListener();
-            Bukkit.getPluginManager().registerEvents(powerListener, owner);
-            fallbackTask = Bukkit.getScheduler().runTaskTimer(owner,
-                    RedstoneFurnitureBehavior::pollActiveControllers,
-                    FALLBACK_INTERVAL_TICKS, FALLBACK_INTERVAL_TICKS);
+            startBridgeLockedIfNeeded();
         }
     }
 
@@ -104,6 +106,26 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
     }
 
     private static void stopLocked() {
+        stopBridgeLocked();
+        runtimePlugin = null;
+    }
+
+    private static void startBridgeLockedIfNeeded() {
+        if (runtimePlugin == null || !hasActiveControllers()) {
+            return;
+        }
+        if (powerListener == null) {
+            powerListener = new PowerListener();
+            Bukkit.getPluginManager().registerEvents(powerListener, runtimePlugin);
+        }
+        if (fallbackTask == null) {
+            fallbackTask = Bukkit.getScheduler().runTaskTimer(runtimePlugin,
+                    RedstoneFurnitureBehavior::pollActiveControllers,
+                    FALLBACK_INTERVAL_TICKS, FALLBACK_INTERVAL_TICKS);
+        }
+    }
+
+    private static void stopBridgeLocked() {
         if (powerListener != null) {
             HandlerList.unregisterAll(powerListener);
             powerListener = null;
@@ -112,9 +134,35 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
             fallbackTask.cancel();
             fallbackTask = null;
         }
-        runtimePlugin = null;
+        if (flushTask != null) {
+            flushTask.cancel();
+            flushTask = null;
+        }
         flushScheduled = false;
         PENDING_CONTROLLERS.clear();
+    }
+
+    private static boolean hasActiveControllers() {
+        for (Channel channel : CHANNELS) {
+            if (channel.activeSnapshot().length != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void ensureRuntimeActive() {
+        synchronized (RUNTIME_LOCK) {
+            startBridgeLockedIfNeeded();
+        }
+    }
+
+    private static void stopRuntimeIfIdle() {
+        synchronized (RUNTIME_LOCK) {
+            if (!hasActiveControllers()) {
+                stopBridgeLocked();
+            }
+        }
     }
 
     public static void bind(Channel channel, Handler handler) {
@@ -329,19 +377,25 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
             }
             cachePowerProbe();
             worldId = primaryPowerBlock.getWorld().getUID();
-            Set<Long> keys = new HashSet<>();
+            LongSet keys = new LongOpenHashSet();
             addProbeChanges(keys, primaryPowerBlock);
             if (secondaryPowerBlock != null) {
                 addProbeChanges(keys, secondaryPowerBlock);
             }
-            indexedPowerChanges = keys.stream().mapToLong(Long::longValue).toArray();
-            Map<Long, Set<Controller>> worldIndex = POWER_INDEX.computeIfAbsent(
-                    worldId, ignored -> new HashMap<>());
+            indexedPowerChanges = keys.toLongArray();
+            Long2ObjectMap<Set<Controller>> worldIndex = POWER_INDEX.computeIfAbsent(
+                    worldId, ignored -> new Long2ObjectOpenHashMap<>());
             for (long key : indexedPowerChanges) {
-                worldIndex.computeIfAbsent(key, ignored -> new HashSet<>()).add(this);
+                Set<Controller> controllers = worldIndex.get(key);
+                if (controllers == null) {
+                    controllers = new HashSet<>();
+                    worldIndex.put(key, controllers);
+                }
+                controllers.add(this);
             }
             active = true;
             channel.add(this);
+            ensureRuntimeActive();
             deliver(channel.handler);
         }
 
@@ -350,7 +404,7 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
                 return;
             }
             channel.remove(this);
-            Map<Long, Set<Controller>> worldIndex = POWER_INDEX.get(worldId);
+            Long2ObjectMap<Set<Controller>> worldIndex = POWER_INDEX.get(worldId);
             if (worldIndex != null) {
                 for (long key : indexedPowerChanges) {
                     Set<Controller> controllers = worldIndex.get(key);
@@ -359,7 +413,7 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
                     }
                     controllers.remove(this);
                     if (controllers.isEmpty()) {
-                        worldIndex.remove(key, controllers);
+                        worldIndex.remove(key);
                     }
                 }
                 if (worldIndex.isEmpty()) {
@@ -369,6 +423,7 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
             active = false;
             worldId = null;
             indexedPowerChanges = null;
+            stopRuntimeIfIdle();
         }
 
         private void refreshPower() {
@@ -469,7 +524,7 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
     }
 
-    private static void addProbeChanges(Set<Long> keys, Block probe) {
+    private static void addProbeChanges(LongSet keys, Block probe) {
         int x = probe.getX();
         int y = probe.getY();
         int z = probe.getZ();
@@ -497,7 +552,7 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
     private static void queuePowerChange(Block block) {
         UUID worldId = block.getWorld().getUID();
         long key = packBlock(block.getX(), block.getY(), block.getZ());
-        Map<Long, Set<Controller>> worldIndex = POWER_INDEX.get(worldId);
+        Long2ObjectMap<Set<Controller>> worldIndex = POWER_INDEX.get(worldId);
         if (worldIndex == null) {
             return;
         }
@@ -514,7 +569,7 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
                 return;
             }
             flushScheduled = true;
-            Bukkit.getScheduler().runTask(runtimePlugin,
+            flushTask = Bukkit.getScheduler().runTask(runtimePlugin,
                     RedstoneFurnitureBehavior::flushPowerChanges);
         }
     }
@@ -524,6 +579,7 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         PENDING_CONTROLLERS.removeAll(affected);
         synchronized (RUNTIME_LOCK) {
             flushScheduled = false;
+            flushTask = null;
         }
         affected.forEach(Controller::refreshPower);
     }
