@@ -8709,7 +8709,22 @@
             "entries": [
               {
                 "type": "furniture_item",
-                "item": "kaleidoscope_tavern:chalkboard"
+                "item": "kaleidoscope_tavern:chalkboard",
+                "functions": [
+                  {
+                    "type": "set_count",
+                    "count": 3,
+                    "conditions": [
+                      {
+                        "type": "match_furniture_variant",
+                        "variants": [
+                          "ground_large",
+                          "wall_large"
+                        ]
+                      }
+                    ]
+                  }
+                ]
               }
             ]
           }

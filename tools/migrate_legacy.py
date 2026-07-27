@@ -2777,10 +2777,27 @@ def build_furniture(
         full_id = f"{NAMESPACE}:{block_id}"
         if block_id in item_ids:
             config["settings"]["item"] = full_id
+            loot_entry: dict[str, Any] = {
+                "type": "furniture_item",
+                "item": full_id,
+            }
+            if block_id == "chalkboard":
+                # CE exposes the current furniture in its loot context. A merged
+                # chalkboard is one furniture with a large variant but represents
+                # the three source boards consumed by the legacy merge, so let CE
+                # return that exact count without a Paper break listener.
+                loot_entry["functions"] = [{
+                    "type": "set_count",
+                    "count": 3,
+                    "conditions": [{
+                        "type": "match_furniture_variant",
+                        "variants": ["ground_large", "wall_large"],
+                    }],
+                }]
             config["loot"] = {
                 "pools": [{
                     "rolls": 1,
-                    "entries": [{"type": "furniture_item", "item": full_id}],
+                    "entries": [loot_entry],
                 }]
             }
             placement[block_id] = furniture_rules(block_id, list(variants))

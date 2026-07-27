@@ -8,7 +8,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.api.event.FurniturePlaceEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
@@ -94,8 +93,8 @@ public final class BoardTextService implements Listener {
             this::interactBoard;
     // AsyncChatEvent removes entries off the main thread.
     private final Map<UUID, EditSession> editors = new ConcurrentHashMap<>();
-    private final EditMoveListener editMoveListener = new EditMoveListener();
-    private boolean editMoveListenerRegistered;
+    private final EditSessionListener editSessionListener = new EditSessionListener();
+    private boolean editSessionListenerRegistered;
 
     public BoardTextService(JavaPlugin plugin, ItemService items) {
         this.plugin = plugin;
@@ -112,7 +111,7 @@ public final class BoardTextService implements Listener {
                 UUID owner = furnitureOwner(furniture);
                 editors.entrySet().removeIf(
                         entry -> entry.getValue().furniture().equals(owner));
-                stopEditMoveListenerIfIdle();
+                stopEditSessionListenerIfIdle();
             }
         };
     }
@@ -125,8 +124,8 @@ public final class BoardTextService implements Listener {
     }
 
     public void stop() {
-        HandlerList.unregisterAll(editMoveListener);
-        editMoveListenerRegistered = false;
+        HandlerList.unregisterAll(editSessionListener);
+        editSessionListenerRegistered = false;
         BoardTextFurnitureBehavior.unbindInteraction(boardInteractionHandler);
         BoardTextFurnitureBehavior.unbind(boardVisualHandler);
         LifecycleFurnitureBehavior.unbind(
@@ -188,24 +187,10 @@ public final class BoardTextService implements Listener {
         Entity entity = furniture.bukkitEntity();
         if (entity != null) {
             editors.put(player.getUniqueId(), new EditSession(entity.getUniqueId()));
-            ensureEditMoveListener();
+            ensureEditSessionListener();
             player.sendMessage(Component.text("请在聊天栏输入文字（\\n 换行；[left]/[center]/[right] 设置对齐；!clear 清空；!cancel 取消）。"));
         }
         return InteractionResult.SUCCESS_AND_CANCEL;
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onChat(AsyncChatEvent event) {
-        EditSession session = editors.remove(event.getPlayer().getUniqueId());
-        if (session == null) {
-            return;
-        }
-        event.setCancelled(true);
-        String input = PlainTextComponentSerializer.plainText().serialize(event.message());
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            stopEditMoveListenerIfIdle();
-            applyChatInput(event.getPlayer(), session, input);
-        });
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -225,31 +210,6 @@ public final class BoardTextService implements Listener {
             }
             refreshDisplay(placed);
         });
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onFurnitureBreak(FurnitureBreakEvent event) {
-        if (!isBoard(event.furniture())) {
-            return;
-        }
-        FurnitureState state = new FurnitureState(event.furniture());
-        Entity entity = event.furniture().bukkitEntity();
-        if (entity != null) {
-            editors.entrySet().removeIf(entry -> entry.getValue().furniture().equals(entity.getUniqueId()));
-            stopEditMoveListenerIfIdle();
-        }
-        if (event.dropItems() && state.integer("board_large_count") == 3) {
-            items.build(CHALKBOARD, event.player()).ifPresent(stack -> {
-                stack.setAmount(2);
-                event.location().getWorld().dropItemNaturally(event.location(), stack);
-            });
-        }
-    }
-
-    @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
-        editors.remove(event.getPlayer().getUniqueId());
-        stopEditMoveListenerIfIdle();
     }
 
     private void applyChatInput(Player player, EditSession session, String rawInput) {
@@ -318,27 +278,47 @@ public final class BoardTextService implements Listener {
         if (entity == null || !entity.isValid() || !player.getWorld().equals(entity.getWorld())
                 || player.getLocation().distanceSquared(entity.getLocation()) > 64) {
             editors.remove(player.getUniqueId());
-            stopEditMoveListenerIfIdle();
+            stopEditSessionListenerIfIdle();
         }
     }
 
-    private void ensureEditMoveListener() {
-        if (editMoveListenerRegistered) {
+    private void ensureEditSessionListener() {
+        if (editSessionListenerRegistered) {
             return;
         }
-        plugin.getServer().getPluginManager().registerEvents(editMoveListener, plugin);
-        editMoveListenerRegistered = true;
+        plugin.getServer().getPluginManager().registerEvents(editSessionListener, plugin);
+        editSessionListenerRegistered = true;
     }
 
-    private void stopEditMoveListenerIfIdle() {
-        if (!editMoveListenerRegistered || !editors.isEmpty()) {
+    private void stopEditSessionListenerIfIdle() {
+        if (!editSessionListenerRegistered || !editors.isEmpty()) {
             return;
         }
-        HandlerList.unregisterAll(editMoveListener);
-        editMoveListenerRegistered = false;
+        HandlerList.unregisterAll(editSessionListener);
+        editSessionListenerRegistered = false;
     }
 
-    private final class EditMoveListener implements Listener {
+    private final class EditSessionListener implements Listener {
+        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        public void onChat(AsyncChatEvent event) {
+            EditSession session = editors.remove(event.getPlayer().getUniqueId());
+            if (session == null) {
+                return;
+            }
+            event.setCancelled(true);
+            String input = PlainTextComponentSerializer.plainText().serialize(event.message());
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                stopEditSessionListenerIfIdle();
+                applyChatInput(event.getPlayer(), session, input);
+            });
+        }
+
+        @EventHandler
+        public void onQuit(PlayerQuitEvent event) {
+            editors.remove(event.getPlayer().getUniqueId());
+            stopEditSessionListenerIfIdle();
+        }
+
         @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
         public void onMove(PlayerMoveEvent event) {
             if (event.getTo() == null
@@ -410,7 +390,6 @@ public final class BoardTextService implements Listener {
             CraftEngineFurniture.remove(left, false, false);
             CraftEngineFurniture.remove(rightBoard, false, false);
             center.setVariant(center.currentVariant().name() + "_large", true);
-            new FurnitureState(center).integer("board_large_count", 3);
             refreshDisplay(center);
             center.location().getWorld().playSound(center.location(), Sound.BLOCK_WOOD_PLACE, 1F, 0.9F);
             return;

@@ -853,20 +853,21 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Board edit distance must be event-driven, not a global per-tick player scan")
     for required_token in (
-            "private final class EditMoveListener implements Listener",
-            "registerEvents(editMoveListener, plugin)",
-            "HandlerList.unregisterAll(editMoveListener)",
-            "private void ensureEditMoveListener()",
-            "private void stopEditMoveListenerIfIdle()"):
+            "private final class EditSessionListener implements Listener",
+            "registerEvents(editSessionListener, plugin)",
+            "HandlerList.unregisterAll(editSessionListener)",
+            "private void ensureEditSessionListener()",
+            "private void stopEditSessionListenerIfIdle()"):
         if required_token not in board_text_source:
             raise AssertionError(
-                "Board movement checks must be registered only while an edit session exists; "
+                "Board chat, quit and movement checks must be registered only while an edit "
+                "session exists; "
                 f"missing token: {required_token}")
     board_start = board_text_source.partition("public void start() {")[2].partition(
         "public void stop() {")[0]
-    if "editMoveListener" in board_start:
+    if "editSessionListener" in board_start:
         raise AssertionError(
-            "BoardTextService.start must not register an idle global PlayerMoveEvent listener")
+            "BoardTextService.start must not register idle edit-session listeners")
     for required_token in (
             "BoardTextFurnitureBehavior.bind(boardVisualHandler)",
             "BoardTextFurnitureBehavior.unbind(boardVisualHandler)",
@@ -2268,6 +2269,30 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"Chalkboard wall{suffix} must reuse the north-authored ground "
                 "model without a duplicate yaw and stay flush with its support")
+    chalkboard_loot_entries = [
+        entry
+        for pool in chalkboard.get("loot", {}).get("pools", [])
+        for entry in pool.get("entries", [])
+    ]
+    if len(chalkboard_loot_entries) != 1:
+        raise AssertionError("Chalkboard must have one CE-owned furniture-item loot entry")
+    chalkboard_loot = chalkboard_loot_entries[0]
+    expected_large_count_function = {
+        "type": "set_count",
+        "count": 3,
+        "conditions": [{
+            "type": "match_furniture_variant",
+            "variants": ["ground_large", "wall_large"],
+        }],
+    }
+    if (chalkboard_loot.get("type") != "furniture_item"
+            or chalkboard_loot.get("item") != f"{NAMESPACE}:chalkboard"
+            or chalkboard_loot.get("functions") != [expected_large_count_function]):
+        raise AssertionError(
+            "CE must own chalkboard drops and return three source items for large variants")
+    if "FurnitureBreakEvent" in board_text_source or "board_large_count" in board_text_source:
+        raise AssertionError(
+            "BoardTextService must not duplicate CE's variant-aware chalkboard loot")
     chalkboard_item_behavior = items[f"{NAMESPACE}:chalkboard"].get("behavior", {})
     if chalkboard_item_behavior.get("type") != "furniture_item":
         raise AssertionError("Chalkboard item must keep its furniture_item behavior")
