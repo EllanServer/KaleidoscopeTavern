@@ -712,6 +712,8 @@ def validate() -> dict[str, int]:
     ).read_text(encoding="utf-8-sig")
     effect_service_source = (game_package / "EffectService.java").read_text(
         encoding="utf-8-sig")
+    effect_semantics_source = (game_package / "EffectSemantics.java").read_text(
+        encoding="utf-8-sig")
     stale_item_migration_tokens = {
         "ItemService": (
             "repairLegacyDrinkMetadata", "refreshInventory(", "InventoryOpenEvent",
@@ -2061,15 +2063,30 @@ def validate() -> dict[str, int]:
     for allocation_free_tick_token in (
             "Iterator<Map.Entry<String, ActiveEffect>> effectIterator",
             "effectIterator.remove()",
-            "effectEntry.setValue(new ActiveEffect(effect.effect(), next))",
+            "boolean remainsActive = effect.advance((int) period)",
+            "private final EffectSemantics.MutableEffectState state",
             "private boolean tickEffect(LivingEntity living, ActiveEffect effect)"):
         if allocation_free_tick_token not in effect_service_source:
             raise AssertionError(
-                "Custom effect steady-state ticking must mutate entries without snapshots; "
+                "Custom effect steady-state ticking must mutate countdowns without snapshots; "
                 f"missing {allocation_free_tick_token}")
-    if "new ArrayList<>(effects.values())" in effect_service_source:
-        raise AssertionError(
-            "Custom effect ticking must not allocate an effects snapshot every entity tick")
+    for mutable_state_token in (
+            "static final class MutableEffectState",
+            "remainingTicks[index] -= elapsedTicks",
+            "while (firstLayer < remainingTicks.length",
+            "EffectState snapshot()"):
+        if mutable_state_token not in effect_semantics_source:
+            raise AssertionError(
+                "Runtime custom-effect state must preserve hidden-layer semantics without "
+                f"per-tick object chains; missing {mutable_state_token}")
+    for stale_effect_tick_allocation in (
+            "new ArrayList<>(effects.values())",
+            "EffectSemantics.advanceEffect(effect.state()",
+            "effectEntry.setValue(new ActiveEffect(effect.effect()"):
+        if stale_effect_tick_allocation in effect_service_source:
+            raise AssertionError(
+                "Custom effect ticking must not rebuild collection or state snapshots every "
+                f"entity tick; found {stale_effect_tick_allocation}")
     for typed_effect_storage_token in (
             "PersistentDataType.LIST.strings()",
             "PersistentDataType.LIST.longArrays()",

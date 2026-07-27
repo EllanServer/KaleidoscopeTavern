@@ -677,17 +677,15 @@ public final class EffectService implements Listener {
                     continue;
                 }
                 boolean visibleExpired = effect.remainingTicks() <= period;
-                EffectSemantics.EffectState next = EffectSemantics.advanceEffect(
-                        effect.state(), (int) period);
+                boolean remainsActive = effect.advance((int) period);
                 if (visibleExpired && living instanceof Player
                         && effect.effect().equals(PREFIX + "ardent_heat")) {
                     applyHunger(living, 600);
                 }
-                if (next == null) {
+                if (!remainsActive) {
                     effectIterator.remove();
                     changed = true;
                 } else {
-                    effectEntry.setValue(new ActiveEffect(effect.effect(), next));
                     changed |= visibleExpired;
                 }
             }
@@ -1482,13 +1480,33 @@ public final class EffectService implements Listener {
         stopTickTaskIfIdle();
     }
 
-    private record ActiveEffect(String effect, EffectSemantics.EffectState state) {
+    private static final class ActiveEffect {
+        private final String effect;
+        private final EffectSemantics.MutableEffectState state;
+
+        private ActiveEffect(String effect, EffectSemantics.EffectState state) {
+            this.effect = effect;
+            this.state = new EffectSemantics.MutableEffectState(state);
+        }
+
+        private String effect() {
+            return effect;
+        }
+
+        private EffectSemantics.EffectState state() {
+            return state.snapshot();
+        }
+
         private int remainingTicks() {
             return state.remainingTicks();
         }
 
         private int amplifier() {
             return state.amplifier();
+        }
+
+        private boolean advance(int elapsedTicks) {
+            return state.advance(elapsedTicks);
         }
     }
 }

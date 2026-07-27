@@ -115,6 +115,43 @@ class EffectSemanticsTest {
     }
 
     @Test
+    void mutableRuntimeCountdownMatchesTheImmutableReferenceChain() {
+        EffectSemantics.EffectState expected = new EffectSemantics.EffectState(40, 2,
+                new EffectSemantics.EffectState(100, 1,
+                        new EffectSemantics.EffectState(200, 0, null)));
+        EffectSemantics.MutableEffectState actual =
+                new EffectSemantics.MutableEffectState(expected);
+
+        for (int elapsed : new int[]{1, 9, 30, 60, 100}) {
+            expected = EffectSemantics.advanceEffect(expected, elapsed);
+            boolean active = actual.advance(elapsed);
+            assertEquals(expected != null, active);
+            assertEquals(expected, actual.snapshot());
+            if (expected != null) {
+                assertEquals(expected.remainingTicks(), actual.remainingTicks());
+                assertEquals(expected.amplifier(), actual.amplifier());
+            }
+        }
+    }
+
+    @Test
+    void mutableRuntimeRetainsExpiredHiddenLayersUntilPromotion() {
+        EffectSemantics.EffectState expected = new EffectSemantics.EffectState(100, 1,
+                new EffectSemantics.EffectState(1, 0, null));
+        EffectSemantics.MutableEffectState actual =
+                new EffectSemantics.MutableEffectState(expected);
+
+        expected = EffectSemantics.advanceEffect(expected, 50);
+        assertTrue(actual.advance(50));
+        assertEquals(expected, actual.snapshot());
+        assertEquals(-49, actual.snapshot().hidden().remainingTicks());
+
+        expected = EffectSemantics.advanceEffect(expected, 50);
+        assertFalse(actual.advance(50));
+        assertEquals(expected, actual.snapshot());
+    }
+
+    @Test
     void equalAmplifierOnlyExtendsDuration() {
         EffectSemantics.EffectState current = new EffectSemantics.EffectState(100, 1, null);
         assertEquals(current, EffectSemantics.mergeEffect(current, 80, 1));
