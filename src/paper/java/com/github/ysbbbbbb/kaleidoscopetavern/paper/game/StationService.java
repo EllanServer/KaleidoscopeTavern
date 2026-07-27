@@ -1492,7 +1492,7 @@ public final class StationService implements Listener {
                 float displayYaw;
                 Quaternionf rotation;
                 if (tilted) {
-                    PressingTubSemantics.Point point = PressingTubSemantics.tiltSouth(
+                    PressingTubSemantics.Point point = PressingTubSemantics.tiltNorth(
                             0.5 + x, 0.2 + y, 0.5 + z);
                     PressingTubSemantics.Point offset =
                             PressingTubSemantics.toWallFurnitureOffset(point);
@@ -1501,7 +1501,7 @@ public final class StationService implements Listener {
                     displayX = worldPoint.x;
                     displayY = origin.getY() + offset.y();
                     displayZ = worldPoint.z;
-                    displayYaw = origin.getYaw() + 180F;
+                    displayYaw = origin.getYaw();
                     rotation = new Quaternionf()
                             .rotateX((float) Math.toRadians(
                                     PressingTubSemantics.TILT_X_DEGREES))

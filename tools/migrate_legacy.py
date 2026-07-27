@@ -2611,18 +2611,14 @@ def build_furniture(
             ) -> dict[str, Any]:
                 if anchor == "ground":
                     return furniture_element(render_items, block_id, label, model, "ground")
-                # CE's wall yaw is the clicked face, exactly like the source
-                # FACING property, but the authored board model is the north
-                # state (panel at local +z). Rotate that model 180 degrees so a
-                # south-facing wall placement puts the panel at the near edge
-                # of its target cell. The normal wall +0.5 depth then places the
-                # complete two-block model in front of, never inside, its
-                # supporting wall; centre alignment already supplies the exact
-                # source y origin, so no extra vertical correction is needed.
-                element = furniture_element(
+                # CE's wall yaw already maps the authored north-facing model
+                # onto the clicked face. Applying another 180-degree element
+                # rotation moves the thin panel to the outer edge of the
+                # target cell, a full block away from its support (and from the
+                # packet-only text). Keep the native wall depth and no extra
+                # rotation so the panel remains flush with the clicked wall.
+                return furniture_element(
                     render_items, block_id, label, model, "wall")
-                element["rotation"] = "0,180,0"
-                return element
 
             variants["ground"] = {
                 "elements": [chalkboard_element("small", small_model, "ground")],
@@ -2670,7 +2666,11 @@ def build_furniture(
                 "facing": "north", "tilt": "false", "waterlogged": "false",
             })[1]
             tilted = select_record(records, {
-                "facing": "south", "tilt": "true", "waterlogged": "false",
+                # CE's wall yaw already supplies PressingTubBlock.FACING from
+                # the clicked face. Use the source north state as the canonical
+                # model just like other wall furniture; selecting south would
+                # bake in a second 180-degree turn.
+                "facing": "north", "tilt": "true", "waterlogged": "false",
             })[1]
             variants["ground"] = {
                 "elements": [furniture_element(render_items, block_id, "ground", normal, "ground")],

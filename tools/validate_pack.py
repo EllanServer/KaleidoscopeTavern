@@ -2107,11 +2107,10 @@ def validate() -> dict[str, int]:
         if (wall_element.get("item") != ground_element.get("item")
                 or wall_element.get("translation") != "0,0,0.49"
                 or wall_element.get("position") != "0,0,0.01"
-                or wall_element.get("rotation") != "0,180,0"):
+                or wall_element.get("rotation") is not None):
             raise AssertionError(
-                f"Chalkboard wall{suffix} must reuse the ground model, rotate "
-                "the north-authored panel to clicked-face FACING, and occupy "
-                "the target cell in front of the support")
+                f"Chalkboard wall{suffix} must reuse the north-authored ground "
+                "model without a duplicate yaw and stay flush with its support")
     chalkboard_item_behavior = items[f"{NAMESPACE}:chalkboard"].get("behavior", {})
     if chalkboard_item_behavior.get("type") != "furniture_item":
         raise AssertionError("Chalkboard item must keep its furniture_item behavior")
@@ -3117,12 +3116,14 @@ def validate() -> dict[str, int]:
         f"{NAMESPACE}:pressing_tub"]["variants"]["wall"]["elements"][0]
     if (pressing_tub_wall.get("position") != "0,0,0.01"
             or pressing_tub_wall.get("translation") != "0,0,0.49"
-            or pressing_tub_wall.get("rotation") != "0,180,0"):
+            or pressing_tub_wall.get("rotation") is not None):
         raise AssertionError(
-            "Tilted pressing tub must face the clicked wall and occupy the "
-            "target cell in front of its support")
+            "Tilted pressing tub must use CE's clicked-face yaw exactly once "
+            "and occupy the target cell in front of its support")
     for token in (
+            "PressingTubSemantics.tiltNorth(",
             "PressingTubSemantics.toWallFurnitureOffset(point)",
+            "displayYaw = origin.getYaw();",
             "new Vector3f(0, 0, 0.5F)"):
         if token not in station_source:
             raise AssertionError(

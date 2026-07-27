@@ -8600,8 +8600,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49",
-              "rotation": "0,180,0"
+              "translation": "0,0,0.49"
             }
           ],
           "hitboxes": [
@@ -8636,8 +8635,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49",
-              "rotation": "0,180,0"
+              "translation": "0,0,0.49"
             }
           ],
           "hitboxes": [
@@ -14911,13 +14909,12 @@
           "elements": [
             {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/pressing_tub/ec6795b934",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/61ee42afd0",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49",
-              "rotation": "0,180,0"
+              "translation": "0,0,0.49"
             }
           ],
           "hitboxes": [

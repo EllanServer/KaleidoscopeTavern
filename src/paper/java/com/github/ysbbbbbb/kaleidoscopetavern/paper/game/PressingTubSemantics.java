@@ -38,14 +38,15 @@ public final class PressingTubSemantics {
     }
 
     /**
-     * Applies the source renderer's facing=SOUTH tilted pose to one point in
+     * Applies the source renderer's facing=NORTH tilted pose to one point in
      * block coordinates. CraftEngine's wall yaw subsequently rotates this
-     * canonical south-facing result onto the wall selected by the player.
+     * canonical north-facing result onto the wall selected by the player.
      */
-    static Point tiltSouth(double x, double y, double z) {
+    static Point tiltNorth(double x, double y, double z) {
         // PoseStack order:
-        // T(.5,0,.5) * Ry(-180) * T(-.5,0,-.5)
-        // * Rx(-45) * T(0,-.25,.25) * point
+        // T(.5,0,.5) * Ry(0) * T(-.5,0,-.5)
+        // * Rx(-45) * T(0,-.25,.25) * point. The first three
+        // transforms cancel for the source north state.
         double translatedY = y - 0.25;
         double translatedZ = z + 0.25;
         double radians = Math.toRadians(TILT_X_DEGREES);
@@ -53,20 +54,18 @@ public final class PressingTubSemantics {
         double sin = Math.sin(radians);
         double rotatedY = cos * translatedY - sin * translatedZ;
         double rotatedZ = sin * translatedY + cos * translatedZ;
-
-        double centeredX = x - 0.5;
-        double centeredZ = rotatedZ - 0.5;
-        return new Point(0.5 - centeredX, rotatedY, 0.5 - centeredZ);
+        return new Point(x, rotatedY, rotatedZ);
     }
 
     /**
      * Converts a source block-local point into CraftEngine's wall-furniture
      * basis. A wall furniture origin lies on the support plane at the target
-     * cell's vertical centre; local +x points right (source -x for SOUTH),
-     * while local +z points out from the wall.
+     * cell's vertical centre. For the canonical north state the support plane
+     * is source z=1, local +z points out from that wall, and CE's yaw maps
+     * source +x onto local -x.
      */
     static Point toWallFurnitureOffset(Point point) {
-        return new Point(0.5 - point.x(), point.y() - 0.5, point.z());
+        return new Point(0.5 - point.x(), point.y() - 0.5, 1.0 - point.z());
     }
 
     record Point(double x, double y, double z) {
