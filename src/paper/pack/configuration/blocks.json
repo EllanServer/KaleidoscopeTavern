@@ -17781,8 +17781,8 @@
     "kaleidoscope_tavern:grape_crop": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -17818,8 +17818,8 @@
     "kaleidoscope_tavern:_crop/grape_crop/stage_1": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -17855,8 +17855,8 @@
     "kaleidoscope_tavern:_crop/grape_crop/stage_2": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -17892,8 +17892,8 @@
     "kaleidoscope_tavern:_crop/grape_crop/stage_3": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -17929,8 +17929,8 @@
     "kaleidoscope_tavern:_crop/grape_crop/stage_4": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -17966,8 +17966,8 @@
     "kaleidoscope_tavern:_crop/grape_crop/stage_5": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -18003,8 +18003,8 @@
     "kaleidoscope_tavern:ice_grape_crop": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -18040,8 +18040,8 @@
     "kaleidoscope_tavern:_crop/ice_grape_crop/stage_1": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -18077,8 +18077,8 @@
     "kaleidoscope_tavern:_crop/ice_grape_crop/stage_2": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -18114,8 +18114,8 @@
     "kaleidoscope_tavern:_crop/ice_grape_crop/stage_3": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -18151,8 +18151,8 @@
     "kaleidoscope_tavern:_crop/ice_grape_crop/stage_4": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -18188,8 +18188,8 @@
     "kaleidoscope_tavern:_crop/ice_grape_crop/stage_5": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -18225,8 +18225,8 @@
     "kaleidoscope_tavern:gold_grape_crop": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -18262,8 +18262,8 @@
     "kaleidoscope_tavern:_crop/gold_grape_crop/stage_1": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -18299,8 +18299,8 @@
     "kaleidoscope_tavern:_crop/gold_grape_crop/stage_2": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -18336,8 +18336,8 @@
     "kaleidoscope_tavern:_crop/gold_grape_crop/stage_3": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -18373,8 +18373,8 @@
     "kaleidoscope_tavern:_crop/gold_grape_crop/stage_4": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {
@@ -18410,8 +18410,8 @@
     "kaleidoscope_tavern:_crop/gold_grape_crop/stage_5": {
       "state": {
         "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
         },
         "transparent": true,
         "entity_renderer": {

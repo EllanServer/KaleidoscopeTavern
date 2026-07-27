@@ -183,12 +183,14 @@ STURDY_BLOCKS = {"trellis"}
 # CraftEngine's cave-vines auto-state group has 52 head states (26 ages times
 # the berries flag).  Every one keeps vanilla's 14/16-wide, full-height
 # selection column and no collision, which exactly matches WildGrapevineBlock.
-# Reusing one allocation id for the head and body makes CE assign one carrier
-# to both authored ItemDisplay models.  Do not use a *_plant state here: those
-# blocks expose only one visual state, so making it transparent erases every
-# vanilla plant body of that type from the resource pack.
-WILD_GRAPEVINE_CARRIER_TYPE = "cave_vines"
-WILD_GRAPEVINE_CARRIER_ID = "kaleidoscope-tavern-wild-grapevine-transparent"
+# Reusing one allocation id for the wild head/body and every hanging crop stage
+# makes CE assign one carrier to all authored ItemDisplay models.  Do not use a
+# *_plant state here: those blocks expose only one visual state, so making it
+# transparent erases every vanilla plant body of that type from the resource
+# pack.  Keep the existing id string stable so CE's allocation cache does not
+# churn when crop stages join the shared carrier.
+GRAPE_CARRIER_TYPE = "cave_vines"
+GRAPE_CARRIER_ID = "kaleidoscope-tavern-wild-grapevine-transparent"
 
 PAINTINGS = {
     "ysbb_painting",
@@ -829,13 +831,14 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 if trellis_type is not None:
                     appearance["state"] = trellis_carrier_state(trellis_type)
                     metrics["collidable_trellises"] += 1
-                elif block_id in {"wild_grapevine", "wild_grapevine_plant"}:
+                elif (block_id in {"wild_grapevine", "wild_grapevine_plant"}
+                      or block_id in HANGING_GRAPE_CROPS):
                     # Let CE reserve one state from its supported cave-vines
-                    # pool.  Sharing the id intentionally shares the carrier;
-                    # the two authored models still come from entity_renderer.
+                    # pool. Sharing the id intentionally shares the carrier;
+                    # each authored model still comes from entity_renderer.
                     appearance["auto_state"] = {
-                        "type": WILD_GRAPEVINE_CARRIER_TYPE,
-                        "id": WILD_GRAPEVINE_CARRIER_ID,
+                        "type": GRAPE_CARRIER_TYPE,
+                        "id": GRAPE_CARRIER_ID,
                     }
                 else:
                     appearance["auto_state"] = {"type": carrier, "id": carrier_id}

@@ -2206,6 +2206,18 @@ def validate() -> dict[str, int]:
            for appearance in (wild_head_appearance, wild_body_appearance)):
         raise AssertionError(
             "Wild grapevine must not reserve vanilla weeping-vine texture states")
+    for crop in ("grape_crop", "ice_grape_crop", "gold_grape_crop"):
+        for point in range(6):
+            crop_id = (f"{NAMESPACE}:{crop}" if point == 0
+                       else f"{NAMESPACE}:_crop/{crop}/stage_{point}")
+            appearance = blocks[crop_id].get("state", {})
+            if (appearance.get("auto_state") != expected_wild_carrier
+                    or "state" in appearance
+                    or appearance.get("transparent") is not True
+                    or appearance.get("entity_renderer", {}).get("item")
+                    not in render_items):
+                raise AssertionError(
+                    f"{crop_id}: hanging crop must share CE's cave-vines carrier")
     wild_settings = blocks[f"{NAMESPACE}:wild_grapevine"]["settings"]
     if (wild_settings.get("hardness") != 0
             or wild_settings.get("resistance") != 0
