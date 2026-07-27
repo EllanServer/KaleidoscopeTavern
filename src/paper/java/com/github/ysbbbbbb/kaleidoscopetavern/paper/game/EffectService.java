@@ -44,6 +44,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
+import org.bukkit.event.entity.EntityRemoveEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
@@ -390,6 +391,21 @@ public final class EffectService implements Listener {
         stopTickTaskIfIdle();
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onEntityRemove(EntityRemoveEvent event) {
+        // Dedicated events below preserve state for players/chunk unloads and
+        // run source death callbacks. Every other removal permanently retires
+        // the entity, so discard its runtime custom-effect state immediately.
+        if (event.getCause() == EntityRemoveEvent.Cause.PLAYER_QUIT
+                || event.getCause() == EntityRemoveEvent.Cause.UNLOAD
+                || event.getCause() == EntityRemoveEvent.Cause.DEATH
+                || !(event.getEntity() instanceof LivingEntity living)
+                || !active.containsKey(living.getUniqueId())) {
+            return;
+        }
+        clearEffects(living);
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDeath(EntityDeathEvent event) {
         LivingEntity target = event.getEntity();
@@ -643,18 +659,7 @@ public final class EffectService implements Listener {
             Map.Entry<UUID, Map<String, ActiveEffect>> entry = iterator.next();
             LivingEntity living = activeEntities.get(entry.getKey());
             if (living == null) {
-                // Recovery-only fallback for an unforeseen lifecycle ordering;
-                // the normal path is populated by apply/load and performs no
-                // global Bukkit UUID lookup per effect per tick.
-                Entity entity = Bukkit.getEntity(entry.getKey());
-                if (entity instanceof LivingEntity recovered) {
-                    living = recovered;
-                    activeEntities.put(entry.getKey(), recovered);
-                }
-            }
-            if (living == null || !living.isValid() || living.isDead()) {
                 iterator.remove();
-                activeEntities.remove(entry.getKey());
                 continue;
             }
             Map<String, ActiveEffect> effects = entry.getValue();

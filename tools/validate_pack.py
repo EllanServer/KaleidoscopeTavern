@@ -1838,6 +1838,8 @@ def validate() -> dict[str, int]:
     for on_demand_token in (
             "private final Map<UUID, LivingEntity> activeEntities",
             "LivingEntity living = activeEntities.get(entry.getKey())",
+            "public void onEntityRemove(EntityRemoveEvent event)",
+            "event.getCause() == EntityRemoveEvent.Cause.UNLOAD",
             "private void ensureTickTask()",
             "task == null && !active.isEmpty()",
             "runTaskTimer(plugin, () -> tick(1L), 1L, 1L)",
@@ -1846,6 +1848,15 @@ def validate() -> dict[str, int]:
         if on_demand_token not in effect_service_source:
             raise AssertionError(
                 f"Custom effect on-demand tick lifecycle is missing {on_demand_token}")
+    effect_tick_source = effect_service_source.partition(
+        "private void tick(long period)")[2].partition(
+        "private void ensureTickTask()")[0]
+    for stale_effect_entity_probe in (
+            "Bukkit.getEntity(entry.getKey())", "living.isValid()", "living.isDead()"):
+        if stale_effect_entity_probe in effect_tick_source:
+            raise AssertionError(
+                "Paper entity lifecycle events must keep custom-effect ticks free of repeated "
+                f"validity/UUID probes; found {stale_effect_entity_probe}")
     for tracked_particle_token in (
             "Set<Player> trackedBy = living.getTrackedBy()",
             "if (trackedBy.isEmpty() && !includeSelf)",
