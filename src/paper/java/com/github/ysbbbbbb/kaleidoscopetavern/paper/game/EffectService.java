@@ -4,6 +4,7 @@ import com.destroystokyo.paper.event.player.PlayerPickupExperienceEvent;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.NativeDrinkEffectSemantics;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -217,6 +218,9 @@ public final class EffectService implements Listener {
             return;
         }
         for (EffectSpec spec : specs) {
+            if (isEmbeddedVanillaEffect(consumed, spec)) {
+                continue;
+            }
             if (EffectSemantics.rolls(ThreadLocalRandom.current().nextDouble(), spec.probability())) {
                 apply(event.getPlayer(), spec);
             }
@@ -224,6 +228,27 @@ public final class EffectService implements Listener {
         // The empty bottle or glassware now comes back through CraftEngine's
         // settings.consume_replacement on each drink item; this handler only
         // applies the migrated effects.
+    }
+
+    private static boolean isEmbeddedVanillaEffect(ItemStack consumed, EffectSpec spec) {
+        if (!NativeDrinkEffectSemantics.shouldEmbed(spec.effect(), spec.probability())
+                || !(consumed.getItemMeta() instanceof PotionMeta potionMeta)) {
+            return false;
+        }
+        NamespacedKey key = NamespacedKey.fromString(spec.effect());
+        PotionEffectType type = key == null ? null : Registry.EFFECT.get(key);
+        if (type == null) {
+            return false;
+        }
+        int duration = NativeDrinkEffectSemantics.duration(type.isInstant(), spec.durationTicks());
+        for (PotionEffect effect : potionMeta.getCustomEffects()) {
+            if (effect.getType().equals(type)
+                    && effect.getDuration() == duration
+                    && effect.getAmplifier() == spec.amplifier()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
