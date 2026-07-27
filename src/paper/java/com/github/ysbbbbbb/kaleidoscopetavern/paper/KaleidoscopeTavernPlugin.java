@@ -165,8 +165,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         furnitureConnections = new FurnitureConnectionService(this);
 
         getServer().getPluginManager().registerEvents(this, this);
-        blocks = new BlockService(this, catalog);
-        getServer().getPluginManager().registerEvents(blocks, this);
+        blocks = new BlockService(catalog);
         getServer().getPluginManager().registerEvents(new MolotovService(this, items), this);
         getServer().getPluginManager().registerEvents(new BottlePlacementService(this, catalog, items), this);
         bottleFurniture = new BottleFurnitureService(this, catalog, items, effects);

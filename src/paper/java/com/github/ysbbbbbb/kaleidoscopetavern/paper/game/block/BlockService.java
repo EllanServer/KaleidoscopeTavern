@@ -1,32 +1,25 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.GrapevineItemBehavior;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
-import net.momirealms.craftengine.bukkit.api.event.CustomBlockBreakEvent;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.property.Property;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.context.UseOnContext;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Set;
 import java.util.logging.Logger;
 
 /** Bukkit-facing interactions for the small set of real, stateful custom blocks. */
-public final class BlockService implements Listener {
+public final class BlockService {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String TRELLIS = PREFIX + "trellis";
     private static final Set<String> VINE_TRELLISES = Set.of(
@@ -48,12 +41,10 @@ public final class BlockService implements Listener {
 
     private static final Logger LOGGER = Logger.getLogger("KaleidoscopeTavern");
 
-    private final JavaPlugin plugin;
     private final ContentCatalog catalog;
     private final GrapevineItemBehavior.Handler grapevineHandler = this::useGrapevineOnBlock;
 
-    public BlockService(JavaPlugin plugin, ContentCatalog catalog) {
-        this.plugin = plugin;
+    public BlockService(ContentCatalog catalog) {
         this.catalog = catalog;
     }
 
@@ -115,21 +106,6 @@ public final class BlockService implements Listener {
             }
         }
         return InteractionResult.PASS;
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onCustomBlockBreak(CustomBlockBreakEvent event) {
-        if (VINE_TRELLISES.contains(event.customBlock().id().toString())) {
-            Location cropLocation = event.bukkitBlock().getRelative(BlockFace.DOWN).getLocation();
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                ImmutableBlockState support = CraftEngineBlocks.getCustomBlockState(
-                        cropLocation.getBlock().getRelative(BlockFace.UP));
-                if (support == null || !VINE_TRELLISES.contains(
-                        support.owner().value().id().toString())) {
-                    CustomCropsBridge.removeCrop(cropLocation);
-                }
-            });
-        }
     }
 
     /**

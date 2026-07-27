@@ -266,6 +266,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     "GlasswareHolderBlock.java": (("DisplayStorageService.java", "GLASSWARE_HOLDER"),),
     "GrapeCropBlock.java": (
         ("block/HangingGrapeCropBehavior.java", "addGrowthPoints"),
+        ("block/HangingGrapeCropBehavior.java", "CustomCropsBridge.removeCrop"),
         ("src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml", "harvest_with_shears"),
     ),
     "GrapevineItem.java": (
@@ -995,12 +996,16 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Grapevine planting must retain the original single-trellis restriction")
     for stale_listener in (
-            "CustomBlockInteractEvent", "interactVineTrellis", "damageTool(",
+            "CustomBlockInteractEvent", "CustomBlockBreakEvent", "implements Listener",
+            "onCustomBlockBreak", "interactVineTrellis", "damageTool(",
             "interactWildHead", "Material.HONEYCOMB", "WAX_ON", "WAX_OFF"):
         if stale_listener in block_service_source:
             raise AssertionError(
                 "Trellis waxing and grapevine shearing are CE block events; "
                 f"BlockService must not reintroduce {stale_listener}")
+    if "registerEvents(blocks, this)" in plugin_source:
+        raise AssertionError(
+            "BlockService only binds a CE item behavior and must not be a global Bukkit listener")
     station_source = (game_package / "StationService.java").read_text(encoding="utf-8-sig")
     storage_source = (game_package / "DisplayStorageService.java").read_text(
         encoding="utf-8-sig")
