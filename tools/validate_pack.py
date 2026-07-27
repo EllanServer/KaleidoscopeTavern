@@ -1805,6 +1805,8 @@ def validate() -> dict[str, int]:
     for required_token in (
             "PriorityQueue<ScheduledRun>",
             "runDueControllers",
+            "runTaskLater",
+            "scheduleWakeLocked",
             "geometricDelay",
             "firstFutureDelay",
             "public void onLoad()",
@@ -1821,6 +1823,10 @@ def validate() -> dict[str, int]:
     if "createFurnitureTicker" in ticking_behavior_source:
         raise AssertionError(
             "Sparse furniture must not retain one CraftEngine ticker callback per instance")
+    if "runTaskTimer" in ticking_behavior_source:
+        raise AssertionError(
+            "Sparse furniture due-time scheduling must stay wake-on-demand instead of "
+            "polling an idle queue every server tick")
     if "bukkitFurniture.isValid()" in ticking_behavior_source:
         raise AssertionError(
             "CE lifecycle removal must keep the sparse due queue free of repeated "
