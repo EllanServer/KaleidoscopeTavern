@@ -15860,7 +15860,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:weeping_vines[age=25]",
+            "auto_state": {
+              "type": "cave_vines",
+              "id": "kaleidoscope-tavern-wild-grapevine-transparent"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -16136,7 +16139,10 @@
     },
     "kaleidoscope_tavern:wild_grapevine_plant": {
       "state": {
-        "state": "minecraft:weeping_vines_plant",
+        "auto_state": {
+          "type": "cave_vines",
+          "id": "kaleidoscope-tavern-wild-grapevine-transparent"
+        },
         "transparent": true,
         "entity_renderer": {
           "type": "item_display",

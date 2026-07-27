@@ -2184,19 +2184,28 @@ def validate() -> dict[str, int]:
         raise AssertionError("Wild grapevine must not retain the invented 16-block growth cap")
     wild_head_appearances = (
         blocks[f"{NAMESPACE}:wild_grapevine"].get("states", {}).get("appearances", {}))
-    if (len(wild_head_appearances) != 1
-            or next(iter(wild_head_appearances.values())).get("state")
-            != "minecraft:weeping_vines[age=25]"):
-        raise AssertionError(
-            "Wild grapevine head must use the native weeping-vine tip state carrier")
+    if len(wild_head_appearances) != 1:
+        raise AssertionError("Wild grapevine head must keep one shared authored appearance")
+    wild_head_appearance = next(iter(wild_head_appearances.values()))
     wild_body_appearance = blocks[f"{NAMESPACE}:wild_grapevine_plant"].get("state", {})
-    if (wild_body_appearance.get("state") != "minecraft:weeping_vines_plant"
-            or wild_body_appearance.get("transparent") is not True
-            or wild_body_appearance.get("entity_renderer", {}).get("item")
-            not in render_items):
+    expected_wild_carrier = {
+        "type": "cave_vines",
+        "id": "kaleidoscope-tavern-wild-grapevine-transparent",
+    }
+    for label, appearance in (
+            ("head", wild_head_appearance),
+            ("body", wild_body_appearance)):
+        if (appearance.get("auto_state") != expected_wild_carrier
+                or "state" in appearance
+                or appearance.get("transparent") is not True
+                or appearance.get("entity_renderer", {}).get("item")
+                not in render_items):
+            raise AssertionError(
+                f"Wild grapevine {label} must share CE's cave-vines auto-state carrier")
+    if any("weeping_vines" in json.dumps(appearance)
+           for appearance in (wild_head_appearance, wild_body_appearance)):
         raise AssertionError(
-            "Wild grapevine body must use the native weeping-vine state carrier "
-            "behind its authored model")
+            "Wild grapevine must not reserve vanilla weeping-vine texture states")
     wild_settings = blocks[f"{NAMESPACE}:wild_grapevine"]["settings"]
     if (wild_settings.get("hardness") != 0
             or wild_settings.get("resistance") != 0
