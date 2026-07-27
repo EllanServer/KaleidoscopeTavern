@@ -868,10 +868,9 @@ def validate() -> dict[str, int]:
             "BoardTextFurnitureBehavior.unbind(boardVisualHandler)",
             "BoardTextFurnitureBehavior.bindInteraction(boardInteractionHandler)",
             "BoardTextFurnitureBehavior.unbindInteraction(boardInteractionHandler)",
-            "BoardTextFurnitureBehavior.bindPlacement(boardPlacementHandler)",
-            "BoardTextFurnitureBehavior.unbindPlacement(boardPlacementHandler)",
             "private InteractionResult interactBoard(",
-            "private void onBoardPlaced(",
+            "public void onFurniturePlace(FurniturePlaceEvent event)",
+            "!event.player().isSneaking()",
             "context.getHand() != InteractionHand.MAIN_HAND",
             "InteractionResult.SUCCESS_AND_CANCEL",
             "private List<BoardTextFurnitureBehavior.Visual> boardVisuals",
@@ -885,8 +884,8 @@ def validate() -> dict[str, int]:
             "org.bukkit.entity.TextDisplay", "PersistentDataType", "NamespacedKey",
             "board_owner", "board_line", "board_displays", "getNearbyEntities(",
             "removeDisplay(", "TextDisplay.TextAlignment", "FurnitureInteractEvent",
-            "public void onFurnitureInteract(", "FurniturePlaceEvent",
-            "public void onFurniturePlace("):
+            "public void onFurnitureInteract(", "BoardTextFurnitureBehavior.bindPlacement(",
+            "BoardTextFurnitureBehavior.unbindPlacement("):
         if stale_token in board_text_source:
             raise AssertionError(
                 "Board text must not recreate persistent Bukkit display entities or helper "
@@ -1231,18 +1230,16 @@ def validate() -> dict[str, int]:
             "public void gatherElements",
             "public static void bindInteraction(",
             "public static void unbindInteraction(",
-            "public static void bindPlacement(",
-            "public static void unbindPlacement(",
             "public InteractionResult useOnFurniture(",
-            "current.interact(bukkitFurniture, context)",
-            "current.onPlace(bukkitFurniture, player)"):
+            "current.interact(bukkitFurniture, context)"):
         if required_token not in board_text_behavior_source:
             raise AssertionError(
                 "board_text_furniture must use CE-tracked packet-only text elements; "
                 f"missing token: {required_token}")
     for stale_token in (
             "org.bukkit.entity.TextDisplay", "PersistentDataType", "World.spawn",
-            "ComponentUtils.adventureToMinecraft"):
+            "ComponentUtils.adventureToMinecraft", "PlacementHandler",
+            "bindPlacement(", "placementHandler"):
         if stale_token in board_text_behavior_source:
             raise AssertionError(
                 "board_text_furniture must never create persistent Bukkit entities; "
