@@ -185,7 +185,6 @@ def is_grid_block(block_id: str) -> bool:
         or block_id in INCENSE_BLOCKS
         or block_id in STORAGE_BLOCKS
         or block_id == "tap"
-        or block_id.endswith("_sofa")
         or block_id in {
             "wild_grapevine", "wild_grapevine_plant", "trellis",
             "grapevine_trellis", "grape_crop",
@@ -2430,10 +2429,11 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         lifecycle_channels.append("barrel")
     if block_id == "empty_bottle":
         lifecycle_channels.append("tap_bottle")
-    if block_id in {
-            "bar_counter", "table", "bar_cabinet",
-            "glass_bar_cabinet",
-    }:
+    if (block_id.endswith("_sofa")
+            or block_id in {
+                "bar_counter", "table", "bar_cabinet",
+                "glass_bar_cabinet",
+            }):
         lifecycle_channels.append("connection")
     for channel in lifecycle_channels:
         behaviors.append({

@@ -1,725 +1,5 @@
 {
   "items": {
-    "kaleidoscope_tavern:_render/white_sofa/1185d52414": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/white/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/white_sofa/19ee3ebe99": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/white/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/white_sofa/59515db81d": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/white/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/light_gray_sofa/fead27c809": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/light_gray/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/light_gray_sofa/808450e143": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/light_gray/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/light_gray_sofa/2150f6a6dc": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/light_gray/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/gray_sofa/8b060705fc": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/gray/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/gray_sofa/169527da8f": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/gray/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/gray_sofa/9364eb32f9": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/gray/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/black_sofa/a1de62b91a": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/black/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/black_sofa/697f4dd40f": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/black/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/black_sofa/49f64eee51": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/black/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/brown_sofa/d78ae04030": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/brown/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/brown_sofa/6489715069": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/brown/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/brown_sofa/2c08928dbb": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/brown/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/red_sofa/b88d1e55d0": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/red/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/red_sofa/ffc021e4a3": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/red/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/red_sofa/8e949024fc": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/red/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/orange_sofa/dc990575a3": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/orange/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/orange_sofa/dcaabe3980": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/orange/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/orange_sofa/2374221293": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/orange/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/yellow_sofa/51ac121352": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/yellow/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/yellow_sofa/30d7f0d696": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/yellow/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/yellow_sofa/f722fc3bf4": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/yellow/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/lime_sofa/d3debc96d8": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/lime/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/lime_sofa/7464f4da59": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/lime/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/lime_sofa/98f6b83c3a": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/lime/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/green_sofa/e7558ca5da": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/green/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/green_sofa/d8017a90ef": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/green/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/green_sofa/ae7b173bea": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/green/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/cyan_sofa/c1980ec218": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/cyan/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/cyan_sofa/0ab631387e": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/cyan/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/cyan_sofa/eeb2874a05": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/cyan/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/light_blue_sofa/d8c4a655f0": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/light_blue/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/light_blue_sofa/ddd37e8a7b": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/light_blue/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/light_blue_sofa/ab261c2c9a": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/light_blue/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/blue_sofa/edee85debb": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/blue/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/blue_sofa/efcc3baa65": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/blue/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/blue_sofa/f693b49aa8": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/blue/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/purple_sofa/b9560cc5d5": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/purple/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/purple_sofa/d51e2bc22d": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/purple/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/purple_sofa/21936ede9c": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/purple/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/magenta_sofa/84c316cf48": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/magenta/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/magenta_sofa/943e14f882": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/magenta/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/magenta_sofa/e2a4b44c2e": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/magenta/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/pink_sofa/6e4c091e57": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/pink/left_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/pink_sofa/d4bf3fed1b": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/pink/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/pink_sofa/98492ef8fb": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/sofa/pink/right_corner"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
     "kaleidoscope_tavern:_render/string_lights_colorless/92bdce1a81": {
       "material": "paper",
       "data": {
@@ -2963,6 +2243,1446 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:block/deco/holder"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/white/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/white_sofa/a4b01fe805": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/white/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/white_sofa/467e05234d": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/white/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/white_sofa/d8eb8e9bd9": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/white/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/white_sofa/2ca76165a3": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/white/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/white_sofa/5dda9d5d67": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/white/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/light_gray_sofa/a9e850247f": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/light_gray/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/light_gray_sofa/ad0589ea18": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/light_gray/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/light_gray_sofa/8368069641": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/light_gray/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/light_gray_sofa/0080e8d8ce": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/light_gray/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/light_gray_sofa/20ecba5398": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/light_gray/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/light_gray_sofa/ac71599476": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/light_gray/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/gray_sofa/f8fa2e58a1": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/gray/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/gray_sofa/ee1622a72d": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/gray/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/gray_sofa/560fa1b4dc": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/gray/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/gray_sofa/a63816684e": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/gray/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/gray_sofa/03338fd8fe": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/gray/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/gray_sofa/847524ba1c": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/gray/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/black_sofa/cb7b1b05de": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/black/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/black_sofa/d447879673": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/black/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/black_sofa/1f6ae06016": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/black/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/black_sofa/47b520ddb7": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/black/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/black_sofa/63e010caf3": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/black/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/black_sofa/ba28920c9c": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/black/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/brown_sofa/3ebee86bfb": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/brown/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/brown_sofa/82d7940ead": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/brown/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/brown_sofa/daf44ab187": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/brown/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/brown_sofa/f0fa0c29ce": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/brown/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/brown_sofa/02958f28c0": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/brown/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/brown_sofa/beb493214b": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/brown/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/red_sofa/7a8fe4b873": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/red/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/red_sofa/c29046ef52": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/red/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/red_sofa/dcbb3b3b5c": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/red/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/red_sofa/7ac1407337": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/red/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/red_sofa/c06fabef43": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/red/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/red_sofa/9db0d8cd7b": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/red/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/orange_sofa/f5d8ff2eaf": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/orange/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/orange_sofa/a4bf2cbcc3": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/orange/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/orange_sofa/b353d45dbf": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/orange/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/orange_sofa/7308c563d5": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/orange/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/orange_sofa/05b2d1a204": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/orange/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/orange_sofa/049ed3561c": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/orange/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/yellow_sofa/683a8e31b2": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/yellow/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/yellow_sofa/fafa1c64dc": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/yellow/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/yellow_sofa/e3f38cdc8c": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/yellow/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/yellow_sofa/ac8791d578": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/yellow/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/yellow_sofa/70884adc60": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/yellow/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/yellow_sofa/650d6a2eda": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/yellow/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/lime_sofa/3ab2ae04d3": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/lime/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/lime_sofa/7b8049e862": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/lime/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/lime_sofa/d612fc5a02": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/lime/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/lime_sofa/0b162133b2": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/lime/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/lime_sofa/24f23851f0": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/lime/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/lime_sofa/ee478fcd78": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/lime/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/green_sofa/03cd9d61b8": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/green/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/green_sofa/02d2adb2be": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/green/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/green_sofa/17d7f46d65": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/green/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/green_sofa/d0ea379bff": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/green/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/green_sofa/3e4a593873": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/green/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/green_sofa/7b9fbaf094": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/green/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/cyan_sofa/a45689e59f": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/cyan/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/cyan_sofa/d319495964": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/cyan/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/cyan_sofa/65bacfb89b": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/cyan/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/cyan_sofa/de3c0523c9": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/cyan/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/cyan_sofa/7a7655c2db": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/cyan/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/cyan_sofa/afe0729590": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/cyan/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/light_blue_sofa/97b359bdb6": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/light_blue/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/light_blue_sofa/29aaa18096": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/light_blue/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/light_blue_sofa/cf9c4d8af6": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/light_blue/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/light_blue_sofa/2a7f1f756a": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/light_blue/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/light_blue_sofa/8a98a14762": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/light_blue/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/light_blue_sofa/3dc8f2ca7a": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/light_blue/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/blue_sofa/2889998f2e": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/blue/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/blue_sofa/69c823bbf9": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/blue/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/blue_sofa/c53e6b7154": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/blue/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/blue_sofa/3717268930": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/blue/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/blue_sofa/37cc325e4e": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/blue/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/blue_sofa/352c345b43": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/blue/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/purple_sofa/34582175f1": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/purple/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/purple_sofa/7517e4672a": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/purple/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/purple_sofa/3ae28851fa": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/purple/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/purple_sofa/31c0bb3e7d": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/purple/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/purple_sofa/0719a67f9e": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/purple/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/purple_sofa/43d860d7b9": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/purple/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/magenta_sofa/22f55066ca": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/magenta/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/magenta_sofa/c1196882da": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/magenta/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/magenta_sofa/c5c02fea8b": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/magenta/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/magenta_sofa/976b92e494": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/magenta/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/magenta_sofa/a74b71c71a": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/magenta/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/magenta_sofa/347720dcb6": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/magenta/right_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/pink_sofa/10ced9a35c": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/pink/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/pink_sofa/c7c1df8c3f": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/pink/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/pink_sofa/f0891fc749": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/pink/left_corner"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/pink_sofa/eb1582999c": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/pink/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/pink_sofa/e844793665": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/pink/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/pink_sofa/d695d2f42e": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/sofa/pink/right_corner"
       },
       "settings": {
         "tags": [

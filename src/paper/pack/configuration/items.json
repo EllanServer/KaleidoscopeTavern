@@ -10,8 +10,14 @@
         "path": "kaleidoscope_tavern:item/white_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:white_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:white_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:light_gray_sofa": {
@@ -24,8 +30,14 @@
         "path": "kaleidoscope_tavern:item/light_gray_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:light_gray_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:light_gray_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:gray_sofa": {
@@ -38,8 +50,14 @@
         "path": "kaleidoscope_tavern:item/gray_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:gray_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:gray_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:black_sofa": {
@@ -52,8 +70,14 @@
         "path": "kaleidoscope_tavern:item/black_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:black_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:black_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:brown_sofa": {
@@ -66,8 +90,14 @@
         "path": "kaleidoscope_tavern:item/brown_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:brown_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:brown_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:red_sofa": {
@@ -80,8 +110,14 @@
         "path": "kaleidoscope_tavern:item/red_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:red_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:red_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:orange_sofa": {
@@ -94,8 +130,14 @@
         "path": "kaleidoscope_tavern:item/orange_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:orange_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:orange_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:yellow_sofa": {
@@ -108,8 +150,14 @@
         "path": "kaleidoscope_tavern:item/yellow_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:yellow_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:yellow_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:lime_sofa": {
@@ -122,8 +170,14 @@
         "path": "kaleidoscope_tavern:item/lime_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:lime_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:lime_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:green_sofa": {
@@ -136,8 +190,14 @@
         "path": "kaleidoscope_tavern:item/green_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:green_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:green_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:cyan_sofa": {
@@ -150,8 +210,14 @@
         "path": "kaleidoscope_tavern:item/cyan_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:cyan_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:cyan_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:light_blue_sofa": {
@@ -164,8 +230,14 @@
         "path": "kaleidoscope_tavern:item/light_blue_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:light_blue_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:light_blue_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:blue_sofa": {
@@ -178,8 +250,14 @@
         "path": "kaleidoscope_tavern:item/blue_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:blue_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:blue_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:purple_sofa": {
@@ -192,8 +270,14 @@
         "path": "kaleidoscope_tavern:item/purple_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:purple_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:purple_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:magenta_sofa": {
@@ -206,8 +290,14 @@
         "path": "kaleidoscope_tavern:item/magenta_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:magenta_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:magenta_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:pink_sofa": {
@@ -220,8 +310,14 @@
         "path": "kaleidoscope_tavern:item/pink_sofa"
       },
       "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:pink_sofa"
+        "type": "furniture_item",
+        "furniture": "kaleidoscope_tavern:pink_sofa",
+        "rules": {
+          "ground": {
+            "rotation": "four",
+            "alignment": "center"
+          }
+        }
       }
     },
     "kaleidoscope_tavern:white_bar_stool": {
