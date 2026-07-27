@@ -160,7 +160,7 @@ OBSOLETE_VANILLA_IDS = {"minecraft:chain", "minecraft:grass"}
 # instead of silently disappearing during migration.
 SOURCE_STATE_OWNERS = {
     "age": "CustomCrops stage blocks",
-    "axis": "FurnitureConnectionService yaw/line selection",
+    "axis": "CE native trellis placement axis plus FurnitureConnectionService yaw/line selection",
     "connection": "FurnitureConnectionService sofa/furniture variants and storage block states",
     "count": "BottleFurnitureService",
     "face": "CE ground/wall/ceiling placement rules",
@@ -684,16 +684,47 @@ def validate() -> dict[str, int]:
                 f"one Bukkit-to-CE BlockPos bridge per neighbour; missing {required_token}")
     for required_token in (
             "extends BukkitBlockBehavior",
+            "private final Property<Direction.Axis> axisProperty",
             "private final Property<Boolean> waterloggedProperty",
+            'block, "axis", Direction.Axis.class',
+            "state.get(axisProperty)",
+            "TrellisConnectionSemantics.typeFor(",
+            'copyNamed(targetState, grown, "axis")',
             "FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER",
             "LevelAccessorProxy.INSTANCE.scheduleTick$1("):
         if required_token not in trellis_behavior_source:
             raise AssertionError(
-                "TrellisBehavior must supplement CE's native bucket behavior with placement "
-                f"and fluid-tick waterlogging; missing {required_token}")
+                "TrellisBehavior must consume CE's native axis and supplement its bucket "
+                f"behavior with connection/water state; missing {required_token}")
     if "extends WaterloggedBlockBehavior" in trellis_behavior_source:
         raise AssertionError(
             "TrellisBehavior must not duplicate CE's automatically attached bucket behavior")
+    for duplicate_token in (
+            "context.getClickedFace().axis()",
+            "typeForPlacement(",
+            "updateType("):
+        if duplicate_token in trellis_behavior_source:
+            raise AssertionError(
+                "TrellisBehavior must let CE own its placement axis; found duplicate "
+                f"implementation {duplicate_token}")
+    trellis_semantics_source = (
+        game_package / "block/TrellisConnectionSemantics.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            'xConnected || baseAxis.equals("x")',
+            'yConnected || baseAxis.equals("y")',
+            'zConnected || baseAxis.equals("z")'):
+        if required_token not in trellis_semantics_source:
+            raise AssertionError(
+                "Trellis connection reduction must preserve CE's native placement axis; "
+                f"missing {required_token}")
+    trellis_semantics_test = (
+        ROOT / "src/paperTest/java/com/github/ysbbbbbb/kaleidoscopetavern/"
+        "paper/game/block/TrellisConnectionSemanticsTest.java"
+    ).read_text(encoding="utf-8-sig")
+    if "verticalPlacementNeverCollapsesIntoAHorizontalShape" not in trellis_semantics_test:
+        raise AssertionError(
+            "Trellis vertical placement needs a regression test for immediate neighbour updates")
     wild_behavior_source = (
         game_package / "block/WildGrapevineBehavior.java").read_text(encoding="utf-8-sig")
     for leaf_attachment_token in (
@@ -1012,6 +1043,7 @@ def validate() -> dict[str, int]:
     ).read_text(encoding="utf-8-sig")
     for evidence in (
             "String planted = grapevineFor(soil);",
+            'replacement, "axis", stringProperty(trellisState, "axis")',
             'withNamed(replacement, "type", stringProperty(trellisState, "type"))',
             "void plantGrapevineOnTrellis(",
             "useGrapevineOnBlock"):
@@ -2439,6 +2471,11 @@ def validate() -> dict[str, int]:
     for block_id in ("trellis", *vine_trellis_ids):
         definition = blocks[f"{NAMESPACE}:{block_id}"]
         states = definition["states"]
+        expected_axis = {
+            "type": "axis", "default": "y", "values": ["x", "y", "z"]}
+        if states.get("properties", {}).get("axis") != expected_axis:
+            raise AssertionError(
+                f"{block_id}: CE must own clicked-face placement through native axis state")
         for name, appearance in states["appearances"].items():
             if appearance.get("entity_renderer", {}).get("type") != "item_display":
                 raise AssertionError(f"{block_id}/{name} must keep its authored item-display model")

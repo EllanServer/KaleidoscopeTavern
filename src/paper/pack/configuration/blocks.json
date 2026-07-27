@@ -3448,6 +3448,15 @@
           "waxed": {
             "type": "boolean",
             "default": "false"
+          },
+          "axis": {
+            "type": "axis",
+            "default": "y",
+            "values": [
+              "x",
+              "y",
+              "z"
+            ]
           }
         },
         "appearances": {
@@ -3903,6 +3912,15 @@
           "waterlogged": {
             "type": "boolean",
             "default": "false"
+          },
+          "axis": {
+            "type": "axis",
+            "default": "y",
+            "values": [
+              "x",
+              "y",
+              "z"
+            ]
           }
         },
         "appearances": {
@@ -4512,6 +4530,15 @@
           "waterlogged": {
             "type": "boolean",
             "default": "false"
+          },
+          "axis": {
+            "type": "axis",
+            "default": "y",
+            "values": [
+              "x",
+              "y",
+              "z"
+            ]
           }
         },
         "appearances": {
@@ -5121,6 +5148,15 @@
           "waterlogged": {
             "type": "boolean",
             "default": "false"
+          },
+          "axis": {
+            "type": "axis",
+            "default": "y",
+            "values": [
+              "x",
+              "y",
+              "z"
+            ]
           }
         },
         "appearances": {

@@ -64,6 +64,7 @@ public final class TrellisBehavior extends BukkitBlockBehavior
             BlockFace.UP, BlockFace.EAST, BlockFace.WEST, BlockFace.SOUTH, BlockFace.NORTH);
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
 
+    private final Property<Direction.Axis> axisProperty;
     private final Property<String> typeProperty;
     private final Property<Boolean> waterloggedProperty;
     private final IntegerProperty ageProperty;
@@ -71,6 +72,8 @@ public final class TrellisBehavior extends BukkitBlockBehavior
 
     private TrellisBehavior(BlockDefinition block, ConfigSection section) {
         super(block);
+        this.axisProperty = BlockBehaviorFactory.getProperty(
+                section.path(), block, "axis", Direction.Axis.class);
         this.typeProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "type", String.class);
         this.waterloggedProperty = BlockBehaviorFactory.getProperty(
@@ -93,7 +96,12 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         boolean x = axisHasTrellis(context, position, Direction.Axis.X);
         boolean y = axisHasTrellis(context, position, Direction.Axis.Y);
         boolean z = axisHasTrellis(context, position, Direction.Axis.Z);
-        String type = typeForPlacement(x, y, z, context.getClickedFace().axis());
+        // CE's hard-coded axis property behavior runs before configured block
+        // behaviors and has already copied the clicked face axis into state.
+        // Keep that native placement axis as the permanent base member while
+        // Tavern adds only the neighbouring trellis connections.
+        String type = TrellisConnectionSemantics.typeFor(
+                axisName(state.get(axisProperty)), x, y, z);
         Object fluid = BlockGetterProxy.INSTANCE.getFluidState(
                 context.getLevel().minecraftWorld(), LocationUtils.toBlockPos(position));
         return state.with(typeProperty, type).with(
@@ -121,11 +129,12 @@ public final class TrellisBehavior extends BukkitBlockBehavior
                     args[updateShape$level], args[updateShape$blockPos],
                     FluidsProxy.WATER, 5);
         }
-        String current = state.get(typeProperty);
-        String updated = updateType(current,
-                axisHasTrellis(world, x, y, z, Direction.Axis.X),
-                axisHasTrellis(world, x, y, z, Direction.Axis.Y),
-                axisHasTrellis(world, x, y, z, Direction.Axis.Z));
+        boolean xConnected = axisHasTrellis(world, x, y, z, Direction.Axis.X);
+        boolean yConnected = axisHasTrellis(world, x, y, z, Direction.Axis.Y);
+        boolean zConnected = axisHasTrellis(world, x, y, z, Direction.Axis.Z);
+        String baseAxis = axisName(state.get(axisProperty));
+        String updated = TrellisConnectionSemantics.typeFor(
+                baseAxis, xConnected, yConnected, zConnected);
         return state.with(typeProperty, updated).customBlockState().minecraftState();
     }
 
@@ -256,6 +265,7 @@ public final class TrellisBehavior extends BukkitBlockBehavior
                 continue;
             }
             ImmutableBlockState grown = source.owner().value().defaultState();
+            grown = copyNamed(targetState, grown, "axis");
             grown = copyNamed(targetState, grown, "type");
             grown = copyNamed(targetState, grown, "waterlogged");
             grown = withNamed(grown, "age", direction == BlockFace.UP ? "0" : Integer.toString(age.max));
@@ -340,57 +350,11 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         return state != null && TRELLISES.contains(id(state));
     }
 
-    private static String typeForPlacement(boolean x, boolean y, boolean z, Direction.Axis clickAxis) {
-        if (x && y && z) return "six_direction";
-        if (x && y) return "cross_east_west";
-        if (y && z) return "cross_north_south";
-        if (x && z) return "cross_up_down";
-        if (x) {
-            return switch (clickAxis) {
-                case X -> "east_west";
-                case Y -> "cross_east_west";
-                case Z -> "cross_up_down";
-            };
-        }
-        if (y) {
-            return switch (clickAxis) {
-                case X -> "cross_east_west";
-                case Y -> "single";
-                case Z -> "cross_north_south";
-            };
-        }
-        if (z) {
-            return switch (clickAxis) {
-                case X -> "cross_up_down";
-                case Y -> "cross_north_south";
-                case Z -> "north_south";
-            };
-        }
-        return switch (clickAxis) {
-            case X -> "east_west";
-            case Y -> "single";
-            case Z -> "north_south";
-        };
-    }
-
-    private static String updateType(String current, boolean x, boolean y, boolean z) {
-        return switch (current) {
-            case "single" -> x && z ? "six_direction" : x ? "cross_east_west"
-                    : z ? "cross_north_south" : "single";
-            case "north_south" -> x && y ? "six_direction" : x ? "cross_up_down"
-                    : y ? "cross_north_south" : "north_south";
-            case "east_west" -> y && z ? "six_direction" : y ? "cross_east_west"
-                    : z ? "cross_up_down" : "east_west";
-            case "cross_north_south" -> x ? "six_direction" : z && y ? "cross_north_south"
-                    : z ? "north_south" : "single";
-            case "cross_east_west" -> z ? "six_direction" : x && y ? "cross_east_west"
-                    : x ? "east_west" : "single";
-            case "cross_up_down" -> y ? "six_direction" : x && z ? "cross_up_down"
-                    : x ? "east_west" : "north_south";
-            case "six_direction" -> x && y && z ? "six_direction" : x && y ? "cross_east_west"
-                    : y && z ? "cross_north_south" : x && z ? "cross_up_down"
-                    : x ? "east_west" : z ? "north_south" : "single";
-            default -> "single";
+    private static String axisName(Direction.Axis axis) {
+        return switch (axis) {
+            case X -> "x";
+            case Y -> "y";
+            case Z -> "z";
         };
     }
 

@@ -914,6 +914,12 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             property_values["age"] = [str(age) for age in range(26)]
             property_values["sheared"] = ["false", "true"]
 
+        if block_id in TRELLIS_BLOCKS:
+            # `axis` is a CE hard-coded property name. CE writes the clicked
+            # face axis before the Tavern behavior runs, rotates/mirrors it
+            # natively, and Tavern only derives the connected visual `type`.
+            property_values["axis"] = ["x", "y", "z"]
+
         carrier, carrier_id = carrier_type(block_id)
         uses_waterlogged_carrier = (
             block_id == "tap" or block_id in TRELLIS_BLOCKS
@@ -1989,10 +1995,10 @@ def grapevine_trellis_shear_events() -> list[dict[str, Any]]:
     """GrapevineTrellisBlock#use shearing as a CraftEngine block event.
 
     transform_block copies properties shared by the old and new definitions,
-    preserving ``type`` and ``waterlogged`` while dropping the vine-only
-    ``age`` property. Its default UPDATE_ALL flags also notify the hanging
-    crop below, whose CE survival behavior removes both the visual and the
-    CustomCrops record. The source accepts shears in either hand, so this
+    preserving ``axis``, ``type`` and ``waterlogged`` while dropping the
+    vine-only ``age`` property. Its default UPDATE_ALL flags also notify the
+    hanging crop below, whose CE survival behavior removes both the visual and
+    the CustomCrops record. The source accepts shears in either hand, so this
     event deliberately has no main-hand-only condition.
     """
     return [{
