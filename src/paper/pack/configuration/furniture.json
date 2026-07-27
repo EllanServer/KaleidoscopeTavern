@@ -13047,13 +13047,18 @@
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
           "channel": "incense",
-          "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_sakura_incense"
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -13226,13 +13231,18 @@
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
           "channel": "incense",
-          "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_pine_incense"
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -13405,13 +13415,18 @@
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
           "channel": "incense",
-          "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_ginkgo_incense"
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -13584,13 +13599,18 @@
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
           "channel": "incense",
-          "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_spore_incense"
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -13763,13 +13783,18 @@
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
           "channel": "incense",
-          "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_catnip_incense"
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -13942,13 +13967,18 @@
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
           "channel": "incense",
-          "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_snow_incense"
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -14121,13 +14151,18 @@
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
           "channel": "incense",
-          "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_butterfly_incense"
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -14300,13 +14335,18 @@
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
           "channel": "incense",
-          "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_firefly_incense"
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "incense_effect",
+          "interval": 120,
+          "phase": "global"
+        },
+        {
+          "type": "kaleidoscope_tavern:ticking_furniture",
+          "channel": "incense_particle",
+          "chance": 49
         }
       ],
       "events": [
@@ -15088,7 +15128,6 @@
       "behavior": {
         "type": "kaleidoscope_tavern:redstone_furniture",
         "channel": "tap",
-        "interval": 2,
         "data_key": "kaleidoscope_tavern:redstone_tap"
       }
     },
@@ -15489,8 +15528,8 @@
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "mystery_particle",
+          "chance": 49
         }
       ]
     },
@@ -17106,7 +17145,8 @@
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
           "channel": "barrel",
-          "interval": 97
+          "interval": 97,
+          "phase": "identity"
         }
       ]
     },
@@ -17620,7 +17660,6 @@
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
           "channel": "storage",
-          "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_cellar_cabinet"
         }
       ]
@@ -17720,7 +17759,6 @@
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
           "channel": "storage",
-          "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_tilted_rack"
         }
       ]
@@ -17839,13 +17877,12 @@
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
           "channel": "storage",
-          "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_circular_rack"
         },
         {
           "type": "kaleidoscope_tavern:ticking_furniture",
-          "channel": "ambient",
-          "interval": 1
+          "channel": "rack_particle",
+          "chance": 392
         }
       ]
     },
@@ -17961,7 +17998,6 @@
         {
           "type": "kaleidoscope_tavern:redstone_furniture",
           "channel": "storage",
-          "interval": 1,
           "data_key": "kaleidoscope_tavern:redstone_holder"
         }
       ]

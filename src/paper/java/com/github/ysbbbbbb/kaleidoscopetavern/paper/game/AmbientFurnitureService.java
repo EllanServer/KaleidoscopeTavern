@@ -36,7 +36,14 @@ public final class AmbientFurnitureService {
     );
 
     private final DisplayStorageService displayStorage;
-    private final TickingFurnitureBehavior.Handler tickingHandler = this::tickFurniture;
+    private final TickingFurnitureBehavior.Handler incenseEffectHandler =
+            this::tickIncenseEffect;
+    private final TickingFurnitureBehavior.Handler incenseParticleHandler =
+            AmbientFurnitureService::tickIncenseParticle;
+    private final TickingFurnitureBehavior.Handler mysteryParticleHandler =
+            AmbientFurnitureService::tickMysteryCocktail;
+    private final TickingFurnitureBehavior.Handler rackParticleHandler =
+            this::tickCircularRack;
     private Tag<EntityType> undeadTag;
 
     public AmbientFurnitureService(DisplayStorageService displayStorage) {
@@ -45,52 +52,46 @@ public final class AmbientFurnitureService {
 
     public void start() {
         TickingFurnitureBehavior.bind(
-                TickingFurnitureBehavior.Channel.AMBIENT, tickingHandler);
+                TickingFurnitureBehavior.Channel.INCENSE_EFFECT, incenseEffectHandler);
+        TickingFurnitureBehavior.bind(
+                TickingFurnitureBehavior.Channel.INCENSE_PARTICLE, incenseParticleHandler);
+        TickingFurnitureBehavior.bind(
+                TickingFurnitureBehavior.Channel.MYSTERY_PARTICLE, mysteryParticleHandler);
+        TickingFurnitureBehavior.bind(
+                TickingFurnitureBehavior.Channel.RACK_PARTICLE, rackParticleHandler);
     }
 
     public void stop() {
         TickingFurnitureBehavior.unbind(
-                TickingFurnitureBehavior.Channel.AMBIENT, tickingHandler);
-    }
-
-    private void tickFurniture(BukkitFurniture furniture) {
-        Key id = furniture.id();
-        IncenseSpec incense = INCENSE.get(id);
-        if (incense != null) {
-            tickIncense(furniture, incense);
-        } else if (id.equals(MYSTERY_COCKTAIL)) {
-            tickMysteryCocktail(furniture);
-        } else if (id.equals(CIRCULAR_RACK)) {
-            tickCircularRack(furniture);
-        }
+                TickingFurnitureBehavior.Channel.RACK_PARTICLE, rackParticleHandler);
+        TickingFurnitureBehavior.unbind(
+                TickingFurnitureBehavior.Channel.MYSTERY_PARTICLE, mysteryParticleHandler);
+        TickingFurnitureBehavior.unbind(
+                TickingFurnitureBehavior.Channel.INCENSE_PARTICLE, incenseParticleHandler);
+        TickingFurnitureBehavior.unbind(
+                TickingFurnitureBehavior.Channel.INCENSE_EFFECT, incenseEffectHandler);
     }
 
     /**
-     * Level#doAnimateTick reaches a specific nearby block with roughly a
-     * 667/32768 chance per client tick. All three ambient emitters replay
-     * that average so the vanilla-visible density stays intact instead of
-     * firing every server tick.
+     * IncenseBlockEntity#serverTick runs on the global 120-tick boundary.
+     * The CE due-time controller owns that phase, so this callback performs
+     * only the source effect and never enters for a closed incense.
      */
-    private static boolean animateTickSampled(ThreadLocalRandom random) {
-        return random.nextInt(49) == 0;
+    private void tickIncenseEffect(BukkitFurniture furniture) {
+        if (!INCENSE.containsKey(furniture.id())
+                || !furniture.currentVariant().name().endsWith("_open")) {
+            return;
+        }
+        hurtNearbyUndead(furniture);
     }
 
-    private void tickIncense(BukkitFurniture furniture, IncenseSpec spec) {
+    /** Called only on a one-in-49 geometrically scheduled animate-tick sample. */
+    private static void tickIncenseParticle(BukkitFurniture furniture) {
+        IncenseSpec spec = INCENSE.get(furniture.id());
+        if (spec == null) {
+            return;
+        }
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        boolean burstTick = furniture.location().getWorld().getGameTime() % 120 == 0;
-        boolean particleTick = animateTickSampled(random);
-        if (!burstTick && !particleTick) {
-            return;
-        }
-        // The *_open furniture variant is the single source of truth for a
-        // lit incense; both CE toggle events and the CE redstone behavior set it.
-        boolean open = furniture.currentVariant().name().endsWith("_open");
-        if (burstTick && open) {
-            hurtNearbyUndead(furniture);
-        }
-        if (!particleTick) {
-            return;
-        }
         Location center = furniture.location().clone().add(0, 0.5, 0);
         if (random.nextInt(3) == 0) {
             double dx = random.nextGaussian() * 0.01;
@@ -100,7 +101,8 @@ public final class AmbientFurnitureService {
             // matching Level.addParticle rather than random Bukkit spread.
             center.getWorld().spawnParticle(spec.small(), center, 0, dx, dy, dz, 1);
         }
-        if (!open) {
+        // The *_open CE variant is the source of truth for a lit incense.
+        if (!furniture.currentVariant().name().endsWith("_open")) {
             return;
         }
         for (int index = 0; index < 5; index++) {
@@ -112,11 +114,7 @@ public final class AmbientFurnitureService {
         }
     }
 
-    /**
-     * IncenseBlockEntity#serverTick: every 120 ticks a lit incense deals one
-     * point of magic damage to undead within 32 blocks, and near-death zombie
-     * villagers begin the vanilla 60-tick conversion without a curing player.
-     */
+    /** Every due tick deals the source effect to undead within 32 blocks. */
     private void hurtNearbyUndead(BukkitFurniture furniture) {
         Tag<EntityType> undead = undeadTag();
         if (undead == null) {
@@ -147,7 +145,7 @@ public final class AmbientFurnitureService {
 
     private static void tickMysteryCocktail(BukkitFurniture furniture) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        if (!animateTickSampled(random)) {
+        if (!furniture.id().equals(MYSTERY_COCKTAIL)) {
             return;
         }
         Location point = furniture.location().clone().add(
@@ -164,7 +162,7 @@ public final class AmbientFurnitureService {
 
     private void tickCircularRack(BukkitFurniture furniture) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        if (!animateTickSampled(random) || random.nextInt(8) != 0
+        if (!furniture.id().equals(CIRCULAR_RACK)
                 || !displayStorage.hasAnyStoredItem(furniture)) {
             return;
         }

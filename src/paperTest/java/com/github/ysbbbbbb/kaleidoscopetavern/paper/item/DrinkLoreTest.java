@@ -1,10 +1,13 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.item;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
+import net.kyori.adventure.text.Component;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DrinkLoreTest {
     @Test
@@ -48,6 +51,18 @@ class DrinkLoreTest {
         assertEquals("6", strength.amount());
         assertEquals("attribute.modifier.plus.1", speed.modifierKey());
         assertEquals("40", speed.amount());
+    }
+
+    @Test
+    void replacesOnlyCurrentMarkerOwnedLore() {
+        Component managed = DrinkLore.managed(Component.text("current"));
+        Component external = Component.translatable("effect.minecraft.speed")
+                .color(net.kyori.adventure.text.format.NamedTextColor.BLUE);
+
+        assertTrue(DrinkLore.isManagedDrinkLine(managed));
+        assertTrue(DrinkLore.isManagedShakerLine(managed));
+        assertFalse(DrinkLore.isManagedDrinkLine(external));
+        assertFalse(DrinkLore.isManagedShakerLine(external));
     }
 
 }

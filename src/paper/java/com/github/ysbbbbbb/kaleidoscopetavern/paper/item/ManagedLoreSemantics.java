@@ -9,13 +9,6 @@ final class ManagedLoreSemantics {
     private ManagedLoreSemantics() {
     }
 
-    static boolean isLegacyShakerLine(String text) {
-        // The old tooltip root contained only the arrow prefix; the item name
-        // was a separate child component. Matching startsWith would also
-        // delete unrelated third-party lore such as "▶ Soulbound".
-        return "\u25B6 ".equals(text);
-    }
-
     static <T> List<T> replace(List<T> existing, Predicate<T> managed,
                                Predicate<T> blank, List<T> replacement) {
         List<T> source = existing == null ? List.of() : existing;

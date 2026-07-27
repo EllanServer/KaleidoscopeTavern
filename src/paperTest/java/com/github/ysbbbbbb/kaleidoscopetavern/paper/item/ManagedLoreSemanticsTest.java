@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ManagedLoreSemanticsTest {
     @Test
@@ -42,10 +40,4 @@ class ManagedLoreSemanticsTest {
         assertEquals(List.of("managed-new-a", "managed-new-b", "external"), result);
     }
 
-    @Test
-    void recognizesTheOriginalShakerArrowWithoutEncodingDependentSourceText() {
-        assertTrue(ManagedLoreSemantics.isLegacyShakerLine("\u25B6 "));
-        assertFalse(ManagedLoreSemantics.isLegacyShakerLine("\u25B6 Soulbound"));
-        assertFalse(ManagedLoreSemantics.isLegacyShakerLine("> ingredient"));
-    }
 }

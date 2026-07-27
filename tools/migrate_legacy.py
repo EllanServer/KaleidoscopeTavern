@@ -2375,10 +2375,8 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         behaviors.append({"type": "glowing_furniture", "lights": ["0,0,0 14"]})
 
     redstone_channel: str | None = None
-    redstone_interval = 1
     if block_id == "tap":
         redstone_channel = "tap"
-        redstone_interval = 2
     elif block_id.endswith("_incense"):
         redstone_channel = "incense"
     elif block_id in {"cellar_cabinet", "tilted_rack", "circular_rack", "holder"}:
@@ -2387,25 +2385,44 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         behaviors.append({
             "type": f"{NAMESPACE}:redstone_furniture",
             "channel": redstone_channel,
-            "interval": redstone_interval,
             # The controller owns one persistent edge latch per furniture
             # instance.  Keep the key deterministic and independent from
             # behavior ordering so future native CE behaviors cannot alias it.
             "data_key": f"{NAMESPACE}:redstone_{block_id}",
         })
 
-    ticking_channel: str | None = None
-    ticking_interval = 1
-    if block_id.endswith("_incense") or block_id in {"mystery_cocktail", "circular_rack"}:
-        ticking_channel = "ambient"
-    elif block_id == "barrel":
-        ticking_channel = "barrel"
-        ticking_interval = 97
-    if ticking_channel is not None:
+    if block_id.endswith("_incense"):
+        behaviors.extend(({
+            "type": f"{NAMESPACE}:ticking_furniture",
+            "channel": "incense_effect",
+            "interval": 120,
+            "phase": "global",
+        }, {
+            "type": f"{NAMESPACE}:ticking_furniture",
+            "channel": "incense_particle",
+            # Client animateTick reaches a given nearby block at about 1/49
+            # per tick. The controller samples the equivalent geometric wait.
+            "chance": 49,
+        }))
+    elif block_id == "mystery_cocktail":
         behaviors.append({
             "type": f"{NAMESPACE}:ticking_furniture",
-            "channel": ticking_channel,
-            "interval": ticking_interval,
+            "channel": "mystery_particle",
+            "chance": 49,
+        })
+    elif block_id == "circular_rack":
+        behaviors.append({
+            "type": f"{NAMESPACE}:ticking_furniture",
+            "channel": "rack_particle",
+            # animateTick selection (1/49) and the source block's 1/8 gate.
+            "chance": 49 * 8,
+        })
+    elif block_id == "barrel":
+        behaviors.append({
+            "type": f"{NAMESPACE}:ticking_furniture",
+            "channel": "barrel",
+            "interval": 97,
+            "phase": "identity",
         })
     return behaviors
 

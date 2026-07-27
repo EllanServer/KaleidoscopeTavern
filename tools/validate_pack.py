@@ -17,32 +17,40 @@ PLUGIN_CONFIG = ROOT / "src/paper/resources/config.yml"
 NAMESPACE = "kaleidoscope_tavern"
 EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
 EXPECTED_REDSTONE_FURNITURE = {
-    "tap": ("tap", 2),
-    "sakura_incense": ("incense", 1),
-    "pine_incense": ("incense", 1),
-    "ginkgo_incense": ("incense", 1),
-    "snow_incense": ("incense", 1),
-    "spore_incense": ("incense", 1),
-    "catnip_incense": ("incense", 1),
-    "butterfly_incense": ("incense", 1),
-    "firefly_incense": ("incense", 1),
-    "cellar_cabinet": ("storage", 1),
-    "tilted_rack": ("storage", 1),
-    "circular_rack": ("storage", 1),
-    "holder": ("storage", 1),
+    "tap": "tap",
+    "sakura_incense": "incense",
+    "pine_incense": "incense",
+    "ginkgo_incense": "incense",
+    "snow_incense": "incense",
+    "spore_incense": "incense",
+    "catnip_incense": "incense",
+    "butterfly_incense": "incense",
+    "firefly_incense": "incense",
+    "cellar_cabinet": "storage",
+    "tilted_rack": "storage",
+    "circular_rack": "storage",
+    "holder": "storage",
 }
 EXPECTED_TICKING_FURNITURE = {
-    "sakura_incense": ("ambient", 1),
-    "pine_incense": ("ambient", 1),
-    "ginkgo_incense": ("ambient", 1),
-    "snow_incense": ("ambient", 1),
-    "spore_incense": ("ambient", 1),
-    "catnip_incense": ("ambient", 1),
-    "butterfly_incense": ("ambient", 1),
-    "firefly_incense": ("ambient", 1),
-    "mystery_cocktail": ("ambient", 1),
-    "circular_rack": ("ambient", 1),
-    "barrel": ("barrel", 97),
+    **{
+        incense: (
+            {"channel": "incense_effect", "interval": 120, "phase": "global"},
+            {"channel": "incense_particle", "chance": 49},
+        )
+        for incense in (
+            "sakura_incense", "pine_incense", "ginkgo_incense", "snow_incense",
+            "spore_incense", "catnip_incense", "butterfly_incense", "firefly_incense",
+        )
+    },
+    "mystery_cocktail": (
+        {"channel": "mystery_particle", "chance": 49},
+    ),
+    "circular_rack": (
+        {"channel": "rack_particle", "chance": 392},
+    ),
+    "barrel": (
+        {"channel": "barrel", "interval": 97, "phase": "identity"},
+    ),
 }
 EXPECTED_STATE_FURNITURE = {
     "chalkboard",
@@ -213,7 +221,7 @@ RUNTIME_METHODS = (
 )
 RUNTIME_BEHAVIOR_COVERAGE = {
     "AbstractStorageBlock.java": (
-        ("furniture/RedstoneFurnitureBehavior.java", "createFurnitureTicker"),
+        ("furniture/RedstoneFurnitureBehavior.java", "BlockRedstoneEvent"),
         ("DisplayStorageService.java", "RedstoneFurnitureBehavior.bind("),
         ("DisplayStorageService.java", "RedstoneFurnitureBehavior.Channel.STORAGE"),
     ),
@@ -241,7 +249,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     "CircularRackBlock.java": (
         ("DisplayStorageService.java", "CIRCULAR_RACK"),
         ("AmbientFurnitureService.java", "tickCircularRack"),
-        ("furniture/TickingFurnitureBehavior.java", "createFurnitureTicker"),
+        ("furniture/TickingFurnitureBehavior.java", "RACK_PARTICLE"),
     ),
     "CocktailBlockItem.java": (
         ("EffectService.java", "onConsume"),
@@ -288,7 +296,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "MysteryCocktailBlock.java": (
         ("AmbientFurnitureService.java", "tickMysteryCocktail"),
-        ("furniture/TickingFurnitureBehavior.java", "createFurnitureTicker"),
+        ("furniture/TickingFurnitureBehavior.java", "MYSTERY_PARTICLE"),
     ),
     "PressingTubBlock.java": (
         ("StationService.java", "interactPress"),
@@ -407,8 +415,8 @@ BLOCK_ENTITY_COVERAGE = {
     "GlasswareHolderBlockEntity.java": (("DisplayStorageService.java", "GLASSWARE_HOLDER"),),
     "HolderBlockEntity.java": (("DisplayStorageService.java", "HOLDER"),),
     "IncenseBlockEntity.java": (
-        ("AmbientFurnitureService.java", "tickIncense"),
-        ("furniture/TickingFurnitureBehavior.java", "createFurnitureTicker"),
+        ("AmbientFurnitureService.java", "tickIncenseEffect"),
+        ("furniture/TickingFurnitureBehavior.java", "INCENSE_EFFECT"),
     ),
     "SandwichBlockEntity.java": (("BoardTextService.java", "isSandwichBoard"),),
     "StorageBlockEntity.java": (("DisplayStorageService.java", "StorageSpec"),),
@@ -663,6 +671,40 @@ def validate() -> dict[str, int]:
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
         "KaleidoscopeTavernPlugin.java"
     ).read_text(encoding="utf-8-sig")
+    item_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
+        "item/ItemService.java"
+    ).read_text(encoding="utf-8-sig")
+    drink_lore_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
+        "item/DrinkLore.java"
+    ).read_text(encoding="utf-8-sig")
+    managed_lore_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
+        "item/ManagedLoreSemantics.java"
+    ).read_text(encoding="utf-8-sig")
+    effect_service_source = (game_package / "EffectService.java").read_text(
+        encoding="utf-8-sig")
+    stale_item_migration_tokens = {
+        "ItemService": (
+            "repairLegacyDrinkMetadata", "refreshInventory(", "InventoryOpenEvent",
+            "EntityPickupItemEvent", "knownEffectKeys"),
+        "DrinkLore": ("isManagedOrLegacy",),
+        "ManagedLoreSemantics": ("isLegacyShakerLine",),
+        "KaleidoscopeTavernPlugin": ("registerEvents(items, this)",),
+        "EffectService": ("items.refreshInventory",),
+    }
+    for owner, source in (
+            ("ItemService", item_source),
+            ("DrinkLore", drink_lore_source),
+            ("ManagedLoreSemantics", managed_lore_source),
+            ("KaleidoscopeTavernPlugin", plugin_source),
+            ("EffectService", effect_service_source)):
+        for stale_token in stale_item_migration_tokens[owner]:
+            if stale_token in source:
+                raise AssertionError(
+                    "New CE item definitions own drink names, potion metadata and static lore; "
+                    f"{owner} must not restore legacy inventory migration token {stale_token}")
     if ("bottle-placement.drinks" in bottle_placement_source
             or re.search(r"(?m)^\s+drinks:\s*", plugin_config)):
         raise AssertionError(
@@ -976,9 +1018,21 @@ def validate() -> dict[str, int]:
     if "RedstoneFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register redstone_furniture before pack loading")
+    for lifecycle_call in ("RedstoneFurnitureBehavior.start(this)",
+                           "RedstoneFurnitureBehavior.stop()"):
+        if lifecycle_call not in plugin_source:
+            raise AssertionError(
+                "KaleidoscopeTavernPlugin must manage the event-driven redstone bridge; "
+                f"missing {lifecycle_call}")
     if "TickingFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register ticking_furniture before pack loading")
+    for lifecycle_call in ("TickingFurnitureBehavior.start(this)",
+                           "TickingFurnitureBehavior.stop()"):
+        if lifecycle_call not in plugin_source:
+            raise AssertionError(
+                "KaleidoscopeTavernPlugin must manage the due-time furniture scheduler; "
+                f"missing {lifecycle_call}")
     if "StorageVisualFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register storage_visual_furniture before pack loading")
@@ -1006,7 +1060,7 @@ def validate() -> dict[str, int]:
     for stale_token in stale_ambient_scan_tokens:
         if stale_token in ambient_source:
             raise AssertionError(
-                "CE furniture tickers own ambient furniture lifecycle; "
+                "CE furniture controllers own ambient furniture lifecycle; "
                 f"AmbientFurnitureService must not reintroduce {stale_token}")
     stale_barrel_scan_tokens = (
         "tickBarrels", "loadedBarrels", "barrelTask", "barrelTickCounter",
@@ -1015,7 +1069,7 @@ def validate() -> dict[str, int]:
     for stale_token in stale_barrel_scan_tokens:
         if stale_token in station_source:
             raise AssertionError(
-                "CE furniture tickers own barrel lifecycle; "
+                "CE furniture controllers own barrel lifecycle; "
                 f"StationService must not reintroduce {stale_token}")
 
     furniture_state_source = (game_package / "FurnitureState.java").read_text(
@@ -1490,10 +1544,13 @@ def validate() -> dict[str, int]:
             "public static void bindInteraction(",
             "public static void unbindInteraction(",
             "public InteractionResult useOnFurniture(",
-            "INTERACTION_HANDLERS.get(channel)",
+            "channel.interactionHandler",
             "handler.interact(bukkitFurniture, context)",
             "public void preRemove(Player player)",
             "handler.onRemove(bukkitFurniture)",
+            "BlockRedstoneEvent",
+            "queuePowerChange(event.getBlock())",
+            "FALLBACK_INTERVAL_TICKS",
             "case INCENSE, STORAGE -> primaryPowerBlock.isBlockIndirectlyPowered()"):
         if required_token not in redstone_behavior_source:
             raise AssertionError(
@@ -1503,6 +1560,27 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "CE redstone furniture must sample the source mod's hasNeighborSignal "
             "semantics once, without a duplicate direct-signal scan")
+    if "createFurnitureTicker" in redstone_behavior_source:
+        raise AssertionError(
+            "Redstone furniture must use indexed change notifications instead of one CE ticker "
+            "per furniture")
+    ticking_behavior_source = (
+        game_package / "furniture/TickingFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "PriorityQueue<ScheduledRun>",
+            "runDueControllers",
+            "geometricDelay",
+            "firstFutureDelay",
+            "public void onLoad()",
+            "public void onPlace(Player player)"):
+        if required_token not in ticking_behavior_source:
+            raise AssertionError(
+                "Sparse furniture ticks must be driven by one CE lifecycle due-time queue; "
+                f"missing token: {required_token}")
+    if "createFurnitureTicker" in ticking_behavior_source:
+        raise AssertionError(
+            "Sparse furniture must not retain one CraftEngine ticker callback per instance")
     if "registerEvents(taps, this)" in plugin_source:
         raise AssertionError(
             "TapService has no Paper events after CE interaction/removal migration")
@@ -2167,6 +2245,9 @@ def validate() -> dict[str, int]:
                            for effect in expected_effects):
             raise AssertionError(
                 f"{item_id}: fixed cocktail creative preview is missing real effect lore")
+        if any("<insert:kaleidoscope_tavern_managed_lore>" not in line for line in lore):
+            raise AssertionError(
+                f"{item_id}: generated cocktail lore must carry the managed insertion marker")
 
     legacy_attribute_keys = {
         "attribute.name.generic.step_height",
@@ -3071,19 +3152,18 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Redstone furniture coverage drift: "
             f"missing={missing}, unexpected={unexpected}")
-    for block_id, (channel, interval) in EXPECTED_REDSTONE_FURNITURE.items():
+    for block_id, channel in EXPECTED_REDSTONE_FURNITURE.items():
         furniture_id = f"{NAMESPACE}:{block_id}"
         expected_behavior = {
             "type": redstone_type,
             "channel": channel,
-            "interval": interval,
             "data_key": f"{NAMESPACE}:redstone_{block_id}",
         }
         if configured_redstone[furniture_id] != expected_behavior:
             raise AssertionError(
                 f"{furniture_id}: redstone behavior must be exactly {expected_behavior!r}")
 
-    configured_ticking: dict[str, dict[str, Any]] = {}
+    configured_ticking: dict[str, list[dict[str, Any]]] = {}
     ticking_type = f"{NAMESPACE}:ticking_furniture"
     for furniture_id, definition in furniture.items():
         all_behaviors = list(definition.get("behaviors", []))
@@ -3094,11 +3174,8 @@ def validate() -> dict[str, int]:
             behavior for behavior in all_behaviors
             if behavior.get("type") == ticking_type
         ]
-        if len(ticking_behaviors) > 1:
-            raise AssertionError(
-                f"{furniture_id}: duplicate ticking_furniture behaviors")
         if ticking_behaviors:
-            configured_ticking[furniture_id] = ticking_behaviors[0]
+            configured_ticking[furniture_id] = ticking_behaviors
 
     expected_ticking_ids = {
         f"{NAMESPACE}:{block_id}" for block_id in EXPECTED_TICKING_FURNITURE
@@ -3109,16 +3186,15 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Ticking furniture coverage drift: "
             f"missing={missing}, unexpected={unexpected}")
-    for block_id, (channel, interval) in EXPECTED_TICKING_FURNITURE.items():
+    for block_id, schedules in EXPECTED_TICKING_FURNITURE.items():
         furniture_id = f"{NAMESPACE}:{block_id}"
-        expected_behavior = {
-            "type": ticking_type,
-            "channel": channel,
-            "interval": interval,
-        }
-        if configured_ticking[furniture_id] != expected_behavior:
+        expected_behaviors = [
+            {"type": ticking_type, **schedule}
+            for schedule in schedules
+        ]
+        if configured_ticking[furniture_id] != expected_behaviors:
             raise AssertionError(
-                f"{furniture_id}: ticking behavior must be exactly {expected_behavior!r}")
+                f"{furniture_id}: ticking behaviors must be exactly {expected_behaviors!r}")
 
     storage_slot_counts = {
         "bar_cabinet": 2,
