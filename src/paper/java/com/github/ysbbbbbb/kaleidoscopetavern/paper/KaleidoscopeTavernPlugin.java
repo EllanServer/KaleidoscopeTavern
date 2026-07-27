@@ -170,7 +170,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         getServer().getPluginManager().registerEvents(new BottlePlacementService(this, catalog, items), this);
         bottleFurniture = new BottleFurnitureService(this, catalog, items, effects);
         getServer().getPluginManager().registerEvents(bottleFurniture, this);
-        getServer().getPluginManager().registerEvents(displayStorage, this);
         getServer().getPluginManager().registerEvents(boards, this);
         getServer().getPluginManager().registerEvents(taps.lavaCauldronListener(), this);
         getServer().getPluginManager().registerEvents(stations, this);

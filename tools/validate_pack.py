@@ -1714,6 +1714,10 @@ def validate() -> dict[str, int]:
             "StorageInteractionFurnitureBehavior.bind(storageInteractionHandler)",
             "StorageInteractionFurnitureBehavior.unbind(storageInteractionHandler)",
             "private InteractionResult interact(",
+            "public void onRemove(BukkitFurniture furniture, boolean dropItems)",
+            "private void dropAndClearStorage(BukkitFurniture furniture, boolean dropItems)",
+            "setControllerItem(furniture, slot, null, false)",
+            "furniture.world().dropItemNaturally(furniture.position(), item)",
             "context.getHand() != InteractionHand.MAIN_HAND",
             "Vec3d click = context.getClickLocation()",
             "InteractionResult.SUCCESS_AND_CANCEL"):
@@ -1721,16 +1725,24 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Display storage interaction must run before native CE slot controllers; "
                 f"missing token: {required_token}")
-    for stale_token in ("FurnitureInteractEvent", "public void onInteract("):
+    for stale_token in (
+            "FurnitureInteractEvent", "FurnitureBreakEvent", "public void onInteract(",
+            "public void onBreak(", "implements Listener", "Bukkit.getScheduler()"):
         if stale_token in storage_source:
             raise AssertionError(
-                "DisplayStorageService must not retain a global Paper furniture interaction listener; "
+                "DisplayStorageService must not retain a global Paper furniture listener; "
                 f"found {stale_token}")
+    if "registerEvents(displayStorage, this)" in plugin_source:
+        raise AssertionError(
+            "Display storage removal is CE lifecycle-owned and must not be globally registered")
     for required_token in (
             "extends FurnitureBehaviorTemplate",
             "FurnitureBehaviors.register(Key.of(TYPE)",
             "public InteractionResult useOnFurniture(",
-            "current.interact(bukkitFurniture, context)"):
+            "current.interact(bukkitFurniture, context)",
+            "public void preRemove(Player player)",
+            "current.onRemove(bukkitFurniture,",
+            "player != null && !player.canInstabuild()"):
         if required_token not in storage_interaction_behavior_source:
             raise AssertionError(
                 "Storage CE interaction adapter is incomplete; "

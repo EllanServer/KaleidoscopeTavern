@@ -7,7 +7,6 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageVisual
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
-import net.momirealms.craftengine.bukkit.api.event.FurnitureBreakEvent;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.entity.furniture.behavior.DisplayItemFurnitureBehaviorTemplate.DisplayItemFurnitureController;
 import net.momirealms.craftengine.bukkit.item.BukkitItem;
@@ -17,16 +16,12 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.context.InteractEntityContext;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.ThrownPotion;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -43,7 +38,7 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 /** Adds legacy bottle restrictions and redstone launch behavior to CE display-slot furniture. */
-public final class DisplayStorageService implements Listener {
+public final class DisplayStorageService {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String IRREGULAR_TAG = PREFIX + "bar_cabinet_irregular";
     private static final String EMPTY_GLASSWARE = PREFIX + "empty_glassware";
@@ -74,7 +69,18 @@ public final class DisplayStorageService implements Listener {
     private final StorageVisualFurnitureBehavior.Handler storageVisualHandler =
             this::storageVisual;
     private final StorageInteractionFurnitureBehavior.Handler storageInteractionHandler =
-            this::interact;
+            new StorageInteractionFurnitureBehavior.Handler() {
+                @Override
+                public InteractionResult interact(BukkitFurniture furniture,
+                                                  InteractEntityContext context) {
+                    return DisplayStorageService.this.interact(furniture, context);
+                }
+
+                @Override
+                public void onRemove(BukkitFurniture furniture, boolean dropItems) {
+                    dropAndClearStorage(furniture, dropItems);
+                }
+            };
     private final RedstoneFurnitureBehavior.Handler storageRedstoneHandler =
             (furniture, powered, initial) -> {
                 if (initial || !powered) {
@@ -148,13 +154,6 @@ public final class DisplayStorageService implements Listener {
             interactStorage(player, furniture, spec, hand, selected);
         }
         return InteractionResult.SUCCESS_AND_CANCEL;
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onBreak(FurnitureBreakEvent event) {
-        if (isStorage(event.furniture())) {
-            dropAndClearStorage(event);
-        }
     }
 
     private void interactBarCabinet(Player player, BukkitFurniture furniture,
@@ -435,6 +434,11 @@ public final class DisplayStorageService implements Listener {
     }
 
     private boolean setControllerItem(BukkitFurniture furniture, int slot, Item item) {
+        return setControllerItem(furniture, slot, item, true);
+    }
+
+    private boolean setControllerItem(BukkitFurniture furniture, int slot, Item item,
+                                      boolean refreshVisual) {
         DisplayItemFurnitureController controller = displayController(furniture, slot);
         if (controller == null || saveDisplayItemMethod == null) {
             warnReflectionBridge();
@@ -444,7 +448,9 @@ public final class DisplayStorageService implements Listener {
             saveDisplayItemMethod.invoke(controller, item);
             // CE's native controller owns the item and dirty flag. Tavern only
             // invalidates its transform cache before CE redistributes visuals.
-            StorageVisualFurnitureBehavior.refresh(furniture);
+            if (refreshVisual) {
+                StorageVisualFurnitureBehavior.refresh(furniture);
+            }
             return true;
         } catch (IllegalAccessException | InvocationTargetException exception) {
             warnReflectionBridge();
@@ -546,44 +552,27 @@ public final class DisplayStorageService implements Listener {
                 visual.rotateWithFacing());
     }
 
-    private void dropAndClearStorage(FurnitureBreakEvent event) {
-        BukkitFurniture furniture = event.furniture();
+    private void dropAndClearStorage(BukkitFurniture furniture, boolean dropItems) {
         StorageSpec spec = storageSpec(furniture);
         if (spec == null) {
             return;
         }
-        List<ItemStack> drops = new ArrayList<>();
+        List<Item> drops = dropItems ? new ArrayList<>() : List.of();
         for (int slot = 0; slot < spec.slots(); slot++) {
             Item stored = controllerItem(furniture, slot);
             if (stored != null && !stored.isEmpty()) {
-                drops.add(bukkitItem(stored));
-            }
-        }
-        if (drops.isEmpty()) {
-            return;
-        }
-        // A later HIGHEST/MONITOR listener may still cancel the break; defer
-        // the clear and the drops so cancellation cannot wipe or duplicate
-        // the stored bottles (same pattern as BottleFurnitureService).
-        Location dropLocation = event.location().clone();
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            if (event.isCancelled()) {
-                return;
-            }
-            if (furniture.isValid()) {
-                for (int slot = 0; slot < spec.slots(); slot++) {
-                    setControllerItem(furniture, slot, null);
+                if (dropItems) {
+                    drops.add(stored);
                 }
+                // This controller precedes all native display-slot
+                // controllers. Clear their state before CE invokes their
+                // preRemove hooks, preventing duplicate drops without a
+                // pointless visual refresh on a furniture being destroyed.
+                setControllerItem(furniture, slot, null, false);
             }
-            if (event.dropItems()) {
-                drops.forEach(stack ->
-                        dropLocation.getWorld().dropItemNaturally(dropLocation, stack));
-            }
-        });
-    }
-
-    private static boolean isStorage(BukkitFurniture furniture) {
-        return storageSpec(furniture) != null;
+        }
+        drops.forEach(item ->
+                furniture.world().dropItemNaturally(furniture.position(), item));
     }
 
     private static StorageSpec storageSpec(BukkitFurniture furniture) {
