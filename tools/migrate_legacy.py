@@ -1504,8 +1504,9 @@ def furniture_hitboxes(
         return [interaction_box(aggregate, anchor)]
     if block_id == "tap":
         hitboxes = [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
-        if properties.get("open") == "false":
-            hitboxes[0]["position"] = "0,-0.1875,0.35"
+        # TapBlock#getShape depends only on FACING; OPEN never changes its
+        # outline or collision. Keep every visual variant on the same boxes.
+        hitboxes[0]["position"] = "0,-0.1875,0.35"
         return hitboxes
     if block_id in {"tilted_rack", "holder"}:
         return [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
