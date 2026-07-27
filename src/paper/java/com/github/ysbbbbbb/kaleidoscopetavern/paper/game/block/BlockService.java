@@ -2,31 +2,24 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.GrapevineItemBehavior;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.api.event.CustomBlockBreakEvent;
-import net.momirealms.craftengine.bukkit.api.event.CustomBlockInteractEvent;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.property.Property;
-import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.context.UseOnContext;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Set;
@@ -36,7 +29,6 @@ import java.util.logging.Logger;
 public final class BlockService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String TRELLIS = PREFIX + "trellis";
-    private static final String GRAPEVINE = PREFIX + "grapevine";
     private static final Set<String> VINE_TRELLISES = Set.of(
             PREFIX + "grapevine_trellis",
             PREFIX + "ice_grapevine_trellis",
@@ -58,13 +50,11 @@ public final class BlockService implements Listener {
 
     private final JavaPlugin plugin;
     private final ContentCatalog catalog;
-    private final ItemService items;
     private final GrapevineItemBehavior.Handler grapevineHandler = this::useGrapevineOnBlock;
 
-    public BlockService(JavaPlugin plugin, ContentCatalog catalog, ItemService items) {
+    public BlockService(JavaPlugin plugin, ContentCatalog catalog) {
         this.plugin = plugin;
         this.catalog = catalog;
-        this.items = items;
     }
 
     public void start() {
@@ -73,49 +63,6 @@ public final class BlockService implements Listener {
 
     public void stop() {
         GrapevineItemBehavior.unbind(grapevineHandler);
-    }
-
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onCustomBlockInteract(CustomBlockInteractEvent event) {
-        if (event.action() != CustomBlockInteractEvent.Action.RIGHT_CLICK) {
-            return;
-        }
-        Player player = event.player();
-        EquipmentSlot usedSlot = event.hand() == InteractionHand.MAIN_HAND
-                ? EquipmentSlot.HAND
-                : EquipmentSlot.OFF_HAND;
-        ItemStack hand = usedSlot == EquipmentSlot.HAND
-                ? player.getInventory().getItemInMainHand()
-                : player.getInventory().getItemInOffHand();
-        // CE supplies the exact stack that triggered this interaction. Prefer it
-        // over the inventory snapshot because simulated/off-hand interactions can
-        // otherwise make a custom grapevine look like paper or air.
-        ItemStack eventItem = event.item();
-        String handId = items.id(eventItem == null ? hand : eventItem);
-        ImmutableBlockState state = event.blockState();
-        String blockId = event.customBlock().id().toString();
-
-        LOGGER.fine(() -> "onCustomBlockInteract: blockId=" + blockId + " handId=" + handId
-                + " eventItemNull=" + (eventItem == null) + " handType=" + hand.getType()
-                + " at " + event.bukkitBlock().getLocation());
-
-        boolean handled = blockId.startsWith(PREFIX + "string_lights_")
-                // String-lights dyeing now lives in the generated CE block
-                // events (transform_block); nothing to do here.
-                ? false
-                : switch (blockId) {
-            // Grapevine planting is dispatched by the grapevine item's CE
-            // behavior after this block event returns without cancellation.
-            case TRELLIS -> false;
-            case PREFIX + "grapevine_trellis", PREFIX + "ice_grapevine_trellis",
-                    PREFIX + "gold_grapevine_trellis" -> interactVineTrellis(
-                            player, event.bukkitBlock(), state, hand, event.hand());
-            // wild_grapevine shearing lives in the generated CE block events.
-            default -> false;
-        };
-        if (handled) {
-            event.setCancelled(true);
-        }
     }
 
     /**
@@ -155,8 +102,7 @@ public final class BlockService implements Listener {
         }
 
         // Case 2: player right-clicked a vanilla block (soil) directly below
-        // a plain trellis.  Skip other custom blocks — CustomBlockInteractEvent
-        // handles those.
+        // a plain trellis. Other custom blocks are not valid soil targets.
         if (clickedState == null) {
             Block above = clicked.getRelative(BlockFace.UP);
             ImmutableBlockState aboveState = CraftEngineBlocks.getCustomBlockState(above);
@@ -220,30 +166,6 @@ public final class BlockService implements Listener {
         }
     }
 
-    private boolean interactVineTrellis(Player player, Block block, ImmutableBlockState state,
-                                        ItemStack hand, InteractionHand usedHand) {
-        if (hand.getType() == Material.SHEARS) {
-            net.momirealms.craftengine.core.block.BlockDefinition definition =
-                    CraftEngineBlocks.byId(net.momirealms.craftengine.core.util.Key.of(TRELLIS));
-            if (definition == null) {
-                return true;
-            }
-            ImmutableBlockState replacement = definition.defaultState();
-            replacement = TrellisBehavior.withNamed(replacement, "type", stringProperty(state, "type"));
-            replacement = TrellisBehavior.withNamed(replacement, "waterlogged",
-                    Boolean.toString(booleanProperty(state, "waterlogged")));
-            CustomCropsBridge.removeCrop(block.getRelative(BlockFace.DOWN).getLocation());
-            if (CraftEngineBlocks.place(block.getLocation(), replacement, false)) {
-                items.build(GRAPEVINE, player)
-                        .ifPresent(drop -> block.getWorld().dropItemNaturally(block.getLocation(), drop));
-                damageTool(player, hand, usedHand);
-                block.getWorld().playSound(block.getLocation(), "minecraft:block.beehive.shear", 1F, 1F);
-            }
-            return true;
-        }
-        return false;
-    }
-
     private String grapevineFor(Block soil) {
         if (matchesBlockTag(soil, PREFIX + "can_grow_ice_grape")) {
             return PREFIX + "ice_grapevine_trellis";
@@ -293,17 +215,6 @@ public final class BlockService implements Listener {
         return false;
     }
 
-    private static void damageTool(Player player, ItemStack hand, InteractionHand usedHand) {
-        if (player.getGameMode() != GameMode.CREATIVE) {
-            ItemStack damaged = hand.damage(1, player);
-            if (usedHand == InteractionHand.MAIN_HAND) {
-                player.getInventory().setItemInMainHand(damaged);
-            } else {
-                player.getInventory().setItemInOffHand(damaged);
-            }
-        }
-    }
-
     private static boolean booleanProperty(ImmutableBlockState state, String name) {
         Property<?> property = state.getProperty(name);
         return property != null && Boolean.TRUE.equals(state.propertyEntries().get(property));
@@ -316,15 +227,6 @@ public final class BlockService implements Listener {
         }
         Comparable<?> value = state.propertyEntries().get(property);
         return format(property, value);
-    }
-
-    private static ImmutableBlockState copyNamed(ImmutableBlockState from, ImmutableBlockState to, String name) {
-        Property<?> source = from.getProperty(name);
-        if (source == null || to.getProperty(name) == null) {
-            return to;
-        }
-        Comparable<?> value = from.propertyEntries().get(source);
-        return TrellisBehavior.withNamed(to, name, Property.formatValue(source, value));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

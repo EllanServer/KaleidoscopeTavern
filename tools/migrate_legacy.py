@@ -869,6 +869,8 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             config["events"] = string_lights_dye_events(block_id)
         elif block_id == "trellis":
             config["events"] = trellis_wax_events()
+        elif block_id.endswith("_grapevine_trellis") or block_id == "grapevine_trellis":
+            config["events"] = grapevine_trellis_shear_events()
         elif block_id == "wild_grapevine":
             config["events"] = wild_grapevine_shear_events()
         if block_id in item_ids:
@@ -1804,21 +1806,63 @@ def wild_grapevine_shear_events() -> list[dict[str, Any]]:
 
     Shears lock a head's growth (sheared=true), take one durability point
     (damage_item routes through vanilla hurtAndBreak, so creative mode and
-    Unbreaking behave like the source) and play the sheep-shear sound.  A
-    sheared head simply stops matching, mirroring the source no-op.
+    Unbreaking behave like the source) and play the sheep-shear sound only to
+    the interacting player. No hand filter is intentional: the Forge block
+    accepts either hand and CE supplies the triggering hand to damage_item and
+    swing_hand. An already-sheared head consumes the click without changing
+    anything, which prevents vanilla/off-hand fallback just like the source.
+    """
+    return [
+        {
+            "on": "right_click",
+            "conditions": [
+                {"type": "match_item", "item": "minecraft:shears"},
+                {"type": "match_block_property", "properties": {"sheared": "false"}},
+            ],
+            "functions": [
+                {"type": "update_block_property", "properties": {"sheared": "true"}},
+                {"type": "damage_item", "amount": 1},
+                {"type": "play_sound", "sound": "minecraft:entity.sheep.shear",
+                 "source": "block", "target": "self"},
+                {"type": "swing_hand"},
+                {"type": "cancel_event"},
+            ],
+        },
+        {
+            "on": "right_click",
+            "conditions": [
+                {"type": "match_item", "item": "minecraft:shears"},
+                {"type": "match_block_property", "properties": {"sheared": "true"}},
+            ],
+            "functions": [{"type": "cancel_event"}],
+        },
+    ]
+
+
+def grapevine_trellis_shear_events() -> list[dict[str, Any]]:
+    """GrapevineTrellisBlock#use shearing as a CraftEngine block event.
+
+    transform_block copies properties shared by the old and new definitions,
+    preserving ``type`` and ``waterlogged`` while dropping the vine-only
+    ``age`` property. Its default UPDATE_ALL flags also notify the hanging
+    crop below, whose CE survival behavior removes both the visual and the
+    CustomCrops record. The source accepts shears in either hand, so this
+    event deliberately has no main-hand-only condition.
     """
     return [{
         "on": "right_click",
-        "conditions": [
-            {"type": "match_item", "item": "minecraft:shears"},
-            {"type": "match_block_property", "properties": {"sheared": "false"}},
-            {"type": "hand", "hand": "main_hand"},
-        ],
+        "conditions": [{"type": "match_item", "item": "minecraft:shears"}],
         "functions": [
-            {"type": "update_block_property", "properties": {"sheared": "true"}},
+            {"type": "transform_block", "block": f"{NAMESPACE}:trellis"},
+            {"type": "drop_loot", "loot": {
+                "pools": [{
+                    "rolls": 1,
+                    "entries": [{"type": "item", "item": f"{NAMESPACE}:grapevine"}],
+                }],
+            }},
             {"type": "damage_item", "amount": 1},
-            {"type": "play_sound", "sound": "minecraft:entity.sheep.shear",
-             "source": "block"},
+            {"type": "play_sound", "sound": "minecraft:block.beehive.shear",
+             "source": "block", "target": "self"},
             {"type": "swing_hand"},
             {"type": "cancel_event"},
         ],

@@ -275,7 +275,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("tools/migrate_legacy.py", '"fuel_time"'),
     ),
     "GrapevineTrellisBlock.java": (
-        ("block/BlockService.java", "interactVineTrellis"),
+        ("tools/migrate_legacy.py", "grapevine_trellis_shear_events"),
         ("block/TrellisBehavior.java", "implements BonemealableBlock"),
         ("block/TrellisBehavior.java", "public static boolean grow"),
     ),
@@ -961,7 +961,6 @@ def validate() -> dict[str, int]:
         "GrapevineItemBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for evidence in (
-            "ItemStack eventItem = event.item();",
             "String planted = grapevineFor(soil);",
             'withNamed(replacement, "type", stringProperty(trellisState, "type"))',
             "void plantGrapevineOnTrellis(",
@@ -995,10 +994,12 @@ def validate() -> dict[str, int]:
     if '!"single".equals(stringProperty(trellisState, "type"))' not in block_service_source:
         raise AssertionError(
             "Grapevine planting must retain the original single-trellis restriction")
-    for stale_listener in ("interactWildHead", "Material.HONEYCOMB", "WAX_ON", "WAX_OFF"):
+    for stale_listener in (
+            "CustomBlockInteractEvent", "interactVineTrellis", "damageTool(",
+            "interactWildHead", "Material.HONEYCOMB", "WAX_ON", "WAX_OFF"):
         if stale_listener in block_service_source:
             raise AssertionError(
-                "Trellis waxing and wild-grapevine shearing are CE block events; "
+                "Trellis waxing and grapevine shearing are CE block events; "
                 f"BlockService must not reintroduce {stale_listener}")
     station_source = (game_package / "StationService.java").read_text(encoding="utf-8-sig")
     storage_source = (game_package / "DisplayStorageService.java").read_text(
@@ -2748,9 +2749,9 @@ def validate() -> dict[str, int]:
                 raise AssertionError(
                     f"string_lights_{color}: dye event needs match_item plus hand")
 
-    # Trellis waxing/scraping and wild-grapevine shearing are CE block events;
-    # incense toggling is a CE furniture event. The Java listener branches for
-    # all three are deliberately gone and must not come back.
+    # Trellis waxing/scraping and both kinds of grapevine shearing are CE block
+    # events; incense toggling is a CE furniture event. The global Java block
+    # interaction listener is deliberately gone and must not come back.
     trellis_events = blocks[f"{NAMESPACE}:trellis"].get("events", [])
     if len(trellis_events) != 2:
         raise AssertionError("trellis: expected exactly wax-on plus wax-off events")
@@ -2776,21 +2777,61 @@ def validate() -> dict[str, int]:
     if not trellis_events[1]["conditions"][0].get("regex"):
         raise AssertionError("trellis: wax-off must match every axe via regex")
 
+    for block_id in (
+            f"{NAMESPACE}:grapevine_trellis",
+            f"{NAMESPACE}:ice_grapevine_trellis",
+            f"{NAMESPACE}:gold_grapevine_trellis"):
+        vine_events = blocks[block_id].get("events", [])
+        if len(vine_events) != 1:
+            raise AssertionError(f"{block_id}: expected exactly one shear event")
+        shear = vine_events[0]
+        conditions = {condition["type"]: condition for condition in shear["conditions"]}
+        functions = {function["type"]: function for function in shear["functions"]}
+        loot = functions.get("drop_loot", {}).get("loot", {})
+        pools = loot.get("pools", [])
+        entries = pools[0].get("entries", []) if len(pools) == 1 else []
+        if (shear.get("on") != "right_click"
+                or set(conditions) != {"match_item"}
+                or conditions["match_item"].get("item") != "minecraft:shears"
+                or functions.get("transform_block", {}).get("block")
+                != f"{NAMESPACE}:trellis"
+                or len(entries) != 1
+                or entries[0].get("type") != "item"
+                or entries[0].get("item") != f"{NAMESPACE}:grapevine"
+                or functions.get("damage_item", {}).get("amount") != 1
+                or functions.get("play_sound", {}).get("sound")
+                != "minecraft:block.beehive.shear"
+                or functions["play_sound"].get("target") != "self"
+                or "swing_hand" not in functions
+                or "cancel_event" not in functions):
+            raise AssertionError(f"{block_id}: shear event drift")
+
     wild_events = blocks[f"{NAMESPACE}:wild_grapevine"].get("events", [])
-    if len(wild_events) != 1:
-        raise AssertionError("wild_grapevine: expected a single shear event")
+    if len(wild_events) != 2:
+        raise AssertionError(
+            "wild_grapevine: expected active-shear plus already-sheared consume events")
     shear = wild_events[0]
     shear_conditions = {c["type"]: c for c in shear["conditions"]}
     shear_functions = {f["type"]: f for f in shear["functions"]}
     if (shear.get("on") != "right_click"
             or shear_conditions["match_item"].get("item") != "minecraft:shears"
             or shear_conditions["match_block_property"].get("properties") != {"sheared": "false"}
-            or "hand" not in shear_conditions
+            or "hand" in shear_conditions
             or shear_functions["update_block_property"].get("properties") != {"sheared": "true"}
             or shear_functions["play_sound"].get("sound") != "minecraft:entity.sheep.shear"
+            or shear_functions["play_sound"].get("target") != "self"
             or "damage_item" not in shear_functions
+            or "swing_hand" not in shear_functions
             or "cancel_event" not in shear_functions):
         raise AssertionError("wild_grapevine: shear event drift")
+    consumed = wild_events[1]
+    consumed_conditions = {c["type"]: c for c in consumed["conditions"]}
+    if (consumed.get("on") != "right_click"
+            or consumed_conditions.get("match_item", {}).get("item") != "minecraft:shears"
+            or consumed_conditions.get("match_block_property", {}).get("properties")
+            != {"sheared": "true"}
+            or consumed.get("functions") != [{"type": "cancel_event"}]):
+        raise AssertionError("wild_grapevine: already-sheared click must only be consumed")
 
     incense_ids = sorted(fid for fid in furniture if fid.endswith("_incense"))
     if len(incense_ids) != 8:

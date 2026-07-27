@@ -16070,10 +16070,6 @@
               "properties": {
                 "sheared": "false"
               }
-            },
-            {
-              "type": "hand",
-              "hand": "main_hand"
             }
           ],
           "functions": [
@@ -16090,11 +16086,32 @@
             {
               "type": "play_sound",
               "sound": "minecraft:entity.sheep.shear",
-              "source": "block"
+              "source": "block",
+              "target": "self"
             },
             {
               "type": "swing_hand"
             },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        },
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "match_item",
+              "item": "minecraft:shears"
+            },
+            {
+              "type": "match_block_property",
+              "properties": {
+                "sheared": "true"
+              }
+            }
+          ],
+          "functions": [
             {
               "type": "cancel_event"
             }
@@ -16838,6 +16855,55 @@
         "type": "kaleidoscope_tavern:trellis",
         "spread_chance": 0.25
       },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "match_item",
+              "item": "minecraft:shears"
+            }
+          ],
+          "functions": [
+            {
+              "type": "transform_block",
+              "block": "kaleidoscope_tavern:trellis"
+            },
+            {
+              "type": "drop_loot",
+              "loot": {
+                "pools": [
+                  {
+                    "rolls": 1,
+                    "entries": [
+                      {
+                        "type": "item",
+                        "item": "kaleidoscope_tavern:grapevine"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "damage_item",
+              "amount": 1
+            },
+            {
+              "type": "play_sound",
+              "sound": "minecraft:block.beehive.shear",
+              "source": "block",
+              "target": "self"
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ],
       "loot": {
         "pools": [
           {
@@ -17204,6 +17270,55 @@
         "type": "kaleidoscope_tavern:trellis",
         "spread_chance": 0.25
       },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "match_item",
+              "item": "minecraft:shears"
+            }
+          ],
+          "functions": [
+            {
+              "type": "transform_block",
+              "block": "kaleidoscope_tavern:trellis"
+            },
+            {
+              "type": "drop_loot",
+              "loot": {
+                "pools": [
+                  {
+                    "rolls": 1,
+                    "entries": [
+                      {
+                        "type": "item",
+                        "item": "kaleidoscope_tavern:grapevine"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "damage_item",
+              "amount": 1
+            },
+            {
+              "type": "play_sound",
+              "sound": "minecraft:block.beehive.shear",
+              "source": "block",
+              "target": "self"
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ],
       "loot": {
         "pools": [
           {
@@ -17570,6 +17685,55 @@
         "type": "kaleidoscope_tavern:trellis",
         "spread_chance": 0.25
       },
+      "events": [
+        {
+          "on": "right_click",
+          "conditions": [
+            {
+              "type": "match_item",
+              "item": "minecraft:shears"
+            }
+          ],
+          "functions": [
+            {
+              "type": "transform_block",
+              "block": "kaleidoscope_tavern:trellis"
+            },
+            {
+              "type": "drop_loot",
+              "loot": {
+                "pools": [
+                  {
+                    "rolls": 1,
+                    "entries": [
+                      {
+                        "type": "item",
+                        "item": "kaleidoscope_tavern:grapevine"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "damage_item",
+              "amount": 1
+            },
+            {
+              "type": "play_sound",
+              "sound": "minecraft:block.beehive.shear",
+              "source": "block",
+              "target": "self"
+            },
+            {
+              "type": "swing_hand"
+            },
+            {
+              "type": "cancel_event"
+            }
+          ]
+        }
+      ],
       "loot": {
         "pools": [
           {
