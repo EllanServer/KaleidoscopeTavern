@@ -362,14 +362,19 @@ public final class EffectService implements Listener {
         for (Set<UUID> inverted : upsideDownPacketTargets.values()) {
             inverted.remove(target.getUniqueId());
         }
-        EntityDamageEvent lastDamage = target.getLastDamageCause();
-        LivingEntity killer = lastDamage == null ? null : attackingLiving(lastDamage);
-        if (killer != null && !killer.equals(target) && has(killer, PREFIX + "bloody_mary")) {
-            AttributeInstance targetHealth = target.getAttribute(Attribute.MAX_HEALTH);
-            if (targetHealth != null) {
-                double heal = Math.floor(targetHealth.getValue() / 3.0);
-                if (heal > 0) {
-                    killer.heal(heal);
+        // Resolving Paper's DamageSource is unnecessary for nearly every
+        // death on a normal server. Keep the exact Forge kill-heal behavior,
+        // but only enter that bridge while Bloody Mary exists anywhere.
+        if (hasAnyActiveEffect(PREFIX + "bloody_mary")) {
+            EntityDamageEvent lastDamage = target.getLastDamageCause();
+            LivingEntity killer = lastDamage == null ? null : attackingLiving(lastDamage);
+            if (killer != null && !killer.equals(target) && has(killer, PREFIX + "bloody_mary")) {
+                AttributeInstance targetHealth = target.getAttribute(Attribute.MAX_HEALTH);
+                if (targetHealth != null) {
+                    double heal = Math.floor(targetHealth.getValue() / 3.0);
+                    if (heal > 0) {
+                        killer.heal(heal);
+                    }
                 }
             }
         }
@@ -378,6 +383,9 @@ public final class EffectService implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent event) {
+        if (!hasAnyActiveEffect(PREFIX + "tomb_raider")) {
+            return;
+        }
         LivingEntity attacker = attackingLiving(event);
         if (attacker == null || !has(attacker, PREFIX + "tomb_raider")
                 || !(event.getEntity() instanceof LivingEntity target)
@@ -416,6 +424,16 @@ public final class EffectService implements Listener {
     public boolean has(LivingEntity living, String effect) {
         ActiveEffect value = active.getOrDefault(living.getUniqueId(), Map.of()).get(effect);
         return value != null && value.remainingTicks() > 0;
+    }
+
+    private boolean hasAnyActiveEffect(String effect) {
+        for (Map<String, ActiveEffect> effects : active.values()) {
+            ActiveEffect value = effects.get(effect);
+            if (value != null && value.remainingTicks() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
