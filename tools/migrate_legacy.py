@@ -1030,12 +1030,11 @@ def furniture_element(
     # so every model needs the corresponding half-block translation.  The
     # 0.01 entity offsets keep wall/ceiling displays lit; their translation is
     # compensated so the final visual location remains exact.
-    # Paintings and the tilted pressing tub use the empirically corrected wall
-    # depth from the live pack. Keep it in the generator so regeneration does
-    # not restore the old floating placement.
-    corrected_wall_depth = anchor == "wall" and (
-        block_id in PAINTINGS or block_id == "pressing_tub"
-    )
+    # Paintings use an empirically corrected wall depth from the live pack.
+    # Ordinary block models (including the tilted pressing tub) instead belong
+    # in the target cell: CE anchors them on the support plane, so their centre
+    # must remain exactly half a block along the outward local +z axis.
+    corrected_wall_depth = anchor == "wall" and block_id in PAINTINGS
     base_translation = {
         "ground": (0.0, 0.5, 0.0),
         "wall": (0.0, 0.0, -0.627 if corrected_wall_depth else 0.49),
@@ -2612,18 +2611,17 @@ def build_furniture(
             ) -> dict[str, Any]:
                 if anchor == "ground":
                     return furniture_element(render_items, block_id, label, model, "ground")
-                # Wall boards reuse the ground model.  Its panel sits at the
-                # model's +z edge, which the display rotation puts on the
-                # furniture's back -- straight into the supporting wall now
-                # that the origin lies on the wall plane -- so the translation
-                # swings the panel back out flush with the wall face and drops
-                # the model half a block to undo the centre alignment's y snap
-                # (board spans world y 0.125..1.875, identical to ground).
-                # The 0.01 entity offset keeps the display outside the wall
-                # for lighting, mirroring furniture_element's wall handling.
+                # CE's wall yaw is the clicked face, exactly like the source
+                # FACING property, but the authored board model is the north
+                # state (panel at local +z). Rotate that model 180 degrees so a
+                # south-facing wall placement puts the panel at the near edge
+                # of its target cell. The normal wall +0.5 depth then places the
+                # complete two-block model in front of, never inside, its
+                # supporting wall; centre alignment already supplies the exact
+                # source y origin, so no extra vertical correction is needed.
                 element = furniture_element(
-                    render_items, block_id, label, model, "ground", "0,-0.5,-0.49")
-                element["position"] = "0,0,0.01"
+                    render_items, block_id, label, model, "wall")
+                element["rotation"] = "0,180,0"
                 return element
 
             variants["ground"] = {

@@ -8599,8 +8599,9 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0,-0.49",
-              "position": "0,0,0.01"
+              "position": "0,0,0.01",
+              "translation": "0,0,0.49",
+              "rotation": "0,180,0"
             }
           ],
           "hitboxes": [
@@ -8634,8 +8635,9 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0,-0.49",
-              "position": "0,0,0.01"
+              "position": "0,0,0.01",
+              "translation": "0,0,0.49",
+              "rotation": "0,180,0"
             }
           ],
           "hitboxes": [
@@ -14913,8 +14915,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "position": "0,0,0.19",
-              "translation": "0,0,-0.627",
+              "position": "0,0,0.01",
+              "translation": "0,0,0.49",
               "rotation": "0,180,0"
             }
           ],

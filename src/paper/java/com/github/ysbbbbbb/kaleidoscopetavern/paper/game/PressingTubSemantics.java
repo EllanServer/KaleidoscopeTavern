@@ -59,6 +59,16 @@ public final class PressingTubSemantics {
         return new Point(0.5 - centeredX, rotatedY, 0.5 - centeredZ);
     }
 
+    /**
+     * Converts a source block-local point into CraftEngine's wall-furniture
+     * basis. A wall furniture origin lies on the support plane at the target
+     * cell's vertical centre; local +x points right (source -x for SOUTH),
+     * while local +z points out from the wall.
+     */
+    static Point toWallFurnitureOffset(Point point) {
+        return new Point(0.5 - point.x(), point.y() - 0.5, point.z());
+    }
+
     record Point(double x, double y, double z) {
     }
 }

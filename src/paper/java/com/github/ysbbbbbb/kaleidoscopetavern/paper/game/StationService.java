@@ -1494,10 +1494,12 @@ public final class StationService implements Listener {
                 if (tilted) {
                     PressingTubSemantics.Point point = PressingTubSemantics.tiltSouth(
                             0.5 + x, 0.2 + y, 0.5 + z);
+                    PressingTubSemantics.Point offset =
+                            PressingTubSemantics.toWallFurnitureOffset(point);
                     Vec3d worldPoint = furniture.getRelativePosition(new Vector3f(
-                            (float) (point.x() - 0.5), 0, (float) -point.z()));
+                            (float) offset.x(), 0, (float) offset.z()));
                     displayX = worldPoint.x;
-                    displayY = origin.getY() - 0.5 + point.y();
+                    displayY = origin.getY() + offset.y();
                     displayZ = worldPoint.z;
                     displayYaw = origin.getYaw() + 180F;
                     rotation = new Quaternionf()
@@ -1540,8 +1542,10 @@ public final class StationService implements Listener {
                         double displayY = origin.getY() + y;
                         double displayZ = origin.getZ();
                         if (furniture.currentVariant().name().equals("wall")) {
+                            // The wall origin is the support plane; the source
+                            // fluid stays horizontal at the target cell centre.
                             Vec3d center = furniture.getRelativePosition(
-                                    new Vector3f(0, 0, -0.5F));
+                                    new Vector3f(0, 0, 0.5F));
                             displayX = center.x;
                             displayY = origin.getY() - 0.5 + y;
                             displayZ = center.z;

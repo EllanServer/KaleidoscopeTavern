@@ -31,6 +31,16 @@ class PressingTubSemanticsTest {
     }
 
     @Test
+    void mapsTiltedPointsIntoCraftEngineWallCoordinates() {
+        PressingTubSemantics.Point offset = PressingTubSemantics.toWallFurnitureOffset(
+                new PressingTubSemantics.Point(0.25, 0.75, 0.8));
+
+        assertEquals(0.25, offset.x(), EPSILON);
+        assertEquals(0.25, offset.y(), EPSILON);
+        assertEquals(0.8, offset.z(), EPSILON);
+    }
+
+    @Test
     void groundTubOwnsOnlyItsSourceColumnAndLandingHeight() {
         assertTrue(PressingTubSemantics.isLandingPosition(
                 10.5, 0.35, -2.5, 10, 0, -2));

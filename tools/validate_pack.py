@@ -2105,11 +2105,13 @@ def validate() -> dict[str, int]:
         ground_element = chalkboard_variants[f"ground{suffix}"]["elements"][0]
         wall_element = chalkboard_variants[f"wall{suffix}"]["elements"][0]
         if (wall_element.get("item") != ground_element.get("item")
-                or wall_element.get("translation") != "0,0,-0.49"
-                or wall_element.get("position") != "0,0,0.01"):
+                or wall_element.get("translation") != "0,0,0.49"
+                or wall_element.get("position") != "0,0,0.01"
+                or wall_element.get("rotation") != "0,180,0"):
             raise AssertionError(
-                f"Chalkboard wall{suffix} must reuse and correctly align the "
-                "ground model")
+                f"Chalkboard wall{suffix} must reuse the ground model, rotate "
+                "the north-authored panel to clicked-face FACING, and occupy "
+                "the target cell in front of the support")
     chalkboard_item_behavior = items[f"{NAMESPACE}:chalkboard"].get("behavior", {})
     if chalkboard_item_behavior.get("type") != "furniture_item":
         raise AssertionError("Chalkboard item must keep its furniture_item behavior")
@@ -3113,9 +3115,18 @@ def validate() -> dict[str, int]:
 
     pressing_tub_wall = furniture[
         f"{NAMESPACE}:pressing_tub"]["variants"]["wall"]["elements"][0]
-    if (pressing_tub_wall.get("position") != "0,0,0.19"
-            or pressing_tub_wall.get("translation") != "0,0,-0.627"):
-        raise AssertionError("Tilted pressing tub must retain its corrected wall depth")
+    if (pressing_tub_wall.get("position") != "0,0,0.01"
+            or pressing_tub_wall.get("translation") != "0,0,0.49"
+            or pressing_tub_wall.get("rotation") != "0,180,0"):
+        raise AssertionError(
+            "Tilted pressing tub must face the clicked wall and occupy the "
+            "target cell in front of its support")
+    for token in (
+            "PressingTubSemantics.toWallFurnitureOffset(point)",
+            "new Vector3f(0, 0, 0.5F)"):
+        if token not in station_source:
+            raise AssertionError(
+                "Tilted pressing-tub contents must use CE's outward wall basis")
 
     paintings = [item_id for item_id in items if item_id.endswith("_painting")]
     if len(paintings) != 14:
