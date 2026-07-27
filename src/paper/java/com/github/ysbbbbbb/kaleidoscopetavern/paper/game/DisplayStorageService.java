@@ -442,8 +442,9 @@ public final class DisplayStorageService implements Listener {
         }
         try {
             saveDisplayItemMethod.invoke(controller, item);
-            furniture.refreshElements();
-            furniture.setUnsaved();
+            // CE's native controller owns the item and dirty flag. Tavern only
+            // invalidates its transform cache before CE redistributes visuals.
+            StorageVisualFurnitureBehavior.refresh(furniture);
             return true;
         } catch (IllegalAccessException | InvocationTargetException exception) {
             warnReflectionBridge();

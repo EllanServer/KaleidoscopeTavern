@@ -1433,6 +1433,7 @@ def validate() -> dict[str, int]:
             "InteractionResult.SUCCESS_AND_CANCEL",
             "StationVisualFurnitureBehavior.bind(stationVisualHandler)",
             "StationVisualFurnitureBehavior.unbind(stationVisualHandler)",
+            "StationVisualFurnitureBehavior.refresh(furniture)",
             "public boolean shouldSchedule(BukkitFurniture furniture)",
             "return shouldTickBarrel(furniture)",
             "TickingFurnitureBehavior.refreshSchedule(",
@@ -1453,7 +1454,6 @@ def validate() -> dict[str, int]:
             "falling.containsKey(player.getUniqueId())",
             "falling.containsKey(living.getUniqueId())",
             "trackPressLanding(living, event.getTo(), fallDistance)",
-            "furniture.refreshElements()",
             'open ? "ground" : "ground_closed"',
             'currentVariant().name().equals("ground")'):
         if required_token not in station_source:
@@ -1511,6 +1511,10 @@ def validate() -> dict[str, int]:
     ).read_text(encoding="utf-8-sig")
     for required_station_element_token in (
             "implements FurnitureElement",
+            "public static void refresh(BukkitFurniture furniture)",
+            "private List<Visual> cachedVisuals = List.of()",
+            "List.copyOf(currentHandler.visuals(bukkitFurniture))",
+            "List<Visual> current = controller.visuals()",
             "DisplayData.ItemDisplayData.ItemStack.addEntityData",
             "DisplayData.LeftRotation.addEntityDataIfNotDefaultValue",
             "DisplayData.ItemDisplayData.ItemTransform.addEntityDataIfNotDefaultValue",
@@ -1717,7 +1721,7 @@ def validate() -> dict[str, int]:
     for required_storage_visual_token in (
             "StorageVisualFurnitureBehavior.bind(storageVisualHandler)",
             "StorageVisualFurnitureBehavior.unbind(storageVisualHandler)",
-            "furniture.refreshElements()",
+            "StorageVisualFurnitureBehavior.refresh(furniture)",
             "private StorageVisualFurnitureBehavior.Visual storageVisual"):
         if required_storage_visual_token not in storage_source:
             raise AssertionError(
@@ -1729,6 +1733,10 @@ def validate() -> dict[str, int]:
     ).read_text(encoding="utf-8-sig")
     for required_storage_element_token in (
             "implements FurnitureElement",
+            "public static void refresh(BukkitFurniture furniture)",
+            "private final Visual[] cachedVisuals",
+            "private final boolean[] visualsDirty",
+            "return controller.visual(slot)",
             "DisplayData.ItemDisplayData.ItemStack.addEntityData",
             "ClientboundAddEntityPacketProxy.INSTANCE.newInstance",
             "player.sendPackets",
@@ -1743,6 +1751,10 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "storage_visual_furniture must never create persistent Bukkit entities; "
                 f"stale token: {stale_storage_element_token}")
+    if "furniture.setUnsaved()" in storage_source:
+        raise AssertionError(
+            "CE display-item controllers already own storage dirty state; "
+            "DisplayStorageService must not duplicate that write")
 
     tap_behavior_files = {
         path.name for path in SOURCE_TAP_BEHAVIORS.glob("*Behavior.java")

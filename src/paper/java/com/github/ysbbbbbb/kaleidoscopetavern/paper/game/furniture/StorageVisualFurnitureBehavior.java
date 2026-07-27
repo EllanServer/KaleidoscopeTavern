@@ -24,6 +24,7 @@ import org.bukkit.Location;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -63,13 +64,24 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
     public static void bind(Handler newHandler) {
         handler = Objects.requireNonNull(newHandler, "newHandler");
-        LOADED.values().forEach(controller -> controller.bukkitFurniture.refreshElements());
+        LOADED.values().forEach(Controller::refresh);
     }
 
     public static void unbind(Handler oldHandler) {
         if (handler == oldHandler) {
             handler = null;
-            LOADED.values().forEach(controller -> controller.bukkitFurniture.refreshElements());
+            LOADED.values().forEach(Controller::refresh);
+        }
+    }
+
+    /** Invalidates player-independent slot visuals before CE redistributes them. */
+    public static void refresh(BukkitFurniture furniture) {
+        Objects.requireNonNull(furniture, "furniture");
+        Controller controller = LOADED.get(furniture.uuid());
+        if (controller != null) {
+            controller.refresh();
+        } else {
+            furniture.refreshElements();
         }
     }
 
@@ -94,17 +106,23 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
     private static final class Controller extends FurnitureController {
         private final BukkitFurniture bukkitFurniture;
         private final int slots;
+        private final Visual[] cachedVisuals;
+        private final boolean[] visualsDirty;
 
         private Controller(BukkitFurniture furniture, int slots) {
             super(furniture);
             this.bukkitFurniture = furniture;
             this.slots = slots;
+            this.cachedVisuals = new Visual[slots];
+            this.visualsDirty = new boolean[slots];
+            invalidateVisuals();
         }
 
         @Override
         public void gatherElements(Consumer<FurnitureElement> consumer) {
+            invalidateVisuals();
             for (int slot = 0; slot < slots; slot++) {
-                consumer.accept(new StorageItemElement(bukkitFurniture, slot));
+                consumer.accept(new StorageItemElement(this, slot));
             }
         }
 
@@ -127,11 +145,35 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
         public void onUnload(boolean isStopping) {
             LOADED.remove(bukkitFurniture.uuid(), this);
         }
+
+        private void refresh() {
+            invalidateVisuals();
+            bukkitFurniture.refreshElements();
+        }
+
+        private void invalidateVisuals() {
+            Arrays.fill(cachedVisuals, null);
+            Arrays.fill(visualsDirty, true);
+        }
+
+        private Visual visual(int slot) {
+            if (slot < 0 || slot >= slots) {
+                return null;
+            }
+            if (visualsDirty[slot]) {
+                Handler currentHandler = handler;
+                cachedVisuals[slot] = currentHandler == null
+                        ? null : currentHandler.visual(bukkitFurniture, slot);
+                visualsDirty[slot] = false;
+            }
+            return cachedVisuals[slot];
+        }
     }
 
     private static final class StorageItemElement implements FurnitureElement {
         private static final float VIEW_RANGE = 1.25F;
 
+        private final Controller controller;
         private final BukkitFurniture furniture;
         private final int slot;
         private final int entityId = EntityUtils.ENTITY_COUNTER.incrementAndGet();
@@ -139,8 +181,9 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
         private final Object removePacket = ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(
                 new IntArrayList(new int[]{entityId}));
 
-        private StorageItemElement(BukkitFurniture furniture, int slot) {
-            this.furniture = furniture;
+        private StorageItemElement(Controller controller, int slot) {
+            this.controller = controller;
+            this.furniture = controller.bukkitFurniture;
             this.slot = slot;
         }
 
@@ -172,8 +215,7 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
         }
 
         private Visual currentVisual() {
-            Handler currentHandler = handler;
-            return currentHandler == null ? null : currentHandler.visual(furniture, slot);
+            return controller.visual(slot);
         }
 
         private void sendVisual(Player player, Visual visual, boolean replace) {

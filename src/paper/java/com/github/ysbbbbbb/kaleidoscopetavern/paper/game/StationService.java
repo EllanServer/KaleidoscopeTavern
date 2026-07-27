@@ -1366,7 +1366,7 @@ public final class StationService implements Listener {
 
     private void refreshStationVisuals(BukkitFurniture furniture) {
         if (furniture != null && furniture.isValid()) {
-            furniture.refreshElements();
+            StationVisualFurnitureBehavior.refresh(furniture);
         }
     }
 
