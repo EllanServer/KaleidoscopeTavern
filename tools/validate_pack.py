@@ -1145,6 +1145,7 @@ def validate() -> dict[str, int]:
     for required_token in (
             "public void onPlace(Player player)",
             "public void onLoad()",
+            "public void preRemove(Player player)",
             "public void postRemove(Player player)",
             "public void onUnload(boolean isStopping)",
             "PressingTubSemantics.isLandingPosition",
@@ -1161,6 +1162,11 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "pressing_tub_furniture must own only its CE spatial index and "
                 f"availability signal; stale token: {stale_token}")
+    for hot_path_token in ("furniture.isValid()", "ConcurrentHashMap", "ConcurrentMap"):
+        if hot_path_token in pressing_behavior_source:
+            raise AssertionError(
+                "CE lifecycle must keep pressing-tub movement lookups free of redundant "
+                f"validity/concurrent-map overhead; found {hot_path_token}")
 
     lifecycle_behavior_source = (
         game_package / "furniture" / "LifecycleFurnitureBehavior.java"
@@ -1168,6 +1174,7 @@ def validate() -> dict[str, int]:
     for required_token in (
             "public void onPlace(Player player)",
             "public void onLoad()",
+            "public void preRemove(Player player)",
             "public void postRemove(Player player)",
             "public void onUnload(boolean isStopping)",
             "handler.onReady(bukkitFurniture, readyReason)",
@@ -1180,6 +1187,11 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "lifecycle_furniture must route CE readiness and unavailability; "
                 f"missing token: {required_token}")
+    for hot_path_token in ("furniture.isValid()", "ConcurrentHashMap", "ConcurrentMap"):
+        if hot_path_token in lifecycle_behavior_source:
+            raise AssertionError(
+                "CE lifecycle must keep furniture spatial queries free of redundant "
+                f"validity/concurrent-map overhead; found {hot_path_token}")
 
     board_text_behavior_source = (
         game_package / "furniture" / "BoardTextFurnitureBehavior.java"
