@@ -22,6 +22,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.BlockService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.GrapeSeasonGate;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.IncenseBlockBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.StorageBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TapBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBlockShape;
@@ -31,7 +32,6 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BoardTextFurn
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BottleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.PressingTubFurnitureBehavior;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StateFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
@@ -76,8 +76,8 @@ import java.util.logging.Level;
 public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listener, TabExecutor {
     private static final String NAMESPACE = "kaleidoscope_tavern";
     private static final int EXPECTED_ITEMS = 711; // 157 public items + 554 private render helpers
-    private static final int EXPECTED_BLOCKS = 50;
-    private static final int EXPECTED_FURNITURE = 124;
+    private static final int EXPECTED_BLOCKS = 54;
+    private static final int EXPECTED_FURNITURE = 120;
 
     private PackInstaller.Result packResult;
     private CustomCropsInstaller.Result customCropsResult;
@@ -105,6 +105,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             HangingGrapeCropBehavior.register();
             WildGrapevineBehavior.register();
             IncenseBlockBehavior.register();
+            StorageBlockBehavior.register();
             TapBlockBehavior.register();
             StateFurnitureBehavior.register();
             AnimatedItemFurnitureBehavior.register();
@@ -112,7 +113,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             BottleFurnitureBehavior.register();
             LifecycleFurnitureBehavior.register();
             PressingTubFurnitureBehavior.register();
-            RedstoneFurnitureBehavior.register();
             TickingFurnitureBehavior.register();
             StationInteractionFurnitureBehavior.register();
             StationVisualFurnitureBehavior.register();
@@ -164,7 +164,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         boards = new BoardTextService(this, items);
         taps = new TapService(this, stations, items);
         displayStorage = new DisplayStorageService(this, catalog, items);
-        ambientFurniture = new AmbientFurnitureService(displayStorage);
+        ambientFurniture = new AmbientFurnitureService();
         barStoolVisuals = new BarStoolVisualService(this, items);
         furnitureConnections = new FurnitureConnectionService(this);
 
@@ -178,7 +178,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         getServer().getPluginManager().registerEvents(taps.lavaCauldronListener(), this);
         getServer().getPluginManager().registerEvents(stations, this);
         getServer().getPluginManager().registerEvents(effects, this);
-        RedstoneFurnitureBehavior.start(this);
         TickingFurnitureBehavior.start(this);
         blocks.start();
         stations.start();
@@ -253,7 +252,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (furnitureConnections != null) {
             furnitureConnections.stop();
         }
-        RedstoneFurnitureBehavior.stop();
         TickingFurnitureBehavior.stop();
     }
 

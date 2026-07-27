@@ -18,8 +18,7 @@ public final class FurnitureConnectionService {
     private static final List<String> LINEAR_FURNITURE = List.of(
             TABLE,
             "kaleidoscope_tavern:bar_cabinet",
-            "kaleidoscope_tavern:glass_bar_cabinet",
-            "kaleidoscope_tavern:cellar_cabinet");
+            "kaleidoscope_tavern:glass_bar_cabinet");
     private final JavaPlugin plugin;
     private final LifecycleFurnitureBehavior.Handler lifecycleHandler;
 

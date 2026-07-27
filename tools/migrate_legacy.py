@@ -163,6 +163,14 @@ INCENSE_SPECS: dict[str, tuple[str, str, float, float]] = {
 }
 INCENSE_BLOCKS = frozenset(INCENSE_SPECS)
 
+STORAGE_BLOCK_SPECS: dict[str, tuple[int, str]] = {
+    "cellar_cabinet": (9, "cellar_cabinet_blocklist"),
+    "tilted_rack": (3, "tilted_rack_blocklist"),
+    "circular_rack": (6, "circular_rack_blocklist"),
+    "holder": (1, "holder_blocklist"),
+}
+STORAGE_BLOCKS = frozenset(STORAGE_BLOCK_SPECS)
+
 
 def is_grid_block(block_id: str) -> bool:
     """Content that benefits from real block state/physics stays a block.
@@ -175,6 +183,7 @@ def is_grid_block(block_id: str) -> bool:
     return (
         block_id.startswith("string_lights_")
         or block_id in INCENSE_BLOCKS
+        or block_id in STORAGE_BLOCKS
         or block_id == "tap"
         or block_id in {
             "wild_grapevine", "wild_grapevine_plant", "trellis",
@@ -584,6 +593,12 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
 
 
 def carrier_type(block_id: str) -> tuple[str, str]:
+    if block_id == "cellar_cabinet":
+        return "solid", "kaleidoscope-tavern-cellar-cabinet-transparent"
+    if block_id == "circular_rack":
+        return "pressure_plate", "kaleidoscope-tavern-circular-rack-transparent"
+    if block_id in {"tilted_rack", "holder"}:
+        return "cactus", f"kaleidoscope-tavern-{block_id.replace('_', '-')}-transparent"
     return "higher_tripwire", "kaleidoscope-tavern-decor-transparent"
 
 
@@ -648,6 +663,15 @@ def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
 def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | list[dict[str, Any]] | None:
     if block_id == "tap":
         return {"type": f"{NAMESPACE}:tap"}
+    if block_id in STORAGE_BLOCK_SPECS:
+        slots, blocklist = STORAGE_BLOCK_SPECS[block_id]
+        return {
+            "type": f"{NAMESPACE}:storage",
+            "kind": block_id,
+            "slots": slots,
+            "data_key": f"{NAMESPACE}:storage_{block_id}",
+            "blocklist": f"{NAMESPACE}:{blocklist}",
+        }
     if block_id in INCENSE_BLOCKS:
         small, large, y_offset, y_range = INCENSE_SPECS[block_id]
         return {
@@ -702,7 +726,8 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
     is_string_lights = block_id.startswith("string_lights_")
     is_wild_vine = block_id in {"wild_grapevine", "wild_grapevine_plant"}
     is_crop = block_id.endswith("_grape_crop") or block_id == "grape_crop"
-    sturdy = block_id in STURDY_BLOCKS or is_string_lights
+    is_storage = block_id in STORAGE_BLOCKS
+    sturdy = block_id in STURDY_BLOCKS or is_string_lights or is_storage
     if is_wild_vine:
         sound_type = {
             action: f"minecraft:block.cave_vines.{action}"
@@ -724,7 +749,8 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
             action: f"minecraft:block.{family}.{action}"
             for action in ("break", "step", "place", "hit", "fall")
         }
-    hardness = 0.0 if is_wild_vine or is_crop or block_id in INCENSE_BLOCKS else 0.8
+    hardness = (2.5 if is_storage else
+                0.0 if is_wild_vine or is_crop or block_id in INCENSE_BLOCKS else 0.8)
     settings: dict[str, Any] = {
         "hardness": hardness,
         "resistance": hardness,
@@ -743,6 +769,8 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
         settings["item"] = f"{NAMESPACE}:{block_id}"
     if "lamp" in block_id or is_string_lights:
         settings["luminance"] = 15
+    elif block_id == "circular_rack":
+        settings["luminance"] = 14
     return settings
 
 
@@ -826,8 +854,16 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
         for variant_key, raw_model in variants.items():
             if isinstance(raw_model, list) and len(raw_model) > 1:
                 metrics["weighted_variants_reduced"] += 1
-            model = normalize_model_entry(raw_model)
             variant_properties = parse_variant_key(variant_key)
+            model = normalize_model_entry(raw_model)
+            if (block_id == "tap"
+                    and variant_properties.get("facing") in {"north", "south"}):
+                # The migrated wall block's north/south visual was reversed
+                # while its source/output geometry was already correct. Swap
+                # only the ItemDisplay model mapping; the CE facing property,
+                # collision state and TapService direction stay unchanged.
+                model = (model[0], model[1], (model[2] + 180) % 360,
+                         model[3], model[4])
             trellis_type = (variant_properties.get("type")
                             if block_id in TRELLIS_BLOCKS else None)
             # Waterlogged tap and trellis variants share their authored model
@@ -845,7 +881,9 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 # item model. Reuse the same two render helpers for all four
                 # directions just as the former furniture definitions did.
                 render_identity = (model[0]
-                                   if block_id in INCENSE_BLOCKS or block_id == "tap"
+                                   if (block_id in INCENSE_BLOCKS
+                                       or block_id in STORAGE_BLOCKS
+                                       or block_id == "tap")
                                    else "|".join(map(str, model)))
                 render_hash = hashlib.sha1(render_identity.encode("utf-8")).hexdigest()[:10]
                 render_path = f"_render/{block_id}/{render_hash}"
@@ -2310,7 +2348,7 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     if (block_id.endswith("_sofa")
             or block_id in {
                 "bar_counter", "table", "bar_cabinet",
-                "glass_bar_cabinet", "cellar_cabinet",
+                "glass_bar_cabinet",
             }):
         lifecycle_channels.append("connection")
     for channel in lifecycle_channels:
@@ -2349,8 +2387,7 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         behaviors.append({"type": f"{NAMESPACE}:bottle_furniture"})
 
     if block_id in {
-            "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
-            "tilted_rack", "circular_rack", "holder", "glassware_holder",
+            "bar_cabinet", "glass_bar_cabinet", "glassware_holder",
     }:
         # This must precede CE's native display_item controllers. It preserves
         # the source furniture's multi-slot hit selection and restrictions;
@@ -2392,23 +2429,6 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
 
     if block_id in {"bar_cabinet", "glass_bar_cabinet"}:
         display_slots(["-0.25,0.5,0", "0.25,0.5,0"], 0.5, 1.0, paper_visual=True)
-    elif block_id == "cellar_cabinet":
-        # This was a visible 3x3 bottle cabinet, not a generic inventory GUI.
-        display_slots([
-            "0.325,0.78,0.375", "0,0.78,0.375", "-0.325,0.78,0.375",
-            "0.325,0.49,0.375", "0,0.49,0.375", "-0.325,0.49,0.375",
-            "0.325,0.20,0.375", "0,0.20,0.375", "-0.325,0.20,0.375",
-        ], 0.25, 0.27, paper_visual=True)
-    elif block_id == "tilted_rack":
-        display_slots(["-0.375,0.32,0", "0,0.32,0", "0.375,0.32,0"],
-                      0.3, 0.62, paper_visual=True)
-    elif block_id == "circular_rack":
-        display_slots([
-            "0,0.13,-0.375", "0.375,0.13,-0.19", "0.375,0.13,0.19",
-            "0,0.13,0.375", "-0.375,0.13,0.19", "-0.375,0.13,-0.19",
-        ], 0.26, 0.46, paper_visual=True)
-    elif block_id == "holder":
-        display_slots(["0,0.13,0.25"], 0.4, 0.8, paper_visual=True)
     elif block_id == "glassware_holder":
         display_slots([
             "-0.25,-0.24,-0.25", "0.25,-0.24,-0.25",
@@ -2418,10 +2438,6 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     storage_visual_slots = {
         "bar_cabinet": 2,
         "glass_bar_cabinet": 2,
-        "cellar_cabinet": 9,
-        "tilted_rack": 3,
-        "circular_rack": 6,
-        "holder": 1,
         "glassware_holder": 4,
     }.get(block_id)
     if storage_visual_slots is not None:
@@ -2453,31 +2469,14 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         behaviors.append({"type": "glowing_furniture", "lights": ["0,-1,0 13"]})
     elif block_id == "glassware_holder":
         behaviors.append({"type": "glowing_furniture", "lights": ["0,0,0 8"]})
-    elif block_id in {"circular_rack", "molotov"}:
+    elif block_id == "molotov":
         behaviors.append({"type": "glowing_furniture", "lights": ["0,0,0 14"]})
-
-    if block_id in {"cellar_cabinet", "tilted_rack", "circular_rack", "holder"}:
-        behaviors.append({
-            "type": f"{NAMESPACE}:redstone_furniture",
-            "channel": "storage",
-            # The controller owns one persistent edge latch per furniture
-            # instance.  Keep the key deterministic and independent from
-            # behavior ordering so future native CE behaviors cannot alias it.
-            "data_key": f"{NAMESPACE}:redstone_{block_id}",
-        })
 
     if block_id == "mystery_cocktail":
         behaviors.append({
             "type": f"{NAMESPACE}:ticking_furniture",
             "channel": "mystery_particle",
             "chance": 49,
-        })
-    elif block_id == "circular_rack":
-        behaviors.append({
-            "type": f"{NAMESPACE}:ticking_furniture",
-            "channel": "rack_particle",
-            # animateTick selection (1/49) and the source block's 1/8 gate.
-            "chance": 49 * 8,
         })
     elif block_id == "barrel":
         behaviors.append({

@@ -5,13 +5,13 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
  * Forge renderers/blocks. Coordinates are expressed inside the original
  * occupied block (0..1), before the block's horizontal facing rotation.
  */
-final class StorageSemantics {
+public final class StorageSemantics {
     private static final double FACE_EPSILON = 1.0E-3;
 
     private StorageSemantics() {
     }
 
-    enum Kind {
+    public enum Kind {
         BAR_CABINET,
         CELLAR_CABINET,
         TILTED_RACK,
@@ -20,11 +20,11 @@ final class StorageSemantics {
         GLASSWARE_HOLDER
     }
 
-    record Visual(double centerX, double centerY, double centerZ,
-                  float scale, float yRot, float xRot, boolean rotateWithFacing) {
+    public record Visual(double centerX, double centerY, double centerZ,
+                         float scale, float yRot, float xRot, boolean rotateWithFacing) {
     }
 
-    static Visual visual(Kind kind, int slot, boolean irregular, boolean facingAxisX) {
+    public static Visual visual(Kind kind, int slot, boolean irregular, boolean facingAxisX) {
         return switch (kind) {
             case BAR_CABINET -> {
                 double offset = irregular ? 0 : (slot == 0 ? 0.25 : -0.25);

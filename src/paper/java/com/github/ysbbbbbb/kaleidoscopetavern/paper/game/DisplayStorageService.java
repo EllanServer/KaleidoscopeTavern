@@ -1,7 +1,7 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.StorageBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageVisualFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
@@ -13,9 +13,11 @@ import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.Item;
+import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.context.InteractEntityContext;
+import net.momirealms.craftengine.core.world.context.UseOnContext;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -37,7 +39,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
-/** Adds legacy bottle restrictions and redstone launch behavior to CE display-slot furniture. */
+/** Preserves source bottle storage semantics across CE blocks and remaining display furniture. */
 public final class DisplayStorageService {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String IRREGULAR_TAG = PREFIX + "bar_cabinet_irregular";
@@ -46,19 +48,19 @@ public final class DisplayStorageService {
     private static final String WATERMELON_JUICE = PREFIX + "watermelon_juice";
     private static final Map<Key, StorageSpec> STORAGE = Map.ofEntries(
             Map.entry(Key.of(PREFIX + "bar_cabinet"), new StorageSpec(
-                    2, null, false, StorageSemantics.Kind.BAR_CABINET)),
+                    2, null, StorageSemantics.Kind.BAR_CABINET)),
             Map.entry(Key.of(PREFIX + "glass_bar_cabinet"), new StorageSpec(
-                    2, null, false, StorageSemantics.Kind.BAR_CABINET)),
+                    2, null, StorageSemantics.Kind.BAR_CABINET)),
             Map.entry(Key.of(PREFIX + "cellar_cabinet"), new StorageSpec(
-                    9, PREFIX + "cellar_cabinet_blocklist", true, StorageSemantics.Kind.CELLAR_CABINET)),
+                    9, PREFIX + "cellar_cabinet_blocklist", StorageSemantics.Kind.CELLAR_CABINET)),
             Map.entry(Key.of(PREFIX + "tilted_rack"), new StorageSpec(
-                    3, PREFIX + "tilted_rack_blocklist", true, StorageSemantics.Kind.TILTED_RACK)),
+                    3, PREFIX + "tilted_rack_blocklist", StorageSemantics.Kind.TILTED_RACK)),
             Map.entry(Key.of(PREFIX + "circular_rack"), new StorageSpec(
-                    6, PREFIX + "circular_rack_blocklist", true, StorageSemantics.Kind.CIRCULAR_RACK)),
+                    6, PREFIX + "circular_rack_blocklist", StorageSemantics.Kind.CIRCULAR_RACK)),
             Map.entry(Key.of(PREFIX + "holder"), new StorageSpec(
-                    1, PREFIX + "holder_blocklist", true, StorageSemantics.Kind.HOLDER)),
+                    1, PREFIX + "holder_blocklist", StorageSemantics.Kind.HOLDER)),
             Map.entry(Key.of(PREFIX + "glassware_holder"), new StorageSpec(
-                    4, null, false, StorageSemantics.Kind.GLASSWARE_HOLDER)));
+                    4, null, StorageSemantics.Kind.GLASSWARE_HOLDER)));
 
     private final JavaPlugin plugin;
     private final ContentCatalog catalog;
@@ -81,14 +83,22 @@ public final class DisplayStorageService {
                     dropAndClearStorage(furniture, dropItems);
                 }
             };
-    private final RedstoneFurnitureBehavior.Handler storageRedstoneHandler =
-            (furniture, powered, initial) -> {
-                if (initial || !powered) {
-                    return;
+    private final StorageBlockBehavior.Handler storageBlockHandler =
+            new StorageBlockBehavior.Handler() {
+                @Override
+                public InteractionResult interact(StorageBlockBehavior.Controller controller,
+                                                  UseOnContext context, int slot) {
+                    return interactStorageBlock(controller, context, slot);
                 }
-                StorageSpec spec = STORAGE.get(furniture.id());
-                if (spec != null && spec.redstoneLauncher()) {
-                    launchRandomBottle(furniture, spec);
+
+                @Override
+                public void launch(StorageBlockBehavior.Controller controller) {
+                    launchRandomBottle(controller);
+                }
+
+                @Override
+                public Item visualItem(StorageBlockBehavior.Controller controller, int slot) {
+                    return storageBlockVisual(controller, slot);
                 }
             };
 
@@ -115,15 +125,67 @@ public final class DisplayStorageService {
     public void start() {
         StorageInteractionFurnitureBehavior.bind(storageInteractionHandler);
         StorageVisualFurnitureBehavior.bind(storageVisualHandler);
-        RedstoneFurnitureBehavior.bind(
-                RedstoneFurnitureBehavior.Channel.STORAGE, storageRedstoneHandler);
+        StorageBlockBehavior.bind(storageBlockHandler);
     }
 
     public void stop() {
+        StorageBlockBehavior.unbind(storageBlockHandler);
         StorageInteractionFurnitureBehavior.unbind(storageInteractionHandler);
         StorageVisualFurnitureBehavior.unbind(storageVisualHandler);
-        RedstoneFurnitureBehavior.unbind(
-                RedstoneFurnitureBehavior.Channel.STORAGE, storageRedstoneHandler);
+    }
+
+    private InteractionResult interactStorageBlock(
+            StorageBlockBehavior.Controller controller, UseOnContext context, int selected) {
+        StorageSpec spec = STORAGE.get(controller.id());
+        if (spec == null || selected < 0 || selected >= spec.slots()) {
+            return InteractionResult.FAIL;
+        }
+        Player player = (Player) context.getPlayer().platformPlayer();
+        ItemStack hand = player.getInventory().getItemInMainHand();
+        Item stored = controller.item(selected);
+
+        if (hand.isEmpty()) {
+            if (stored == null || stored.isEmpty()) {
+                return InteractionResult.PASS;
+            }
+            Item taken = controller.take(selected);
+            if (taken.isEmpty()) {
+                return InteractionResult.PASS;
+            }
+            player.getInventory().setItemInMainHand(bukkitItem(taken));
+            context.getPlayer().swingHand(context.getHand());
+            playStorageSound(controller.location(), spec, true);
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+
+        String handId = items.id(hand);
+        if (!isBottle(handId)) {
+            player.sendActionBar(Component.translatable(
+                    "message.kaleidoscope_tavern.rack.not_drink"));
+            return InteractionResult.FAIL;
+        }
+        if (spec.blocklistTag() != null
+                && catalog.tag(spec.blocklistTag()).contains(handId)) {
+            player.sendActionBar(Component.translatable(
+                    "message.kaleidoscope_tavern.rack.irregular"));
+            return InteractionResult.FAIL;
+        }
+        if (stored != null && !stored.isEmpty()) {
+            // AbstractStorageBlock returned PASS for an occupied slot, allowing
+            // a drink bottle's ordinary use to continue.
+            return InteractionResult.PASS;
+        }
+
+        ItemStack one = hand.clone();
+        one.setAmount(1);
+        if (!controller.put(selected, BukkitAdaptor.adapt(one))) {
+            return InteractionResult.PASS;
+        }
+        // ItemStack#split consumed one even for creative players in the source.
+        hand.subtract(1);
+        context.getPlayer().swingHand(context.getHand());
+        playStorageSound(controller.location(), spec, false);
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     private InteractionResult interact(BukkitFurniture furniture,
@@ -304,13 +366,17 @@ public final class DisplayStorageService {
     }
 
     private static void playStorageSound(BukkitFurniture furniture, StorageSpec spec, boolean taking) {
+        playStorageSound(furniture.location(), spec, taking);
+    }
+
+    private static void playStorageSound(Location location, StorageSpec spec, boolean taking) {
         String sound;
         if (spec.kind() == StorageSemantics.Kind.GLASSWARE_HOLDER) {
             sound = "minecraft:block.amethyst_block.place";
         } else {
             sound = taking ? "minecraft:entity.item_frame.remove_item" : "minecraft:block.stone.place";
         }
-        furniture.location().getWorld().playSound(furniture.location(),
+        location.getWorld().playSound(location,
                 sound, SoundCategory.BLOCKS, 1.0F, 1.0F);
     }
 
@@ -321,10 +387,14 @@ public final class DisplayStorageService {
                 "minecraft:block.glass.place", SoundCategory.BLOCKS, volume, pitch);
     }
 
-    private void launchRandomBottle(BukkitFurniture furniture, StorageSpec spec) {
+    private void launchRandomBottle(StorageBlockBehavior.Controller controller) {
+        StorageSpec spec = STORAGE.get(controller.id());
+        if (spec == null) {
+            return;
+        }
         List<Integer> launchable = new ArrayList<>();
         for (int slot = 0; slot < spec.slots(); slot++) {
-            Item stored = controllerItem(furniture, slot);
+            Item stored = controller.item(slot);
             if (stored == null || stored.isEmpty()) {
                 continue;
             }
@@ -340,7 +410,7 @@ public final class DisplayStorageService {
             return;
         }
         int slot = launchable.get(ThreadLocalRandom.current().nextInt(launchable.size()));
-        Item stored = controllerItem(furniture, slot);
+        Item stored = controller.item(slot);
         if (stored == null) {
             return;
         }
@@ -351,11 +421,11 @@ public final class DisplayStorageService {
         if (!molotov && !drink) {
             return;
         }
-        if (!setControllerItem(furniture, slot, null)) {
+        if (controller.take(slot).isEmpty()) {
             return;
         }
-        Location origin = launchOrigin(furniture);
-        Vector velocity = launchVelocity(furniture);
+        Location origin = launchOrigin(controller);
+        Vector velocity = launchVelocity(controller);
         origin.getWorld().spawn(origin, ThrownPotion.class, potion -> {
             potion.setItem(projectileItem);
             potion.setVelocity(velocity);
@@ -366,49 +436,34 @@ public final class DisplayStorageService {
         }
     }
 
-    private Location launchOrigin(BukkitFurniture furniture) {
-        Location location = furniture.location().clone();
-        Vector forward = horizontalDirection(location);
-        return switch (furniture.id().toString()) {
-            case PREFIX + "holder" -> location.add(forward.clone().multiply(0.5)).add(0, 0.875, 0);
-            case PREFIX + "tilted_rack" -> location.subtract(forward.clone().multiply(0.5)).add(0, 0.875, 0);
-            case PREFIX + "cellar_cabinet" -> location.add(forward.clone().multiply(0.5)).add(0, 0.5, 0);
+    private static Location launchOrigin(StorageBlockBehavior.Controller controller) {
+        Location location = controller.location();
+        Vector forward = horizontalDirection(controller.facing());
+        return switch (controller.kind()) {
+            case HOLDER -> location.add(forward.clone().multiply(0.5)).add(0, 0.875, 0);
+            case TILTED_RACK -> location.subtract(forward.clone().multiply(0.5)).add(0, 0.875, 0);
+            case CELLAR_CABINET -> location.add(forward.clone().multiply(0.5)).add(0, 0.5, 0);
             default -> location.add(0, 0.5, 0);
         };
     }
 
-    private Vector launchVelocity(BukkitFurniture furniture) {
-        double factor = switch (furniture.id().toString()) {
-            case PREFIX + "circular_rack", PREFIX + "cellar_cabinet" ->
+    private static Vector launchVelocity(StorageBlockBehavior.Controller controller) {
+        double factor = switch (controller.kind()) {
+            case CIRCULAR_RACK, CELLAR_CABINET ->
                     ThreadLocalRandom.current().nextDouble(0.5, 2.5);
             default -> ThreadLocalRandom.current().nextDouble(0.5, 1.5);
         };
-        Vector forward = horizontalDirection(furniture.location());
-        return switch (furniture.id().toString()) {
-            case PREFIX + "circular_rack" -> new Vector(0, factor, 0);
-            case PREFIX + "tilted_rack" -> forward.multiply(-factor).setY(0.75 * factor);
-            case PREFIX + "holder" -> forward.multiply(factor).setY(0.375 * factor);
+        Vector forward = horizontalDirection(controller.facing());
+        return switch (controller.kind()) {
+            case CIRCULAR_RACK -> new Vector(0, factor, 0);
+            case TILTED_RACK -> forward.multiply(-factor).setY(0.75 * factor);
+            case HOLDER -> forward.multiply(factor).setY(0.375 * factor);
             default -> forward.multiply(factor).setY(0.1 * factor);
         };
     }
 
-    private static Vector horizontalDirection(Location location) {
-        Vector direction = location.getDirection().setY(0);
-        return direction.lengthSquared() < 1.0E-6 ? new Vector(0, 0, 1) : direction.normalize();
-    }
-
-    boolean hasAnyStoredItem(BukkitFurniture furniture) {
-        StorageSpec spec = STORAGE.get(furniture.id());
-        if (spec == null) {
-            return false;
-        }
-        for (int slot = 0; slot < spec.slots(); slot++) {
-            Item stored = controllerItem(furniture, slot);
-            if (stored != null && !stored.isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+    private static Vector horizontalDirection(Direction direction) {
+        return new Vector(direction.stepX(), 0, direction.stepZ());
     }
 
     private List<Item> controllerItems(BukkitFurniture furniture, int slots) {
@@ -552,6 +607,20 @@ public final class DisplayStorageService {
                 visual.rotateWithFacing());
     }
 
+    private Item storageBlockVisual(StorageBlockBehavior.Controller controller, int slot) {
+        if (slot < 0 || slot >= controller.slots()) {
+            return Item.empty();
+        }
+        Item stored = controller.item(slot);
+        if (stored == null || stored.isEmpty()) {
+            return Item.empty();
+        }
+        ItemStack storedStack = bukkitItem(stored);
+        ItemStack shown = storageRenderItem(storedStack).orElseGet(storedStack::clone);
+        shown.setAmount(1);
+        return BukkitAdaptor.adapt(shown);
+    }
+
     private void dropAndClearStorage(BukkitFurniture furniture, boolean dropItems) {
         StorageSpec spec = storageSpec(furniture);
         if (spec == null) {
@@ -587,8 +656,7 @@ public final class DisplayStorageService {
         }
     }
 
-    private record StorageSpec(int slots, String blocklistTag, boolean redstoneLauncher,
-                               StorageSemantics.Kind kind) {
+    private record StorageSpec(int slots, String blocklistTag, StorageSemantics.Kind kind) {
     }
 
     private record SourcePoint(double x, double y, double z) {

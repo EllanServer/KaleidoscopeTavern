@@ -13,27 +13,18 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class AmbientFurnitureService {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final Key MYSTERY_COCKTAIL = Key.of(PREFIX + "mystery_cocktail");
-    private static final Key CIRCULAR_RACK = Key.of(PREFIX + "circular_rack");
-    private final DisplayStorageService displayStorage;
     private final TickingFurnitureBehavior.Handler mysteryParticleHandler =
             AmbientFurnitureService::tickMysteryCocktail;
-    private final TickingFurnitureBehavior.Handler rackParticleHandler =
-            this::tickCircularRack;
 
-    public AmbientFurnitureService(DisplayStorageService displayStorage) {
-        this.displayStorage = displayStorage;
+    public AmbientFurnitureService() {
     }
 
     public void start() {
         TickingFurnitureBehavior.bind(
                 TickingFurnitureBehavior.Channel.MYSTERY_PARTICLE, mysteryParticleHandler);
-        TickingFurnitureBehavior.bind(
-                TickingFurnitureBehavior.Channel.RACK_PARTICLE, rackParticleHandler);
     }
 
     public void stop() {
-        TickingFurnitureBehavior.unbind(
-                TickingFurnitureBehavior.Channel.RACK_PARTICLE, rackParticleHandler);
         TickingFurnitureBehavior.unbind(
                 TickingFurnitureBehavior.Channel.MYSTERY_PARTICLE, mysteryParticleHandler);
     }
@@ -53,24 +44,6 @@ public final class AmbientFurnitureService {
         // offsets as that exact velocity vector.
         point.getWorld().spawnParticle(Particle.EFFECT, point, 0,
                 random.nextDouble(), random.nextDouble(), random.nextDouble(), 1, spell);
-    }
-
-    private void tickCircularRack(BukkitFurniture furniture) {
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        if (!furniture.id().equals(CIRCULAR_RACK)
-                || !displayStorage.hasAnyStoredItem(furniture)) {
-            return;
-        }
-        Location base = furniture.location();
-        double x = random.nextBoolean()
-                ? -0.375 + random.nextDouble(0, 0.25)
-                : 0.375 - random.nextDouble(0, 0.25);
-        double z = random.nextBoolean()
-                ? -0.375 + random.nextDouble(0, 0.25)
-                : 0.375 - random.nextDouble(0, 0.25);
-        Location point = base.clone().add(x, random.nextDouble(), z);
-        point.getWorld().spawnParticle(Particle.END_ROD, point, 0,
-                0.01, 0.01, 0.01, 1);
     }
 
 }

@@ -193,7 +193,22 @@ public final class StationService implements Listener {
             // Incense and tap interactions live on their generated CE blocks.
             default -> false;
         };
-        return handled ? InteractionResult.SUCCESS_AND_CANCEL : InteractionResult.PASS;
+        if (!handled) {
+            return InteractionResult.PASS;
+        }
+
+        // Furniture interaction is dispatched from CE's packet listener on
+        // the main-thread scheduler. By then vanilla may already have started
+        // the held milk-bucket/potion use animation. A successful source block
+        // interaction owns that same hand, so explicitly cancel the predicted
+        // consume state; otherwise pouring grape juice into an open barrel can
+        // visibly (and, under latency, functionally) turn into drinking it.
+        EquipmentSlot usedHand = context.getHand() == InteractionHand.MAIN_HAND
+                ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+        if (player.hasActiveItem() && player.getActiveItemHand() == usedHand) {
+            player.clearActiveItem();
+        }
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     /**

@@ -2251,14 +2251,8 @@
         "path": "kaleidoscope_tavern:item/cellar_cabinet"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:cellar_cabinet",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:cellar_cabinet"
       }
     },
     "kaleidoscope_tavern:tilted_rack": {
@@ -2271,14 +2265,8 @@
         "path": "kaleidoscope_tavern:item/tilted_rack"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:tilted_rack",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:tilted_rack"
       }
     },
     "kaleidoscope_tavern:circular_rack": {
@@ -2291,14 +2279,8 @@
         "path": "kaleidoscope_tavern:item/circular_rack"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:circular_rack",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:circular_rack"
       }
     },
     "kaleidoscope_tavern:holder": {
@@ -2311,14 +2293,8 @@
         "path": "kaleidoscope_tavern:item/holder"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:holder",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:holder"
       }
     },
     "kaleidoscope_tavern:empty_bottle": {

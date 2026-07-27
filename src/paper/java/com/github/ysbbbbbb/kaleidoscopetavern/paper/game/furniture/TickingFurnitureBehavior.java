@@ -153,7 +153,6 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
 
     public enum Channel {
         MYSTERY_PARTICLE,
-        RACK_PARTICLE,
         BARREL;
 
         private final Map<UUID, Controller> activeControllers = new HashMap<>();
