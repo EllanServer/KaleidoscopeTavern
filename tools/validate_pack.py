@@ -1627,7 +1627,9 @@ def validate() -> dict[str, int]:
             "private static final Set<Controller> PENDING_CONTROLLERS",
             "activeControllers.toArray(Controller[]::new)",
             "for (Controller controller : channel.activeSnapshot())",
-            "case INCENSE, STORAGE -> primaryPowerBlock.isBlockIndirectlyPowered()"):
+            "CraftWorldProxy.INSTANCE.getWorld(primaryPowerBlock.getWorld())",
+            "primaryPowerPos = LocationUtils.toBlockPos(",
+            "SignalGetterProxy.INSTANCE.hasNeighborSignal("):
         if required_token not in redstone_behavior_source:
             raise AssertionError(
                 "CE redstone furniture must also own channel-scoped player interaction; "
@@ -1841,6 +1843,18 @@ def validate() -> dict[str, int]:
         if on_demand_token not in effect_service_source:
             raise AssertionError(
                 f"Custom effect on-demand tick lifecycle is missing {on_demand_token}")
+    for tracked_particle_token in (
+            "Set<Player> trackedBy = living.getTrackedBy()",
+            "if (trackedBy.isEmpty() && !includeSelf)",
+            "spawnParticle(Particle.ENTITY_EFFECT, receivers, null",
+            "living.getX() + (random.nextDouble() - 0.5) * living.getWidth()"):
+        if tracked_particle_token not in effect_service_source:
+            raise AssertionError(
+                "Custom effect particles must target only actual entity observers; "
+                f"missing {tracked_particle_token}")
+    if "living.getWorld().spawnParticle(Particle.ENTITY_EFFECT,\n                box." in effect_service_source:
+        raise AssertionError(
+            "Custom effect particles must not scan every player in the world")
     for allocation_free_tick_token in (
             "Iterator<Map.Entry<String, ActiveEffect>> effectIterator",
             "effectIterator.remove()",

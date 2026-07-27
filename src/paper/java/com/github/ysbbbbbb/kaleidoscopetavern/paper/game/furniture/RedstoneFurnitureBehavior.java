@@ -1,6 +1,7 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture;
 
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.entity.furniture.Furniture;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureDefinition;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehaviorTemplate;
@@ -13,6 +14,8 @@ import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import net.momirealms.craftengine.libraries.nbt.CompoundTag;
+import net.momirealms.craftengine.proxy.bukkit.craftbukkit.CraftWorldProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.level.SignalGetterProxy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -240,6 +243,9 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         private long[] indexedPowerChanges;
         private Block primaryPowerBlock;
         private Block secondaryPowerBlock;
+        private Object minecraftWorld;
+        private Object primaryPowerPos;
+        private Object secondaryPowerPos;
         private Handler deliveredHandler;
 
         private Controller(BukkitFurniture furniture, Channel channel, String dataKey) {
@@ -299,6 +305,9 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
             deliveredHandler = null;
             primaryPowerBlock = null;
             secondaryPowerBlock = null;
+            minecraftWorld = null;
+            primaryPowerPos = null;
+            secondaryPowerPos = null;
         }
 
         @Override
@@ -424,9 +433,12 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
                 // isBlockPowered() performs a second, stronger-signal scan and
                 // would both widen the source behavior and duplicate hot-path
                 // work for every loaded incense and launcher each tick.
-                case INCENSE, STORAGE -> primaryPowerBlock.isBlockIndirectlyPowered();
-                case TAP -> primaryPowerBlock.isBlockIndirectlyPowered()
-                        || secondaryPowerBlock.isBlockIndirectlyPowered();
+                case INCENSE, STORAGE -> SignalGetterProxy.INSTANCE.hasNeighborSignal(
+                        minecraftWorld, primaryPowerPos);
+                case TAP -> SignalGetterProxy.INSTANCE.hasNeighborSignal(
+                        minecraftWorld, primaryPowerPos)
+                        || SignalGetterProxy.INSTANCE.hasNeighborSignal(
+                                minecraftWorld, secondaryPowerPos);
             };
         }
 
@@ -436,17 +448,24 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
             }
             if (channel != Channel.TAP) {
                 primaryPowerBlock = bukkitFurniture.location().getBlock();
-                return;
-            }
-            Location origin = bukkitFurniture.location().clone();
-            Vector outward = origin.getDirection().setY(0);
-            if (outward.lengthSquared() < 0.001) {
-                outward = new Vector(0, 0, 1);
             } else {
-                outward.normalize();
+                Location origin = bukkitFurniture.location().clone();
+                Vector outward = origin.getDirection().setY(0);
+                if (outward.lengthSquared() < 0.001) {
+                    outward = new Vector(0, 0, 1);
+                } else {
+                    outward.normalize();
+                }
+                primaryPowerBlock = origin.add(outward.multiply(0.05)).getBlock();
+                secondaryPowerBlock = primaryPowerBlock.getRelative(BlockFace.UP);
             }
-            primaryPowerBlock = origin.add(outward.multiply(0.05)).getBlock();
-            secondaryPowerBlock = primaryPowerBlock.getRelative(BlockFace.UP);
+            minecraftWorld = CraftWorldProxy.INSTANCE.getWorld(primaryPowerBlock.getWorld());
+            primaryPowerPos = LocationUtils.toBlockPos(
+                    primaryPowerBlock.getX(), primaryPowerBlock.getY(), primaryPowerBlock.getZ());
+            if (secondaryPowerBlock != null) {
+                secondaryPowerPos = LocationUtils.toBlockPos(
+                        secondaryPowerBlock.getX(), secondaryPowerBlock.getY(), secondaryPowerBlock.getZ());
+            }
         }
     }
 

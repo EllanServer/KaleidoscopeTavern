@@ -67,7 +67,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -704,6 +703,16 @@ public final class EffectService implements Listener {
         if (effects.isEmpty() || elapsedTicks % (living.isInvisible() ? 15L : 3L) != 0) {
             return;
         }
+        Set<Player> trackedBy = living.getTrackedBy();
+        boolean includeSelf = living instanceof Player self && !trackedBy.contains(self);
+        if (trackedBy.isEmpty() && !includeSelf) {
+            return;
+        }
+        List<Player> receivers = new ArrayList<>(trackedBy.size() + (includeSelf ? 1 : 0));
+        receivers.addAll(trackedBy);
+        if (includeSelf) {
+            receivers.add((Player) living);
+        }
         ThreadLocalRandom random = ThreadLocalRandom.current();
         String chosen = null;
         int index = random.nextInt(effects.size());
@@ -722,12 +731,11 @@ public final class EffectService implements Listener {
             color = Color.fromRGB(rgb);
             effectColorCache.put(chosen, color);
         }
-        BoundingBox box = living.getBoundingBox();
-        living.getWorld().spawnParticle(Particle.ENTITY_EFFECT,
-                box.getMinX() + random.nextDouble() * box.getWidthX(),
-                box.getMinY() + random.nextDouble() * box.getHeight(),
-                box.getMinZ() + random.nextDouble() * box.getWidthZ(),
-                1, 0.0, 0.0, 0.0, 0.0, color);
+        living.getWorld().spawnParticle(Particle.ENTITY_EFFECT, receivers, null,
+                living.getX() + (random.nextDouble() - 0.5) * living.getWidth(),
+                living.getY() + random.nextDouble() * living.getHeight(),
+                living.getZ() + (random.nextDouble() - 0.5) * living.getWidth(),
+                1, 0.0, 0.0, 0.0, 0.0, color, false);
     }
 
     private boolean tickEffect(LivingEntity living, ActiveEffect effect) {
