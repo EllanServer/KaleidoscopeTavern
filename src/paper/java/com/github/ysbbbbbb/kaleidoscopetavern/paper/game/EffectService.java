@@ -123,6 +123,8 @@ public final class EffectService implements Listener {
     private final Set<UUID> stealthHidden = new HashSet<>();
     private final Map<String, Color> effectColorCache = new HashMap<>();
     private final Map<String, Object> effectParticleOptionCache = new HashMap<>();
+    private final Map<UUID, List<Object>> effectParticleDataCache = new HashMap<>();
+    private final Set<UUID> pendingEffectParticleRefresh = new HashSet<>();
     private final Map<String, CompiledBlockTag> blockTagCache = new HashMap<>();
     private final Map<String, CompiledEntityTag> entityTagCache = new HashMap<>();
     private final boolean builtinHud;
@@ -131,6 +133,7 @@ public final class EffectService implements Listener {
     private long elapsedTicks;
     private BukkitTask task;
     private boolean upsideDownPacketsAvailable = true;
+    private boolean particleMetadataAvailable = true;
     private boolean particlePacketsAvailable = true;
 
     public EffectService(JavaPlugin plugin, ContentCatalog catalog, ItemService items) {
@@ -179,6 +182,7 @@ public final class EffectService implements Listener {
             task.cancel();
             task = null;
         }
+        restoreAllEffectParticleMetadata();
         for (UUID uuid : new ArrayList<>(active.keySet())) {
             LivingEntity living = activeEntities.get(uuid);
             if (living == null && Bukkit.getEntity(uuid) instanceof LivingEntity recovered) {
@@ -213,6 +217,8 @@ public final class EffectService implements Listener {
         visionPacketExpiry.clear();
         restoreUpsideDownPackets();
         upsideDownPacketTargets.clear();
+        effectParticleDataCache.clear();
+        pendingEffectParticleRefresh.clear();
         activeEntities.clear();
         active.clear();
     }
@@ -316,12 +322,17 @@ public final class EffectService implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPotionEffectsCleared(EntityPotionEffectEvent event) {
+    public void onPotionEffectChange(EntityPotionEffectEvent event) {
         if (event.getAction() == EntityPotionEffectEvent.Action.CLEARED
                 && (event.getCause() == EntityPotionEffectEvent.Cause.COMMAND
                 || event.getCause() == EntityPotionEffectEvent.Cause.MILK)) {
             clearEffects(event.getEntity());
+            return;
         }
+        // NMS marks effectsDirty during this event and may not rebuild the
+        // server-owned particle metadata until the following entity tick.
+        // Bukkit scheduler tasks run before that tick, so wait two ticks.
+        scheduleEffectParticleRefresh(event.getEntity(), 2L);
     }
 
     @EventHandler
@@ -337,6 +348,8 @@ public final class EffectService implements Listener {
         privateTipsyVisual.remove(event.getPlayer().getUniqueId());
         visionPacketExpiry.remove(event.getPlayer().getUniqueId());
         upsideDownPacketTargets.remove(event.getPlayer().getUniqueId());
+        effectParticleDataCache.remove(event.getPlayer().getUniqueId());
+        pendingEffectParticleRefresh.remove(event.getPlayer().getUniqueId());
         activeEntities.remove(event.getPlayer().getUniqueId());
         active.remove(event.getPlayer().getUniqueId());
         stopTickTaskIfIdle();
@@ -345,11 +358,13 @@ public final class EffectService implements Listener {
     @EventHandler
     public void onChangedWorld(PlayerChangedWorldEvent event) {
         resetPrivateTipsyVisual(event.getPlayer());
+        scheduleEffectParticleRefresh(event.getPlayer());
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
         resetPrivateTipsyVisual(event.getPlayer());
+        scheduleEffectParticleRefresh(event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -357,15 +372,26 @@ public final class EffectService implements Listener {
         Player viewer = event.getPlayer();
         Entity target = event.getEntity();
         Set<UUID> inverted = upsideDownPacketTargets.get(viewer.getUniqueId());
-        if (!(target instanceof Mob) || inverted == null
-                || !inverted.contains(target.getUniqueId())) {
+        boolean replayUpsideDown = target instanceof Mob && inverted != null
+                && inverted.contains(target.getUniqueId());
+        boolean replayEffectParticles = particleMetadataAvailable
+                && target instanceof LivingEntity
+                && active.containsKey(target.getUniqueId());
+        if (!replayUpsideDown && !replayEffectParticles) {
             return;
         }
-        // The tracking event precedes the initial metadata on some Paper
-        // revisions. Replay one tick later so our viewer-only name wins.
+        // The tracking event precedes the initial metadata packet. Replay one
+        // tick later so the viewer-only name and particle list win.
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (viewer.isOnline() && target.isValid() && target.isTrackedBy(viewer)) {
-                sendUpsideDownPacket(viewer, target);
+                Set<UUID> currentInverted = upsideDownPacketTargets.get(viewer.getUniqueId());
+                if (target instanceof Mob && currentInverted != null
+                        && currentInverted.contains(target.getUniqueId())) {
+                    sendUpsideDownPacket(viewer, target);
+                }
+                if (target instanceof LivingEntity living) {
+                    sendEffectParticleMetadata(viewer, living);
+                }
             }
         });
     }
@@ -386,6 +412,8 @@ public final class EffectService implements Listener {
             if (entity instanceof LivingEntity living && active.containsKey(living.getUniqueId())) {
                 save(living);
                 restoreStealthVisibility(living);
+                effectParticleDataCache.remove(living.getUniqueId());
+                pendingEffectParticleRefresh.remove(living.getUniqueId());
                 activeEntities.remove(living.getUniqueId());
                 active.remove(living.getUniqueId());
             }
@@ -405,12 +433,16 @@ public final class EffectService implements Listener {
                 || !active.containsKey(living.getUniqueId())) {
             return;
         }
+        effectParticleDataCache.remove(living.getUniqueId());
+        pendingEffectParticleRefresh.remove(living.getUniqueId());
         clearEffects(living);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDeath(EntityDeathEvent event) {
         LivingEntity target = event.getEntity();
+        effectParticleDataCache.remove(target.getUniqueId());
+        pendingEffectParticleRefresh.remove(target.getUniqueId());
         for (Set<UUID> inverted : upsideDownPacketTargets.values()) {
             inverted.remove(target.getUniqueId());
         }
@@ -636,6 +668,7 @@ public final class EffectService implements Listener {
         effects.put(spec.effect(), new ActiveEffect(spec.effect(), merged));
         activeEntities.put(target.getUniqueId(), target);
         ensureTickTask();
+        syncEffectParticleMetadata(target, effects);
         save(target);
         reconcileAttributes(target, effects);
         if (target instanceof Player player) {
@@ -671,7 +704,7 @@ public final class EffectService implements Listener {
             while (effectIterator.hasNext()) {
                 Map.Entry<String, ActiveEffect> effectEntry = effectIterator.next();
                 ActiveEffect effect = effectEntry.getValue();
-                if (!tickEffect(living, effect)) {
+                if (effect.tickKind() != TickKind.NONE && !tickEffect(living, effect)) {
                     effectIterator.remove();
                     changed = true;
                     continue;
@@ -679,7 +712,7 @@ public final class EffectService implements Listener {
                 boolean visibleExpired = effect.remainingTicks() <= period;
                 boolean remainsActive = effect.advance((int) period);
                 if (visibleExpired && living instanceof Player
-                        && effect.effect().equals(PREFIX + "ardent_heat")) {
+                        && effect.tickKind() == TickKind.ARDENT_HEAT) {
                     applyHunger(living, 600);
                 }
                 if (!remainsActive) {
@@ -694,7 +727,12 @@ public final class EffectService implements Listener {
                 visionPacketExpiry.remove(player.getUniqueId());
             }
             updateStealthVisibility(living, effects);
-            spawnEffectParticles(living, effects);
+            if (changed) {
+                syncEffectParticleMetadata(living, effects);
+            }
+            if (!particleMetadataAvailable) {
+                spawnEffectParticles(living, effects);
+            }
             if (changed || persistThisTick) {
                 save(living);
                 // Attribute reconciliation is a repair pass: applies and
@@ -758,15 +796,170 @@ public final class EffectService implements Listener {
         }
     }
 
+    private void scheduleEffectParticleRefresh(LivingEntity living) {
+        scheduleEffectParticleRefresh(living, 1L);
+    }
+
+    private void scheduleEffectParticleRefresh(LivingEntity living, long delay) {
+        UUID uuid = living.getUniqueId();
+        if (!particleMetadataAvailable || !active.containsKey(uuid)
+                || !pendingEffectParticleRefresh.add(uuid)) {
+            return;
+        }
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            pendingEffectParticleRefresh.remove(uuid);
+            LivingEntity current = activeEntities.get(uuid);
+            Map<String, ActiveEffect> effects = active.get(uuid);
+            if (current != null && effects != null && !effects.isEmpty()) {
+                syncEffectParticleMetadata(current, effects);
+            }
+        }, delay);
+    }
+
+    private void syncEffectParticleMetadata(LivingEntity living,
+                                            Map<String, ActiveEffect> effects) {
+        if (!particleMetadataAvailable) {
+            return;
+        }
+        if (effects.isEmpty()) {
+            restoreEffectParticleMetadata(living);
+            return;
+        }
+        try {
+            List<Object> metadata = buildEffectParticleMetadata(living, effects);
+            effectParticleDataCache.put(living.getUniqueId(), metadata);
+            sendEffectParticleMetadata(living, metadata);
+        } catch (RuntimeException | LinkageError error) {
+            disableEffectParticleMetadata(error);
+        }
+    }
+
+    private void sendEffectParticleMetadata(Player viewer, LivingEntity living) {
+        if (!particleMetadataAvailable) {
+            return;
+        }
+        Map<String, ActiveEffect> effects = active.get(living.getUniqueId());
+        if (effects == null || effects.isEmpty()) {
+            return;
+        }
+        try {
+            // Tracking can begin after NBT load without a Bukkit potion event;
+            // rebuild here so the cached vanilla list can never be stale.
+            List<Object> metadata = buildEffectParticleMetadata(living, effects);
+            effectParticleDataCache.put(living.getUniqueId(), metadata);
+            ViewerEffectPackets.sendEffectParticleMetadata(viewer, living, metadata);
+        } catch (RuntimeException | LinkageError error) {
+            disableEffectParticleMetadata(error);
+        }
+    }
+
+    private List<Object> buildEffectParticleMetadata(LivingEntity living,
+                                                     Map<String, ActiveEffect> effects) {
+        List<Object> particles = new ArrayList<>(effects.size());
+        for (String effect : effects.keySet()) {
+            Integer rgb = CustomEffectHudSemantics.color(effect);
+            if (rgb == null) {
+                continue;
+            }
+            Color color = effectColorCache.get(effect);
+            if (color == null) {
+                color = Color.fromRGB(rgb);
+                effectColorCache.put(effect, color);
+            }
+            Object particle = effectParticleOptionCache.get(effect);
+            if (particle == null) {
+                particle = ViewerEffectPackets.entityEffectParticle(color);
+                effectParticleOptionCache.put(effect, particle);
+            }
+            particles.add(particle);
+        }
+        return ViewerEffectPackets.effectParticleMetadata(living, particles);
+    }
+
+    private static void sendEffectParticleMetadata(LivingEntity living, List<Object> metadata) {
+        Set<Player> viewers = living.getTrackedBy();
+        Player self = living instanceof Player player ? player : null;
+        if (!viewers.isEmpty() || self != null) {
+            ViewerEffectPackets.sendEffectParticleMetadata(viewers, self, living, metadata);
+        }
+    }
+
+    private void restoreEffectParticleMetadata(LivingEntity living) {
+        pendingEffectParticleRefresh.remove(living.getUniqueId());
+        if (!particleMetadataAvailable
+                || effectParticleDataCache.remove(living.getUniqueId()) == null) {
+            return;
+        }
+        try {
+            sendEffectParticleMetadata(living,
+                    ViewerEffectPackets.effectParticleMetadata(living, List.of()));
+        } catch (RuntimeException | LinkageError error) {
+            disableEffectParticleMetadata(error);
+        }
+    }
+
+    private void restoreAllEffectParticleMetadata() {
+        if (!particleMetadataAvailable || effectParticleDataCache.isEmpty()) {
+            return;
+        }
+        Throwable firstFailure = null;
+        for (UUID uuid : new ArrayList<>(effectParticleDataCache.keySet())) {
+            LivingEntity living = activeEntities.get(uuid);
+            if (living != null) {
+                try {
+                    sendEffectParticleMetadata(living,
+                            ViewerEffectPackets.effectParticleMetadata(living, List.of()));
+                } catch (RuntimeException | LinkageError error) {
+                    if (firstFailure == null) {
+                        firstFailure = error;
+                    }
+                }
+            }
+        }
+        if (firstFailure != null) {
+            plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "无法恢复部分实体的客户端原版药水粒子 metadata", firstFailure);
+        }
+        effectParticleDataCache.clear();
+        pendingEffectParticleRefresh.clear();
+    }
+
+    private void disableEffectParticleMetadata(Throwable error) {
+        if (!particleMetadataAvailable) {
+            return;
+        }
+        particleMetadataAvailable = false;
+        // A late bridge failure may occur after other entities already received
+        // custom metadata. Best-effort restoration prevents fallback packets
+        // from being rendered together with stale client-generated swirls.
+        for (UUID uuid : new ArrayList<>(effectParticleDataCache.keySet())) {
+            LivingEntity living = activeEntities.get(uuid);
+            if (living == null) {
+                continue;
+            }
+            try {
+                sendEffectParticleMetadata(living,
+                        ViewerEffectPackets.effectParticleMetadata(living, List.of()));
+            } catch (RuntimeException | LinkageError ignored) {
+                // The original bridge failure is logged below.
+            }
+        }
+        effectParticleDataCache.clear();
+        pendingEffectParticleRefresh.clear();
+        plugin.getLogger().log(java.util.logging.Level.WARNING,
+                "无法使用 Paper 26.2 效果粒子 metadata 桥接，将回退到服务端粒子包", error);
+    }
+
     /**
-     * Replays the vanilla ambient effect swirls with the colours registered by
-     * the original mod. The custom effects never reach the client's effect
-     * registry, so the server spawns the ENTITY_EFFECT particles itself: one
-     * randomly-coloured swirl roughly every three ticks, throttled the same
-     * way vanilla throttles invisible entities.
+     * Failure-only fallback for servers where the pinned client-metadata bridge
+     * cannot be resolved. The normal path sends a merged particle list only on
+     * state events and lets each client reproduce vanilla's local particle tick.
      */
     private void spawnEffectParticles(LivingEntity living, Map<String, ActiveEffect> effects) {
-        if (effects.isEmpty() || elapsedTicks % (living.isInvisible() ? 15L : 3L) != 0) {
+        if (effects.isEmpty() || elapsedTicks % 3L != 0) {
+            return;
+        }
+        if (living.isInvisible() && elapsedTicks % 15L != 0) {
             return;
         }
         Set<Player> trackedBy = living.getTrackedBy();
@@ -822,13 +1015,13 @@ public final class EffectService implements Listener {
     }
 
     private boolean tickEffect(LivingEntity living, ActiveEffect effect) {
-        switch (effect.effect()) {
-            case PREFIX + "vision" -> {
+        switch (effect.tickKind()) {
+            case VISION -> {
                 if (EffectSemantics.ticksAt(effect.remainingTicks(), 50)) {
                     vision(living, effect.amplifier());
                 }
             }
-            case PREFIX + "xp_drain" -> {
+            case XP_DRAIN -> {
                 if (living instanceof Player player) {
                     player.setExpCooldown(0);
                     if (player.getTicksLived() % 5 == 0) {
@@ -836,24 +1029,18 @@ public final class EffectService implements Listener {
                     }
                 }
             }
-            case PREFIX + "grass_stealth" -> {
+            case GRASS_STEALTH -> {
                 if (EffectSemantics.ticksAt(effect.remainingTicks(), 10)) {
                     grassStealth(living);
                 }
             }
-            case PREFIX + "ardent_heat" -> {
+            case ARDENT_HEAT -> {
                 if (living instanceof Player player && !ardentHeat(player)) {
                     applyHunger(player, 600);
                     return false;
                 }
             }
-            case PREFIX + "slightly_tipsy", PREFIX + "bloody_mary", PREFIX + "tomb_raider",
-                    PREFIX + "high_heels", PREFIX + "long_reach" -> {
-                // Source BaseEffect markers and attribute-only effects have no tick callback.
-            }
-            default -> {
-                // Unknown retained effects are inert instead of gaining invented behavior.
-            }
+            case NONE -> throw new IllegalStateException("Inert effect entered tickEffect");
         }
         return true;
     }
@@ -1274,12 +1461,15 @@ public final class EffectService implements Listener {
     private void load(LivingEntity living) {
         Map<String, ActiveEffect> effects = read(living);
         if (effects.isEmpty()) {
+            restoreEffectParticleMetadata(living);
             activeEntities.remove(living.getUniqueId());
             active.remove(living.getUniqueId());
         } else {
             active.put(living.getUniqueId(), effects);
             activeEntities.put(living.getUniqueId(), living);
             ensureTickTask();
+            syncEffectParticleMetadata(living, effects);
+            scheduleEffectParticleRefresh(living, 2L);
         }
         reconcileAttributes(living, effects);
         if (living instanceof Player player) {
@@ -1467,6 +1657,7 @@ public final class EffectService implements Listener {
     }
 
     private void clearEffects(LivingEntity living) {
+        restoreEffectParticleMetadata(living);
         activeEntities.remove(living.getUniqueId());
         active.remove(living.getUniqueId());
         visionPacketExpiry.remove(living.getUniqueId());
@@ -1480,12 +1671,32 @@ public final class EffectService implements Listener {
         stopTickTaskIfIdle();
     }
 
+    private enum TickKind {
+        NONE,
+        VISION,
+        XP_DRAIN,
+        GRASS_STEALTH,
+        ARDENT_HEAT;
+
+        private static TickKind forEffect(String effect) {
+            return switch (effect) {
+                case PREFIX + "vision" -> VISION;
+                case PREFIX + "xp_drain" -> XP_DRAIN;
+                case PREFIX + "grass_stealth" -> GRASS_STEALTH;
+                case PREFIX + "ardent_heat" -> ARDENT_HEAT;
+                default -> NONE;
+            };
+        }
+    }
+
     private static final class ActiveEffect {
         private final String effect;
+        private final TickKind tickKind;
         private final EffectSemantics.MutableEffectState state;
 
         private ActiveEffect(String effect, EffectSemantics.EffectState state) {
             this.effect = effect;
+            this.tickKind = TickKind.forEffect(effect);
             this.state = new EffectSemantics.MutableEffectState(state);
         }
 
@@ -1495,6 +1706,10 @@ public final class EffectService implements Listener {
 
         private EffectSemantics.EffectState state() {
             return state.snapshot();
+        }
+
+        private TickKind tickKind() {
+            return tickKind;
         }
 
         private int remainingTicks() {

@@ -63,6 +63,73 @@ final class ViewerEffectPackets {
     }
 
     /**
+     * Builds the two LivingEntity metadata values used by the client to render
+     * potion swirls. The server-owned particle list is retained and Tavern's
+     * cached particle options are appended without mutating the real entity.
+     */
+    static List<Object> effectParticleMetadata(Entity target, Collection<Object> customParticles) {
+        Object targetHandle = CraftEntityProxy.INSTANCE.getEntity(target);
+        Object entityData = EntityProxy.INSTANCE.getEntityData(targetHandle);
+        List<Object> packed = SynchedEntityDataProxy.INSTANCE.packAll(entityData);
+        Object serverParticles = findDataValueBySerializer(
+                packed, EntityDataSerializersProxy.PARTICLES);
+        if (serverParticles == null) {
+            throw new IllegalStateException(
+                    "Paper 26.2 LivingEntity effect-particle metadata is missing");
+        }
+
+        Object rawParticles = SynchedEntityDataProxy.DataValueProxy.INSTANCE
+                .getValue(serverParticles);
+        if (!(rawParticles instanceof List<?> vanillaParticles)) {
+            throw new IllegalStateException(
+                    "Paper 26.2 LivingEntity effect-particle metadata is not a list");
+        }
+
+        int particleId = SynchedEntityDataProxy.DataValueProxy.INSTANCE.getId(serverParticles);
+        // Paper 26.2 defines DATA_EFFECT_AMBIENCE_ID immediately after
+        // DATA_EFFECT_PARTICLES; validate both its id and serializer at runtime.
+        Object serverAmbient = findDataValue(packed, particleId + 1);
+        if (serverAmbient == null
+                || SynchedEntityDataProxy.DataValueProxy.INSTANCE.getSerializer(serverAmbient)
+                != EntityDataSerializersProxy.BOOLEAN
+                || !(SynchedEntityDataProxy.DataValueProxy.INSTANCE
+                .getValue(serverAmbient) instanceof Boolean)) {
+            throw new IllegalStateException(
+                    "Paper 26.2 LivingEntity effect-ambient metadata is missing");
+        }
+        if (customParticles.isEmpty()) {
+            return List.of(serverParticles, serverAmbient);
+        }
+
+        List<Object> mergedParticles = new ArrayList<>(
+                vanillaParticles.size() + customParticles.size());
+        mergedParticles.addAll(vanillaParticles);
+        mergedParticles.addAll(customParticles);
+        Object particles = SynchedEntityDataProxy.DataValueProxy.INSTANCE.newInstance(
+                particleId, EntityDataSerializersProxy.PARTICLES,
+                List.copyOf(mergedParticles));
+        // Archived Tavern effects are non-ambient MobEffectInstances.
+        Object ambient = SynchedEntityDataProxy.DataValueProxy.INSTANCE.newInstance(
+                particleId + 1, EntityDataSerializersProxy.BOOLEAN, false);
+        return List.of(particles, ambient);
+    }
+
+    static void sendEffectParticleMetadata(Player viewer, Entity target, List<Object> metadata) {
+        sendDataValues(viewer, CraftEntityProxy.INSTANCE.getEntity(target), metadata);
+    }
+
+    static void sendEffectParticleMetadata(Collection<Player> viewers, Player self,
+                                           Entity target, List<Object> metadata) {
+        Object targetHandle = CraftEntityProxy.INSTANCE.getEntity(target);
+        for (Player viewer : viewers) {
+            sendDataValues(viewer, targetHandle, metadata);
+        }
+        if (self != null && !viewers.contains(self)) {
+            sendDataValues(self, targetHandle, metadata);
+        }
+    }
+
+    /**
      * Converts one Bukkit colour to the immutable native ENTITY_EFFECT option.
      * EffectService caches the result per effect id instead of making
      * CraftParticle rebuild it for every visible swirl.
@@ -111,6 +178,15 @@ final class ViewerEffectPackets {
     private static Object findDataValue(List<Object> values, int id) {
         for (Object value : values) {
             if (SynchedEntityDataProxy.DataValueProxy.INSTANCE.getId(value) == id) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private static Object findDataValueBySerializer(List<Object> values, Object serializer) {
+        for (Object value : values) {
+            if (SynchedEntityDataProxy.DataValueProxy.INSTANCE.getSerializer(value) == serializer) {
                 return value;
             }
         }
