@@ -59,6 +59,8 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
 
     public static void register() {
         if (REGISTERED.compareAndSet(false, true)) {
+            VirtualEntityIdentity.prewarm();
+            BoardTextElement.prewarm();
             FurnitureBehaviors.register(Key.of(TYPE), BoardTextFurnitureBehavior::new);
         }
     }
@@ -243,10 +245,13 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
             this.entityUuids = new UUID[maxLines];
             for (int index = 0; index < maxLines; index++) {
                 entityIds[index] = EntityUtils.ENTITY_COUNTER.incrementAndGet();
-                entityUuids[index] = UUID.randomUUID();
+                entityUuids[index] = VirtualEntityIdentity.fromEntityId(entityIds[index]);
             }
             this.removePacket = ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(
                     new IntArrayList(entityIds));
+        }
+
+        private static void prewarm() {
         }
 
         @Override

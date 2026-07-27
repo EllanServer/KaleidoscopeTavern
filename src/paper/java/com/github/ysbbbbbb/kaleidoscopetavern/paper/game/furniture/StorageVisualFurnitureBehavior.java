@@ -58,6 +58,8 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
     public static void register() {
         if (REGISTERED.compareAndSet(false, true)) {
+            VirtualEntityIdentity.prewarm();
+            StorageItemElement.prewarm();
             FurnitureBehaviors.register(Key.of(TYPE), StorageVisualFurnitureBehavior::new);
         }
     }
@@ -177,9 +179,12 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
         private final BukkitFurniture furniture;
         private final int slot;
         private final int entityId = EntityUtils.ENTITY_COUNTER.incrementAndGet();
-        private final UUID entityUuid = UUID.randomUUID();
+        private final UUID entityUuid = VirtualEntityIdentity.fromEntityId(entityId);
         private final Object removePacket = ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(
                 new IntArrayList(new int[]{entityId}));
+
+        private static void prewarm() {
+        }
 
         private StorageItemElement(Controller controller, int slot) {
             this.controller = controller;

@@ -61,6 +61,8 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
     public static void register() {
         if (REGISTERED.compareAndSet(false, true)) {
+            VirtualEntityIdentity.prewarm();
+            StationVisualElement.prewarm();
             FurnitureBehaviors.register(Key.of(TYPE), StationVisualFurnitureBehavior::new);
         }
     }
@@ -193,10 +195,13 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
             this.entityUuids = new UUID[maxElements];
             for (int index = 0; index < maxElements; index++) {
                 entityIds[index] = EntityUtils.ENTITY_COUNTER.incrementAndGet();
-                entityUuids[index] = UUID.randomUUID();
+                entityUuids[index] = VirtualEntityIdentity.fromEntityId(entityIds[index]);
             }
             this.removePacket = ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(
                     new IntArrayList(entityIds));
+        }
+
+        private static void prewarm() {
         }
 
         @Override
