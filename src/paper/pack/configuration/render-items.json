@@ -1020,6 +1020,246 @@
         ]
       }
     },
+    "kaleidoscope_tavern:_render/sakura_incense/ee7ab522f7": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sakura_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense/sakura_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/sakura_incense/6c19b2475d": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sakura_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense_open/sakura_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/pine_incense/a550a91782": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pine_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense/pine_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/pine_incense/fd89d664dd": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pine_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense_open/pine_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/ginkgo_incense/36f91015dd": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.ginkgo_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense/ginkgo_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/ginkgo_incense/6eb0ec09fe": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.ginkgo_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense_open/ginkgo_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/spore_incense/cc2595b18c": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.spore_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense/spore_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/spore_incense/d085b453ea": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.spore_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense_open/spore_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/catnip_incense/6d613f74d4": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.catnip_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense/catnip_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/catnip_incense/feceea76af": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.catnip_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense_open/catnip_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/snow_incense/d2fd4827f9": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.snow_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense/snow_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/snow_incense/2bac4484cb": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.snow_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense_open/snow_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/butterfly_incense/bc9d67a255": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.butterfly_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense/butterfly_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/butterfly_incense/9aff3bbe39": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.butterfly_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense_open/butterfly_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/firefly_incense/3cef6378bb": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.firefly_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense/firefly_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/firefly_incense/8e86b1fc99": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.firefly_incense>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/incense_open/firefly_incense"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
     "kaleidoscope_tavern:_render/wild_grapevine/60aa9d0367": {
       "material": "paper",
       "data": {
@@ -1868,6 +2108,141 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:block/plant/gold_grape_crop/stage5"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/tap/8765567028": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.tap>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/brew/tap/close"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/tap/101b752d3e": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.tap>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/brew/tap/open"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/cellar_cabinet/5771cda45d": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cellar_cabinet>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/brew/cellar_cabinet/left"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/cellar_cabinet/4e8b5129e2": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cellar_cabinet>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/brew/cellar_cabinet/middle"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/cellar_cabinet/c5ff0d993c": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cellar_cabinet>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/brew/cellar_cabinet/right"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/cellar_cabinet/3c63f2b1ed": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cellar_cabinet>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/brew/cellar_cabinet/single"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/tilted_rack/0b95975b59": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.tilted_rack>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/tilted_rack"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/circular_rack/bf215250db": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.circular_rack>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/circular_rack"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/holder/d532879009": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.holder>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/deco/holder"
       },
       "settings": {
         "tags": [
@@ -4830,246 +5205,6 @@
         ]
       }
     },
-    "kaleidoscope_tavern:_render/sakura_incense/aa5922bccb": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.sakura_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense/sakura_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/sakura_incense/6613f48145": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.sakura_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense_open/sakura_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/pine_incense/1d688f057a": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.pine_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense/pine_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/pine_incense/a3344b2b7b": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.pine_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense_open/pine_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/ginkgo_incense/f1a1d060fe": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.ginkgo_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense/ginkgo_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/ginkgo_incense/8ae242874e": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.ginkgo_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense_open/ginkgo_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/spore_incense/8601924012": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.spore_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense/spore_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/spore_incense/aed721d847": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.spore_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense_open/spore_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/catnip_incense/4ca47fccfe": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.catnip_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense/catnip_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/catnip_incense/9f7810a6b0": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.catnip_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense_open/catnip_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/snow_incense/99d1b4bc15": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.snow_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense/snow_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/snow_incense/4977b1c80a": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.snow_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense_open/snow_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/butterfly_incense/3fd9800f55": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.butterfly_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense/butterfly_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/butterfly_incense/62d4260ed2": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.butterfly_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense_open/butterfly_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/firefly_incense/7e12cdf471": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.firefly_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense/firefly_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/firefly_incense/4c98610c95": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.firefly_incense>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/incense_open/firefly_incense"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
     "kaleidoscope_tavern:_render/bar_counter/fba778d59b": {
       "material": "paper",
       "data": {
@@ -5205,7 +5340,7 @@
         ]
       }
     },
-    "kaleidoscope_tavern:_render/pressing_tub/ec6795b934": {
+    "kaleidoscope_tavern:_render/pressing_tub/61ee42afd0": {
       "material": "paper",
       "data": {
         "item_name": "<!i><lang:block.kaleidoscope_tavern.pressing_tub>"
@@ -5213,36 +5348,6 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:block/brew/tilt_pressing_tub"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/tap/8ef74bd5d4": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.tap>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/tap/close"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/tap/ba6a38e250": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.tap>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/tap/open"
       },
       "settings": {
         "tags": [
@@ -5693,111 +5798,6 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:block/brew/glass_bar_cabinet/right"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.cellar_cabinet>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/cellar_cabinet/single"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.cellar_cabinet>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/cellar_cabinet/left"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.cellar_cabinet>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/cellar_cabinet/middle"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.cellar_cabinet>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/cellar_cabinet/right"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.tilted_rack>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/tilted_rack"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/circular_rack/5a379d3770": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.circular_rack>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/circular_rack"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/holder/7cd95fea9c": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.holder>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/deco/holder"
       },
       "settings": {
         "tags": [

@@ -27,6 +27,7 @@ import org.bukkit.persistence.ListPersistentDataType;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionEffectTypeCategory;
 
@@ -180,6 +181,7 @@ public final class ItemService {
             specs = catalog.effects(itemId, level);
         }
 
+        syncNativePotionEffects(stack, specs);
         ItemMeta meta = stack.getItemMeta();
         List<Component> managedLore = new ArrayList<>();
         if (!cocktail) {
@@ -217,6 +219,44 @@ public final class ItemService {
         }
         hidePotionTooltip(stack);
         return stack;
+    }
+
+    /**
+     * Lets Minecraft apply guaranteed vanilla effects from the potion-contents
+     * component. Probabilistic and Tavern-specific effects remain in the
+     * consume event bridge because potion contents cannot express them with
+     * the migrated semantics.
+     */
+    private static void syncNativePotionEffects(ItemStack stack, List<EffectSpec> specs) {
+        if (!(stack.getItemMeta() instanceof PotionMeta potionMeta)) {
+            return;
+        }
+        List<PotionEffect> expected = new ArrayList<>();
+        for (EffectSpec spec : specs) {
+            if (!NativeDrinkEffectSemantics.shouldEmbed(spec.effect(), spec.probability())) {
+                continue;
+            }
+            NamespacedKey key = NamespacedKey.fromString(spec.effect());
+            PotionEffectType type = key == null ? null : Registry.EFFECT.get(key);
+            if (type == null) {
+                continue;
+            }
+            expected.add(new PotionEffect(
+                    type,
+                    NativeDrinkEffectSemantics.duration(type.isInstant(), spec.durationTicks()),
+                    spec.amplifier(),
+                    false,
+                    true,
+                    true));
+        }
+        if (potionMeta.getCustomEffects().equals(expected)) {
+            return;
+        }
+        potionMeta.clearCustomEffects();
+        for (PotionEffect effect : expected) {
+            potionMeta.addCustomEffect(effect, true);
+        }
+        stack.setItemMeta(potionMeta);
     }
 
     private static void hidePotionTooltip(ItemStack stack) {

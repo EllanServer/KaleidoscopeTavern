@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehavi
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureController;
 import net.momirealms.craftengine.core.entity.furniture.hitbox.FurnitureHitBox;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.context.InteractEntityContext;
@@ -15,7 +16,7 @@ import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** Routes authored multi-slot storage interactions before CE's native slot controllers. */
+/** Routes authored storage interactions/removal before CE's native slot controllers. */
 public final class StorageInteractionFurnitureBehavior extends FurnitureBehaviorTemplate {
     public static final String TYPE = "kaleidoscope_tavern:storage_interaction_furniture";
 
@@ -51,10 +52,11 @@ public final class StorageInteractionFurnitureBehavior extends FurnitureBehavior
         return new Controller(bukkitFurniture);
     }
 
-    @FunctionalInterface
     public interface Handler {
         InteractionResult interact(BukkitFurniture furniture,
                                    InteractEntityContext context);
+
+        void onRemove(BukkitFurniture furniture, boolean dropItems);
     }
 
     private static final class Controller extends FurnitureController {
@@ -72,6 +74,18 @@ public final class StorageInteractionFurnitureBehavior extends FurnitureBehavior
             return current == null
                     ? InteractionResult.PASS
                     : current.interact(bukkitFurniture, context);
+        }
+
+        @Override
+        public void preRemove(Player player) {
+            Handler current = handler;
+            if (current != null) {
+                // CE's player attack path enables furniture loot outside
+                // creative mode. Match the source block's getDrops behavior
+                // before the following native display-slot controllers run.
+                current.onRemove(bukkitFurniture,
+                        player != null && !player.canInstabuild());
+            }
         }
     }
 }

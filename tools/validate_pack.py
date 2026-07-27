@@ -16,41 +16,29 @@ CUSTOM_CROPS = ROOT / "src/paper/customcrops/contents/crops/kaleidoscope_tavern.
 PLUGIN_CONFIG = ROOT / "src/paper/resources/config.yml"
 NAMESPACE = "kaleidoscope_tavern"
 EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
-EXPECTED_REDSTONE_FURNITURE = {
-    "tap": "tap",
-    "sakura_incense": "incense",
-    "pine_incense": "incense",
-    "ginkgo_incense": "incense",
-    "snow_incense": "incense",
-    "spore_incense": "incense",
-    "catnip_incense": "incense",
-    "butterfly_incense": "incense",
-    "firefly_incense": "incense",
-    "cellar_cabinet": "storage",
-    "tilted_rack": "storage",
-    "circular_rack": "storage",
-    "holder": "storage",
+STORAGE_BLOCK_SPECS = {
+    "cellar_cabinet": (9, "cellar_cabinet_blocklist", "solid"),
+    "tilted_rack": (3, "tilted_rack_blocklist", "cactus"),
+    "circular_rack": (6, "circular_rack_blocklist", "pressure_plate"),
+    "holder": (1, "holder_blocklist", "cactus"),
 }
 EXPECTED_TICKING_FURNITURE = {
-    **{
-        incense: (
-            {"channel": "incense_effect", "interval": 120, "phase": "global"},
-            {"channel": "incense_particle", "chance": 49},
-        )
-        for incense in (
-            "sakura_incense", "pine_incense", "ginkgo_incense", "snow_incense",
-            "spore_incense", "catnip_incense", "butterfly_incense", "firefly_incense",
-        )
-    },
     "mystery_cocktail": (
         {"channel": "mystery_particle", "chance": 49},
-    ),
-    "circular_rack": (
-        {"channel": "rack_particle", "chance": 392},
     ),
     "barrel": (
         {"channel": "barrel", "interval": 97, "phase": "identity"},
     ),
+}
+INCENSE_BLOCK_SPECS = {
+    "sakura_incense": ("CHERRY_LEAVES", "CHERRY_LEAVES", -2.0, 16.0),
+    "pine_incense": ("SMOKE", "CAMPFIRE_COSY_SMOKE", -2.0, 16.0),
+    "ginkgo_incense": ("WAX_OFF", "COMPOSTER", -2.0, 16.0),
+    "spore_incense": ("SPORE_BLOSSOM_AIR", "SPORE_BLOSSOM_AIR", -2.0, 16.0),
+    "catnip_incense": ("HAPPY_VILLAGER", "HAPPY_VILLAGER", -2.0, 16.0),
+    "snow_incense": ("SNOWFLAKE", "SNOWFLAKE", -2.0, 16.0),
+    "butterfly_incense": ("GLOW", "GLOW", -2.0, 16.0),
+    "firefly_incense": ("FIREFLY", "FIREFLY", -0.67, 5.33),
 }
 EXPECTED_STATE_FURNITURE = {
     "chalkboard",
@@ -86,8 +74,7 @@ EXPECTED_BOTTLE_FURNITURE = {
     "watermelon_juice",
 }
 EXPECTED_STORAGE_INTERACTION_FURNITURE = {
-    "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet", "tilted_rack",
-    "circular_rack", "holder", "glassware_holder",
+    "bar_cabinet", "glass_bar_cabinet", "glassware_holder",
 }
 EXPECTED_STATION_INTERACTION_FURNITURE = {
     "pressing_tub", "barrel", "shaker", "empty_glassware",
@@ -115,7 +102,6 @@ EXPECTED_LIFECYCLE_FURNITURE: dict[str, tuple[str, ...]] = {
     "wither_rose_sandwich_board": ("board",),
     "bar_cabinet": ("connection",),
     "glass_bar_cabinet": ("connection",),
-    "cellar_cabinet": ("connection",),
     "shaker": ("shaker",),
     "barrel": ("barrel",),
     "empty_bottle": ("tap_bottle",),
@@ -171,19 +157,19 @@ OBSOLETE_VANILLA_IDS = {"minecraft:chain", "minecraft:grass"}
 SOURCE_STATE_OWNERS = {
     "age": "CustomCrops stage blocks",
     "axis": "FurnitureConnectionService yaw/line selection",
-    "connection": "FurnitureConnectionService",
+    "connection": "FurnitureConnectionService sofa/furniture variants and storage block states",
     "count": "BottleFurnitureService",
     "face": "CE ground/wall/ceiling placement rules",
-    "facing": "CE four-way/sixteen-way furniture rotation",
+    "facing": "CE tap/storage block state and four-way/sixteen-way furniture rotation",
     "half": "composite multi-element furniture variants",
-    "open": "furniture.json incense toggle events, StationService and TapService",
-    "position": "FurnitureConnectionService",
-    "powered": "RedstoneFurnitureBehavior CE controller state and service callbacks",
+    "open": "CE incense/tap block state",
+    "position": "CE storage block connection state plus FurnitureConnectionService",
+    "powered": "CE incense/storage block redstone edge state",
     "rotation": "CE sixteen-way sandwich-board rotation",
     "tilt": "ground/wall pressing-tub placement variants",
-    "triggered": "RedstoneFurnitureBehavior tap edge latch",
+    "triggered": "CE TapBlockBehavior redstone edge latch",
     "type": "CE trellis state variants",
-    "waterlogged": "entity furniture / CE non-displacing carrier semantics",
+    "waterlogged": "CE tap/trellis fluid state plus non-displacing carrier semantics",
     "waxed": "CE trellis state variants plus blocks.json wax events",
 }
 
@@ -221,9 +207,9 @@ RUNTIME_METHODS = (
 )
 RUNTIME_BEHAVIOR_COVERAGE = {
     "AbstractStorageBlock.java": (
-        ("furniture/RedstoneFurnitureBehavior.java", "BlockRedstoneEvent"),
-        ("DisplayStorageService.java", "RedstoneFurnitureBehavior.bind("),
-        ("DisplayStorageService.java", "RedstoneFurnitureBehavior.Channel.STORAGE"),
+        ("block/StorageBlockBehavior.java", "public void neighborChanged"),
+        ("DisplayStorageService.java", "launchRandomBottle(StorageBlockBehavior.Controller"),
+        ("DisplayStorageService.java", "interactStorageBlock"),
     ),
     "BarCabinetBlock.java": (
         ("DisplayStorageService.java", "BAR_CABINET"),
@@ -243,13 +229,12 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "CellarCabinetBlock.java": (
         ("DisplayStorageService.java", "CELLAR_CABINET"),
-        ("FurnitureConnectionService.java", "cellar_cabinet"),
+        ("block/StorageBlockBehavior.java", "cellarPosition"),
     ),
     "ChalkboardBlock.java": (("BoardTextService.java", "CHALKBOARD"),),
     "CircularRackBlock.java": (
         ("DisplayStorageService.java", "CIRCULAR_RACK"),
-        ("AmbientFurnitureService.java", "tickCircularRack"),
-        ("furniture/TickingFurnitureBehavior.java", "RACK_PARTICLE"),
+        ("block/StorageBlockBehavior.java", "tickCircularRack"),
     ),
     "CocktailBlockItem.java": (
         ("EffectService.java", "onConsume"),
@@ -266,6 +251,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     "GlasswareHolderBlock.java": (("DisplayStorageService.java", "GLASSWARE_HOLDER"),),
     "GrapeCropBlock.java": (
         ("block/HangingGrapeCropBehavior.java", "addGrowthPoints"),
+        ("block/HangingGrapeCropBehavior.java", "CustomCropsBridge.removeCrop"),
         ("src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml", "harvest_with_shears"),
     ),
     "GrapevineItem.java": (
@@ -275,18 +261,20 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("tools/migrate_legacy.py", '"fuel_time"'),
     ),
     "GrapevineTrellisBlock.java": (
-        ("block/BlockService.java", "interactVineTrellis"),
+        ("tools/migrate_legacy.py", "grapevine_trellis_shear_events"),
         ("block/TrellisBehavior.java", "implements BonemealableBlock"),
         ("block/TrellisBehavior.java", "public static boolean grow"),
     ),
-    "HolderBlock.java": (("DisplayStorageService.java", "HOLDER"),),
+    "HolderBlock.java": (
+        ("DisplayStorageService.java", "HOLDER"),
+        ("block/StorageBlockBehavior.java", "case HOLDER"),
+    ),
     "IncenseBlock.java": (
-        ("src/paper/pack/configuration/furniture.json", "set_furniture_variant"),
-        ("furniture/RedstoneFurnitureBehavior.java", "onPowerState"),
-        ("StationService.java", "RedstoneFurnitureBehavior.bind("),
-        ("StationService.java", "RedstoneFurnitureBehavior.Channel.INCENSE"),
-        ("AmbientFurnitureService.java", "tickIncense"),
-        ("AmbientFurnitureService.java", "TickingFurnitureBehavior.bind("),
+        ("src/paper/pack/configuration/blocks.json", "minecraft:copper_lantern"),
+        ("block/IncenseBlockBehavior.java", "updateStateForPlacement"),
+        ("block/IncenseBlockBehavior.java", "neighborChanged"),
+        ("block/IncenseBlockBehavior.java", "useOnBlock"),
+        ("block/IncenseBlockBehavior.java", "spawnParticles"),
     ),
     "JuiceBucketItem.java": (("tools/migrate_legacy.py", "milk_bucket"),),
     "MolotovBlock.java": (("MolotovService.java", "onProjectileHit"),),
@@ -305,7 +293,9 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     "SandwichBoardBlock.java": (("BoardTextService.java", "transformSandwichBoard"),),
     "ShakerBlock.java": (("StationService.java", "interactShaker"),),
     "ShakerItem.java": (
-        ("StationService.java", "onUsePortableShaker"),
+        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+         "ShakerItemBehavior.java", "InteractionResult use(World world"),
+        ("StationService.java", "usePortableShaker"),
         ("ShakerSemantics.java", "AUTO_RELEASE_AFTER_TICKS"),
     ),
     "SofaBlock.java": (
@@ -317,14 +307,18 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("src/paper/resources/catalog/tags.tsv", "curios:charm"),
     ),
     "TapBlock.java": (
-        ("furniture/RedstoneFurnitureBehavior.java", "loadCustomData"),
-        ("furniture/RedstoneFurnitureBehavior.java", "useOnFurniture"),
-        ("TapService.java", "RedstoneFurnitureBehavior.bind("),
-        ("TapService.java", "RedstoneFurnitureBehavior.bindInteraction("),
-        ("TapService.java", "RedstoneFurnitureBehavior.Channel.TAP"),
+        ("src/paper/pack/configuration/blocks.json", "minecraft:lightning_rod"),
+        ("block/TapBlockBehavior.java", "updateStateForPlacement"),
+        ("block/TapBlockBehavior.java", "neighborChanged"),
+        ("block/TapBlockBehavior.java", "useOnBlock"),
+        ("block/TapBlockBehavior.java", "TAKE_TICKS = 30"),
+        ("TapService.java", "TapBlockBehavior.bind(this)"),
         ("TapSemantics.java", "isBarrelConnection"),
     ),
-    "TiltedRackBlock.java": (("DisplayStorageService.java", "TILTED_RACK"),),
+    "TiltedRackBlock.java": (
+        ("DisplayStorageService.java", "TILTED_RACK"),
+        ("block/StorageBlockBehavior.java", "case TILTED_RACK"),
+    ),
     "TrellisBlock.java": (
         ("block/BlockService.java", "useGrapevineOnBlock"),
         ("block/TrellisBehavior.java", "updateStateForPlacement"),
@@ -351,7 +345,7 @@ TAP_BEHAVIOR_COVERAGE = {
 TICKING_BLOCK_ENTITY_COVERAGE = {
     "BarrelBlockEntity.java": ("StationService.java", "barrelTickingHandler"),
     "BarStoolBlockEntity.java": ("BarStoolVisualService.java", "tickOccupied"),
-    "TapBlockEntity.java": ("TapService.java", "TAKE_PARTICLE_TICKS"),
+    "TapBlockEntity.java": ("block/TapBlockBehavior.java", "TAKE_PARTICLE_TICKS = 5"),
     "TextBlockEntity.java": ("BoardTextService.java", "validateEditDistance"),
 }
 
@@ -403,25 +397,28 @@ BLOCK_ENTITY_COVERAGE = {
     "DrinkBlockEntity.java": (("BottleFurnitureService.java", "storedItems"),),
     "PotionBottleBlockEntity.java": (("BottleFurnitureService.java", "sourceItem"),),
     "PressingTubBlockEntity.java": (("StationService.java", "press_count"),),
-    "TapBlockEntity.java": (("TapService.java", "running"),),
+    "TapBlockEntity.java": (
+        ("block/TapBlockBehavior.java", "private Cycle cycle"),
+        ("block/TapBlockBehavior.java", "DRIP_LIFETIME_TICKS = 18"),
+    ),
     "BarStoolBlockEntity.java": (
         ("BarStoolVisualService.java", "AnimatedItemFurnitureBehavior.updatePosition"),
     ),
     "ChalkboardBlockEntity.java": (("BoardTextService.java", "CHALKBOARD"),),
     "CircularRackBlockEntity.java": (
         ("DisplayStorageService.java", "CIRCULAR_RACK"),
-        ("AmbientFurnitureService.java", "tickCircularRack"),
+        ("block/StorageBlockBehavior.java", "tickCircularRack"),
     ),
     "GlasswareHolderBlockEntity.java": (("DisplayStorageService.java", "GLASSWARE_HOLDER"),),
-    "HolderBlockEntity.java": (("DisplayStorageService.java", "HOLDER"),),
+    "HolderBlockEntity.java": (("block/StorageBlockBehavior.java", "Item[] items"),),
     "IncenseBlockEntity.java": (
-        ("AmbientFurnitureService.java", "tickIncenseEffect"),
-        ("furniture/TickingFurnitureBehavior.java", "INCENSE_EFFECT"),
+        ("block/IncenseBlockBehavior.java", "hurtNearbyUndead"),
+        ("block/IncenseBlockBehavior.java", "world.getGameTime() % 120L"),
     ),
     "SandwichBlockEntity.java": (("BoardTextService.java", "isSandwichBoard"),),
-    "StorageBlockEntity.java": (("DisplayStorageService.java", "StorageSpec"),),
+    "StorageBlockEntity.java": (("block/StorageBlockBehavior.java", "Item[] items"),),
     "TextBlockEntity.java": (("BoardTextService.java", "board_text"),),
-    "TiltedRackBlockEntity.java": (("DisplayStorageService.java", "TILTED_RACK"),),
+    "TiltedRackBlockEntity.java": (("block/StorageBlockBehavior.java", "Item[] items"),),
     "ShakerBlockEntity.java": (
         ("StationService.java", "updateShakerSource"),
         ("ShakerVisualService.java", "animatePut"),
@@ -614,10 +611,10 @@ def validate() -> dict[str, int]:
 
     if len(items) != 157:
         raise AssertionError(f"Expected 157 public items, found {len(items)}")
-    if len(blocks) != 41:
-        raise AssertionError(f"Expected 41 grid/state blocks, found {len(blocks)}")
-    if len(furniture) != 133:
-        raise AssertionError(f"Expected 133 furniture definitions, found {len(furniture)}")
+    if len(blocks) != 54:
+        raise AssertionError(f"Expected 54 grid/state blocks, found {len(blocks)}")
+    if len(furniture) != 120:
+        raise AssertionError(f"Expected 120 furniture definitions, found {len(furniture)}")
     if len(render_items) != 554:
         raise AssertionError(f"Expected 554 private render items, found {len(render_items)}")
     if len(recipes) != 114:
@@ -641,6 +638,8 @@ def validate() -> dict[str, int]:
     if "Material.BONE_MEAL" in block_service_source:
         raise AssertionError(
             "Bone meal must use CraftEngine BonemealableBlock behavior, not a cancelled Bukkit event")
+    trellis_behavior_source = (
+        game_package / "block/TrellisBehavior.java").read_text(encoding="utf-8-sig")
     for behavior_source_path in (
             game_package / "block/TrellisBehavior.java",
             game_package / "block/WildGrapevineBehavior.java"):
@@ -650,6 +649,22 @@ def validate() -> dict[str, int]:
                 or "return InteractionResult.SUCCESS;" not in behavior_source):
             raise AssertionError(
                 f"{behavior_source_path.name}: CE bone-meal interaction must acknowledge use and swing the hand")
+    for required_token in (
+            "MutableBlockPosProxy.INSTANCE.newInstance()",
+            "MutableBlockPosProxy.INSTANCE.setWithOffset(",
+            "BlockGetterProxy.INSTANCE.getBlockState(level, targetPosition)"):
+        if required_token not in trellis_behavior_source:
+            raise AssertionError(
+                "Trellis random ticks must reuse their NMS position instead of allocating "
+                f"one Bukkit-to-CE BlockPos bridge per neighbour; missing {required_token}")
+    for required_token in (
+            "extends WaterloggedBlockBehavior",
+            "FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER",
+            "LevelAccessorProxy.INSTANCE.scheduleTick$1("):
+        if required_token not in trellis_behavior_source:
+            raise AssertionError(
+                "TrellisBehavior must retain CE-native placement, bucket and fluid-tick "
+                f"waterlogging; missing {required_token}")
     wild_behavior_source = (
         game_package / "block/WildGrapevineBehavior.java").read_text(encoding="utf-8-sig")
     for leaf_attachment_token in (
@@ -671,6 +686,18 @@ def validate() -> dict[str, int]:
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
         "KaleidoscopeTavernPlugin.java"
     ).read_text(encoding="utf-8-sig")
+    runtime_counts = {
+        "ITEMS": len(items) + len(render_items),
+        "BLOCKS": len(blocks),
+        "FURNITURE": len(furniture),
+    }
+    for content_type, expected_count in runtime_counts.items():
+        declaration = (
+            f"private static final int EXPECTED_{content_type} = {expected_count};")
+        if declaration not in plugin_source:
+            raise AssertionError(
+                "KaleidoscopeTavernPlugin runtime content count is out of sync with "
+                f"the generated pack: expected {declaration}")
     item_source = (
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
         "item/ItemService.java"
@@ -684,6 +711,8 @@ def validate() -> dict[str, int]:
         "item/ManagedLoreSemantics.java"
     ).read_text(encoding="utf-8-sig")
     effect_service_source = (game_package / "EffectService.java").read_text(
+        encoding="utf-8-sig")
+    effect_semantics_source = (game_package / "EffectSemantics.java").read_text(
         encoding="utf-8-sig")
     stale_item_migration_tokens = {
         "ItemService": (
@@ -824,33 +853,33 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Board edit distance must be event-driven, not a global per-tick player scan")
     for required_token in (
-            "private final class EditMoveListener implements Listener",
-            "registerEvents(editMoveListener, plugin)",
-            "HandlerList.unregisterAll(editMoveListener)",
-            "private void ensureEditMoveListener()",
-            "private void stopEditMoveListenerIfIdle()"):
+            "private final class EditSessionListener implements Listener",
+            "registerEvents(editSessionListener, plugin)",
+            "HandlerList.unregisterAll(editSessionListener)",
+            "private void ensureEditSessionListener()",
+            "private void stopEditSessionListenerIfIdle()"):
         if required_token not in board_text_source:
             raise AssertionError(
-                "Board movement checks must be registered only while an edit session exists; "
+                "Board chat, quit and movement checks must be registered only while an edit "
+                "session exists; "
                 f"missing token: {required_token}")
     board_start = board_text_source.partition("public void start() {")[2].partition(
         "public void stop() {")[0]
-    if "editMoveListener" in board_start:
+    if "editSessionListener" in board_start:
         raise AssertionError(
-            "BoardTextService.start must not register an idle global PlayerMoveEvent listener")
+            "BoardTextService.start must not register idle edit-session listeners")
     for required_token in (
             "BoardTextFurnitureBehavior.bind(boardVisualHandler)",
             "BoardTextFurnitureBehavior.unbind(boardVisualHandler)",
             "BoardTextFurnitureBehavior.bindInteraction(boardInteractionHandler)",
             "BoardTextFurnitureBehavior.unbindInteraction(boardInteractionHandler)",
-            "BoardTextFurnitureBehavior.bindPlacement(boardPlacementHandler)",
-            "BoardTextFurnitureBehavior.unbindPlacement(boardPlacementHandler)",
             "private InteractionResult interactBoard(",
-            "private void onBoardPlaced(",
+            "public void onFurniturePlace(FurniturePlaceEvent event)",
+            "!event.player().isSneaking()",
             "context.getHand() != InteractionHand.MAIN_HAND",
             "InteractionResult.SUCCESS_AND_CANCEL",
             "private List<BoardTextFurnitureBehavior.Visual> boardVisuals",
-            "furniture.refreshElements()",
+            "BoardTextFurnitureBehavior.refresh(furniture)",
             "LifecycleFurnitureBehavior.Channel.BOARD, lifecycleHandler"):
         if required_token not in board_text_source:
             raise AssertionError(
@@ -860,8 +889,8 @@ def validate() -> dict[str, int]:
             "org.bukkit.entity.TextDisplay", "PersistentDataType", "NamespacedKey",
             "board_owner", "board_line", "board_displays", "getNearbyEntities(",
             "removeDisplay(", "TextDisplay.TextAlignment", "FurnitureInteractEvent",
-            "public void onFurnitureInteract(", "FurniturePlaceEvent",
-            "public void onFurniturePlace("):
+            "public void onFurnitureInteract(", "BoardTextFurnitureBehavior.bindPlacement(",
+            "BoardTextFurnitureBehavior.unbindPlacement("):
         if stale_token in board_text_source:
             raise AssertionError(
                 "Board text must not recreate persistent Bukkit display entities or helper "
@@ -877,6 +906,7 @@ def validate() -> dict[str, int]:
         f"{NAMESPACE}:grape_crop",
         f"{NAMESPACE}:ice_grape_crop",
         f"{NAMESPACE}:gold_grape_crop",
+        f"{NAMESPACE}:tap",
         *(f"{NAMESPACE}:_crop/{crop}/stage_{point}"
           for crop in ("grape_crop", "ice_grape_crop", "gold_grape_crop")
           for point in range(1, 6)),
@@ -884,6 +914,8 @@ def validate() -> dict[str, int]:
             "colorless", "white", "light_gray", "gray", "black", "brown", "red", "orange",
             "yellow", "lime", "green", "cyan", "light_blue", "blue", "purple", "magenta", "pink",
         )),
+        *(f"{NAMESPACE}:{incense}" for incense in INCENSE_BLOCK_SPECS),
+        *(f"{NAMESPACE}:{storage}" for storage in STORAGE_BLOCK_SPECS),
     }
     if set(blocks) != expected_grid_blocks:
         unexpected = sorted(set(blocks) - expected_grid_blocks)
@@ -949,7 +981,6 @@ def validate() -> dict[str, int]:
         "GrapevineItemBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for evidence in (
-            "ItemStack eventItem = event.item();",
             "String planted = grapevineFor(soil);",
             'withNamed(replacement, "type", stringProperty(trellisState, "type"))',
             "void plantGrapevineOnTrellis(",
@@ -983,12 +1014,26 @@ def validate() -> dict[str, int]:
     if '!"single".equals(stringProperty(trellisState, "type"))' not in block_service_source:
         raise AssertionError(
             "Grapevine planting must retain the original single-trellis restriction")
-    for stale_listener in ("interactWildHead", "Material.HONEYCOMB", "WAX_ON", "WAX_OFF"):
+    for stale_listener in (
+            "CustomBlockInteractEvent", "CustomBlockBreakEvent", "implements Listener",
+            "onCustomBlockBreak", "interactVineTrellis", "damageTool(",
+            "interactWildHead", "Material.HONEYCOMB", "WAX_ON", "WAX_OFF"):
         if stale_listener in block_service_source:
             raise AssertionError(
-                "Trellis waxing and wild-grapevine shearing are CE block events; "
+                "Trellis waxing and grapevine shearing are CE block events; "
                 f"BlockService must not reintroduce {stale_listener}")
+    if "registerEvents(blocks, this)" in plugin_source:
+        raise AssertionError(
+            "BlockService only binds a CE item behavior and must not be a global Bukkit listener")
     station_source = (game_package / "StationService.java").read_text(encoding="utf-8-sig")
+    for required_token in (
+            "player.hasActiveItem()",
+            "player.getActiveItemHand() == usedHand",
+            "player.clearActiveItem()"):
+        if required_token not in station_source:
+            raise AssertionError(
+                "Successful station interactions must cancel predicted bucket/drink use; "
+                f"missing token: {required_token}")
     storage_source = (game_package / "DisplayStorageService.java").read_text(
         encoding="utf-8-sig")
     storage_interaction_behavior_source = (
@@ -998,11 +1043,12 @@ def validate() -> dict[str, int]:
         encoding="utf-8-sig")
     for owner_name, owner_source in (("StationService", station_source),
                                      ("AmbientFurnitureService", ambient_source)):
-        for stale_state in ("incense_active", "interactIncense"):
+        for stale_state in ("incense_active", "interactIncense", "tickIncense",
+                            "Channel.INCENSE"):
             if stale_state in owner_source:
                 raise AssertionError(
-                    f"{owner_name}: the *_open furniture variant is the only lit-incense "
-                    f"state; {stale_state} must stay deleted")
+                    f"{owner_name}: CE blocks own incense state/ticks; "
+                    f"{stale_state} must stay deleted")
 
     plugin_source = (game_package.parent / "KaleidoscopeTavernPlugin.java").read_text(
         encoding="utf-8-sig")
@@ -1015,15 +1061,45 @@ def validate() -> dict[str, int]:
     if "PressingTubFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register pressing_tub_furniture before pack loading")
-    if "RedstoneFurnitureBehavior.register()" not in plugin_source:
+    if "IncenseBlockBehavior.register()" not in plugin_source:
         raise AssertionError(
-            "KaleidoscopeTavernPlugin must register redstone_furniture before pack loading")
-    for lifecycle_call in ("RedstoneFurnitureBehavior.start(this)",
-                           "RedstoneFurnitureBehavior.stop()"):
-        if lifecycle_call not in plugin_source:
+            "KaleidoscopeTavernPlugin must register the CE incense block behavior before pack loading")
+    if "TapBlockBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register the CE tap block behavior before pack loading")
+    if "StorageBlockBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register CE storage blocks before pack loading")
+    for stale_token in ("SofaBlockBehavior", "SofaBlockShape"):
+        if stale_token in plugin_source:
             raise AssertionError(
-                "KaleidoscopeTavernPlugin must manage the event-driven redstone bridge; "
-                f"missing {lifecycle_call}")
+                f"KaleidoscopeTavernPlugin must leave sofas to native CE configuration: {stale_token}")
+    incense_behavior_source = (
+        game_package / "block/IncenseBlockBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "implements EntityBlock",
+            "BlockBehaviors.register(TYPE, IncenseBlockBehavior::new)",
+            "state.with(openProperty, powered).with(poweredProperty, powered)",
+            "powered == state.get(poweredProperty)",
+            "state.with(poweredProperty, powered)",
+            "state.with(openProperty, open)",
+            "random.nextInt(49) == 0",
+            "random.nextInt(3) == 0",
+            "world.getGameTime() % 120L == 0L",
+            "world.getNearbyLivingEntities(center, 32.5)",
+            "zombieVillager.setConversionTime(60)"):
+        if required_token not in incense_behavior_source:
+            raise AssertionError(
+                "CE incense behavior no longer preserves source interaction/tick semantics; "
+                f"missing {required_token}")
+    for stale_token in ("PersistentDataContainer", "BukkitTask", "runTaskTimer"):
+        if stale_token in incense_behavior_source:
+            raise AssertionError(
+                f"CE incense state/lifecycle must not be duplicated through {stale_token}")
+    if "RedstoneFurnitureBehavior" in plugin_source:
+        raise AssertionError(
+            "Storage redstone is block-state driven; the furniture polling bridge must stay removed")
     if "TickingFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register ticking_furniture before pack loading")
@@ -1133,6 +1209,7 @@ def validate() -> dict[str, int]:
     for required_token in (
             "public void onPlace(Player player)",
             "public void onLoad()",
+            "public void preRemove(Player player)",
             "public void postRemove(Player player)",
             "public void onUnload(boolean isStopping)",
             "PressingTubSemantics.isLandingPosition",
@@ -1149,6 +1226,11 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "pressing_tub_furniture must own only its CE spatial index and "
                 f"availability signal; stale token: {stale_token}")
+    for hot_path_token in ("furniture.isValid()", "ConcurrentHashMap", "ConcurrentMap"):
+        if hot_path_token in pressing_behavior_source:
+            raise AssertionError(
+                "CE lifecycle must keep pressing-tub movement lookups free of redundant "
+                f"validity/concurrent-map overhead; found {hot_path_token}")
 
     lifecycle_behavior_source = (
         game_package / "furniture" / "LifecycleFurnitureBehavior.java"
@@ -1156,9 +1238,12 @@ def validate() -> dict[str, int]:
     for required_token in (
             "public void onPlace(Player player)",
             "public void onLoad()",
+            "public void preRemove(Player player)",
             "public void postRemove(Player player)",
             "public void onUnload(boolean isStopping)",
-            "handler.onReady(bukkitFurniture, readyReason)",
+            "default void onReady(BukkitFurniture furniture, ReadyReason reason, Player placingPlayer)",
+            "ready(ReadyReason.PLACE, player)",
+            "handler.onReady(bukkitFurniture, readyReason, placingPlayer)",
             "currentHandler.onUnavailable(bukkitFurniture, removed, stopping)",
             "public static List<BukkitFurniture> nearby(",
             "public static Optional<BukkitFurniture> atBlock(",
@@ -1168,6 +1253,11 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "lifecycle_furniture must route CE readiness and unavailability; "
                 f"missing token: {required_token}")
+    for hot_path_token in ("furniture.isValid()", "ConcurrentHashMap", "ConcurrentMap"):
+        if hot_path_token in lifecycle_behavior_source:
+            raise AssertionError(
+                "CE lifecycle must keep furniture spatial queries free of redundant "
+                f"validity/concurrent-map overhead; found {hot_path_token}")
 
     board_text_behavior_source = (
         game_package / "furniture" / "BoardTextFurnitureBehavior.java"
@@ -1175,8 +1265,11 @@ def validate() -> dict[str, int]:
     for required_token in (
             "implements FurnitureElement",
             "EntityTypesProxy.TEXT_DISPLAY",
-            "ComponentUtils.jsonToMinecraft",
-            "GsonComponentSerializer.gson().serialize",
+            "public static void refresh(BukkitFurniture furniture)",
+            "private List<PreparedVisual> cachedVisuals = List.of()",
+            "ComponentUtils.jsonToMinecraft(",
+            "GsonComponentSerializer.gson().serialize(visual.text())",
+            "List<PreparedVisual> current = controller.visuals()",
             "DisplayData.TextDisplayData.Text.addEntityData",
             "DisplayData.TextDisplayData.LineWidth",
             "DisplayData.TextDisplayData.BackgroundColor",
@@ -1186,17 +1279,16 @@ def validate() -> dict[str, int]:
             "public void gatherElements",
             "public static void bindInteraction(",
             "public static void unbindInteraction(",
-            "public static void bindPlacement(",
-            "public static void unbindPlacement(",
             "public InteractionResult useOnFurniture(",
-            "current.interact(bukkitFurniture, context)",
-            "current.onPlace(bukkitFurniture, player)"):
+            "current.interact(bukkitFurniture, context)"):
         if required_token not in board_text_behavior_source:
             raise AssertionError(
                 "board_text_furniture must use CE-tracked packet-only text elements; "
                 f"missing token: {required_token}")
     for stale_token in (
-            "org.bukkit.entity.TextDisplay", "PersistentDataType", "World.spawn"):
+            "org.bukkit.entity.TextDisplay", "PersistentDataType", "World.spawn",
+            "ComponentUtils.adventureToMinecraft", "PlacementHandler",
+            "bindPlacement(", "placementHandler"):
         if stale_token in board_text_behavior_source:
             raise AssertionError(
                 "board_text_furniture must never create persistent Bukkit entities; "
@@ -1246,6 +1338,53 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "FurnitureConnectionService must not rediscover indexed CE furniture; "
                 f"stale token found: {stale_token}")
+    for required_token in (
+            'firstId.endsWith("_sofa") && secondId.endsWith("_sofa")',
+            "String connection = connectionFor(entry, byPosition)",
+            'return variant.startsWith(prefix) ? variant.substring(prefix.length()) : "single"',
+            "public void onReady(BukkitFurniture furniture,",
+            "public void onUnavailable(BukkitFurniture furniture,",
+            "scheduleRefresh(furniture.location())",
+            "scheduleRefresh(furniture.location(), furniture, placingPlayer)",
+            "boolean placedVariantChanged = refresh(captured, placed)",
+            "placed.snapshotState().showHitboxes(placingPlayer)"):
+        if required_token not in connection_source:
+            raise AssertionError(
+                "FurnitureConnectionService must retain the six-state sofa connector; "
+                f"missing token: {required_token}")
+    for polling_token in ("runTaskTimer", "scheduleSyncRepeatingTask", "BukkitTask"):
+        if polling_token in connection_source:
+            raise AssertionError(
+                "FurnitureConnectionService must remain event-driven and idle without "
+                f"furniture changes; polling token found: {polling_token}")
+
+    if "SofaBlockBehavior" in connection_source:
+        raise AssertionError(
+            "FurnitureConnectionService must operate on CE furniture, not block behaviors")
+
+    for obsolete_sofa_source in (
+            "SofaBlockBehavior.java",
+            "SofaBlockShape.java",
+            "SofaConnectionSemantics.java"):
+        if (game_package / "block" / obsolete_sofa_source).exists():
+            raise AssertionError(
+                f"{obsolete_sofa_source}: entity sofas must not retain CE block behavior code")
+
+    trellis_shape_source = (
+        game_package / "block" / "TrellisBlockShape.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "implements BlockShape",
+            "definition.defaultState()",
+            "getOptionalCustomBlockState(minecraftState)",
+            "Property.formatValue(",
+            "COLLISION_SHAPES.computeIfAbsent(",
+            "SELECTION_SHAPES.computeIfAbsent(",
+            "public Object getSupportShape"):
+        if required_token not in trellis_shape_source:
+            raise AssertionError(
+                "CE trellis delegates must resolve the current shared block state; "
+                f"missing token: {required_token}")
 
     animated_visual_source = (
         game_package / "furniture" / "AnimatedItemFurnitureBehavior.java"
@@ -1253,6 +1392,9 @@ def validate() -> dict[str, int]:
     for required_token in (
             "implements FurnitureElement",
             "EntityTypesProxy.ITEM_DISPLAY",
+            "private static final Map<UUID, Controller> LOADED = new HashMap<>()",
+            "private List<Visual> cachedVisuals = List.of()",
+            "return controller.visuals()",
             "DisplayData.ItemDisplayData.ItemStack.addEntityData",
             "DisplayData.Translation.addEntityData",
             "DisplayData.LeftRotation.addEntityData",
@@ -1265,7 +1407,8 @@ def validate() -> dict[str, int]:
                 "animated_item_furniture must use CE tracking and transform-only packets; "
                 f"missing token: {required_token}")
     for stale_token in (
-            "org.bukkit.entity.ItemDisplay", "PersistentDataType", "World.spawn"):
+            "org.bukkit.entity.ItemDisplay", "PersistentDataType", "World.spawn",
+            "ConcurrentHashMap", "ConcurrentMap", "synchronized (HANDLERS)"):
         if stale_token in animated_visual_source:
             raise AssertionError(
                 "animated_item_furniture must never create persistent Bukkit entities; "
@@ -1333,6 +1476,40 @@ def validate() -> dict[str, int]:
 
     station_source = (game_package / "StationService.java").read_text(
         encoding="utf-8-sig")
+    shaker_item_behavior_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+        "ShakerItemBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            'TYPE = Key.of("kaleidoscope_tavern", "shaker_item")',
+            "ItemBehaviors.register(TYPE",
+            "InteractionResult use(World world",
+            "current.use(player, hand)"):
+        if required_token not in shaker_item_behavior_source:
+            raise AssertionError(
+                "Portable shaker right-click must use CE's existing item-use pipeline; "
+                f"missing token: {required_token}")
+    for required_token in (
+            "ShakerItemBehavior.register()",
+            "ShakerItemBehavior.bind(shakerItemHandler)",
+            "ShakerItemBehavior.unbind(shakerItemHandler)",
+            "private InteractionResult usePortableShaker("):
+        if required_token not in plugin_source + station_source:
+            raise AssertionError(
+                "Portable shaker CE item lifecycle is incomplete; "
+                f"missing token: {required_token}")
+    if "onUsePortableShaker(PlayerInteractEvent" in station_source:
+        raise AssertionError(
+            "Portable shaker right-click must not retain a duplicate global Paper listener")
+    shaker_behaviors = items[f"{NAMESPACE}:shaker"].get("behaviors", [])
+    if ([behavior.get("type") for behavior in shaker_behaviors]
+            != [f"{NAMESPACE}:shaker_item", "furniture_item"]
+            or shaker_behaviors[1].get("furniture") != f"{NAMESPACE}:shaker"
+            or shaker_behaviors[1].get("rules") != {
+                "ground": {"rotation": "four", "alignment": "center"}
+            }):
+        raise AssertionError(
+            "Shaker must run CE portable use before native furniture placement")
     for stale_token in (
             "bootstrapPressVisuals", "onEntitiesLoad(EntitiesLoadEvent event)",
             "pressingTubBelow", "getNearbyEntities(feet"):
@@ -1369,15 +1546,18 @@ def validate() -> dict[str, int]:
     for required_token in (
             "StationInteractionFurnitureBehavior.bind(stationInteractionHandler)",
             "StationInteractionFurnitureBehavior.unbind(stationInteractionHandler)",
-            "StationInteractionFurnitureBehavior.bindPlacement(stationPlacementHandler)",
-            "StationInteractionFurnitureBehavior.unbindPlacement(stationPlacementHandler)",
             "private InteractionResult interactStation(",
-            "private void onStationPlaced(",
             "context.getHand() != InteractionHand.MAIN_HAND",
             "Vec3d click = context.getClickLocation()",
             "InteractionResult.SUCCESS_AND_CANCEL",
             "StationVisualFurnitureBehavior.bind(stationVisualHandler)",
             "StationVisualFurnitureBehavior.unbind(stationVisualHandler)",
+            "StationVisualFurnitureBehavior.refresh(furniture)",
+            "public boolean shouldSchedule(BukkitFurniture furniture)",
+            "return shouldTickBarrel(furniture)",
+            "TickingFurnitureBehavior.refreshSchedule(",
+            "private boolean shouldTickBarrel(",
+            "BarrelSemantics.needsTick(false,",
             "PressingTubFurnitureBehavior.hasPotentialBelow(feet)",
             "PressingTubFurnitureBehavior.findBelow(feet)",
             "PressingTubFurnitureBehavior.occupiesBlock(block)",
@@ -1393,7 +1573,8 @@ def validate() -> dict[str, int]:
             "falling.containsKey(player.getUniqueId())",
             "falling.containsKey(living.getUniqueId())",
             "trackPressLanding(living, event.getTo(), fallDistance)",
-            "furniture.refreshElements()"):
+            'open ? "ground" : "ground_closed"',
+            'currentVariant().name().equals("ground")'):
         if required_token not in station_source:
             raise AssertionError(
                 "StationService must retain only the source-compatible fallOn bridge; "
@@ -1407,7 +1588,10 @@ def validate() -> dict[str, int]:
             "lookups only after observing an actual fall")
     for stale_token in (
             "FurnitureInteractEvent", "public void onFurnitureInteract(",
-            "FurniturePlaceEvent", "public void onFurniturePlace("):
+            "FurniturePlaceEvent", "public void onFurniturePlace(",
+            "stationPlacementHandler", "private void onStationPlaced(",
+            "StationInteractionFurnitureBehavior.bindPlacement(",
+            "StationInteractionFurnitureBehavior.unbindPlacement("):
         if stale_token in station_source:
             raise AssertionError(
                 "StationService must not retain a global Paper furniture interaction listener; "
@@ -1415,18 +1599,16 @@ def validate() -> dict[str, int]:
     for required_token in (
             "extends FurnitureBehaviorTemplate",
             "FurnitureBehaviors.register(Key.of(TYPE)",
-            "public static void bindPlacement(",
-            "public static void unbindPlacement(",
             "public InteractionResult useOnFurniture(",
-            "current.interact(bukkitFurniture, context)",
-            "current.onPlace(bukkitFurniture)"):
+            "current.interact(bukkitFurniture, context)"):
         if required_token not in station_interaction_behavior_source:
             raise AssertionError(
                 "Station CE interaction adapter is incomplete; "
                 f"missing token: {required_token}")
     for forbidden_token in (
             "org.bukkit.event", "PersistentDataType", "NamespacedKey",
-            "getNearbyEntities(", "runTaskTimer"):
+            "getNearbyEntities(", "runTaskTimer", "PlacementHandler",
+            "bindPlacement(", "onPlace("):
         if forbidden_token in station_interaction_behavior_source:
             raise AssertionError(
                 "Station CE interaction adapter must not own Paper polling/PDC; "
@@ -1448,6 +1630,10 @@ def validate() -> dict[str, int]:
     ).read_text(encoding="utf-8-sig")
     for required_station_element_token in (
             "implements FurnitureElement",
+            "public static void refresh(BukkitFurniture furniture)",
+            "private List<Visual> cachedVisuals = List.of()",
+            "List.copyOf(currentHandler.visuals(bukkitFurniture))",
+            "List<Visual> current = controller.visuals()",
             "DisplayData.ItemDisplayData.ItemStack.addEntityData",
             "DisplayData.LeftRotation.addEntityDataIfNotDefaultValue",
             "DisplayData.ItemDisplayData.ItemTransform.addEntityDataIfNotDefaultValue",
@@ -1467,28 +1653,120 @@ def validate() -> dict[str, int]:
                 f"stale token: {stale_station_element_token}")
     tap_source = (game_package / "TapService.java").read_text(
         encoding="utf-8-sig")
+    tap_block_source = (game_package / "block/TapBlockBehavior.java").read_text(
+        encoding="utf-8-sig")
     tap_semantics_source = (game_package / "TapSemantics.java").read_text(
         encoding="utf-8-sig")
     for required_token in (
             "TapSemantics.shouldDelegateBarrelTapPlacement(",
             "context.isSecondaryUseActive()",
             "context.getItem().id().toString()",
-            "placeHeldFurnitureWithCraftEngine(context)",
-            "behavior.getFirst(FurnitureItem.class)",
+            "placeHeldTapBlockWithCraftEngine(furniture, context)",
+            "behavior.getFirst(BlockItem.class)",
+            "origin.getBlockX() + x * 2",
+            "origin.getBlockY() + 1",
+            "origin.getBlockZ() + z * 2",
             "placementBehavior.useOnBlock(new UseOnContext("):
         if required_token not in station_source:
             raise AssertionError(
-                "Sneaking with a tap on barrel furniture must directly invoke CE placement; "
+                "Sneaking with a tap on barrel furniture must place the CE block in its "
+                "canonical front-centre cell; "
                 f"missing token: {required_token}")
     if 'secondaryUse && TAP_ITEM.equals(heldItemId)' not in tap_semantics_source:
         raise AssertionError(
             "Barrel tap placement must retain Forge's secondary-use bypass rule")
     tap_item_behavior = items[f"{NAMESPACE}:tap"].get("behavior", {})
-    if (tap_item_behavior.get("type") != "furniture_item"
-            or tap_item_behavior.get("furniture") != f"{NAMESPACE}:tap"
-            or "wall" not in tap_item_behavior.get("rules", {})):
+    if tap_item_behavior != {
+            "type": "block_item", "block": f"{NAMESPACE}:tap"}:
         raise AssertionError(
-            "Tap installation must remain owned by CE's wall furniture_item behavior")
+            "Tap installation must be owned by CE's native block_item behavior")
+    if f"{NAMESPACE}:tap" in furniture:
+        raise AssertionError("Tap must not retain a duplicate CE furniture definition")
+
+    tap_definition = blocks[f"{NAMESPACE}:tap"]
+    tap_states = tap_definition.get("states", {})
+    tap_properties = tap_states.get("properties", {})
+    if set(tap_properties) != {"facing", "open", "triggered", "waterlogged"}:
+        raise AssertionError(
+            f"Tap CE block properties drifted: {sorted(tap_properties)}")
+    if tap_definition.get("behavior") != {"type": f"{NAMESPACE}:tap"}:
+        raise AssertionError("Tap must use the Tavern CE block behavior")
+    tap_appearances = tap_states.get("appearances", {})
+    tap_variants = tap_states.get("variants", {})
+    if len(tap_appearances) != 16 or len(tap_variants) != 32:
+        raise AssertionError(
+            "Tap needs 4 facing x 2 open x 2 waterlogged appearances and "
+            f"32 complete states; found {len(tap_appearances)}/{len(tap_variants)}")
+    tap_render_items: set[str] = set()
+    for variant_key, mapped in tap_variants.items():
+        properties = dict(part.split("=", 1) for part in variant_key.split(","))
+        appearance = tap_appearances[mapped["appearance"]]
+        expected_carrier = (
+            "minecraft:lightning_rod"
+            f"[facing={properties['facing']},powered=false,"
+            f"waterlogged={properties['waterlogged']}]"
+        )
+        if appearance.get("state") != expected_carrier:
+            raise AssertionError(
+                f"Tap {variant_key} carrier must preserve facing/waterlogging")
+        expected_settings = ({"fluid_state": "water"}
+                             if properties["waterlogged"] == "true" else None)
+        if mapped.get("settings") != expected_settings:
+            raise AssertionError(
+                f"Tap {variant_key} must preserve CE's server-side fluid state")
+        renderer = appearance.get("entity_renderer", {})
+        render_item = renderer.get("item")
+        tap_render_items.add(render_item)
+        expected_model = (f"{NAMESPACE}:block/brew/tap/open"
+                          if properties["open"] == "true"
+                          else f"{NAMESPACE}:block/brew/tap/close")
+        if (renderer.get("type") != "item_display"
+                or render_items.get(render_item, {}).get("model", {}).get("path")
+                != expected_model):
+            raise AssertionError(
+                f"Tap {variant_key} must render its authored open/closed model")
+        expected_rotation = {
+            "north": "0,180,0",
+            "south": None,
+            "east": "0,90,0",
+            "west": "0,270,0",
+        }[properties["facing"]]
+        if renderer.get("rotation") != expected_rotation:
+            raise AssertionError(
+                f"Tap {variant_key} north/south visual mapping drifted: "
+                f"expected rotation {expected_rotation!r}, got {renderer.get('rotation')!r}")
+    if len(tap_render_items) != 2:
+        raise AssertionError(
+            f"Tap must reuse exactly two private render items, found {tap_render_items}")
+    for facing in ("north", "south", "west", "east"):
+        for waterlogged in ("false", "true"):
+            common = f"facing={facing},triggered=false,waterlogged={waterlogged}"
+            closed_key = (
+                f"facing={facing},open=false,triggered=false,waterlogged={waterlogged}")
+            open_key = (
+                f"facing={facing},open=true,triggered=false,waterlogged={waterlogged}")
+            closed = tap_appearances[tap_variants[closed_key]["appearance"]]
+            opened = tap_appearances[tap_variants[open_key]["appearance"]]
+            if closed["state"] != opened["state"]:
+                raise AssertionError(
+                    f"Tap open/closed collision carrier changed for {common}")
+            for open_value in ("false", "true"):
+                untriggered = (
+                    f"facing={facing},open={open_value},triggered=false,"
+                    f"waterlogged={waterlogged}")
+                triggered = untriggered.replace("triggered=false", "triggered=true")
+                if tap_variants[untriggered] != tap_variants[triggered]:
+                    raise AssertionError(
+                        "Tap triggered is a server edge latch and must not change rendering")
+    tap_settings = tap_definition.get("settings", {})
+    if (tap_settings.get("hardness") != 0.8
+            or tap_settings.get("push_reaction") != "NORMAL"
+            or tap_settings.get("tags") != ["minecraft:mineable/pickaxe"]
+            or any(tap_settings.get("sounds", {}).get(action)
+                   != f"minecraft:block.metal.{action}"
+                   for action in ("break", "step", "place", "hit", "fall"))):
+        raise AssertionError("Tap CE block must retain the source metal settings")
+
     for variant_name, variant in furniture[f"{NAMESPACE}:barrel"]["variants"].items():
         if any(hitbox.get("can_use_item_on") is not True
                for hitbox in variant.get("hitboxes", [])):
@@ -1498,82 +1776,102 @@ def validate() -> dict[str, int]:
             "LifecycleFurnitureBehavior.Channel.TAP_BOTTLE, block",
             "LifecycleFurnitureBehavior.Channel.BARREL,",
             "center, 3.25, 3.25",
-            "TapGeometry initialGeometry = geometry(tap)",
-            "Location dripOrigin = initialGeometry.tapBlock().getLocation()",
-            "spawnDrip(dripOrigin, extracting",
-            "spawnFallingDrip(dripOrigin, initial.hot())",
-            "private TapPlan resolve(BukkitFurniture tap, Player feedback, TapGeometry geometry)"):
+            "private TapPlan resolve(Block tapBlock, BlockFace facing",
+            "tapBlock.getRelative(facing.getOppositeFace())",
+            "tapBlock.getRelative(BlockFace.DOWN)",
+            "findConnectedBarrel(tapBlock, facing)",
+            "TapBlockBehavior.bind(this)",
+            "TapBlockBehavior.unbind(this)"):
         if required_token not in tap_source:
             raise AssertionError(
-                "TapService must use CE lifecycle indexes for placed bottles and barrels; "
+                "TapService must remain a business-only block handler using CE lifecycle "
+                "indexes for placed bottles and barrels; "
                 f"missing token: {required_token}")
     if "findFurnitureAtBlock" in tap_source:
         raise AssertionError(
             "TapService must not rediscover indexed placed bottles through Bukkit entities")
-    for stale_token in (
-            "private static Block tapBlock(",
-            "spawnDrip(BukkitFurniture tap",
-            "spawnFallingDrip(BukkitFurniture tap"):
-        if stale_token in tap_source:
-            raise AssertionError(
-                "An active tap must reuse its fixed drip geometry instead of rebuilding it per tick; "
-                f"found {stale_token}")
+
     for required_token in (
-            "RedstoneFurnitureBehavior.bindInteraction(",
-            "RedstoneFurnitureBehavior.unbindInteraction(",
-            "private InteractionResult interact(",
+            "extends WaterloggedBlockBehavior",
+            "implements EntityBlock",
+            "BlockBehaviors.register(TYPE, TapBlockBehavior::new)",
             "context.getHand() != InteractionHand.MAIN_HAND",
-            "public void onRemove(BukkitFurniture furniture)",
-            "closeTap(furniture, false)",
-            "InteractionResult.SUCCESS_AND_CANCEL"):
-        if required_token not in tap_source:
+            "clickedFace.axis().isHorizontal()",
+            "FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER",
+            "LevelAccessorProxy.INSTANCE.scheduleTick$1(",
+            "SignalGetterProxy.INSTANCE.hasNeighborSignal(level, minecraftPos)",
+            "LocationUtils.above(minecraftPos)",
+            "powered && !triggered",
+            "!powered && triggered",
+            "TAKE_TICKS = 30",
+            "TAKE_PARTICLE_TICKS = 5",
+            "EMPTY_OPEN_TICKS = 6",
+            "DRIP_LIFETIME_TICKS = 18",
+            "current.finish("):
+        if required_token not in tap_block_source:
             raise AssertionError(
-                "Tap clicks must be dispatched by the tap's CE redstone controller; "
+                "TapBlockBehavior must own source-equivalent state, redstone and timing; "
                 f"missing token: {required_token}")
-    for stale_token in (
-            "FurnitureInteractEvent", "public void onInteract(",
-            "FurnitureBreakEvent", "public void onBreak(", "implements Listener"):
+    for stale_token in ("BukkitTask", "runTaskTimer", "PersistentDataContainer",
+                        "BukkitFurniture", "FurnitureInteractEvent"):
+        if stale_token in tap_block_source:
+            raise AssertionError(
+                "The CE tap block must not duplicate its state through furniture/PDC/tasks; "
+                f"found {stale_token}")
+    for stale_token in ("BukkitRunnable", "BukkitTask", "running",
+                        "RedstoneFurnitureBehavior", "TapGeometry", "geometry(tap)"):
         if stale_token in tap_source:
             raise AssertionError(
-                "TapService must not retain a global Paper furniture interaction listener; "
+                "TapService must remain free of scheduler, furniture-redstone and geometry state; "
                 f"found {stale_token}")
-    redstone_behavior_source = (
-        game_package / "furniture/RedstoneFurnitureBehavior.java"
+
+    storage_block_source = (
+        game_package / "block/StorageBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
-            "public static void bindInteraction(",
-            "public static void unbindInteraction(",
-            "public InteractionResult useOnFurniture(",
-            "channel.interactionHandler",
-            "handler.interact(bukkitFurniture, context)",
-            "public void preRemove(Player player)",
-            "handler.onRemove(bukkitFurniture)",
-            "BlockRedstoneEvent",
-            "queuePowerChange(event.getBlock())",
-            "FALLBACK_INTERVAL_TICKS",
-            "case INCENSE, STORAGE -> primaryPowerBlock.isBlockIndirectlyPowered()"):
-        if required_token not in redstone_behavior_source:
+            "implements EntityBlock",
+            "BlockBehaviors.register(TYPE, StorageBlockBehavior::new)",
+            "public void neighborChanged",
+            "SignalGetterProxy.INSTANCE.hasNeighborSignal(level, minecraftPos)",
+            "state.with(poweredProperty, powered)",
+            "private static String cellarPosition",
+            "private final Item[] items",
+            "saveCustomData(CompoundTag tag)",
+            "loadCustomData(CompoundTag tag)",
+            "blockEntity.world.blockEntityChanged(blockEntity.pos)",
+            "implements BlockEntityElement",
+            "ClientboundAddEntityPacketProxy.INSTANCE.newInstance",
+            "tickCircularRack"):
+        if required_token not in storage_block_source:
             raise AssertionError(
-                "CE redstone furniture must also own channel-scoped player interaction; "
+                "CE storage blocks must own exact slots, rendering and redstone edges; "
                 f"missing token: {required_token}")
-    if ".isBlockPowered()" in redstone_behavior_source:
+    for stale_token in ("BukkitTask", "runTaskTimer", "PersistentDataContainer",
+                        "BukkitFurniture", "ConcurrentHashMap", "BlockRedstoneEvent"):
+        if stale_token in storage_block_source:
+            raise AssertionError(
+                "CE storage blocks must not restore furniture/PDC polling; found "
+                f"{stale_token}")
+    if (game_package / "furniture/RedstoneFurnitureBehavior.java").exists():
         raise AssertionError(
-            "CE redstone furniture must sample the source mod's hasNeighborSignal "
-            "semantics once, without a duplicate direct-signal scan")
-    if "createFurnitureTicker" in redstone_behavior_source:
-        raise AssertionError(
-            "Redstone furniture must use indexed change notifications instead of one CE ticker "
-            "per furniture")
+            "The obsolete redstone furniture polling bridge must stay deleted")
     ticking_behavior_source = (
         game_package / "furniture/TickingFurnitureBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             "PriorityQueue<ScheduledRun>",
             "runDueControllers",
+            "runTaskLater",
+            "scheduleWakeLocked",
             "geometricDelay",
             "firstFutureDelay",
             "public void onLoad()",
-            "public void onPlace(Player player)"):
+            "public void onPlace(Player player)",
+            "public void preRemove(Player player)",
+            "public static void refreshSchedule(",
+            "default boolean shouldSchedule(",
+            "handler.shouldSchedule(bukkitFurniture)",
+            "targetChannel.activeControllers.get(targetFurniture.uuid())"):
         if required_token not in ticking_behavior_source:
             raise AssertionError(
                 "Sparse furniture ticks must be driven by one CE lifecycle due-time queue; "
@@ -1581,6 +1879,14 @@ def validate() -> dict[str, int]:
     if "createFurnitureTicker" in ticking_behavior_source:
         raise AssertionError(
             "Sparse furniture must not retain one CraftEngine ticker callback per instance")
+    if "runTaskTimer" in ticking_behavior_source:
+        raise AssertionError(
+            "Sparse furniture due-time scheduling must stay wake-on-demand instead of "
+            "polling an idle queue every server tick")
+    if "bukkitFurniture.isValid()" in ticking_behavior_source:
+        raise AssertionError(
+            "CE lifecycle removal must keep the sparse due queue free of repeated "
+            "Bukkit entity validity lookups")
     if "registerEvents(taps, this)" in plugin_source:
         raise AssertionError(
             "TapService has no Paper events after CE interaction/removal migration")
@@ -1596,9 +1902,18 @@ def validate() -> dict[str, int]:
                 f"{stale_token} must stay deleted")
 
     for required_token in (
+            "StorageBlockBehavior.bind(storageBlockHandler)",
+            "StorageBlockBehavior.unbind(storageBlockHandler)",
+            "private InteractionResult interactStorageBlock(",
+            "private void launchRandomBottle(StorageBlockBehavior.Controller",
+            "private Item storageBlockVisual(StorageBlockBehavior.Controller",
             "StorageInteractionFurnitureBehavior.bind(storageInteractionHandler)",
             "StorageInteractionFurnitureBehavior.unbind(storageInteractionHandler)",
             "private InteractionResult interact(",
+            "public void onRemove(BukkitFurniture furniture, boolean dropItems)",
+            "private void dropAndClearStorage(BukkitFurniture furniture, boolean dropItems)",
+            "setControllerItem(furniture, slot, null, false)",
+            "furniture.world().dropItemNaturally(furniture.position(), item)",
             "context.getHand() != InteractionHand.MAIN_HAND",
             "Vec3d click = context.getClickLocation()",
             "InteractionResult.SUCCESS_AND_CANCEL"):
@@ -1606,16 +1921,24 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Display storage interaction must run before native CE slot controllers; "
                 f"missing token: {required_token}")
-    for stale_token in ("FurnitureInteractEvent", "public void onInteract("):
+    for stale_token in (
+            "FurnitureInteractEvent", "FurnitureBreakEvent", "public void onInteract(",
+            "public void onBreak(", "implements Listener", "Bukkit.getScheduler()"):
         if stale_token in storage_source:
             raise AssertionError(
-                "DisplayStorageService must not retain a global Paper furniture interaction listener; "
+                "DisplayStorageService must not retain a global Paper furniture listener; "
                 f"found {stale_token}")
+    if "registerEvents(displayStorage, this)" in plugin_source:
+        raise AssertionError(
+            "Display storage removal is CE lifecycle-owned and must not be globally registered")
     for required_token in (
             "extends FurnitureBehaviorTemplate",
             "FurnitureBehaviors.register(Key.of(TYPE)",
             "public InteractionResult useOnFurniture(",
-            "current.interact(bukkitFurniture, context)"):
+            "current.interact(bukkitFurniture, context)",
+            "public void preRemove(Player player)",
+            "current.onRemove(bukkitFurniture,",
+            "player != null && !player.canInstabuild()"):
         if required_token not in storage_interaction_behavior_source:
             raise AssertionError(
                 "Storage CE interaction adapter is incomplete; "
@@ -1637,7 +1960,7 @@ def validate() -> dict[str, int]:
     for required_storage_visual_token in (
             "StorageVisualFurnitureBehavior.bind(storageVisualHandler)",
             "StorageVisualFurnitureBehavior.unbind(storageVisualHandler)",
-            "furniture.refreshElements()",
+            "StorageVisualFurnitureBehavior.refresh(furniture)",
             "private StorageVisualFurnitureBehavior.Visual storageVisual"):
         if required_storage_visual_token not in storage_source:
             raise AssertionError(
@@ -1649,20 +1972,36 @@ def validate() -> dict[str, int]:
     ).read_text(encoding="utf-8-sig")
     for required_storage_element_token in (
             "implements FurnitureElement",
+            "public static void refresh(BukkitFurniture furniture)",
+            "private final Visual[] cachedVisuals",
+            "private final boolean[] visualsDirty",
+            "consumer.accept(new StorageVisualElement(this, slots))",
+            "private final int[] entityIds",
+            "new IntArrayList(entityIds)",
+            "Visual visual = controller.visual(slot)",
+            "packets.add(removePacket)",
             "DisplayData.ItemDisplayData.ItemStack.addEntityData",
+            "DisplayData.ItemDisplayData.LeftRotation.addEntityDataIfNotDefaultValue",
+            "new Quaternionf().rotateX((float) Math.toRadians(visual.xRot()))",
+            "0, position.yRot()",
             "ClientboundAddEntityPacketProxy.INSTANCE.newInstance",
             "player.sendPackets",
             "public void gatherElements"):
         if required_storage_element_token not in storage_visual_source:
             raise AssertionError(
-                "storage_visual_furniture must use CE tracked packet-only elements; "
+                "storage_visual_furniture must use one batched CE tracked packet-only element; "
                 f"missing token: {required_storage_element_token}")
     for stale_storage_element_token in (
-            "org.bukkit.entity.ItemDisplay", "PersistentDataType", "World.spawn"):
+            "org.bukkit.entity.ItemDisplay", "PersistentDataType", "World.spawn",
+            "class StorageItemElement"):
         if stale_storage_element_token in storage_visual_source:
             raise AssertionError(
                 "storage_visual_furniture must never create persistent Bukkit entities; "
                 f"stale token: {stale_storage_element_token}")
+    if "furniture.setUnsaved()" in storage_source:
+        raise AssertionError(
+            "CE display-item controllers already own storage dirty state; "
+            "DisplayStorageService must not duplicate that write")
 
     tap_behavior_files = {
         path.name for path in SOURCE_TAP_BEHAVIORS.glob("*Behavior.java")
@@ -1733,6 +2072,8 @@ def validate() -> dict[str, int]:
     for on_demand_token in (
             "private final Map<UUID, LivingEntity> activeEntities",
             "LivingEntity living = activeEntities.get(entry.getKey())",
+            "public void onEntityRemove(EntityRemoveEvent event)",
+            "event.getCause() == EntityRemoveEvent.Cause.UNLOAD",
             "private void ensureTickTask()",
             "task == null && !active.isEmpty()",
             "runTaskTimer(plugin, () -> tick(1L), 1L, 1L)",
@@ -1741,18 +2082,89 @@ def validate() -> dict[str, int]:
         if on_demand_token not in effect_service_source:
             raise AssertionError(
                 f"Custom effect on-demand tick lifecycle is missing {on_demand_token}")
+    effect_tick_source = effect_service_source.partition(
+        "private void tick(long period)")[2].partition(
+        "private void ensureTickTask()")[0]
+    for stale_effect_entity_probe in (
+            "Bukkit.getEntity(entry.getKey())", "living.isValid()", "living.isDead()"):
+        if stale_effect_entity_probe in effect_tick_source:
+            raise AssertionError(
+                "Paper entity lifecycle events must keep custom-effect ticks free of repeated "
+                f"validity/UUID probes; found {stale_effect_entity_probe}")
+    for tracked_particle_token in (
+            "Set<Player> trackedBy = living.getTrackedBy()",
+            "if (trackedBy.isEmpty() && !includeSelf)",
+            "effectParticleOptionCache.get(chosen)",
+            "effectParticleOptionCache.put(chosen, particleOption)",
+            "ViewerEffectPackets.sendEntityEffectParticle(",
+            "spawnParticle(Particle.ENTITY_EFFECT, receivers, null",
+            "living.getX() + (random.nextDouble() - 0.5) * living.getWidth()"):
+        if tracked_particle_token not in effect_service_source:
+            raise AssertionError(
+                "Custom effect particles must target only actual entity observers; "
+                f"missing {tracked_particle_token}")
+    if "living.getWorld().spawnParticle(Particle.ENTITY_EFFECT,\n                box." in effect_service_source:
+        raise AssertionError(
+            "Custom effect particles must not scan every player in the world")
+    for particle_bridge_token in (
+            'Class.forName("org.bukkit.craftbukkit.CraftParticle")',
+            '"createParticleParam", Particle.class, Object.class',
+            "ServerLevelProxy.CLASS.getMethods()",
+            'method.getName().equals("sendParticlesSource")',
+            "CraftWorldProxy.INSTANCE.getWorld(world)",
+            "CraftEntityProxy.INSTANCE.getEntity(receiver)"):
+        if particle_bridge_token not in viewer_packet_source:
+            raise AssertionError(
+                "Custom effect particles must reuse Paper's receiver-aware native packet path; "
+                f"missing {particle_bridge_token}")
     for allocation_free_tick_token in (
             "Iterator<Map.Entry<String, ActiveEffect>> effectIterator",
             "effectIterator.remove()",
-            "effectEntry.setValue(new ActiveEffect(effect.effect(), next))",
+            "boolean remainsActive = effect.advance((int) period)",
+            "private final EffectSemantics.MutableEffectState state",
             "private boolean tickEffect(LivingEntity living, ActiveEffect effect)"):
         if allocation_free_tick_token not in effect_service_source:
             raise AssertionError(
-                "Custom effect steady-state ticking must mutate entries without snapshots; "
+                "Custom effect steady-state ticking must mutate countdowns without snapshots; "
                 f"missing {allocation_free_tick_token}")
-    if "new ArrayList<>(effects.values())" in effect_service_source:
-        raise AssertionError(
-            "Custom effect ticking must not allocate an effects snapshot every entity tick")
+    for mutable_state_token in (
+            "static final class MutableEffectState",
+            "remainingTicks[index] -= elapsedTicks",
+            "while (firstLayer < remainingTicks.length",
+            "EffectState snapshot()"):
+        if mutable_state_token not in effect_semantics_source:
+            raise AssertionError(
+                "Runtime custom-effect state must preserve hidden-layer semantics without "
+                f"per-tick object chains; missing {mutable_state_token}")
+    for stale_effect_tick_allocation in (
+            "new ArrayList<>(effects.values())",
+            "EffectSemantics.advanceEffect(effect.state()",
+            "effectEntry.setValue(new ActiveEffect(effect.effect()"):
+        if stale_effect_tick_allocation in effect_service_source:
+            raise AssertionError(
+                "Custom effect ticking must not rebuild collection or state snapshots every "
+                f"entity tick; found {stale_effect_tick_allocation}")
+    for typed_effect_storage_token in (
+            "PersistentDataType.LIST.strings()",
+            "PersistentDataType.LIST.longArrays()",
+            ".get(activeKey, PersistentDataType.TAG_CONTAINER)",
+            "owner.set(activeKey, PersistentDataType.TAG_CONTAINER, encoded)",
+            "owner.set(splashCustomEffectsKey, PersistentDataType.TAG_CONTAINER, encoded)",
+            "EffectSemantics.encodeState(effect.state())",
+            "EffectSemantics.decodeState(values.get(index))"):
+        if typed_effect_storage_token not in effect_service_source:
+            raise AssertionError(
+                "Custom effect persistence must use typed compound/list NBT instead of "
+                f"delimiter parsing; missing {typed_effect_storage_token}")
+    for stale_effect_storage_token in (
+            "get(activeKey, PersistentDataType.STRING)",
+            "set(activeKey, PersistentDataType.STRING",
+            "encodeSplashEffects", "decodeSplashEffects",
+            'new StringBuilder("v3|")', "decodeRemainingTicks"):
+        if stale_effect_storage_token in effect_service_source:
+            raise AssertionError(
+                "Legacy string effect persistence is intentionally unsupported; "
+                f"found {stale_effect_storage_token}")
     for packet_token in (
             "ClientboundSetEntityDataPacketProxy",
             'ComponentProxy.INSTANCE.literal("Grumm")',
@@ -1907,11 +2319,36 @@ def validate() -> dict[str, int]:
         ground_element = chalkboard_variants[f"ground{suffix}"]["elements"][0]
         wall_element = chalkboard_variants[f"wall{suffix}"]["elements"][0]
         if (wall_element.get("item") != ground_element.get("item")
-                or wall_element.get("translation") != "0,0,-0.49"
-                or wall_element.get("position") != "0,0,0.01"):
+                or wall_element.get("translation") != "0,0,0.49"
+                or wall_element.get("position") != "0,0,0.01"
+                or wall_element.get("rotation") is not None):
             raise AssertionError(
-                f"Chalkboard wall{suffix} must reuse and correctly align the "
-                "ground model")
+                f"Chalkboard wall{suffix} must reuse the north-authored ground "
+                "model without a duplicate yaw and stay flush with its support")
+    chalkboard_loot_entries = [
+        entry
+        for pool in chalkboard.get("loot", {}).get("pools", [])
+        for entry in pool.get("entries", [])
+    ]
+    if len(chalkboard_loot_entries) != 1:
+        raise AssertionError("Chalkboard must have one CE-owned furniture-item loot entry")
+    chalkboard_loot = chalkboard_loot_entries[0]
+    expected_large_count_function = {
+        "type": "set_count",
+        "count": 3,
+        "conditions": [{
+            "type": "match_furniture_variant",
+            "variants": ["ground_large", "wall_large"],
+        }],
+    }
+    if (chalkboard_loot.get("type") != "furniture_item"
+            or chalkboard_loot.get("item") != f"{NAMESPACE}:chalkboard"
+            or chalkboard_loot.get("functions") != [expected_large_count_function]):
+        raise AssertionError(
+            "CE must own chalkboard drops and return three source items for large variants")
+    if "FurnitureBreakEvent" in board_text_source or "board_large_count" in board_text_source:
+        raise AssertionError(
+            "BoardTextService must not duplicate CE's variant-aware chalkboard loot")
     chalkboard_item_behavior = items[f"{NAMESPACE}:chalkboard"].get("behavior", {})
     if chalkboard_item_behavior.get("type") != "furniture_item":
         raise AssertionError("Chalkboard item must keep its furniture_item behavior")
@@ -1944,8 +2381,9 @@ def validate() -> dict[str, int]:
     # A carrier is all the client ever sees, so it decides both what the player
     # collides with and what can be aimed at. Every trellis appearance uses a
     # directional lightning-rod state: vertical members use facing=up, while
-    # horizontal members use their matching axis. The state is transparent to
-    # the authored ItemDisplay and remains collidable for connected shapes.
+    # horizontal members use their matching axis. Dry and waterlogged variants
+    # use matching carrier/fluid states; the carrier remains transparent to the
+    # authored ItemDisplay and collidable for connected shapes.
     collidable_trellises = 0
     for block_id in ("trellis", *vine_trellis_ids):
         definition = blocks[f"{NAMESPACE}:{block_id}"]
@@ -1957,13 +2395,25 @@ def validate() -> dict[str, int]:
             if not state.startswith("minecraft:lightning_rod["):
                 raise AssertionError(
                     f"{block_id}/{name}: every trellis shape needs a colliding lightning-rod carrier")
-            if "powered=false" not in state or "waterlogged=false" not in state:
+            if "powered=false" not in state or "waterlogged=" not in state:
                 raise AssertionError(
-                    f"{block_id}/{name}: trellis carrier must remain unpowered and dry")
+                    f"{block_id}/{name}: trellis carrier must remain unpowered and water-aware")
             collidable_trellises += 1
-    if collidable_trellises != 37:
+        for variant_key, mapped in states["variants"].items():
+            properties = dict(part.split("=", 1) for part in variant_key.split(","))
+            waterlogged = properties["waterlogged"]
+            appearance = states["appearances"][mapped["appearance"]]
+            if f"waterlogged={waterlogged}" not in appearance["state"]:
+                raise AssertionError(
+                    f"{block_id}/{variant_key}: carrier lost its waterlogged state")
+            expected_settings = ({"fluid_state": "water"}
+                                 if waterlogged == "true" else None)
+            if mapped.get("settings") != expected_settings:
+                raise AssertionError(
+                    f"{block_id}/{variant_key}: CE fluid state does not match waterlogged")
+    if collidable_trellises != 74:
         raise AssertionError(
-            f"Expected 37 collidable trellis appearances, found {collidable_trellises}")
+            f"Expected 74 dry/waterlogged trellis appearances, found {collidable_trellises}")
     for block_id in ("trellis", *vine_trellis_ids):
         definition = blocks[f"{NAMESPACE}:{block_id}"]
         settings = definition.get("settings", {})
@@ -1998,6 +2448,42 @@ def validate() -> dict[str, int]:
         raise AssertionError("Wild grapevine body must delegate native bone meal to its head")
     if "max_height" in wild_behavior:
         raise AssertionError("Wild grapevine must not retain the invented 16-block growth cap")
+    wild_head_appearances = (
+        blocks[f"{NAMESPACE}:wild_grapevine"].get("states", {}).get("appearances", {}))
+    if len(wild_head_appearances) != 1:
+        raise AssertionError("Wild grapevine head must keep one shared authored appearance")
+    wild_head_appearance = next(iter(wild_head_appearances.values()))
+    wild_body_appearance = blocks[f"{NAMESPACE}:wild_grapevine_plant"].get("state", {})
+    expected_wild_carrier = {
+        "type": "cave_vines",
+        "id": "kaleidoscope-tavern-wild-grapevine-transparent",
+    }
+    for label, appearance in (
+            ("head", wild_head_appearance),
+            ("body", wild_body_appearance)):
+        if (appearance.get("auto_state") != expected_wild_carrier
+                or "state" in appearance
+                or appearance.get("transparent") is not True
+                or appearance.get("entity_renderer", {}).get("item")
+                not in render_items):
+            raise AssertionError(
+                f"Wild grapevine {label} must share CE's cave-vines auto-state carrier")
+    if any("weeping_vines" in json.dumps(appearance)
+           for appearance in (wild_head_appearance, wild_body_appearance)):
+        raise AssertionError(
+            "Wild grapevine must not reserve vanilla weeping-vine texture states")
+    for crop in ("grape_crop", "ice_grape_crop", "gold_grape_crop"):
+        for point in range(6):
+            crop_id = (f"{NAMESPACE}:{crop}" if point == 0
+                       else f"{NAMESPACE}:_crop/{crop}/stage_{point}")
+            appearance = blocks[crop_id].get("state", {})
+            if (appearance.get("auto_state") != expected_wild_carrier
+                    or "state" in appearance
+                    or appearance.get("transparent") is not True
+                    or appearance.get("entity_renderer", {}).get("item")
+                    not in render_items):
+                raise AssertionError(
+                    f"{crop_id}: hanging crop must share CE's cave-vines carrier")
     wild_settings = blocks[f"{NAMESPACE}:wild_grapevine"]["settings"]
     if (wild_settings.get("hardness") != 0
             or wild_settings.get("resistance") != 0
@@ -2119,7 +2605,10 @@ def validate() -> dict[str, int]:
         states = block.get("states")
         appearances = states["appearances"] if states else {"default": block["state"]}
         for appearance in appearances.values():
-            render_id = appearance.get("entity_renderer", {}).get("item")
+            renderer = appearance.get("entity_renderer")
+            if renderer is None:
+                raise AssertionError(f"{block_id}: missing entity renderer")
+            render_id = renderer.get("item")
             if render_id not in render_items:
                 raise AssertionError(f"{block_id}: missing renderer item {render_id}")
 
@@ -2363,16 +2852,25 @@ def validate() -> dict[str, int]:
             "Shaker must use the 2D icon only in GUI/FIXED display contexts")
 
     barrel_variants = furniture[f"{NAMESPACE}:barrel"]["variants"]
-    if set(barrel_variants) != {"ground", "ground_open"}:
-        raise AssertionError("The source barrel must expose closed and open lid states")
-    barrel = barrel_variants["ground"]
-    open_barrel = barrel_variants["ground_open"]
-    if len(barrel.get("hitboxes", [])) != 27 or len(open_barrel.get("hitboxes", [])) != 27:
-        raise AssertionError("The legacy barrel must retain its 3x3x3 furniture footprint")
-    if any(hitbox.get("peek") != 0 for variant in barrel_variants.values()
-           for hitbox in variant["hitboxes"]):
-        raise AssertionError("The 3x3x3 barrel model/collision must span y=0..3 exactly")
-    closed_element = barrel["elements"][0]
+    if set(barrel_variants) != {"ground", "ground_closed"}:
+        raise AssertionError(
+            "The source barrel must place open through CE's native ground variant")
+    open_barrel = barrel_variants["ground"]
+    closed_barrel = barrel_variants["ground_closed"]
+    expected_barrel_hitbox = [{
+        "type": "happy_ghast",
+        "position": "0,0,0",
+        "scale": 0.75,
+        "hard_collision": True,
+        "can_use_item_on": True,
+        "can_be_hit_by_projectile": True,
+        "blocks_building": True,
+    }]
+    if any(variant.get("hitboxes") != expected_barrel_hitbox
+           for variant in barrel_variants.values()):
+        raise AssertionError(
+            "The barrel must use one CE happy-ghast collider with the exact 3x3x3 footprint")
+    closed_element = closed_barrel["elements"][0]
     open_body, open_lid = open_barrel["elements"]
     barrel_models = [
         render_items[element["item"]]["model"]["path"]
@@ -2388,20 +2886,15 @@ def validate() -> dict[str, int]:
             != ["0,1.5,0", "0,1.5,0", "0,3,0.5", "72.5,0,0"]):
         raise AssertionError("Barrel body/lid pivot no longer matches BarrelModel")
 
-    sofa = furniture[f"{NAMESPACE}:white_sofa"]["variants"]["ground"]
     stool = furniture[f"{NAMESPACE}:white_bar_stool"]["variants"]["ground"]
     bottle = furniture[f"{NAMESPACE}:empty_bottle"]["variants"]["ground"]
-    if sofa["elements"][0].get("translation") != "0,0.5,0":
-        raise AssertionError("Ground block models must be lifted to the authored target block")
-    if sofa["hitboxes"][0].get("height") != 1.125 or stool["hitboxes"][0].get("height") != 1.3125:
-        raise AssertionError("Seat hitboxes must retain the Forge VoxelShape height")
+    if stool["hitboxes"][0].get("height") != 1.3125:
+        raise AssertionError("Bar-stool hitbox must retain the Forge VoxelShape height")
     # BukkitSeat adds a flat 0.6 to the seat position and then sinks the small
     # armour stand by its own 0.9875 height so the stand's top-mounted passenger
     # lands back on that point. Those two cancel each other, not the 0.6, so the
     # player's feet end up at `furniture origin + seat.y + 0.6` and each seat y is
     # its cushion height minus 0.6.
-    if sofa["hitboxes"][0].get("seats") != ["0,-0.1,0 0"]:
-        raise AssertionError("Sofa seat must rest on the 8/16 cushion, not float above it")
     if stool["hitboxes"][0].get("seats") != ["0,0.3375,0 0"]:
         raise AssertionError("Bar-stool seat must rest on the 15/16 cushion, not float above it")
     stool_render_id = stool["elements"][0].get("item")
@@ -2575,9 +3068,9 @@ def validate() -> dict[str, int]:
                 raise AssertionError(
                     f"string_lights_{color}: dye event needs match_item plus hand")
 
-    # Trellis waxing/scraping and wild-grapevine shearing are CE block events;
-    # incense toggling is a CE furniture event. The Java listener branches for
-    # all three are deliberately gone and must not come back.
+    # Trellis waxing/scraping and both kinds of grapevine shearing are CE block
+    # events. Incense interaction is owned by its CE BlockBehavior. The global
+    # Java block interaction listener is deliberately gone and must not return.
     trellis_events = blocks[f"{NAMESPACE}:trellis"].get("events", [])
     if len(trellis_events) != 2:
         raise AssertionError("trellis: expected exactly wax-on plus wax-off events")
@@ -2603,46 +3096,118 @@ def validate() -> dict[str, int]:
     if not trellis_events[1]["conditions"][0].get("regex"):
         raise AssertionError("trellis: wax-off must match every axe via regex")
 
+    for block_id in (
+            f"{NAMESPACE}:grapevine_trellis",
+            f"{NAMESPACE}:ice_grapevine_trellis",
+            f"{NAMESPACE}:gold_grapevine_trellis"):
+        vine_events = blocks[block_id].get("events", [])
+        if len(vine_events) != 1:
+            raise AssertionError(f"{block_id}: expected exactly one shear event")
+        shear = vine_events[0]
+        conditions = {condition["type"]: condition for condition in shear["conditions"]}
+        functions = {function["type"]: function for function in shear["functions"]}
+        loot = functions.get("drop_loot", {}).get("loot", {})
+        pools = loot.get("pools", [])
+        entries = pools[0].get("entries", []) if len(pools) == 1 else []
+        if (shear.get("on") != "right_click"
+                or set(conditions) != {"match_item"}
+                or conditions["match_item"].get("item") != "minecraft:shears"
+                or functions.get("transform_block", {}).get("block")
+                != f"{NAMESPACE}:trellis"
+                or len(entries) != 1
+                or entries[0].get("type") != "item"
+                or entries[0].get("item") != f"{NAMESPACE}:grapevine"
+                or functions.get("damage_item", {}).get("amount") != 1
+                or functions.get("play_sound", {}).get("sound")
+                != "minecraft:block.beehive.shear"
+                or functions["play_sound"].get("target") != "self"
+                or "swing_hand" not in functions
+                or "cancel_event" not in functions):
+            raise AssertionError(f"{block_id}: shear event drift")
+
     wild_events = blocks[f"{NAMESPACE}:wild_grapevine"].get("events", [])
-    if len(wild_events) != 1:
-        raise AssertionError("wild_grapevine: expected a single shear event")
+    if len(wild_events) != 2:
+        raise AssertionError(
+            "wild_grapevine: expected active-shear plus already-sheared consume events")
     shear = wild_events[0]
     shear_conditions = {c["type"]: c for c in shear["conditions"]}
     shear_functions = {f["type"]: f for f in shear["functions"]}
     if (shear.get("on") != "right_click"
             or shear_conditions["match_item"].get("item") != "minecraft:shears"
             or shear_conditions["match_block_property"].get("properties") != {"sheared": "false"}
-            or "hand" not in shear_conditions
+            or "hand" in shear_conditions
             or shear_functions["update_block_property"].get("properties") != {"sheared": "true"}
             or shear_functions["play_sound"].get("sound") != "minecraft:entity.sheep.shear"
+            or shear_functions["play_sound"].get("target") != "self"
             or "damage_item" not in shear_functions
+            or "swing_hand" not in shear_functions
             or "cancel_event" not in shear_functions):
         raise AssertionError("wild_grapevine: shear event drift")
+    consumed = wild_events[1]
+    consumed_conditions = {c["type"]: c for c in consumed["conditions"]}
+    if (consumed.get("on") != "right_click"
+            or consumed_conditions.get("match_item", {}).get("item") != "minecraft:shears"
+            or consumed_conditions.get("match_block_property", {}).get("properties")
+            != {"sheared": "true"}
+            or consumed.get("functions") != [{"type": "cancel_event"}]):
+        raise AssertionError("wild_grapevine: already-sheared click must only be consumed")
 
-    incense_ids = sorted(fid for fid in furniture if fid.endswith("_incense"))
-    if len(incense_ids) != 8:
-        raise AssertionError(f"Expected 8 incense furniture definitions, found {len(incense_ids)}")
-    for incense_id in incense_ids:
-        incense_events = furniture[incense_id].get("events", [])
-        if len(incense_events) != 1 or incense_events[0].get("on") != "right_click":
-            raise AssertionError(f"{incense_id}: expected one right_click toggle event")
-        toggle_functions = {f["type"]: f for f in incense_events[0]["functions"]}
-        # Two sibling events on the same trigger would both run in order (the
-        # second sees the variant the first just set and flips it straight
-        # back); only a single if_else keeps the toggle atomic.
-        if "if_else" not in toggle_functions or "cancel_event" not in toggle_functions:
+    if any(fid.endswith("_incense") for fid in furniture):
+        raise AssertionError("Incense must not retain CE furniture definitions")
+    copper_lantern = "minecraft:copper_lantern[hanging=false,waterlogged=false]"
+    for incense_name, particle_spec in INCENSE_BLOCK_SPECS.items():
+        incense_id = f"{NAMESPACE}:{incense_name}"
+        definition = blocks.get(incense_id)
+        if definition is None:
+            raise AssertionError(f"{incense_id}: missing CE block definition")
+        states = definition.get("states", {})
+        properties = states.get("properties", {})
+        if (set(properties) != {"facing", "open", "powered"}
+                or properties["facing"].get("type") != "horizontal_direction"
+                or properties["open"] != {"type": "boolean", "default": "false"}
+                or properties["powered"] != {"type": "boolean", "default": "false"}):
+            raise AssertionError(f"{incense_id}: facing/open/powered state schema drifted")
+        appearances = states.get("appearances", {})
+        variants = states.get("variants", {})
+        if len(appearances) != 8 or len(variants) != 16:
             raise AssertionError(
-                f"{incense_id}: toggle must be an atomic if_else plus cancel_event")
-        transitions = {}
-        for rule in toggle_functions["if_else"]["rules"]:
-            source = next(c for c in rule["conditions"]
-                          if c["type"] == "match_furniture_variant")["variant"]
-            rule_functions = {f["type"]: f for f in rule["functions"]}
-            transitions[source] = rule_functions["set_furniture_variant"].get("variant")
-            if "play_sound" not in rule_functions or "message" not in rule_functions:
-                raise AssertionError(f"{incense_id}: toggle branch missing sound or message")
-        if transitions != {"ground": "ground_open", "ground_open": "ground"}:
-            raise AssertionError(f"{incense_id}: toggle must swap ground and ground_open")
+                f"{incense_id}: expected 8 visual appearances and 16 state variants")
+        render_helpers = set()
+        for appearance in appearances.values():
+            renderer = appearance.get("entity_renderer", {})
+            if (appearance.get("state") != copper_lantern
+                    or appearance.get("transparent") is not True
+                    or renderer.get("type") != "item_display"):
+                raise AssertionError(
+                    f"{incense_id}: must use the released standing copper-lantern carrier")
+            render_helpers.add(renderer.get("item"))
+        if len(render_helpers) != 2 or None in render_helpers:
+            raise AssertionError(
+                f"{incense_id}: closed/open directions must share exactly two render items")
+        expected_behavior = {
+            "type": f"{NAMESPACE}:incense",
+            "small_particle": particle_spec[0],
+            "large_particle": particle_spec[1],
+            "large_particle_y_offset": particle_spec[2],
+            "large_particle_y_range": particle_spec[3],
+        }
+        if definition.get("behavior") != expected_behavior:
+            raise AssertionError(
+                f"{incense_id}: incense CE behavior config drifted")
+        settings = definition.get("settings", {})
+        expected_sounds = {
+            action: f"minecraft:block.decorated_pot.{action}"
+            for action in ("break", "step", "place", "hit", "fall")
+        }
+        if (settings.get("hardness") != 0.0
+                or settings.get("resistance") != 0.0
+                or settings.get("sounds") != expected_sounds
+                or "luminance" in settings):
+            raise AssertionError(
+                f"{incense_id}: source instant-break, sound or non-luminous settings drifted")
+        item_behavior = items[incense_id].get("behavior", {})
+        if item_behavior != {"type": "block_item", "block": incense_id}:
+            raise AssertionError(f"{incense_id}: item must place the CE block directly")
 
     # Wild grapevine worldgen rides CraftEngine's feature pipeline now; the
     # plugin must not re-implement a Bukkit-side generator.
@@ -2736,10 +3301,7 @@ def validate() -> dict[str, int]:
         raise AssertionError("Bottle hitboxes must retain the 6x14x6 source VoxelShape")
 
     material_examples = {
-        "white_sofa": ("wool", 3),
         "bell_pendant_lamp": ("chain", 3),
-        "sakura_incense": ("decorated_pot", 1),
-        "tap": ("metal", 3),
         "glassware_holder": ("metal", 3),
         "shaker": ("lantern", 1),
         "empty_bottle": ("glass", 1),
@@ -2809,27 +3371,22 @@ def validate() -> dict[str, int]:
             if particle != "minecraft:block/iron_chain":
                 raise AssertionError(
                     f"{pendant_id}/{half}: Paper 26.2 requires the iron_chain particle texture")
-    tap = furniture[f"{NAMESPACE}:tap"]["variants"]["wall"]["elements"][0]
-    if tap.get("position") != "0,0,0.01" or tap.get("translation") != "0,0,0.49":
-        raise AssertionError("Wall model must retain its target-block offset after anti-blackening compensation")
-    if "rotation" in tap or render_items[tap["item"]]["model"]["path"] != (
-            f"{NAMESPACE}:block/brew/tap/close"):
-        raise AssertionError("Tap must retain the north-authored mounting-plate orientation")
-    tap_hitboxes = furniture[f"{NAMESPACE}:tap"]["variants"]["wall"]["hitboxes"]
-    tap_hitbox = tap_hitboxes[0]
-    if tap_hitbox.get("position") != "0,-0.1875,0.35":
-        raise AssertionError("Tap interaction hitbox must retain its corrected wall depth")
-    tap_open_hitboxes = furniture[
-        f"{NAMESPACE}:tap"]["variants"]["wall_open"]["hitboxes"]
-    if tap_open_hitboxes != tap_hitboxes:
-        raise AssertionError(
-            "TapBlock OPEN does not affect the source shape; both variants need identical hitboxes")
-
     pressing_tub_wall = furniture[
         f"{NAMESPACE}:pressing_tub"]["variants"]["wall"]["elements"][0]
-    if (pressing_tub_wall.get("position") != "0,0,0.19"
-            or pressing_tub_wall.get("translation") != "0,0,-0.627"):
-        raise AssertionError("Tilted pressing tub must retain its corrected wall depth")
+    if (pressing_tub_wall.get("position") != "0,0,0.01"
+            or pressing_tub_wall.get("translation") != "0,0,0.49"
+            or pressing_tub_wall.get("rotation") is not None):
+        raise AssertionError(
+            "Tilted pressing tub must use CE's clicked-face yaw exactly once "
+            "and occupy the target cell in front of its support")
+    for token in (
+            "PressingTubSemantics.tiltNorth(",
+            "PressingTubSemantics.toWallFurnitureOffset(point)",
+            "displayYaw = origin.getYaw();",
+            "new Vector3f(0, 0, 0.5F)"):
+        if token not in station_source:
+            raise AssertionError(
+                "Tilted pressing-tub contents must use CE's outward wall basis")
 
     paintings = [item_id for item_id in items if item_id.endswith("_painting")]
     if len(paintings) != 14:
@@ -3126,42 +3683,16 @@ def validate() -> dict[str, int]:
                 f"{furniture_id}: station interaction order/config drifted: "
                 f"index={index}, behavior={behavior}")
 
-    configured_redstone: dict[str, dict[str, Any]] = {}
     redstone_type = f"{NAMESPACE}:redstone_furniture"
     for furniture_id, definition in furniture.items():
         all_behaviors = list(definition.get("behaviors", []))
         single_behavior = definition.get("behavior")
         if single_behavior is not None:
             all_behaviors.append(single_behavior)
-        redstone_behaviors = [
-            behavior for behavior in all_behaviors
-            if behavior.get("type") == redstone_type
-        ]
-        if len(redstone_behaviors) > 1:
+        if any(behavior.get("type") == redstone_type for behavior in all_behaviors):
             raise AssertionError(
-                f"{furniture_id}: duplicate redstone_furniture behaviors")
-        if redstone_behaviors:
-            configured_redstone[furniture_id] = redstone_behaviors[0]
-
-    expected_redstone_ids = {
-        f"{NAMESPACE}:{block_id}" for block_id in EXPECTED_REDSTONE_FURNITURE
-    }
-    if set(configured_redstone) != expected_redstone_ids:
-        missing = sorted(expected_redstone_ids - set(configured_redstone))
-        unexpected = sorted(set(configured_redstone) - expected_redstone_ids)
-        raise AssertionError(
-            "Redstone furniture coverage drift: "
-            f"missing={missing}, unexpected={unexpected}")
-    for block_id, channel in EXPECTED_REDSTONE_FURNITURE.items():
-        furniture_id = f"{NAMESPACE}:{block_id}"
-        expected_behavior = {
-            "type": redstone_type,
-            "channel": channel,
-            "data_key": f"{NAMESPACE}:redstone_{block_id}",
-        }
-        if configured_redstone[furniture_id] != expected_behavior:
-            raise AssertionError(
-                f"{furniture_id}: redstone behavior must be exactly {expected_behavior!r}")
+                f"{furniture_id}: storage launchers are CE blocks; "
+                "redstone_furniture must not be generated")
 
     configured_ticking: dict[str, list[dict[str, Any]]] = {}
     ticking_type = f"{NAMESPACE}:ticking_furniture"
@@ -3199,10 +3730,6 @@ def validate() -> dict[str, int]:
     storage_slot_counts = {
         "bar_cabinet": 2,
         "glass_bar_cabinet": 2,
-        "cellar_cabinet": 9,
-        "tilted_rack": 3,
-        "circular_rack": 6,
-        "holder": 1,
         "glassware_holder": 4,
     }
     storage_interaction_type = f"{NAMESPACE}:storage_interaction_furniture"
@@ -3281,6 +3808,166 @@ def validate() -> dict[str, int]:
         if not display_indices or visual_index != display_indices[-1] + 1:
             raise AssertionError(
                 f"{storage_id}: storage visual controller must follow its native slot controllers")
+
+    sofa_variants = {
+        "ground": "single",
+        "ground_connection_left": "left",
+        "ground_connection_right": "right",
+        "ground_connection_middle": "middle",
+        "ground_connection_left_corner": "left_corner",
+        "ground_connection_right_corner": "right_corner",
+    }
+    sofa_sounds = {
+        "break": "minecraft:block.wool.break",
+        "place": "minecraft:block.wool.place",
+        "hit": "minecraft:block.wool.hit",
+    }
+    for color in FURNITURE_COLORS:
+        sofa_id = f"{color}_sofa"
+        full_id = f"{NAMESPACE}:{sofa_id}"
+        if full_id in blocks:
+            raise AssertionError(
+                f"{sofa_id}: restored entity sofa must not remain a CE block")
+        definition = furniture.get(full_id)
+        if definition is None:
+            raise AssertionError(f"{sofa_id}: missing restored CE furniture")
+        if set(definition.get("variants", {})) != set(sofa_variants):
+            raise AssertionError(
+                f"{sofa_id}: six source connection variants were not restored")
+        if definition.get("settings") != {
+                "hit_times": 3,
+                "sounds": sofa_sounds,
+                "item": full_id}:
+            raise AssertionError(f"{sofa_id}: source furniture settings drifted")
+        if definition.get("behavior") != {
+                "type": f"{NAMESPACE}:lifecycle_furniture",
+                "channel": "connection"}:
+            raise AssertionError(
+                f"{sofa_id}: event-driven connection lifecycle is missing")
+        if definition.get("loot") != {
+                "pools": [{
+                    "rolls": 1,
+                    "entries": [{"type": "furniture_item", "item": full_id}],
+                }]}:
+            raise AssertionError(f"{sofa_id}: CE furniture drop drifted")
+        expected_item_behavior = {
+            "type": "furniture_item",
+            "furniture": full_id,
+            "rules": {"ground": {"rotation": "four", "alignment": "center"}},
+        }
+        if items[full_id].get("behavior") != expected_item_behavior:
+            raise AssertionError(
+                f"{sofa_id}: item must place the restored four-way entity furniture")
+
+        render_ids: set[str] = set()
+        for variant_name, model_name in sofa_variants.items():
+            variant = definition["variants"][variant_name]
+            elements = variant.get("elements", [])
+            hitboxes = variant.get("hitboxes", [])
+            if len(elements) != 1 or len(hitboxes) != 5:
+                raise AssertionError(
+                    f"{sofa_id}: {variant_name} element/hitbox coverage drifted")
+            element = elements[0]
+            render_id = element.get("item")
+            if (element.get("type") != "item_display"
+                    or element.get("translation") != "0,0.5,0"
+                    or element.get("rotation") is not None
+                    or not isinstance(render_id, str)
+                    or not render_id.startswith(
+                        f"{NAMESPACE}:_render/{sofa_id}/")):
+                raise AssertionError(
+                    f"{sofa_id}: {variant_name} entity visual transform drifted")
+            render_ids.add(render_id)
+            expected_model = (
+                f"{NAMESPACE}:block/deco/sofa/{color}/{model_name}")
+            if render_items.get(render_id, {}).get("model", {}).get("path") != expected_model:
+                raise AssertionError(
+                    f"{sofa_id}: {variant_name} must use {expected_model}")
+            interaction = hitboxes[0]
+            if (interaction.get("type") != "interaction"
+                    or interaction.get("width") != 1.0
+                    or interaction.get("height") != 1.125
+                    or interaction.get("seats") != ["0,-0.1,0 0"]):
+                raise AssertionError(
+                    f"{sofa_id}: {variant_name} seat/hitbox drifted")
+            if any(hitbox.get("type") != "shulker" for hitbox in hitboxes[1:]):
+                raise AssertionError(
+                    f"{sofa_id}: {variant_name} solid collision coverage drifted")
+        if len(render_ids) != 6:
+            raise AssertionError(
+                f"{sofa_id}: expected six private source models, found {len(render_ids)}")
+
+    for expected_token in (
+            "EXPECTED_ITEMS = 711",
+            "EXPECTED_BLOCKS = 54",
+            "EXPECTED_FURNITURE = 120"):
+        if expected_token not in plugin_source:
+            raise AssertionError(
+                f"Runtime CE content count guard is stale: {expected_token}")
+
+    for storage_id, (slot_count, blocklist, carrier_type) in STORAGE_BLOCK_SPECS.items():
+        full_id = f"{NAMESPACE}:{storage_id}"
+        if full_id in furniture:
+            raise AssertionError(f"{storage_id}: migrated storage must not remain furniture")
+        definition = blocks[full_id]
+        expected_behavior = {
+            "type": f"{NAMESPACE}:storage",
+            "kind": storage_id,
+            "slots": slot_count,
+            "data_key": f"{NAMESPACE}:storage_{storage_id}",
+            "blocklist": f"{NAMESPACE}:{blocklist}",
+        }
+        if definition.get("behavior") != expected_behavior:
+            raise AssertionError(
+                f"{storage_id}: CE storage behavior drifted: {definition.get('behavior')!r}")
+        properties = definition.get("states", {}).get("properties", {})
+        expected_properties = ({"facing", "powered", "position"}
+                               if storage_id == "cellar_cabinet"
+                               else {"facing", "powered"})
+        if set(properties) != expected_properties:
+            raise AssertionError(
+                f"{storage_id}: storage state properties drifted: {sorted(properties)}")
+        appearances = definition.get("states", {}).get("appearances", {})
+        variants = definition.get("states", {}).get("variants", {})
+        expected_appearances = 16 if storage_id == "cellar_cabinet" else 4
+        expected_variants = 32 if storage_id == "cellar_cabinet" else 8
+        if (len(appearances) != expected_appearances
+                or len(variants) != expected_variants):
+            raise AssertionError(
+                f"{storage_id}: storage appearance/state coverage drifted: "
+                f"{len(appearances)}/{len(variants)}")
+        render_ids = set()
+        for appearance in appearances.values():
+            auto_state = appearance.get("auto_state", {})
+            if auto_state.get("type") != carrier_type:
+                raise AssertionError(
+                    f"{storage_id}: expected {carrier_type} carrier, got {auto_state!r}")
+            renderer = appearance.get("entity_renderer", {})
+            if renderer.get("type") != "item_display":
+                raise AssertionError(
+                    f"{storage_id}: authored model must use an ItemDisplay renderer")
+            render_ids.add(renderer.get("item"))
+        expected_render_items = 4 if storage_id == "cellar_cabinet" else 1
+        if len(render_ids) != expected_render_items:
+            raise AssertionError(
+                f"{storage_id}: expected {expected_render_items} shared base render items, "
+                f"found {render_ids}")
+        settings = definition.get("settings", {})
+        if (settings.get("hardness") != 2.5
+                or settings.get("resistance") != 2.5
+                or settings.get("push_reaction") != "NORMAL"
+                or settings.get("tags") != ["minecraft:mineable/axe"]):
+            raise AssertionError(
+                f"{storage_id}: source wood block settings drifted")
+        expected_luminance = 14 if storage_id == "circular_rack" else None
+        if settings.get("luminance") != expected_luminance:
+            raise AssertionError(
+                f"{storage_id}: source luminance drifted")
+        if items[full_id].get("behavior") != {
+                "type": "block_item", "block": full_id}:
+            raise AssertionError(
+                f"{storage_id}: placement must use CE's native block_item")
+
     storage_helpers = {
         item_id for item_id in render_items
         if item_id.startswith(f"{NAMESPACE}:_render/storage/")

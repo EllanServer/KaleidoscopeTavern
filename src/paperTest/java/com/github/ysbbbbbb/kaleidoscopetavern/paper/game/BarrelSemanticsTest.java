@@ -3,6 +3,8 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BarrelSemanticsTest {
     @Test
@@ -35,6 +37,18 @@ class BarrelSemanticsTest {
                 BarrelSemantics.advance(1, -47, 2400));
         assertEquals(new BarrelSemantics.BrewState(6, -1),
                 BarrelSemantics.advance(5, 0, 2400));
+    }
+
+    @Test
+    void onlyPendingOrActiveClosedBarrelsNeedSparseTicks() {
+        int capacity = 4_000;
+        assertFalse(BarrelSemantics.needsTick(true, 0, capacity, capacity));
+        assertFalse(BarrelSemantics.needsTick(false, 0, capacity - 1, capacity));
+        assertTrue(BarrelSemantics.needsTick(false, 0, capacity, capacity));
+        assertTrue(BarrelSemantics.needsTick(false, 1, 0, capacity));
+        assertTrue(BarrelSemantics.needsTick(false, 5, 0, capacity));
+        assertFalse(BarrelSemantics.needsTick(false, 6, 0, capacity));
+        assertFalse(BarrelSemantics.needsTick(false, 99, capacity, capacity));
     }
 
     @Test

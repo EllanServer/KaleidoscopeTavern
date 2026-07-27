@@ -7,9 +7,35 @@ final class EffectSemantics {
     private EffectSemantics() {
     }
 
-    static int decodeRemainingTicks(long stored, long nowMillis, boolean legacyEpochMillis) {
-        long ticks = legacyEpochMillis ? (stored - nowMillis + 49L) / 50L : stored;
-        return (int) Math.max(0, Math.min(Integer.MAX_VALUE, ticks));
+    static long[] encodeState(EffectState state) {
+        int layers = 0;
+        for (EffectState current = state; current != null; current = current.hidden()) {
+            layers++;
+        }
+        long[] encoded = new long[layers * 2];
+        int index = 0;
+        for (EffectState current = state; current != null; current = current.hidden()) {
+            encoded[index++] = current.remainingTicks();
+            encoded[index++] = current.amplifier();
+        }
+        return encoded;
+    }
+
+    static EffectState decodeState(long[] encoded) {
+        if (encoded == null || encoded.length < 2 || encoded.length % 2 != 0) {
+            return null;
+        }
+        EffectState state = null;
+        for (int index = encoded.length - 2; index >= 0; index -= 2) {
+            long remaining = encoded[index];
+            long amplifier = encoded[index + 1];
+            if (remaining < Integer.MIN_VALUE || remaining > Integer.MAX_VALUE
+                    || amplifier < Integer.MIN_VALUE || amplifier > Integer.MAX_VALUE) {
+                return null;
+            }
+            state = new EffectState((int) remaining, (int) amplifier, state);
+        }
+        return state;
     }
 
     static boolean ticksAt(int remainingTicks, int interval) {
@@ -88,6 +114,76 @@ final class EffectSemantics {
         }
         return new EffectState(state.remainingTicks() - elapsedTicks, state.amplifier(),
                 decrementChain(state.hidden(), elapsedTicks));
+    }
+
+    /**
+     * Allocation-free runtime form of the visible/hidden effect chain. The
+     * immutable form above remains the reference for merges and persistence;
+     * this form only avoids rebuilding every layer on every server tick.
+     */
+    static final class MutableEffectState {
+        private final int[] remainingTicks;
+        private final int[] amplifiers;
+        private int firstLayer;
+
+        MutableEffectState(EffectState state) {
+            if (state == null) {
+                throw new IllegalArgumentException("state must not be null");
+            }
+            int layers = 0;
+            for (EffectState current = state; current != null; current = current.hidden()) {
+                layers++;
+            }
+            remainingTicks = new int[layers];
+            amplifiers = new int[layers];
+            int index = 0;
+            for (EffectState current = state; current != null; current = current.hidden()) {
+                remainingTicks[index] = current.remainingTicks();
+                amplifiers[index] = current.amplifier();
+                index++;
+            }
+        }
+
+        int remainingTicks() {
+            requireLive();
+            return remainingTicks[firstLayer];
+        }
+
+        int amplifier() {
+            requireLive();
+            return amplifiers[firstLayer];
+        }
+
+        boolean advance(int elapsedTicks) {
+            if (elapsedTicks < 0) {
+                throw new IllegalArgumentException("elapsedTicks must not be negative");
+            }
+            if (elapsedTicks == 0) {
+                return firstLayer < remainingTicks.length;
+            }
+            for (int index = firstLayer; index < remainingTicks.length; index++) {
+                remainingTicks[index] -= elapsedTicks;
+            }
+            while (firstLayer < remainingTicks.length
+                    && remainingTicks[firstLayer] <= 0) {
+                firstLayer++;
+            }
+            return firstLayer < remainingTicks.length;
+        }
+
+        EffectState snapshot() {
+            EffectState result = null;
+            for (int index = remainingTicks.length - 1; index >= firstLayer; index--) {
+                result = new EffectState(remainingTicks[index], amplifiers[index], result);
+            }
+            return result;
+        }
+
+        private void requireLive() {
+            if (firstLayer >= remainingTicks.length) {
+                throw new IllegalStateException("effect state has expired");
+            }
+        }
     }
 
     static Optional<ClearCommand> parseClearCommand(String command) {

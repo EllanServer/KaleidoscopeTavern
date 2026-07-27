@@ -21,6 +21,9 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.TapService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.BlockService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.GrapeSeasonGate;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.IncenseBlockBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.StorageBlockBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TapBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBlockShape;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.WildGrapevineBehavior;
@@ -29,7 +32,6 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BoardTextFurn
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BottleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.PressingTubFurnitureBehavior;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StateFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
@@ -40,6 +42,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridg
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.EffectHudPlaceholder;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.GrapevineItemBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.ShakerItemBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.SneakPlaceDrinkItemBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.pack.CustomCropsInstaller;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.pack.PackInstaller;
@@ -73,8 +76,8 @@ import java.util.logging.Level;
 public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listener, TabExecutor {
     private static final String NAMESPACE = "kaleidoscope_tavern";
     private static final int EXPECTED_ITEMS = 711; // 157 public items + 554 private render helpers
-    private static final int EXPECTED_BLOCKS = 41;
-    private static final int EXPECTED_FURNITURE = 133;
+    private static final int EXPECTED_BLOCKS = 54;
+    private static final int EXPECTED_FURNITURE = 120;
 
     private PackInstaller.Result packResult;
     private CustomCropsInstaller.Result customCropsResult;
@@ -101,19 +104,22 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             TrellisBehavior.register();
             HangingGrapeCropBehavior.register();
             WildGrapevineBehavior.register();
+            IncenseBlockBehavior.register();
+            StorageBlockBehavior.register();
+            TapBlockBehavior.register();
             StateFurnitureBehavior.register();
             AnimatedItemFurnitureBehavior.register();
             BoardTextFurnitureBehavior.register();
             BottleFurnitureBehavior.register();
             LifecycleFurnitureBehavior.register();
             PressingTubFurnitureBehavior.register();
-            RedstoneFurnitureBehavior.register();
             TickingFurnitureBehavior.register();
             StationInteractionFurnitureBehavior.register();
             StationVisualFurnitureBehavior.register();
             StorageInteractionFurnitureBehavior.register();
             StorageVisualFurnitureBehavior.register();
             GrapevineItemBehavior.register();
+            ShakerItemBehavior.register();
             SneakPlaceDrinkItemBehavior.register();
             if (getConfig().getBoolean("pack.install-on-startup", true)) {
                 packResult = PackInstaller.install(this);
@@ -158,22 +164,20 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         boards = new BoardTextService(this, items);
         taps = new TapService(this, stations, items);
         displayStorage = new DisplayStorageService(this, catalog, items);
-        ambientFurniture = new AmbientFurnitureService(displayStorage);
+        ambientFurniture = new AmbientFurnitureService();
         barStoolVisuals = new BarStoolVisualService(this, items);
         furnitureConnections = new FurnitureConnectionService(this);
 
         getServer().getPluginManager().registerEvents(this, this);
-        blocks = new BlockService(this, catalog, items);
-        getServer().getPluginManager().registerEvents(blocks, this);
+        blocks = new BlockService(catalog);
         getServer().getPluginManager().registerEvents(new MolotovService(this, items), this);
         getServer().getPluginManager().registerEvents(new BottlePlacementService(this, catalog, items), this);
         bottleFurniture = new BottleFurnitureService(this, catalog, items, effects);
         getServer().getPluginManager().registerEvents(bottleFurniture, this);
-        getServer().getPluginManager().registerEvents(displayStorage, this);
         getServer().getPluginManager().registerEvents(boards, this);
+        getServer().getPluginManager().registerEvents(taps.lavaCauldronListener(), this);
         getServer().getPluginManager().registerEvents(stations, this);
         getServer().getPluginManager().registerEvents(effects, this);
-        RedstoneFurnitureBehavior.start(this);
         TickingFurnitureBehavior.start(this);
         blocks.start();
         stations.start();
@@ -248,7 +252,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (furnitureConnections != null) {
             furnitureConnections.stop();
         }
-        RedstoneFurnitureBehavior.stop();
         TickingFurnitureBehavior.stop();
     }
 

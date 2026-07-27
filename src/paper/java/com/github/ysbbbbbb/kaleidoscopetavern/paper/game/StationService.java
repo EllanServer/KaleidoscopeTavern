@@ -7,11 +7,11 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.Effec
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.PressingRecipe;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.PressingTubFurnitureBehavior;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.RedstoneFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.ShakerItemBehavior;
 import io.papermc.paper.event.entity.EntityMoveEvent;
 import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
@@ -22,10 +22,12 @@ import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.item.behavior.FurnitureItem;
+import net.momirealms.craftengine.core.item.behavior.BlockItem;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
+import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockHitResult;
+import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import net.momirealms.craftengine.core.world.context.UseOnContext;
@@ -99,14 +101,12 @@ public final class StationService implements Listener {
     private final Consumer<Boolean> pressLandingAvailabilityHandler =
             this::setPressLandingEventsActive;
     private boolean pressLandingEventsActive;
-    private final RedstoneFurnitureBehavior.Handler incenseRedstoneHandler =
-            (furniture, powered, initial) -> setIncenseActive(furniture, powered, !initial);
     private final StationVisualFurnitureBehavior.Handler stationVisualHandler =
             this::stationVisuals;
     private final StationInteractionFurnitureBehavior.Handler stationInteractionHandler =
             this::interactStation;
-    private final StationInteractionFurnitureBehavior.PlacementHandler stationPlacementHandler =
-            this::onStationPlaced;
+    private final ShakerItemBehavior.Handler shakerItemHandler =
+            this::usePortableShaker;
     private final TickingFurnitureBehavior.Handler barrelTickingHandler =
             new TickingFurnitureBehavior.Handler() {
                 @Override
@@ -117,6 +117,11 @@ public final class StationService implements Listener {
                 @Override
                 public void onReady(BukkitFurniture furniture) {
                     syncBarrelState(furniture);
+                }
+
+                @Override
+                public boolean shouldSchedule(BukkitFurniture furniture) {
+                    return shouldTickBarrel(furniture);
                 }
             };
 
@@ -131,21 +136,17 @@ public final class StationService implements Listener {
 
     public void start() {
         StationInteractionFurnitureBehavior.bind(stationInteractionHandler);
-        StationInteractionFurnitureBehavior.bindPlacement(stationPlacementHandler);
+        ShakerItemBehavior.bind(shakerItemHandler);
         StationVisualFurnitureBehavior.bind(stationVisualHandler);
-        RedstoneFurnitureBehavior.bind(
-                RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
         TickingFurnitureBehavior.bind(
                 TickingFurnitureBehavior.Channel.BARREL, barrelTickingHandler);
         PressingTubFurnitureBehavior.bindAvailability(pressLandingAvailabilityHandler);
     }
 
     public void stop() {
-        StationInteractionFurnitureBehavior.unbindPlacement(stationPlacementHandler);
         StationInteractionFurnitureBehavior.unbind(stationInteractionHandler);
+        ShakerItemBehavior.unbind(shakerItemHandler);
         StationVisualFurnitureBehavior.unbind(stationVisualHandler);
-        RedstoneFurnitureBehavior.unbind(
-                RedstoneFurnitureBehavior.Channel.INCENSE, incenseRedstoneHandler);
         TickingFurnitureBehavior.unbind(
                 TickingFurnitureBehavior.Channel.BARREL, barrelTickingHandler);
         PressingTubFurnitureBehavior.unbindAvailability(
@@ -176,7 +177,7 @@ public final class StationService implements Listener {
         if (id.equals(BARREL) && TapSemantics.shouldDelegateBarrelTapPlacement(
                 context.isSecondaryUseActive(),
                 context.getItem().id().toString())) {
-            return placeHeldFurnitureWithCraftEngine(context);
+            return placeHeldTapBlockWithCraftEngine(furniture, context);
         }
         boolean handled = switch (id) {
             case PRESSING_TUB -> interactPress(player, furniture, context.getHand());
@@ -189,41 +190,66 @@ public final class StationService implements Listener {
             case SHAKER -> interactShaker(player, furniture);
             case EMPTY_GLASSWARE -> pourPortableShaker(
                     player, furniture, context.getHand());
-            // Incense toggling lives in the generated CE furniture events.
+            // Incense and tap interactions live on their generated CE blocks.
             default -> false;
         };
-        return handled ? InteractionResult.SUCCESS_AND_CANCEL : InteractionResult.PASS;
+        if (!handled) {
+            return InteractionResult.PASS;
+        }
+
+        // Furniture interaction is dispatched from CE's packet listener on
+        // the main-thread scheduler. By then vanilla may already have started
+        // the held milk-bucket/potion use animation. A successful source block
+        // interaction owns that same hand, so explicitly cancel the predicted
+        // consume state; otherwise pouring grape juice into an open barrel can
+        // visibly (and, under latency, functionally) turn into drinking it.
+        EquipmentSlot usedHand = context.getHand() == InteractionHand.MAIN_HAND
+                ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+        if (player.hasActiveItem() && player.getActiveItemHand() == usedHand) {
+            player.clearActiveItem();
+        }
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     /**
-     * Invokes the held item's CE furniture behavior while the exact barrel
-     * hitbox and hand are still available. Returning PASS and waiting for
-     * CE's later generic entity-item fallback loses that reliable dispatch
-     * point (and CE 26.7.4's fallback reads the main hand unconditionally).
+     * Places the CE tap block at the source multiblock's canonical front-centre
+     * cell. A furniture hit has no real support block for CE's ordinary block
+     * fallback, so the barrel controller supplies the target grid position.
      */
-    private static InteractionResult placeHeldFurnitureWithCraftEngine(
-            InteractEntityContext context) {
+    private static InteractionResult placeHeldTapBlockWithCraftEngine(
+            BukkitFurniture barrel, InteractEntityContext context) {
         ItemBehavior behavior = context.getItem().getBehavior().orElse(null);
-        FurnitureItem furnitureItem = behavior == null
-                ? null : behavior.getFirst(FurnitureItem.class);
-        if (!(furnitureItem instanceof ItemBehavior placementBehavior)) {
+        BlockItem blockItem = behavior == null
+                ? null : behavior.getFirst(BlockItem.class);
+        if (!(blockItem instanceof ItemBehavior placementBehavior)) {
             return InteractionResult.FAIL;
         }
+
+        Location origin = barrel.location();
+        Vector horizontal = origin.getDirection().setY(0);
+        int x;
+        int z;
+        if (Math.abs(horizontal.getX()) >= Math.abs(horizontal.getZ())) {
+            x = horizontal.getX() < 0 ? -1 : 1;
+            z = 0;
+        } else {
+            x = 0;
+            z = horizontal.getZ() < 0 ? -1 : 1;
+        }
+        Direction facing = x < 0 ? Direction.WEST : x > 0 ? Direction.EAST
+                : z < 0 ? Direction.NORTH : Direction.SOUTH;
+        BlockPos target = new BlockPos(
+                origin.getBlockX() + x * 2,
+                origin.getBlockY() + 1,
+                origin.getBlockZ() + z * 2);
         BlockHitResult hit = new BlockHitResult(
-                context.getClickLocation(), context.getClickedFace(),
-                context.getClickedPos(), false);
+                new Vec3d(target.x() + 0.5, target.y() + 0.5, target.z() + 0.5),
+                facing, target, false);
         InteractionResult result = placementBehavior.useOnBlock(new UseOnContext(
                 context.getPlayer(), context.getHand(), context.getItem(), hit));
         // Sneaking skipped BarrelBlock.use in Forge. A rejected placement must
         // therefore not fall back to opening or querying the barrel.
         return result == InteractionResult.PASS ? InteractionResult.FAIL : result;
-    }
-
-    private void onStationPlaced(BukkitFurniture furniture) {
-        if (furniture.id().toString().equals(BARREL)) {
-            Bukkit.getScheduler().runTask(
-                    plugin, () -> setBarrelOpen(furniture, true, false));
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -388,32 +414,34 @@ public final class StationService implements Listener {
                 "minecraft:item.bottle.fill", SoundCategory.PLAYERS, 1.0F, 1.0F);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onUsePortableShaker(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_AIR || event.getHand() == null
-                || event.getItem() == null || !items.id(event.getItem()).equals(SHAKER)) {
-            return;
+    private InteractionResult usePortableShaker(
+            net.momirealms.craftengine.core.entity.player.Player cePlayer,
+            InteractionHand interactionHand) {
+        if (!(cePlayer.platformPlayer() instanceof Player player)) {
+            return InteractionResult.PASS;
+        }
+        EquipmentSlot hand = interactionHand == InteractionHand.MAIN_HAND
+                ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+        ItemStack shaker = handItem(player, hand);
+        if (!items.id(shaker).equals(SHAKER)) {
+            return InteractionResult.PASS;
         }
         // The migrated shaker uses a long consumable component solely to
         // expose the original brush-style use animation. Always suppress the
         // vanilla item use; only a valid three-ingredient shaker is started
         // explicitly below.
-        event.setCancelled(true);
-        ItemStack shaker = event.getItem();
         if (items.shakerResult(shaker) != null) {
-            return;
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
         int ingredientCount = items.shakerIngredients(shaker).size();
         if (ingredientCount != 3) {
             if (ingredientCount > 0) {
-                event.getPlayer().sendActionBar(net.kyori.adventure.text.Component.translatable(
+                player.sendActionBar(net.kyori.adventure.text.Component.translatable(
                         "message.kaleidoscope_tavern.shaker.amount_too_low"));
             }
-            return;
+            return InteractionResult.SUCCESS_AND_CANCEL;
         }
 
-        Player player = event.getPlayer();
-        EquipmentSlot hand = event.getHand();
         Bukkit.getScheduler().runTask(plugin, () -> {
             ItemStack current = handItem(player, hand);
             if (!player.isOnline() || !items.id(current).equals(SHAKER)
@@ -427,6 +455,7 @@ public final class StationService implements Listener {
             player.startUsingItem(hand);
             player.setActiveItemRemainingTime(72_000);
         });
+        return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -943,7 +972,9 @@ public final class StationService implements Listener {
             return;
         }
         boolean variantChanged = furniture.setVariant(
-                open ? "ground_open" : "ground", true);
+                open ? "ground" : "ground_closed", true);
+        TickingFurnitureBehavior.refreshSchedule(
+                TickingFurnitureBehavior.Channel.BARREL, furniture);
         if (playSound) {
             // The Forge implementation intentionally uses BARREL_OPEN for
             // both transitions and plays it at the lid, two blocks above.
@@ -959,7 +990,7 @@ public final class StationService implements Listener {
     }
 
     private static boolean isBarrelOpen(BukkitFurniture furniture) {
-        return furniture.currentVariant().name().endsWith("_open");
+        return furniture.currentVariant().name().equals("ground");
     }
 
     private static BarrelSemantics.Hit barrelHit(BukkitFurniture furniture, Location point) {
@@ -1261,27 +1292,6 @@ public final class StationService implements Listener {
         return true;
     }
 
-    /**
-     * Manual toggling now lives in the generated CE furniture events; the
-     * {@code *_open} furniture variant is the single source of truth for a
-     * lit incense. This setter remains for the redstone edge toggle and the
-     * placement initializer, both of which write the same variant.
-     */
-    private void setIncenseActive(BukkitFurniture furniture, boolean active, boolean playSound) {
-        String current = furniture.currentVariant().name();
-        boolean wasActive = current.endsWith("_open");
-        if (wasActive != active) {
-            String base = wasActive ? current.substring(0, current.length() - 5) : current;
-            furniture.setVariant(active ? base + "_open" : base, true);
-        }
-        if (playSound && wasActive != active) {
-            furniture.location().getWorld().playSound(furniture.location(),
-                    active ? "minecraft:block.stone_button.click_on"
-                            : "minecraft:block.stone_button.click_off",
-                    1.0F, 1.0F);
-        }
-    }
-
     private void cleanupFalling() {
         // Entities despawned mid-air never fire a landing; this low-frequency
         // cleanup is unrelated to furniture ticking and prevents stale UUIDs.
@@ -1374,9 +1384,20 @@ public final class StationService implements Listener {
         beginBrewing(furniture, state);
     }
 
+    private boolean shouldTickBarrel(BukkitFurniture furniture) {
+        if (furniture == null || isBarrelOpen(furniture)) {
+            return false;
+        }
+        FurnitureState state = new FurnitureState(furniture);
+        return BarrelSemantics.needsTick(false,
+                state.integer("barrel_level"),
+                state.integer("barrel_amount"),
+                BARREL_CAPACITY);
+    }
+
     private void refreshStationVisuals(BukkitFurniture furniture) {
         if (furniture != null && furniture.isValid()) {
-            furniture.refreshElements();
+            StationVisualFurnitureBehavior.refresh(furniture);
         }
     }
 
@@ -1477,14 +1498,16 @@ public final class StationService implements Listener {
                 float displayYaw;
                 Quaternionf rotation;
                 if (tilted) {
-                    PressingTubSemantics.Point point = PressingTubSemantics.tiltSouth(
+                    PressingTubSemantics.Point point = PressingTubSemantics.tiltNorth(
                             0.5 + x, 0.2 + y, 0.5 + z);
+                    PressingTubSemantics.Point offset =
+                            PressingTubSemantics.toWallFurnitureOffset(point);
                     Vec3d worldPoint = furniture.getRelativePosition(new Vector3f(
-                            (float) (point.x() - 0.5), 0, (float) -point.z()));
+                            (float) offset.x(), 0, (float) offset.z()));
                     displayX = worldPoint.x;
-                    displayY = origin.getY() - 0.5 + point.y();
+                    displayY = origin.getY() + offset.y();
                     displayZ = worldPoint.z;
-                    displayYaw = origin.getYaw() + 180F;
+                    displayYaw = origin.getYaw();
                     rotation = new Quaternionf()
                             .rotateX((float) Math.toRadians(
                                     PressingTubSemantics.TILT_X_DEGREES))
@@ -1525,8 +1548,10 @@ public final class StationService implements Listener {
                         double displayY = origin.getY() + y;
                         double displayZ = origin.getZ();
                         if (furniture.currentVariant().name().equals("wall")) {
+                            // The wall origin is the support plane; the source
+                            // fluid stays horizontal at the target cell centre.
                             Vec3d center = furniture.getRelativePosition(
-                                    new Vector3f(0, 0, -0.5F));
+                                    new Vector3f(0, 0, 0.5F));
                             displayX = center.x;
                             displayY = origin.getY() - 0.5 + y;
                             displayZ = center.z;

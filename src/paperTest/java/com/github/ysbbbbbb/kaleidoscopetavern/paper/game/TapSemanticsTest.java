@@ -48,6 +48,17 @@ class TapSemanticsTest {
     }
 
     @Test
+    void finiteLavaTapConsumesItsSourceCauldron() {
+        assertTrue(TapSemantics.shouldConsumeLavaSource(false));
+        assertFalse(TapSemantics.shouldConsumeLavaSource(true));
+        assertEquals(2, TapSemantics.lavaLevelAfterExtraction(3, 1, false));
+        assertEquals(1, TapSemantics.lavaLevelAfterExtraction(2, 1, false));
+        assertEquals(0, TapSemantics.lavaLevelAfterExtraction(1, 1, false));
+        assertEquals(0, TapSemantics.lavaLevelAfterExtraction(3, 3, false));
+        assertEquals(3, TapSemantics.lavaLevelAfterExtraction(3, 1, true));
+    }
+
+    @Test
     void sneakingWithTapDelegatesBarrelInteractionToCraftEnginePlacement() {
         assertTrue(TapSemantics.shouldDelegateBarrelTapPlacement(
                 true, "kaleidoscope_tavern:tap"));

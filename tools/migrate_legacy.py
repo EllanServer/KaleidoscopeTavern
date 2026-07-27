@@ -151,6 +151,27 @@ COMMON_TAG_FALLBACKS: dict[str, list[str]] = {
 }
 
 
+INCENSE_SPECS: dict[str, tuple[str, str, float, float]] = {
+    "sakura_incense": ("CHERRY_LEAVES", "CHERRY_LEAVES", -2.0, 16.0),
+    "pine_incense": ("SMOKE", "CAMPFIRE_COSY_SMOKE", -2.0, 16.0),
+    "ginkgo_incense": ("WAX_OFF", "COMPOSTER", -2.0, 16.0),
+    "spore_incense": ("SPORE_BLOSSOM_AIR", "SPORE_BLOSSOM_AIR", -2.0, 16.0),
+    "catnip_incense": ("HAPPY_VILLAGER", "HAPPY_VILLAGER", -2.0, 16.0),
+    "snow_incense": ("SNOWFLAKE", "SNOWFLAKE", -2.0, 16.0),
+    "butterfly_incense": ("GLOW", "GLOW", -2.0, 16.0),
+    "firefly_incense": ("FIREFLY", "FIREFLY", -0.67, 5.33),
+}
+INCENSE_BLOCKS = frozenset(INCENSE_SPECS)
+
+STORAGE_BLOCK_SPECS: dict[str, tuple[int, str]] = {
+    "cellar_cabinet": (9, "cellar_cabinet_blocklist"),
+    "tilted_rack": (3, "tilted_rack_blocklist"),
+    "circular_rack": (6, "circular_rack_blocklist"),
+    "holder": (1, "holder_blocklist"),
+}
+STORAGE_BLOCKS = frozenset(STORAGE_BLOCK_SPECS)
+
+
 def is_grid_block(block_id: str) -> bool:
     """Content that benefits from real block state/physics stays a block.
 
@@ -161,6 +182,9 @@ def is_grid_block(block_id: str) -> bool:
 
     return (
         block_id.startswith("string_lights_")
+        or block_id in INCENSE_BLOCKS
+        or block_id in STORAGE_BLOCKS
+        or block_id == "tap"
         or block_id in {
             "wild_grapevine", "wild_grapevine_plant", "trellis",
             "grapevine_trellis", "grape_crop",
@@ -179,6 +203,24 @@ TRELLIS_BLOCKS = {
     "ice_grapevine_trellis", "gold_grapevine_trellis",
 }
 STURDY_BLOCKS = {"trellis"}
+
+# CraftEngine's cave-vines auto-state group has 52 head states (26 ages times
+# the berries flag).  Every one keeps vanilla's 14/16-wide, full-height
+# selection column and no collision, which exactly matches WildGrapevineBlock.
+# Reusing one allocation id for the wild head/body and every hanging crop stage
+# makes CE assign one carrier to all authored ItemDisplay models.  Do not use a
+# *_plant state here: those blocks expose only one visual state, so making it
+# transparent erases every vanilla plant body of that type from the resource
+# pack.  Keep the existing id string stable so CE's allocation cache does not
+# churn when crop stages join the shared carrier.
+GRAPE_CARRIER_TYPE = "cave_vines"
+GRAPE_CARRIER_ID = "kaleidoscope-tavern-wild-grapevine-transparent"
+
+# CraftEngine's bundled sofa uses the native invisible barrier state and renders
+# the authored geometry through an ItemDisplay.  Unlike an explicit copper-stair
+# carrier, barrier does not consume a model-overridable state and therefore
+# cannot collide with another CraftEngine project's stair allocation.
+SOFA_CARRIER_STATE = "minecraft:barrier"
 
 PAINTINGS = {
     "ysbb_painting",
@@ -200,7 +242,6 @@ PAINTINGS = {
 PENDANT_LAMPS = {"bell_pendant_lamp", "yellow_pendant_lamp", "blue_pendant_lamp"}
 SEATS = {"sofa", "bar_stool"}
 SMALL_FURNITURE = {
-    "tap",
     "empty_bottle",
     "empty_glassware",
     "signature_cocktail",
@@ -250,7 +291,7 @@ SMALL_FURNITURE = {
     "vinegar",
     "watermelon_juice",
 }
-BOTTLE_AND_GLASS_ITEMS = SMALL_FURNITURE - {"tap", "shaker"}
+BOTTLE_AND_GLASS_ITEMS = SMALL_FURNITURE - {"shaker"}
 GRAPE_ITEMS = {"grape", "ice_grape", "gold_grape", "green_grape"}
 
 # These families mirror the VoxelShape groups passed to DrinkBlock.create() in
@@ -530,6 +571,7 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
         "count": "1",
         "rotation": "0",
         "connection": "single",
+        "shape": "straight",
         "position": "0",
         "half": "bottom",
         "face": "floor",
@@ -541,6 +583,8 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
         return {"type": "boolean", "default": default}
     if name == "facing" and set(ordered) <= {"north", "east", "south", "west"}:
         return {"type": "horizontal_direction", "default": default, "values": ordered}
+    if name == "shape" and set(ordered) <= {"straight", "inner_left", "inner_right"}:
+        return {"type": "sofa_shape", "default": default, "values": ordered}
     if name == "facing" and set(ordered) <= {"north", "east", "south", "west", "up", "down"}:
         return {"type": "direction", "default": default, "values": ordered}
     if name == "axis" and set(ordered) <= {"x", "y", "z"}:
@@ -558,6 +602,12 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
 
 
 def carrier_type(block_id: str) -> tuple[str, str]:
+    if block_id == "cellar_cabinet":
+        return "solid", "kaleidoscope-tavern-cellar-cabinet-transparent"
+    if block_id == "circular_rack":
+        return "pressure_plate", "kaleidoscope-tavern-circular-rack-transparent"
+    if block_id in {"tilted_rack", "holder"}:
+        return "cactus", f"kaleidoscope-tavern-{block_id.replace('_', '-')}-transparent"
     return "higher_tripwire", "kaleidoscope-tavern-decor-transparent"
 
 
@@ -580,12 +630,11 @@ def carrier_type(block_id: str) -> tuple[str, str]:
 # hurting anyone, and why a lightning rod here neither draws strikes nor emits
 # redstone.
 #
-# Staying on waterlogged=false keeps dry trellises from rendering water, since one
-# appearance covers both waterlogged values and the carrier cannot encode it.
-# Appearances sharing a state is likewise fine: the carrier only supplies collision
-# and the aim target, while visible geometry always comes from each appearance's
-# own ItemDisplay.
-def trellis_carrier_state(trellis_type: str) -> str:
+# Each waterlogged value gets its matching released carrier state. Appearances
+# sharing a state is likewise fine: the carrier only supplies collision and the
+# aim target, while visible geometry always comes from each appearance's own
+# ItemDisplay.
+def trellis_carrier_state(trellis_type: str, waterlogged: str) -> str:
     """Pick the lightning-rod facing that matches this shape's main member."""
     # SINGLE and the crosses that include it stand on a full-height post; the
     # remaining shapes are a single horizontal beam along one axis.
@@ -598,7 +647,10 @@ def trellis_carrier_state(trellis_type: str) -> str:
         "east_west": "east",
         "cross_up_down": "north",
     }[trellis_type]
-    return f"minecraft:lightning_rod[facing={facing},powered=false,waterlogged=false]"
+    return (
+        "minecraft:lightning_rod"
+        f"[facing={facing},powered=false,waterlogged={waterlogged}]"
+    )
 
 
 def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
@@ -618,6 +670,34 @@ def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
 
 
 def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | list[dict[str, Any]] | None:
+    if block_id.endswith("_sofa"):
+        return [
+            {"type": "sofa_block"},
+            {
+                "type": "seat_block",
+                "seats": [f"0,{seat_offset(8 / 16):g},0 0"],
+            },
+        ]
+    if block_id == "tap":
+        return {"type": f"{NAMESPACE}:tap"}
+    if block_id in STORAGE_BLOCK_SPECS:
+        slots, blocklist = STORAGE_BLOCK_SPECS[block_id]
+        return {
+            "type": f"{NAMESPACE}:storage",
+            "kind": block_id,
+            "slots": slots,
+            "data_key": f"{NAMESPACE}:storage_{block_id}",
+            "blocklist": f"{NAMESPACE}:{blocklist}",
+        }
+    if block_id in INCENSE_BLOCKS:
+        small, large, y_offset, y_range = INCENSE_SPECS[block_id]
+        return {
+            "type": f"{NAMESPACE}:incense",
+            "small_particle": small,
+            "large_particle": large,
+            "large_particle_y_offset": y_offset,
+            "large_particle_y_range": y_range,
+        }
     if block_id == "wild_grapevine":
         # A single Tavern behavior wraps CE's native vine-head lifecycle and
         # adds the legacy sheared growth lock. Keeping both behaviors in a CE
@@ -663,7 +743,9 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
     is_string_lights = block_id.startswith("string_lights_")
     is_wild_vine = block_id in {"wild_grapevine", "wild_grapevine_plant"}
     is_crop = block_id.endswith("_grape_crop") or block_id == "grape_crop"
-    sturdy = block_id in STURDY_BLOCKS or is_string_lights
+    is_storage = block_id in STORAGE_BLOCKS
+    is_sofa = block_id.endswith("_sofa")
+    sturdy = block_id in STURDY_BLOCKS or is_string_lights or is_storage or is_sofa
     if is_wild_vine:
         sound_type = {
             action: f"minecraft:block.cave_vines.{action}"
@@ -678,32 +760,46 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
             "fall": "minecraft:block.grass.fall",
         }
     else:
-        family = "chain" if is_string_lights else "wood"
+        family = ("metal" if block_id == "tap"
+                  else "decorated_pot" if block_id in INCENSE_BLOCKS
+                  else "chain" if is_string_lights
+                  else "wool" if is_sofa else "wood")
         sound_type = {
             action: f"minecraft:block.{family}.{action}"
             for action in ("break", "step", "place", "hit", "fall")
         }
-    hardness = 0.0 if is_wild_vine or is_crop else 0.8
+    hardness = (2.5 if is_storage else
+                0.0 if is_wild_vine or is_crop or block_id in INCENSE_BLOCKS else 0.8)
     settings: dict[str, Any] = {
         "hardness": hardness,
         "resistance": hardness,
-        "push_reaction": "NORMAL" if sturdy else "DESTROY",
+        "push_reaction": "NORMAL" if sturdy or block_id == "tap" else "DESTROY",
         "is_redstone_conductor": False,
         "is_suffocating": False,
         "is_view_blocking": False,
         "can_occlude": False,
         "propagate_skylight": True,
         "sounds": sound_type,
-        "tags": (["minecraft:mineable/pickaxe"] if is_string_lights
-                 else [] if is_wild_vine or is_crop
+        "tags": (["minecraft:mineable/pickaxe"] if is_string_lights or block_id == "tap"
+                 or is_sofa
+                 else [] if is_wild_vine or is_crop or block_id in INCENSE_BLOCKS
                  else ["minecraft:mineable/axe"]),
     }
+    if is_sofa:
+        settings.update({
+            "map_color": 27,
+            "instrument": "guitar",
+            "burnable": True,
+            "burn_chance": 5,
+            "fire_spread_chance": 20,
+            "support_shape": "minecraft:cobweb",
+        })
     if has_item:
         settings["item"] = f"{NAMESPACE}:{block_id}"
     if "lamp" in block_id or is_string_lights:
         settings["luminance"] = 15
-    if block_id.endswith("_incense"):
-        settings["luminance"] = 7
+    elif block_id == "circular_rack":
+        settings["luminance"] = 14
     return settings
 
 
@@ -765,6 +861,43 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
         if not variants:
             raise ValueError(f"No variants in {state_path}")
 
+        is_sofa = block_id.endswith("_sofa")
+        if is_sofa:
+            # CE's native sofa exposes three shapes. Use the source middle
+            # model for every straight state so adjacent blocks have no arms
+            # between them, and retain the two authored inner-corner models.
+            # A native straight state cannot distinguish an isolated sofa from
+            # a row segment; seamless rows are the intended compromise.
+            native_shapes = {
+                "middle": "straight",
+                "left_corner": "inner_left",
+                "right_corner": "inner_right",
+            }
+            native_variants: dict[str, Any] = {}
+            for variant_key, raw_model in variants.items():
+                variant_properties = parse_variant_key(variant_key)
+                waterlogged = variant_properties.pop("waterlogged", None)
+                if waterlogged != "false":
+                    continue
+                connection = variant_properties.pop("connection", None)
+                shape = native_shapes.get(connection)
+                if shape is None:
+                    continue
+                variant_properties["shape"] = shape
+                native_key = ",".join(
+                    f"{name}={value}"
+                    for name, value in variant_properties.items()
+                )
+                previous = native_variants.setdefault(native_key, raw_model)
+                if previous != raw_model:
+                    raise ValueError(
+                        f"{block_id}: conflicting native sofa variant {native_key}")
+            if len(native_variants) != 12:
+                raise ValueError(
+                    f"{block_id}: expected 12 native sofa variants, "
+                    f"found {len(native_variants)}")
+            variants = native_variants
+
         property_values: dict[str, list[str]] = defaultdict(list)
         for key in variants:
             for name, value in parse_variant_key(key).items():
@@ -780,21 +913,55 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             property_values["sheared"] = ["false", "true"]
 
         carrier, carrier_id = carrier_type(block_id)
-        appearance_names: dict[tuple[str, int, int, int, bool], str] = {}
+        uses_waterlogged_carrier = (
+            block_id == "tap" or block_id in TRELLIS_BLOCKS
+        )
+        appearance_names: dict[Any, str] = {}
         appearances: dict[str, Any] = {}
         mapped_variants: dict[str, Any] = {}
 
         for variant_key, raw_model in variants.items():
             if isinstance(raw_model, list) and len(raw_model) > 1:
                 metrics["weighted_variants_reduced"] += 1
+            variant_properties = parse_variant_key(variant_key)
             model = normalize_model_entry(raw_model)
-            trellis_type = (parse_variant_key(variant_key).get("type")
+            if is_sofa:
+                # CE places sofa facing in the player's horizontal direction;
+                # the source block faced the opposite direction. Rotate only
+                # the ItemDisplay so its visible front retains source behavior.
+                model = (model[0], model[1], (model[2] + 180) % 360,
+                         model[3], model[4])
+            if (block_id == "tap"
+                    and variant_properties.get("facing") in {"north", "south"}):
+                # The migrated wall block's north/south visual was reversed
+                # while its source/output geometry was already correct. Swap
+                # only the ItemDisplay model mapping; the CE facing property,
+                # collision state and TapService direction stay unchanged.
+                model = (model[0], model[1], (model[2] + 180) % 360,
+                         model[3], model[4])
+            trellis_type = (variant_properties.get("type")
                             if block_id in TRELLIS_BLOCKS else None)
-            appearance_name = appearance_names.get(model)
+            # Waterlogged tap and trellis variants share their authored model
+            # but need distinct released carrier states so client water
+            # rendering follows the source block state.
+            appearance_key = ((model, variant_properties.get("waterlogged"))
+                              if uses_waterlogged_carrier
+                              else model)
+            appearance_name = appearance_names.get(appearance_key)
             if appearance_name is None:
                 appearance_name = f"appearance_{len(appearance_names)}"
-                appearance_names[model] = appearance_name
-                render_hash = hashlib.sha1("|".join(map(str, model)).encode("utf-8")).hexdigest()[:10]
+                appearance_names[appearance_key] = appearance_name
+                appearance: dict[str, Any] = {}
+                # Incense facing is an ItemDisplay transform, not a distinct
+                # item model. Reuse the same two render helpers for all four
+                # directions just as the former furniture definitions did.
+                render_identity = (model[0]
+                                   if (block_id in INCENSE_BLOCKS
+                                       or block_id in STORAGE_BLOCKS
+                                       or block_id == "tap"
+                                       or is_sofa)
+                                   else "|".join(map(str, model)))
+                render_hash = hashlib.sha1(render_identity.encode("utf-8")).hexdigest()[:10]
                 render_path = f"_render/{block_id}/{render_hash}"
                 render_id = f"{NAMESPACE}:{render_path}"
                 render_items[render_id] = {
@@ -812,17 +979,59 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 }
                 if any(model[1:4]):
                     renderer["rotation"] = f"{model[1]},{model[2]},{model[3]}"
-                appearance: dict[str, Any] = {}
-                if trellis_type is not None:
-                    appearance["state"] = trellis_carrier_state(trellis_type)
+
+                if block_id == "tap":
+                    facing = variant_properties["facing"]
+                    waterlogged = variant_properties["waterlogged"]
+                    # CE 26.7.4 releases every horizontal lightning-rod state.
+                    # Open and triggered deliberately do not enter this carrier
+                    # string, so the source shape is identical while operating.
+                    appearance["state"] = (
+                        "minecraft:lightning_rod"
+                        f"[facing={facing},powered=false,waterlogged={waterlogged}]"
+                    )
+                elif is_sofa:
+                    # Match CE's bundled sofa: barrier is already invisible,
+                    # so do not mark this appearance transparent (which would
+                    # try to bind CE's empty model to the shared vanilla state).
+                    appearance["state"] = SOFA_CARRIER_STATE
+                elif block_id in INCENSE_BLOCKS:
+                    # CE 26.7.4 explicitly releases the un-waxed source state
+                    # and remaps it to the waxed client state. Its compact,
+                    # aimable standing-lantern shape replaces the former CE
+                    # Interaction plus shulker furniture hitboxes.
+                    appearance["state"] = (
+                        "minecraft:copper_lantern"
+                        "[hanging=false,waterlogged=false]"
+                    )
+                elif trellis_type is not None:
+                    appearance["state"] = trellis_carrier_state(
+                        trellis_type, variant_properties["waterlogged"])
                     metrics["collidable_trellises"] += 1
+                elif (block_id in {"wild_grapevine", "wild_grapevine_plant"}
+                      or block_id in HANGING_GRAPE_CROPS):
+                    # Let CE reserve one state from its supported cave-vines
+                    # pool. Sharing the id intentionally shares the carrier;
+                    # each authored model still comes from entity_renderer.
+                    appearance["auto_state"] = {
+                        "type": GRAPE_CARRIER_TYPE,
+                        "id": GRAPE_CARRIER_ID,
+                    }
                 else:
                     appearance["auto_state"] = {"type": carrier, "id": carrier_id}
-                appearance["transparent"] = True
+                if not is_sofa:
+                    appearance["transparent"] = True
                 appearance["entity_renderer"] = renderer
                 appearances[appearance_name] = appearance
             if property_values:
-                mapped_variants[variant_key] = {"appearance": appearance_name}
+                mapped_variant: dict[str, Any] = {"appearance": appearance_name}
+                if (uses_waterlogged_carrier
+                        and variant_properties.get("waterlogged") == "true"):
+                    # The released vanilla state controls the client's shape
+                    # and water rendering. CE's custom state still needs an
+                    # explicit fluid state for server-side waterlogging.
+                    mapped_variant["settings"] = {"fluid_state": "water"}
+                mapped_variants[variant_key] = mapped_variant
 
         if block_id == "wild_grapevine":
             appearance = next(iter(appearances))
@@ -848,12 +1057,16 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
 
         config["settings"] = block_settings(block_id, block_id in item_ids)
         behavior = behavior_for(block_id, set(property_values))
-        if behavior is not None:
+        if isinstance(behavior, list):
+            config["behaviors"] = behavior
+        elif behavior is not None:
             config["behavior"] = behavior
         if block_id.startswith("string_lights_"):
             config["events"] = string_lights_dye_events(block_id)
         elif block_id == "trellis":
             config["events"] = trellis_wax_events()
+        elif block_id.endswith("_grapevine_trellis") or block_id == "grapevine_trellis":
+            config["events"] = grapevine_trellis_shear_events()
         elif block_id == "wild_grapevine":
             config["events"] = wild_grapevine_shear_events()
         if block_id in item_ids:
@@ -1004,12 +1217,11 @@ def furniture_element(
     # so every model needs the corresponding half-block translation.  The
     # 0.01 entity offsets keep wall/ceiling displays lit; their translation is
     # compensated so the final visual location remains exact.
-    # Paintings and the tilted pressing tub use the empirically corrected wall
-    # depth from the live pack. Keep it in the generator so regeneration does
-    # not restore the old floating placement.
-    corrected_wall_depth = anchor == "wall" and (
-        block_id in PAINTINGS or block_id == "pressing_tub"
-    )
+    # Paintings use an empirically corrected wall depth from the live pack.
+    # Ordinary block models (including the tilted pressing tub) instead belong
+    # in the target cell: CE anchors them on the support plane, so their centre
+    # must remain exactly half a block along the outward local +z axis.
+    corrected_wall_depth = anchor == "wall" and block_id in PAINTINGS
     base_translation = {
         "ground": (0.0, 0.5, 0.0),
         "wall": (0.0, 0.0, -0.627 if corrected_wall_depth else 0.49),
@@ -1092,8 +1304,6 @@ def source_boxes(block_id: str, anchor: str, properties: dict[str, str]) -> list
             "wall": [(1, 1, 0, 15, 15, 1)],
             "ceiling": [(1, 15, 1, 15, 16, 15)],
         }[anchor]
-    if block_id.endswith("_incense"):
-        return [(5, 0, 5, 11, 7, 11)]
     if block_id == "pressing_tub":
         if anchor == "ground":
             # SHAPE is a half-block tub with a four-pixel floor and walls.
@@ -1110,11 +1320,6 @@ def source_boxes(block_id: str, anchor: str, properties: dict[str, str]) -> list
             (0, 4, 4, 16, 12, 12),
             (0, 8, 0, 16, 16, 8),
         ]
-    if block_id == "tap":
-        # TapBlock's north-authored shape has its mounting plate at z=16 and
-        # its nozzle extending toward z=6.  The wall furniture direction is
-        # the outward direction, so this is the source orientation verbatim.
-        return [(5, 5, 6, 11, 13, 16)]
     if block_id == "glassware_holder":
         return [(0, 11, 1, 16, 16, 15)]
     if block_id in COCKTAILS:
@@ -1412,12 +1617,19 @@ def furniture_hitboxes(
     aggregate = aggregate_box(boxes)
 
     if block_id == "barrel":
-        return [
-            shulker_box((x, y, z))
-            for y in range(3)
-            for x in (-1, 0, 1)
-            for z in (-1, 0, 1)
-        ]
+        # CE's happy-ghast hitbox is a four-block cube before scaling. A 0.75
+        # scale therefore reproduces the source barrel's exact x/z=-1.5..1.5,
+        # y=0..3 footprint with one hard collider instead of 27 shulker
+        # colliders (and one client entity instead of 54 virtual entities).
+        return [{
+            "type": "happy_ghast",
+            "position": "0,0,0",
+            "scale": 0.75,
+            "hard_collision": True,
+            "can_use_item_on": True,
+            "can_be_hit_by_projectile": True,
+            "blocks_building": True,
+        }]
     if block_id == "stepladder":
         # Keep the compact, server-tested layout. Only the base blocks building;
         # the upper rails remain physical without preventing adjacent placement.
@@ -1495,15 +1707,9 @@ def furniture_hitboxes(
         return [shulker_box(hitbox_position(anchor, 8, 0, 8))]
     if block_id == "circular_rack":
         return [interaction_box(aggregate, anchor)]
-    if block_id == "tap":
-        hitboxes = [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
-        # TapBlock#getShape depends only on FACING; OPEN never changes its
-        # outline or collision. Keep every visual variant on the same boxes.
-        hitboxes[0]["position"] = "0,-0.1875,0.35"
-        return hitboxes
     if block_id in {"tilted_rack", "holder"}:
         return [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
-    if block_id in SMALL_FURNITURE or block_id.endswith("_incense"):
+    if block_id in SMALL_FURNITURE:
         return [interaction_box(aggregate, anchor), *(hitbox for box in boxes for hitbox in physical_box(box, anchor))]
     if block_id == "pressing_tub":
         return [
@@ -1782,65 +1988,63 @@ def wild_grapevine_shear_events() -> list[dict[str, Any]]:
 
     Shears lock a head's growth (sheared=true), take one durability point
     (damage_item routes through vanilla hurtAndBreak, so creative mode and
-    Unbreaking behave like the source) and play the sheep-shear sound.  A
-    sheared head simply stops matching, mirroring the source no-op.
+    Unbreaking behave like the source) and play the sheep-shear sound only to
+    the interacting player. No hand filter is intentional: the Forge block
+    accepts either hand and CE supplies the triggering hand to damage_item and
+    swing_hand. An already-sheared head consumes the click without changing
+    anything, which prevents vanilla/off-hand fallback just like the source.
+    """
+    return [
+        {
+            "on": "right_click",
+            "conditions": [
+                {"type": "match_item", "item": "minecraft:shears"},
+                {"type": "match_block_property", "properties": {"sheared": "false"}},
+            ],
+            "functions": [
+                {"type": "update_block_property", "properties": {"sheared": "true"}},
+                {"type": "damage_item", "amount": 1},
+                {"type": "play_sound", "sound": "minecraft:entity.sheep.shear",
+                 "source": "block", "target": "self"},
+                {"type": "swing_hand"},
+                {"type": "cancel_event"},
+            ],
+        },
+        {
+            "on": "right_click",
+            "conditions": [
+                {"type": "match_item", "item": "minecraft:shears"},
+                {"type": "match_block_property", "properties": {"sheared": "true"}},
+            ],
+            "functions": [{"type": "cancel_event"}],
+        },
+    ]
+
+
+def grapevine_trellis_shear_events() -> list[dict[str, Any]]:
+    """GrapevineTrellisBlock#use shearing as a CraftEngine block event.
+
+    transform_block copies properties shared by the old and new definitions,
+    preserving ``type`` and ``waterlogged`` while dropping the vine-only
+    ``age`` property. Its default UPDATE_ALL flags also notify the hanging
+    crop below, whose CE survival behavior removes both the visual and the
+    CustomCrops record. The source accepts shears in either hand, so this
+    event deliberately has no main-hand-only condition.
     """
     return [{
         "on": "right_click",
-        "conditions": [
-            {"type": "match_item", "item": "minecraft:shears"},
-            {"type": "match_block_property", "properties": {"sheared": "false"}},
-            {"type": "hand", "hand": "main_hand"},
-        ],
+        "conditions": [{"type": "match_item", "item": "minecraft:shears"}],
         "functions": [
-            {"type": "update_block_property", "properties": {"sheared": "true"}},
+            {"type": "transform_block", "block": f"{NAMESPACE}:trellis"},
+            {"type": "drop_loot", "loot": {
+                "pools": [{
+                    "rolls": 1,
+                    "entries": [{"type": "item", "item": f"{NAMESPACE}:grapevine"}],
+                }],
+            }},
             {"type": "damage_item", "amount": 1},
-            {"type": "play_sound", "sound": "minecraft:entity.sheep.shear",
-             "source": "block"},
-            {"type": "swing_hand"},
-            {"type": "cancel_event"},
-        ],
-    }]
-
-
-def incense_toggle_events() -> list[dict[str, Any]]:
-    """IncenseBlock#use lit toggling as a CraftEngine furniture event.
-
-    The *_open furniture variant is the single source of truth for a lit
-    incense, so the toggle must be atomic: two mutually exclusive events on
-    the same trigger would both run in order (the second sees the variant the
-    first just set and flips it straight back).  A single if_else runs only
-    the first matching branch.  Message texts mirror the plugin's config.yml
-    incense-on/incense-off entries, prefix included; the redstone edge toggle
-    stays in StationService and writes the same variant.
-    """
-    prefix = "<dark_aqua>[森罗酒馆]</dark_aqua> "
-    return [{
-        "on": "right_click",
-        "conditions": [{"type": "hand", "hand": "main_hand"}],
-        "functions": [
-            {"type": "if_else", "rules": [
-                {"conditions": [{"type": "match_furniture_variant",
-                                 "variant": "ground"}],
-                 "functions": [
-                     {"type": "set_furniture_variant", "variant": "ground_open"},
-                     {"type": "play_sound",
-                      "sound": "minecraft:block.stone_button.click_on",
-                      "source": "block"},
-                     {"type": "message",
-                      "message": f"{prefix}<green>香炉已点燃。</green>"},
-                 ]},
-                {"conditions": [{"type": "match_furniture_variant",
-                                 "variant": "ground_open"}],
-                 "functions": [
-                     {"type": "set_furniture_variant", "variant": "ground"},
-                     {"type": "play_sound",
-                      "sound": "minecraft:block.stone_button.click_off",
-                      "source": "block"},
-                     {"type": "message",
-                      "message": f"{prefix}<gray>香炉已熄灭。</gray>"},
-                 ]},
-            ]},
+            {"type": "play_sound", "sound": "minecraft:block.beehive.shear",
+             "source": "block", "target": "self"},
             {"type": "swing_hand"},
             {"type": "cancel_event"},
         ],
@@ -2228,7 +2432,7 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     if (block_id.endswith("_sofa")
             or block_id in {
                 "bar_counter", "table", "bar_cabinet",
-                "glass_bar_cabinet", "cellar_cabinet",
+                "glass_bar_cabinet",
             }):
         lifecycle_channels.append("connection")
     for channel in lifecycle_channels:
@@ -2267,8 +2471,7 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         behaviors.append({"type": f"{NAMESPACE}:bottle_furniture"})
 
     if block_id in {
-            "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
-            "tilted_rack", "circular_rack", "holder", "glassware_holder",
+            "bar_cabinet", "glass_bar_cabinet", "glassware_holder",
     }:
         # This must precede CE's native display_item controllers. It preserves
         # the source furniture's multi-slot hit selection and restrictions;
@@ -2310,23 +2513,6 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
 
     if block_id in {"bar_cabinet", "glass_bar_cabinet"}:
         display_slots(["-0.25,0.5,0", "0.25,0.5,0"], 0.5, 1.0, paper_visual=True)
-    elif block_id == "cellar_cabinet":
-        # This was a visible 3x3 bottle cabinet, not a generic inventory GUI.
-        display_slots([
-            "0.325,0.78,0.375", "0,0.78,0.375", "-0.325,0.78,0.375",
-            "0.325,0.49,0.375", "0,0.49,0.375", "-0.325,0.49,0.375",
-            "0.325,0.20,0.375", "0,0.20,0.375", "-0.325,0.20,0.375",
-        ], 0.25, 0.27, paper_visual=True)
-    elif block_id == "tilted_rack":
-        display_slots(["-0.375,0.32,0", "0,0.32,0", "0.375,0.32,0"],
-                      0.3, 0.62, paper_visual=True)
-    elif block_id == "circular_rack":
-        display_slots([
-            "0,0.13,-0.375", "0.375,0.13,-0.19", "0.375,0.13,0.19",
-            "0,0.13,0.375", "-0.375,0.13,0.19", "-0.375,0.13,-0.19",
-        ], 0.26, 0.46, paper_visual=True)
-    elif block_id == "holder":
-        display_slots(["0,0.13,0.25"], 0.4, 0.8, paper_visual=True)
     elif block_id == "glassware_holder":
         display_slots([
             "-0.25,-0.24,-0.25", "0.25,-0.24,-0.25",
@@ -2336,10 +2522,6 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     storage_visual_slots = {
         "bar_cabinet": 2,
         "glass_bar_cabinet": 2,
-        "cellar_cabinet": 9,
-        "tilted_rack": 3,
-        "circular_rack": 6,
-        "holder": 1,
         "glassware_holder": 4,
     }.get(block_id)
     if storage_visual_slots is not None:
@@ -2371,51 +2553,14 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         behaviors.append({"type": "glowing_furniture", "lights": ["0,-1,0 13"]})
     elif block_id == "glassware_holder":
         behaviors.append({"type": "glowing_furniture", "lights": ["0,0,0 8"]})
-    elif block_id in {"circular_rack", "molotov"}:
+    elif block_id == "molotov":
         behaviors.append({"type": "glowing_furniture", "lights": ["0,0,0 14"]})
 
-    redstone_channel: str | None = None
-    if block_id == "tap":
-        redstone_channel = "tap"
-    elif block_id.endswith("_incense"):
-        redstone_channel = "incense"
-    elif block_id in {"cellar_cabinet", "tilted_rack", "circular_rack", "holder"}:
-        redstone_channel = "storage"
-    if redstone_channel is not None:
-        behaviors.append({
-            "type": f"{NAMESPACE}:redstone_furniture",
-            "channel": redstone_channel,
-            # The controller owns one persistent edge latch per furniture
-            # instance.  Keep the key deterministic and independent from
-            # behavior ordering so future native CE behaviors cannot alias it.
-            "data_key": f"{NAMESPACE}:redstone_{block_id}",
-        })
-
-    if block_id.endswith("_incense"):
-        behaviors.extend(({
-            "type": f"{NAMESPACE}:ticking_furniture",
-            "channel": "incense_effect",
-            "interval": 120,
-            "phase": "global",
-        }, {
-            "type": f"{NAMESPACE}:ticking_furniture",
-            "channel": "incense_particle",
-            # Client animateTick reaches a given nearby block at about 1/49
-            # per tick. The controller samples the equivalent geometric wait.
-            "chance": 49,
-        }))
-    elif block_id == "mystery_cocktail":
+    if block_id == "mystery_cocktail":
         behaviors.append({
             "type": f"{NAMESPACE}:ticking_furniture",
             "channel": "mystery_particle",
             "chance": 49,
-        })
-    elif block_id == "circular_rack":
-        behaviors.append({
-            "type": f"{NAMESPACE}:ticking_furniture",
-            "channel": "rack_particle",
-            # animateTick selection (1/49) and the source block's 1/8 gate.
-            "chance": 49 * 8,
         })
     elif block_id == "barrel":
         behaviors.append({
@@ -2445,9 +2590,7 @@ def furniture_settings(block_id: str) -> dict[str, Any]:
         family = "wool"
     elif block_id in PENDANT_LAMPS:
         family = "chain"
-    elif block_id.endswith("_incense"):
-        family = "decorated_pot"
-    elif block_id in {"tap", "glassware_holder"}:
+    elif block_id == "glassware_holder":
         family = "metal"
     elif block_id == "shaker":
         family = "lantern"
@@ -2458,7 +2601,6 @@ def furniture_settings(block_id: str) -> dict[str, Any]:
     instant_break = (
         block_id in BOTTLE_AND_GLASS_ITEMS
         or block_id == "shaker"
-        or block_id.endswith("_incense")
     )
     sounds: dict[str, Any] = {
         action: f"minecraft:block.{family}.{action}"
@@ -2537,19 +2679,14 @@ def build_furniture(
             ) -> dict[str, Any]:
                 if anchor == "ground":
                     return furniture_element(render_items, block_id, label, model, "ground")
-                # Wall boards reuse the ground model.  Its panel sits at the
-                # model's +z edge, which the display rotation puts on the
-                # furniture's back -- straight into the supporting wall now
-                # that the origin lies on the wall plane -- so the translation
-                # swings the panel back out flush with the wall face and drops
-                # the model half a block to undo the centre alignment's y snap
-                # (board spans world y 0.125..1.875, identical to ground).
-                # The 0.01 entity offset keeps the display outside the wall
-                # for lighting, mirroring furniture_element's wall handling.
-                element = furniture_element(
-                    render_items, block_id, label, model, "ground", "0,-0.5,-0.49")
-                element["position"] = "0,0,0.01"
-                return element
+                # CE's wall yaw already maps the authored north-facing model
+                # onto the clicked face. Applying another 180-degree element
+                # rotation moves the thin panel to the outer edge of the
+                # target cell, a full block away from its support (and from the
+                # packet-only text). Keep the native wall depth and no extra
+                # rotation so the panel remains flush with the clicked wall.
+                return furniture_element(
+                    render_items, block_id, label, model, "wall")
 
             variants["ground"] = {
                 "elements": [chalkboard_element("small", small_model, "ground")],
@@ -2597,7 +2734,11 @@ def build_furniture(
                 "facing": "north", "tilt": "false", "waterlogged": "false",
             })[1]
             tilted = select_record(records, {
-                "facing": "south", "tilt": "true", "waterlogged": "false",
+                # CE's wall yaw already supplies PressingTubBlock.FACING from
+                # the clicked face. Use the source north state as the canonical
+                # model just like other wall furniture; selecting south would
+                # bake in a second 180-degree turn.
+                "facing": "north", "tilt": "true", "waterlogged": "false",
             })[1]
             variants["ground"] = {
                 "elements": [furniture_element(render_items, block_id, "ground", normal, "ground")],
@@ -2634,10 +2775,6 @@ def build_furniture(
             # Same override as the open variant so opening a barrel does not make
             # it visibly change shade.
             closed["brightness"] = {"block_light": 6, "sky_light": 6}
-            variants["ground"] = {
-                "elements": [closed],
-                "hitboxes": furniture_hitboxes(block_id, "ground"),
-            }
             body = furniture_element(
                 render_items, block_id, "open body", body_model, "ground", "0,1,0")
             lid = furniture_element(
@@ -2654,8 +2791,16 @@ def build_furniture(
             # dim enough that the barrel never looks emissive in a dark cellar.
             body["brightness"] = {"block_light": 6, "sky_light": 6}
             lid["brightness"] = {"block_light": 6, "sky_light": 6}
-            variants["ground_open"] = {
+            # CE's native furniture_item always places the anchor variant named
+            # "ground". Make that the source barrel's initial open state so the
+            # Paper layer does not have to replace the variant (and all 27
+            # colliders) one tick after every placement.
+            variants["ground"] = {
                 "elements": [body, lid],
+                "hitboxes": furniture_hitboxes(block_id, "ground"),
+            }
+            variants["ground_closed"] = {
+                "elements": [closed],
                 "hitboxes": furniture_hitboxes(block_id, "ground"),
             }
         elif block_id == "stepladder":
@@ -2681,7 +2826,7 @@ def build_furniture(
                     "hitboxes": furniture_hitboxes(block_id, anchor),
                 }
         else:
-            anchor = "wall" if block_id == "tap" else "ceiling" if block_id == "glassware_holder" else "ground"
+            anchor = "ceiling" if block_id == "glassware_holder" else "ground"
             grouped: dict[tuple[tuple[str, str], ...], list[tuple[dict[str, str], tuple[str, int, int, int, bool]]]] = defaultdict(list)
             for record in records:
                 semantic = tuple(sorted(
@@ -2716,10 +2861,27 @@ def build_furniture(
         full_id = f"{NAMESPACE}:{block_id}"
         if block_id in item_ids:
             config["settings"]["item"] = full_id
+            loot_entry: dict[str, Any] = {
+                "type": "furniture_item",
+                "item": full_id,
+            }
+            if block_id == "chalkboard":
+                # CE exposes the current furniture in its loot context. A merged
+                # chalkboard is one furniture with a large variant but represents
+                # the three source boards consumed by the legacy merge, so let CE
+                # return that exact count without a Paper break listener.
+                loot_entry["functions"] = [{
+                    "type": "set_count",
+                    "count": 3,
+                    "conditions": [{
+                        "type": "match_furniture_variant",
+                        "variants": ["ground_large", "wall_large"],
+                    }],
+                }]
             config["loot"] = {
                 "pools": [{
                     "rolls": 1,
-                    "entries": [{"type": "furniture_item", "item": full_id}],
+                    "entries": [loot_entry],
                 }]
             }
             placement[block_id] = furniture_rules(block_id, list(variants))
@@ -2728,8 +2890,6 @@ def build_furniture(
             config["behavior"] = behaviors[0]
         elif behaviors:
             config["behaviors"] = behaviors
-        if block_id.endswith("_incense"):
-            config["events"] = incense_toggle_events()
         furniture[full_id] = config
         metrics["furniture_variants"] += len(variants)
 
@@ -3059,6 +3219,11 @@ def build_items(
                 "animation": "eat",
             }
         if item_id in furniture_ids:
+            if item_id == "shaker":
+                # Right-click air is owned by CE's existing item-use listener;
+                # the following native furniture behavior still owns block
+                # placement. Paper only observes release to finish the mix.
+                behaviors.append({"type": f"{NAMESPACE}:shaker_item"})
             furniture_behavior: dict[str, Any] = {
                 "type": (f"{NAMESPACE}:sneak_place_drink"
                          if manually_placed_drink else "furniture_item"),

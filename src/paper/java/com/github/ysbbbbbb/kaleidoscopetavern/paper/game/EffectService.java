@@ -4,6 +4,7 @@ import com.destroystokyo.paper.event.player.PlayerPickupExperienceEvent;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.NativeDrinkEffectSemantics;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -43,6 +44,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
+import org.bukkit.event.entity.EntityRemoveEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
@@ -61,13 +63,14 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.persistence.ListPersistentDataType;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -85,6 +88,10 @@ import java.util.concurrent.ThreadLocalRandom;
 /** Applies migrated drink data, including the twelve custom Forge effects. */
 public final class EffectService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
+    private static final ListPersistentDataType<String, String> STRING_LIST =
+            PersistentDataType.LIST.strings();
+    private static final ListPersistentDataType<long[], long[]> LONG_ARRAY_LIST =
+            PersistentDataType.LIST.longArrays();
     private static final Set<String> INSTANT_EFFECTS = Set.of(
             PREFIX + "shriek_attack", PREFIX + "upside_down", PREFIX + "zenith");
     private static final Set<Material> VANILLA_CROP_BLOCKS = Set.of(
@@ -98,6 +105,8 @@ public final class EffectService implements Listener {
     private final ContentCatalog catalog;
     private final ItemService items;
     private final NamespacedKey activeKey;
+    private final NamespacedKey effectIdsKey;
+    private final NamespacedKey effectValuesKey;
     private final NamespacedKey collisionKey;
     private final NamespacedKey heelsModifierKey;
     private final NamespacedKey blockReachModifierKey;
@@ -113,6 +122,7 @@ public final class EffectService implements Listener {
     private final Map<UUID, Set<UUID>> upsideDownPacketTargets = new HashMap<>();
     private final Set<UUID> stealthHidden = new HashSet<>();
     private final Map<String, Color> effectColorCache = new HashMap<>();
+    private final Map<String, Object> effectParticleOptionCache = new HashMap<>();
     private final Map<String, CompiledBlockTag> blockTagCache = new HashMap<>();
     private final Map<String, CompiledEntityTag> entityTagCache = new HashMap<>();
     private final boolean builtinHud;
@@ -121,6 +131,7 @@ public final class EffectService implements Listener {
     private long elapsedTicks;
     private BukkitTask task;
     private boolean upsideDownPacketsAvailable = true;
+    private boolean particlePacketsAvailable = true;
 
     public EffectService(JavaPlugin plugin, ContentCatalog catalog, ItemService items) {
         this.plugin = plugin;
@@ -138,6 +149,8 @@ public final class EffectService implements Listener {
         this.cornerHud = !"line".equals(plugin.getConfig().getString("effect-hud.style", "corner"));
         this.hudGuiHalfWidth = plugin.getConfig().getInt("effect-hud.gui-half-width", 240);
         this.activeKey = new NamespacedKey(plugin, "active_drink_effects");
+        this.effectIdsKey = new NamespacedKey(plugin, "effect_ids");
+        this.effectValuesKey = new NamespacedKey(plugin, "effect_values");
         this.collisionKey = new NamespacedKey(plugin, "ardent_heat_collisions");
         this.heelsModifierKey = new NamespacedKey(plugin, "effect_high_heels");
         this.blockReachModifierKey = new NamespacedKey(plugin, "effect_long_reach_block");
@@ -153,7 +166,7 @@ public final class EffectService implements Listener {
         for (org.bukkit.World world : Bukkit.getWorlds()) {
             for (LivingEntity living : world.getLivingEntities()) {
                 if (!(living instanceof Player)
-                        && living.getPersistentDataContainer().has(activeKey, PersistentDataType.STRING)) {
+                        && hasPersistedEffects(living)) {
                     load(living);
                 }
             }
@@ -218,6 +231,9 @@ public final class EffectService implements Listener {
             return;
         }
         for (EffectSpec spec : specs) {
+            if (isEmbeddedVanillaEffect(consumed, spec)) {
+                continue;
+            }
             if (EffectSemantics.rolls(ThreadLocalRandom.current().nextDouble(), spec.probability())) {
                 apply(event.getPlayer(), spec);
             }
@@ -225,6 +241,27 @@ public final class EffectService implements Listener {
         // The empty bottle or glassware now comes back through CraftEngine's
         // settings.consume_replacement on each drink item; this handler only
         // applies the migrated effects.
+    }
+
+    private static boolean isEmbeddedVanillaEffect(ItemStack consumed, EffectSpec spec) {
+        if (!NativeDrinkEffectSemantics.shouldEmbed(spec.effect(), spec.probability())
+                || !(consumed.getItemMeta() instanceof PotionMeta potionMeta)) {
+            return false;
+        }
+        NamespacedKey key = NamespacedKey.fromString(spec.effect());
+        PotionEffectType type = key == null ? null : Registry.EFFECT.get(key);
+        if (type == null) {
+            return false;
+        }
+        int duration = NativeDrinkEffectSemantics.duration(type.isInstant(), spec.durationTicks());
+        for (PotionEffect effect : potionMeta.getCustomEffects()) {
+            if (effect.getType().equals(type)
+                    && effect.getDuration() == duration
+                    && effect.getAmplifier() == spec.amplifier()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -238,8 +275,6 @@ public final class EffectService implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPotionSplash(PotionSplashEvent event) {
-        String encoded = event.getPotion().getPersistentDataContainer()
-                .get(splashCustomEffectsKey, PersistentDataType.STRING);
         if (!event.getPotion().getPersistentDataContainer()
                 .has(splashPreparedKey, PersistentDataType.BYTE)) {
             return;
@@ -248,7 +283,8 @@ public final class EffectService implements Listener {
         // Do not cancel the real event. Vanilla applies the rolled Minecraft
         // effects with its own direct-hit handling and instantaneous-effect
         // intensity. Only the custom Forge effects need a Paper-side bridge.
-        List<EffectSpec> customEffects = decodeSplashEffects(encoded);
+        List<EffectSpec> customEffects = readSplashEffects(
+                event.getPotion().getPersistentDataContainer());
         for (LivingEntity target : event.getAffectedEntities()) {
             if (target.isDead()) {
                 continue;
@@ -338,7 +374,7 @@ public final class EffectService implements Listener {
     public void onEntitiesLoad(EntitiesLoadEvent event) {
         for (Entity entity : event.getEntities()) {
             if (entity instanceof LivingEntity living
-                    && living.getPersistentDataContainer().has(activeKey, PersistentDataType.STRING)) {
+                    && hasPersistedEffects(living)) {
                 load(living);
             }
         }
@@ -357,20 +393,40 @@ public final class EffectService implements Listener {
         stopTickTaskIfIdle();
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onEntityRemove(EntityRemoveEvent event) {
+        // Dedicated events below preserve state for players/chunk unloads and
+        // run source death callbacks. Every other removal permanently retires
+        // the entity, so discard its runtime custom-effect state immediately.
+        if (event.getCause() == EntityRemoveEvent.Cause.PLAYER_QUIT
+                || event.getCause() == EntityRemoveEvent.Cause.UNLOAD
+                || event.getCause() == EntityRemoveEvent.Cause.DEATH
+                || !(event.getEntity() instanceof LivingEntity living)
+                || !active.containsKey(living.getUniqueId())) {
+            return;
+        }
+        clearEffects(living);
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDeath(EntityDeathEvent event) {
         LivingEntity target = event.getEntity();
         for (Set<UUID> inverted : upsideDownPacketTargets.values()) {
             inverted.remove(target.getUniqueId());
         }
-        EntityDamageEvent lastDamage = target.getLastDamageCause();
-        LivingEntity killer = lastDamage == null ? null : attackingLiving(lastDamage);
-        if (killer != null && !killer.equals(target) && has(killer, PREFIX + "bloody_mary")) {
-            AttributeInstance targetHealth = target.getAttribute(Attribute.MAX_HEALTH);
-            if (targetHealth != null) {
-                double heal = Math.floor(targetHealth.getValue() / 3.0);
-                if (heal > 0) {
-                    killer.heal(heal);
+        // Resolving Paper's DamageSource is unnecessary for nearly every
+        // death on a normal server. Keep the exact Forge kill-heal behavior,
+        // but only enter that bridge while Bloody Mary exists anywhere.
+        if (hasAnyActiveEffect(PREFIX + "bloody_mary")) {
+            EntityDamageEvent lastDamage = target.getLastDamageCause();
+            LivingEntity killer = lastDamage == null ? null : attackingLiving(lastDamage);
+            if (killer != null && !killer.equals(target) && has(killer, PREFIX + "bloody_mary")) {
+                AttributeInstance targetHealth = target.getAttribute(Attribute.MAX_HEALTH);
+                if (targetHealth != null) {
+                    double heal = Math.floor(targetHealth.getValue() / 3.0);
+                    if (heal > 0) {
+                        killer.heal(heal);
+                    }
                 }
             }
         }
@@ -379,6 +435,9 @@ public final class EffectService implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent event) {
+        if (!hasAnyActiveEffect(PREFIX + "tomb_raider")) {
+            return;
+        }
         LivingEntity attacker = attackingLiving(event);
         if (attacker == null || !has(attacker, PREFIX + "tomb_raider")
                 || !(event.getEntity() instanceof LivingEntity target)
@@ -417,6 +476,16 @@ public final class EffectService implements Listener {
     public boolean has(LivingEntity living, String effect) {
         ActiveEffect value = active.getOrDefault(living.getUniqueId(), Map.of()).get(effect);
         return value != null && value.remainingTicks() > 0;
+    }
+
+    private boolean hasAnyActiveEffect(String effect) {
+        for (Map<String, ActiveEffect> effects : active.values()) {
+            ActiveEffect value = effects.get(effect);
+            if (value != null && value.remainingTicks() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -495,35 +564,44 @@ public final class EffectService implements Listener {
         potion.setItem(payload);
         potion.getPersistentDataContainer().set(splashPreparedKey, PersistentDataType.BYTE, (byte) 1);
         if (!customEffects.isEmpty()) {
-            potion.getPersistentDataContainer().set(splashCustomEffectsKey,
-                    PersistentDataType.STRING, encodeSplashEffects(customEffects));
+            writeSplashEffects(potion.getPersistentDataContainer(), customEffects);
         }
     }
 
-    private static String encodeSplashEffects(List<EffectSpec> effects) {
-        return effects.stream()
-                .map(spec -> spec.effect() + "," + spec.durationTicks() + "," + spec.amplifier())
-                .reduce((left, right) -> left + ";" + right)
-                .orElse("");
+    private void writeSplashEffects(PersistentDataContainer owner, List<EffectSpec> effects) {
+        PersistentDataContainer encoded = owner.getAdapterContext().newPersistentDataContainer();
+        List<String> ids = new ArrayList<>(effects.size());
+        List<long[]> values = new ArrayList<>(effects.size());
+        for (EffectSpec effect : effects) {
+            ids.add(effect.effect());
+            values.add(new long[]{effect.durationTicks(), effect.amplifier()});
+        }
+        encoded.set(effectIdsKey, STRING_LIST, List.copyOf(ids));
+        encoded.set(effectValuesKey, LONG_ARRAY_LIST, List.copyOf(values));
+        owner.set(splashCustomEffectsKey, PersistentDataType.TAG_CONTAINER, encoded);
     }
 
-    private static List<EffectSpec> decodeSplashEffects(String encoded) {
-        if (encoded == null || encoded.isBlank()) {
+    private List<EffectSpec> readSplashEffects(PersistentDataContainer owner) {
+        PersistentDataContainer encoded = owner.get(
+                splashCustomEffectsKey, PersistentDataType.TAG_CONTAINER);
+        if (encoded == null) {
+            return List.of();
+        }
+        List<String> ids = encoded.get(effectIdsKey, STRING_LIST);
+        List<long[]> values = encoded.get(effectValuesKey, LONG_ARRAY_LIST);
+        if (ids == null || values == null) {
             return List.of();
         }
         List<EffectSpec> effects = new ArrayList<>();
-        for (String entry : encoded.split(";")) {
-            String[] fields = entry.split(",", 3);
-            if (fields.length != 3) {
+        for (int index = 0; index < Math.min(ids.size(), values.size()); index++) {
+            long[] packed = values.get(index);
+            if (packed == null || packed.length != 2
+                    || packed[0] <= 0 || packed[0] > Integer.MAX_VALUE
+                    || packed[1] < Integer.MIN_VALUE || packed[1] > Integer.MAX_VALUE) {
                 continue;
             }
-            try {
-                effects.add(new EffectSpec(fields[0], Integer.parseInt(fields[1]),
-                        Integer.parseInt(fields[2]), 1.0));
-            } catch (NumberFormatException ignored) {
-                // A malformed or externally edited projectile payload should
-                // break harmlessly rather than aborting the splash event.
-            }
+            effects.add(new EffectSpec(ids.get(index), (int) packed[0],
+                    (int) packed[1], 1.0));
         }
         return List.copyOf(effects);
     }
@@ -583,18 +661,7 @@ public final class EffectService implements Listener {
             Map.Entry<UUID, Map<String, ActiveEffect>> entry = iterator.next();
             LivingEntity living = activeEntities.get(entry.getKey());
             if (living == null) {
-                // Recovery-only fallback for an unforeseen lifecycle ordering;
-                // the normal path is populated by apply/load and performs no
-                // global Bukkit UUID lookup per effect per tick.
-                Entity entity = Bukkit.getEntity(entry.getKey());
-                if (entity instanceof LivingEntity recovered) {
-                    living = recovered;
-                    activeEntities.put(entry.getKey(), recovered);
-                }
-            }
-            if (living == null || !living.isValid() || living.isDead()) {
                 iterator.remove();
-                activeEntities.remove(entry.getKey());
                 continue;
             }
             Map<String, ActiveEffect> effects = entry.getValue();
@@ -610,17 +677,15 @@ public final class EffectService implements Listener {
                     continue;
                 }
                 boolean visibleExpired = effect.remainingTicks() <= period;
-                EffectSemantics.EffectState next = EffectSemantics.advanceEffect(
-                        effect.state(), (int) period);
+                boolean remainsActive = effect.advance((int) period);
                 if (visibleExpired && living instanceof Player
                         && effect.effect().equals(PREFIX + "ardent_heat")) {
                     applyHunger(living, 600);
                 }
-                if (next == null) {
+                if (!remainsActive) {
                     effectIterator.remove();
                     changed = true;
                 } else {
-                    effectEntry.setValue(new ActiveEffect(effect.effect(), next));
                     changed |= visibleExpired;
                 }
             }
@@ -704,6 +769,16 @@ public final class EffectService implements Listener {
         if (effects.isEmpty() || elapsedTicks % (living.isInvisible() ? 15L : 3L) != 0) {
             return;
         }
+        Set<Player> trackedBy = living.getTrackedBy();
+        boolean includeSelf = living instanceof Player self && !trackedBy.contains(self);
+        if (trackedBy.isEmpty() && !includeSelf) {
+            return;
+        }
+        List<Player> receivers = new ArrayList<>(trackedBy.size() + (includeSelf ? 1 : 0));
+        receivers.addAll(trackedBy);
+        if (includeSelf) {
+            receivers.add((Player) living);
+        }
         ThreadLocalRandom random = ThreadLocalRandom.current();
         String chosen = null;
         int index = random.nextInt(effects.size());
@@ -722,12 +797,28 @@ public final class EffectService implements Listener {
             color = Color.fromRGB(rgb);
             effectColorCache.put(chosen, color);
         }
-        BoundingBox box = living.getBoundingBox();
-        living.getWorld().spawnParticle(Particle.ENTITY_EFFECT,
-                box.getMinX() + random.nextDouble() * box.getWidthX(),
-                box.getMinY() + random.nextDouble() * box.getHeight(),
-                box.getMinZ() + random.nextDouble() * box.getWidthZ(),
-                1, 0.0, 0.0, 0.0, 0.0, color);
+        double x = living.getX() + (random.nextDouble() - 0.5) * living.getWidth();
+        double y = living.getY() + random.nextDouble() * living.getHeight();
+        double z = living.getZ() + (random.nextDouble() - 0.5) * living.getWidth();
+        if (particlePacketsAvailable) {
+            try {
+                Object particleOption = effectParticleOptionCache.get(chosen);
+                if (particleOption == null) {
+                    particleOption = ViewerEffectPackets.entityEffectParticle(color);
+                    effectParticleOptionCache.put(chosen, particleOption);
+                }
+                ViewerEffectPackets.sendEntityEffectParticle(
+                        living.getWorld(), receivers, particleOption, x, y, z);
+                return;
+            } catch (RuntimeException | LinkageError error) {
+                particlePacketsAvailable = false;
+                effectParticleOptionCache.clear();
+                plugin.getLogger().warning(
+                        "无法使用 Paper 26.2 粒子数据包桥接，将回退 Bukkit API：" + error);
+            }
+        }
+        living.getWorld().spawnParticle(Particle.ENTITY_EFFECT, receivers, null,
+                x, y, z, 1, 0.0, 0.0, 0.0, 0.0, color, false);
     }
 
     private boolean tickEffect(LivingEntity living, ActiveEffect effect) {
@@ -1198,44 +1289,25 @@ public final class EffectService implements Listener {
     }
 
     private Map<String, ActiveEffect> read(LivingEntity living) {
-        String encoded = living.getPersistentDataContainer().get(activeKey, PersistentDataType.STRING);
         Map<String, ActiveEffect> result = new LinkedHashMap<>();
-        if (encoded == null || encoded.isBlank()) {
+        PersistentDataContainer encoded = living.getPersistentDataContainer()
+                .get(activeKey, PersistentDataType.TAG_CONTAINER);
+        if (encoded == null) {
             return result;
         }
-        boolean versionThree = encoded.startsWith("v3|");
-        boolean versionTwo = encoded.startsWith("v2|");
-        boolean legacyEpochMillis = !versionThree && !versionTwo;
-        if (versionThree || versionTwo) {
-            encoded = encoded.substring(3);
+        List<String> ids = encoded.get(effectIdsKey, STRING_LIST);
+        List<long[]> values = encoded.get(effectValuesKey, LONG_ARRAY_LIST);
+        if (ids == null || values == null) {
+            return result;
         }
-        for (String entry : encoded.split(";")) {
-            String[] fields = entry.split(",", -1);
-            if ((!versionThree && fields.length != 3)
-                    || (versionThree && (fields.length < 3 || fields.length % 2 == 0))) {
+        for (int index = 0; index < Math.min(ids.size(), values.size()); index++) {
+            EffectSemantics.EffectState state = EffectSemantics.decodeState(values.get(index));
+            if (state == null || state.remainingTicks() <= 0) {
                 continue;
             }
-            try {
-                long storedTime = Long.parseLong(fields[1]);
-                // Releases before this semantic audit persisted an epoch-millis expiry.
-                // Convert it once without allowing offline time to advance thereafter.
-                int remaining = EffectSemantics.decodeRemainingTicks(
-                        storedTime, System.currentTimeMillis(), legacyEpochMillis);
-                EffectSemantics.EffectState hidden = null;
-                if (versionThree) {
-                    for (int index = fields.length - 2; index >= 3; index -= 2) {
-                        hidden = new EffectSemantics.EffectState(
-                                Integer.parseInt(fields[index]), Integer.parseInt(fields[index + 1]), hidden);
-                    }
-                }
-                EffectSemantics.EffectState state = new EffectSemantics.EffectState(
-                        remaining, Integer.parseInt(fields[2]), hidden);
-                ActiveEffect effect = new ActiveEffect(fields[0], state);
-                if (effect.remainingTicks() > 0) {
-                    result.put(effect.effect(), effect);
-                }
-            } catch (NumberFormatException ignored) {
-                // Ignore one corrupt entry and retain all valid persisted effects.
+            String id = ids.get(index);
+            if (id != null && NamespacedKey.fromString(id) != null) {
+                result.put(id, new ActiveEffect(id, state));
             }
         }
         return result;
@@ -1247,26 +1319,21 @@ public final class EffectService implements Listener {
             living.getPersistentDataContainer().remove(activeKey);
             return;
         }
-        StringBuilder encoded = new StringBuilder("v3|");
-        boolean first = true;
+        PersistentDataContainer owner = living.getPersistentDataContainer();
+        PersistentDataContainer encoded = owner.getAdapterContext().newPersistentDataContainer();
+        List<String> ids = new ArrayList<>(effects.size());
+        List<long[]> values = new ArrayList<>(effects.size());
         for (ActiveEffect effect : effects.values()) {
-            if (!first) {
-                encoded.append(';');
-            }
-            appendEncoded(encoded, effect);
-            first = false;
+            ids.add(effect.effect());
+            values.add(EffectSemantics.encodeState(effect.state()));
         }
-        living.getPersistentDataContainer().set(activeKey, PersistentDataType.STRING, encoded.toString());
+        encoded.set(effectIdsKey, STRING_LIST, List.copyOf(ids));
+        encoded.set(effectValuesKey, LONG_ARRAY_LIST, List.copyOf(values));
+        owner.set(activeKey, PersistentDataType.TAG_CONTAINER, encoded);
     }
 
-    private static void appendEncoded(StringBuilder encoded, ActiveEffect effect) {
-        encoded.append(effect.effect());
-        EffectSemantics.EffectState state = effect.state();
-        while (state != null) {
-            encoded.append(',').append(state.remainingTicks())
-                    .append(',').append(state.amplifier());
-            state = state.hidden();
-        }
+    private boolean hasPersistedEffects(LivingEntity living) {
+        return living.getPersistentDataContainer().has(activeKey, PersistentDataType.TAG_CONTAINER);
     }
 
     /**
@@ -1413,13 +1480,33 @@ public final class EffectService implements Listener {
         stopTickTaskIfIdle();
     }
 
-    private record ActiveEffect(String effect, EffectSemantics.EffectState state) {
+    private static final class ActiveEffect {
+        private final String effect;
+        private final EffectSemantics.MutableEffectState state;
+
+        private ActiveEffect(String effect, EffectSemantics.EffectState state) {
+            this.effect = effect;
+            this.state = new EffectSemantics.MutableEffectState(state);
+        }
+
+        private String effect() {
+            return effect;
+        }
+
+        private EffectSemantics.EffectState state() {
+            return state.snapshot();
+        }
+
         private int remainingTicks() {
             return state.remainingTicks();
         }
 
         private int amplifier() {
             return state.amplifier();
+        }
+
+        private boolean advance(int elapsedTicks) {
+            return state.advance(elapsedTicks);
         }
     }
 }

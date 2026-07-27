@@ -14,14 +14,16 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Routes exact furniture load/place/remove/unload callbacks through CE controllers. */
@@ -29,10 +31,10 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
     public static final String TYPE = "kaleidoscope_tavern:lifecycle_furniture";
 
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
-    private static final ConcurrentMap<Channel, Handler> HANDLERS = new ConcurrentHashMap<>();
-    private static final ConcurrentMap<Channel, Set<Controller>> READY = new ConcurrentHashMap<>();
-    private static final ConcurrentMap<Channel, ConcurrentMap<UUID, WorldIndex>> SPATIAL =
-            new ConcurrentHashMap<>();
+    private static final Map<Channel, Handler> HANDLERS = new EnumMap<>(Channel.class);
+    private static final Map<Channel, Set<Controller>> READY = new EnumMap<>(Channel.class);
+    private static final Map<Channel, Map<UUID, WorldIndex>> SPATIAL =
+            new EnumMap<>(Channel.class);
 
     private final Channel channel;
 
@@ -52,7 +54,9 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
         HANDLERS.put(Objects.requireNonNull(channel, "channel"), bound);
         Set<Controller> controllers = READY.get(channel);
         if (controllers != null) {
-            controllers.forEach(controller -> controller.deliver(bound));
+            for (Controller controller : List.copyOf(controllers)) {
+                controller.deliver(bound);
+            }
         }
     }
 
@@ -61,7 +65,9 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
                 Objects.requireNonNull(handler, "handler"))) {
             Set<Controller> controllers = READY.get(channel);
             if (controllers != null) {
-                controllers.forEach(controller -> controller.forget(handler));
+                for (Controller controller : List.copyOf(controllers)) {
+                    controller.forget(handler);
+                }
             }
         }
     }
@@ -70,7 +76,7 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
     public static List<BukkitFurniture> nearby(Channel channel, Location center,
                                                double horizontalRadius,
                                                double verticalRadius) {
-        ConcurrentMap<UUID, WorldIndex> channelWorlds = SPATIAL.get(channel);
+        Map<UUID, WorldIndex> channelWorlds = SPATIAL.get(channel);
         if (channelWorlds == null) {
             return List.of();
         }
@@ -95,9 +101,6 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
                 }
                 for (Controller controller : controllers) {
                     BukkitFurniture furniture = controller.bukkitFurniture;
-                    if (!furniture.isValid()) {
-                        continue;
-                    }
                     Location location = furniture.location();
                     if (FurnitureSpatialSemantics.insideBox(
                             location.getX(), location.getY(), location.getZ(),
@@ -166,6 +169,10 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
     public interface Handler {
         void onReady(BukkitFurniture furniture, ReadyReason reason);
 
+        default void onReady(BukkitFurniture furniture, ReadyReason reason, Player placingPlayer) {
+            onReady(furniture, reason);
+        }
+
         default void onUnavailable(BukkitFurniture furniture, boolean removed, boolean stopping) {
         }
     }
@@ -187,12 +194,17 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
 
         @Override
         public void onPlace(Player player) {
-            ready(ReadyReason.PLACE);
+            ready(ReadyReason.PLACE, player);
         }
 
         @Override
         public void onLoad() {
-            ready(ReadyReason.LOAD);
+            ready(ReadyReason.LOAD, null);
+        }
+
+        @Override
+        public void preRemove(Player player) {
+            unavailable(true, false);
         }
 
         @Override
@@ -205,22 +217,22 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
             unavailable(false, isStopping);
         }
 
-        private void ready(ReadyReason reason) {
+        private void ready(ReadyReason reason, Player placingPlayer) {
             if (readyReason == null) {
                 Location location = bukkitFurniture.location();
                 worldId = location.getWorld().getUID();
                 column = packColumn(location.getBlockX(), location.getBlockZ());
-                ConcurrentMap<UUID, WorldIndex> channelWorlds = SPATIAL.computeIfAbsent(
-                        channel, ignored -> new ConcurrentHashMap<>());
+                Map<UUID, WorldIndex> channelWorlds = SPATIAL.computeIfAbsent(
+                        channel, ignored -> new HashMap<>());
                 WorldIndex worldIndex = channelWorlds.computeIfAbsent(
                         worldId, ignored -> new WorldIndex());
                 worldIndex.columns.computeIfAbsent(column,
-                        ignored -> ConcurrentHashMap.<Controller>newKeySet()).add(this);
+                        ignored -> new HashSet<>()).add(this);
             }
             readyReason = reason;
             READY.computeIfAbsent(channel,
-                    ignored -> ConcurrentHashMap.<Controller>newKeySet()).add(this);
-            deliver(HANDLERS.get(channel));
+                    ignored -> new HashSet<>()).add(this);
+            deliver(HANDLERS.get(channel), placingPlayer);
         }
 
         private void unavailable(boolean removed, boolean stopping) {
@@ -234,7 +246,7 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
                     READY.remove(channel, controllers);
                 }
             }
-            ConcurrentMap<UUID, WorldIndex> channelWorlds = SPATIAL.get(channel);
+            Map<UUID, WorldIndex> channelWorlds = SPATIAL.get(channel);
             if (channelWorlds != null) {
                 WorldIndex worldIndex = channelWorlds.get(worldId);
                 if (worldIndex != null) {
@@ -263,13 +275,17 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
         }
 
         private void deliver(Handler handler) {
+            deliver(handler, null);
+        }
+
+        private void deliver(Handler handler, Player placingPlayer) {
             if (handler == null || readyReason == null
                     || (handler == deliveredHandler && readyReason == deliveredReason)) {
                 return;
             }
             deliveredHandler = handler;
             deliveredReason = readyReason;
-            handler.onReady(bukkitFurniture, readyReason);
+            handler.onReady(bukkitFurniture, readyReason, placingPlayer);
         }
 
         private void forget(Handler handler) {
@@ -281,7 +297,6 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
     }
 
     private static final class WorldIndex {
-        private final ConcurrentMap<Long, Set<Controller>> columns =
-                new ConcurrentHashMap<>();
+        private final Map<Long, Set<Controller>> columns = new HashMap<>();
     }
 }

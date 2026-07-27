@@ -21,9 +21,11 @@ import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.Clientbo
 import net.momirealms.craftengine.proxy.minecraft.world.entity.EntityTypesProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.phys.Vec3Proxy;
 import org.bukkit.Location;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -57,19 +59,32 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
     public static void register() {
         if (REGISTERED.compareAndSet(false, true)) {
+            VirtualEntityIdentity.prewarm();
+            StorageVisualElement.prewarm();
             FurnitureBehaviors.register(Key.of(TYPE), StorageVisualFurnitureBehavior::new);
         }
     }
 
     public static void bind(Handler newHandler) {
         handler = Objects.requireNonNull(newHandler, "newHandler");
-        LOADED.values().forEach(controller -> controller.bukkitFurniture.refreshElements());
+        LOADED.values().forEach(Controller::refresh);
     }
 
     public static void unbind(Handler oldHandler) {
         if (handler == oldHandler) {
             handler = null;
-            LOADED.values().forEach(controller -> controller.bukkitFurniture.refreshElements());
+            LOADED.values().forEach(Controller::refresh);
+        }
+    }
+
+    /** Invalidates player-independent slot visuals before CE redistributes them. */
+    public static void refresh(BukkitFurniture furniture) {
+        Objects.requireNonNull(furniture, "furniture");
+        Controller controller = LOADED.get(furniture.uuid());
+        if (controller != null) {
+            controller.refresh();
+        } else {
+            furniture.refreshElements();
         }
     }
 
@@ -94,18 +109,25 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
     private static final class Controller extends FurnitureController {
         private final BukkitFurniture bukkitFurniture;
         private final int slots;
+        private final Visual[] cachedVisuals;
+        private final boolean[] visualsDirty;
 
         private Controller(BukkitFurniture furniture, int slots) {
             super(furniture);
             this.bukkitFurniture = furniture;
             this.slots = slots;
+            this.cachedVisuals = new Visual[slots];
+            this.visualsDirty = new boolean[slots];
+            invalidateVisuals();
         }
 
         @Override
         public void gatherElements(Consumer<FurnitureElement> consumer) {
-            for (int slot = 0; slot < slots; slot++) {
-                consumer.accept(new StorageItemElement(bukkitFurniture, slot));
-            }
+            invalidateVisuals();
+            // One CE-tracked element owns every packet-only slot. This keeps
+            // CE's culling/lifecycle semantics while avoiding one element,
+            // update callback and packet batch per visible storage slot.
+            consumer.accept(new StorageVisualElement(this, slots));
         }
 
         @Override
@@ -127,21 +149,56 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
         public void onUnload(boolean isStopping) {
             LOADED.remove(bukkitFurniture.uuid(), this);
         }
+
+        private void refresh() {
+            invalidateVisuals();
+            bukkitFurniture.refreshElements();
+        }
+
+        private void invalidateVisuals() {
+            Arrays.fill(cachedVisuals, null);
+            Arrays.fill(visualsDirty, true);
+        }
+
+        private Visual visual(int slot) {
+            if (slot < 0 || slot >= slots) {
+                return null;
+            }
+            if (visualsDirty[slot]) {
+                Handler currentHandler = handler;
+                cachedVisuals[slot] = currentHandler == null
+                        ? null : currentHandler.visual(bukkitFurniture, slot);
+                visualsDirty[slot] = false;
+            }
+            return cachedVisuals[slot];
+        }
     }
 
-    private static final class StorageItemElement implements FurnitureElement {
+    private static final class StorageVisualElement implements FurnitureElement {
         private static final float VIEW_RANGE = 1.25F;
 
+        private final Controller controller;
         private final BukkitFurniture furniture;
-        private final int slot;
-        private final int entityId = EntityUtils.ENTITY_COUNTER.incrementAndGet();
-        private final UUID entityUuid = UUID.randomUUID();
-        private final Object removePacket = ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(
-                new IntArrayList(new int[]{entityId}));
+        private final int slots;
+        private final int[] entityIds;
+        private final UUID[] entityUuids;
+        private final Object removePacket;
 
-        private StorageItemElement(BukkitFurniture furniture, int slot) {
-            this.furniture = furniture;
-            this.slot = slot;
+        private static void prewarm() {
+        }
+
+        private StorageVisualElement(Controller controller, int slots) {
+            this.controller = controller;
+            this.furniture = controller.bukkitFurniture;
+            this.slots = slots;
+            this.entityIds = new int[slots];
+            this.entityUuids = new UUID[slots];
+            for (int slot = 0; slot < slots; slot++) {
+                entityIds[slot] = EntityUtils.ENTITY_COUNTER.incrementAndGet();
+                entityUuids[slot] = VirtualEntityIdentity.fromEntityId(entityIds[slot]);
+            }
+            this.removePacket = ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(
+                    new IntArrayList(entityIds));
         }
 
         @Override
@@ -150,10 +207,7 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
         @Override
         public void show(Player player) {
-            Visual current = currentVisual();
-            if (current != null && current.item() != null && !current.item().isEmpty()) {
-                sendVisual(player, current, false);
-            }
+            sendVisuals(player, false);
         }
 
         @Override
@@ -163,41 +217,43 @@ public final class StorageVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
         @Override
         public void update(Player player) {
-            Visual current = currentVisual();
-            if (current == null || current.item() == null || current.item().isEmpty()) {
-                hide(player);
-                return;
-            }
-            sendVisual(player, current, true);
+            sendVisuals(player, true);
         }
 
-        private Visual currentVisual() {
-            Handler currentHandler = handler;
-            return currentHandler == null ? null : currentHandler.visual(furniture, slot);
-        }
-
-        private void sendVisual(Player player, Visual visual, boolean replace) {
-            RenderPosition position = renderPosition(furniture, visual);
-            Object spawnPacket = ClientboundAddEntityPacketProxy.INSTANCE.newInstance(
-                    entityId, entityUuid,
-                    position.x(), position.y(), position.z(),
-                    visual.xRot(), position.yRot(),
-                    EntityTypesProxy.ITEM_DISPLAY, 0, Vec3Proxy.ZERO, 0);
-
-            List<Object> metadata = new ArrayList<>();
-            DisplayData.ItemDisplayData.ItemStack.addEntityData(
-                    visual.item().minecraftItem(), metadata);
-            DisplayData.ItemDisplayData.Scale.addEntityDataIfNotDefaultValue(
-                    new Vector3f(visual.scale()), metadata);
-            DisplayData.ItemDisplayData.ViewRange.addEntityDataIfNotDefaultValue(
-                    (float) (VIEW_RANGE * player.displayEntityViewDistance()), metadata);
-            Object metadataPacket = ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
-                    entityId, metadata);
-
+        private void sendVisuals(Player player, boolean replace) {
+            List<Object> packets = new ArrayList<>(slots * 2 + (replace ? 1 : 0));
             if (replace) {
-                player.sendPackets(List.of(removePacket, spawnPacket, metadataPacket), false);
-            } else {
-                player.sendPackets(List.of(spawnPacket, metadataPacket), false);
+                packets.add(removePacket);
+            }
+            for (int slot = 0; slot < slots; slot++) {
+                Visual visual = controller.visual(slot);
+                if (visual == null || visual.item() == null || visual.item().isEmpty()) {
+                    continue;
+                }
+                RenderPosition position = renderPosition(furniture, visual);
+                packets.add(ClientboundAddEntityPacketProxy.INSTANCE.newInstance(
+                        entityIds[slot], entityUuids[slot],
+                        position.x(), position.y(), position.z(),
+                        0, position.yRot(),
+                        EntityTypesProxy.ITEM_DISPLAY, 0, Vec3Proxy.ZERO, 0));
+
+                List<Object> metadata = new ArrayList<>(4);
+                DisplayData.ItemDisplayData.ItemStack.addEntityData(
+                        visual.item().minecraftItem(), metadata);
+                DisplayData.ItemDisplayData.Scale.addEntityDataIfNotDefaultValue(
+                        new Vector3f(visual.scale()), metadata);
+                // CE item-display elements keep model pitch in the display
+                // transformation. Entity pitch is orientation state and turns
+                // a 180-degree hanging glass into a sideways model on clients.
+                DisplayData.ItemDisplayData.LeftRotation.addEntityDataIfNotDefaultValue(
+                        new Quaternionf().rotateX((float) Math.toRadians(visual.xRot())), metadata);
+                DisplayData.ItemDisplayData.ViewRange.addEntityDataIfNotDefaultValue(
+                        (float) (VIEW_RANGE * player.displayEntityViewDistance()), metadata);
+                packets.add(ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
+                        entityIds[slot], metadata));
+            }
+            if (!packets.isEmpty()) {
+                player.sendPackets(packets, false);
             }
         }
     }

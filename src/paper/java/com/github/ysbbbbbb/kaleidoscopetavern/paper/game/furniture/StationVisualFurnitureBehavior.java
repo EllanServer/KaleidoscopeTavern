@@ -61,19 +61,32 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
     public static void register() {
         if (REGISTERED.compareAndSet(false, true)) {
+            VirtualEntityIdentity.prewarm();
+            StationVisualElement.prewarm();
             FurnitureBehaviors.register(Key.of(TYPE), StationVisualFurnitureBehavior::new);
         }
     }
 
     public static void bind(Handler newHandler) {
         handler = Objects.requireNonNull(newHandler, "newHandler");
-        LOADED.values().forEach(controller -> controller.bukkitFurniture.refreshElements());
+        LOADED.values().forEach(Controller::refresh);
     }
 
     public static void unbind(Handler oldHandler) {
         if (handler == oldHandler) {
             handler = null;
-            LOADED.values().forEach(controller -> controller.bukkitFurniture.refreshElements());
+            LOADED.values().forEach(Controller::refresh);
+        }
+    }
+
+    /** Invalidates player-independent visual content before CE redistributes it. */
+    public static void refresh(BukkitFurniture furniture) {
+        Objects.requireNonNull(furniture, "furniture");
+        Controller controller = LOADED.get(furniture.uuid());
+        if (controller != null) {
+            controller.refresh();
+        } else {
+            furniture.refreshElements();
         }
     }
 
@@ -104,6 +117,8 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         private final BukkitFurniture bukkitFurniture;
         private final int maxElements;
         private final float viewRange;
+        private List<Visual> cachedVisuals = List.of();
+        private boolean visualsDirty = true;
 
         private Controller(BukkitFurniture furniture, int maxElements, float viewRange) {
             super(furniture);
@@ -114,8 +129,9 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
         @Override
         public void gatherElements(Consumer<FurnitureElement> consumer) {
+            invalidateVisuals();
             consumer.accept(new StationVisualElement(
-                    bukkitFurniture, maxElements, viewRange));
+                    this, maxElements, viewRange));
         }
 
         @Override
@@ -137,9 +153,31 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         public void onUnload(boolean isStopping) {
             LOADED.remove(bukkitFurniture.uuid(), this);
         }
+
+        private void refresh() {
+            invalidateVisuals();
+            bukkitFurniture.refreshElements();
+        }
+
+        private void invalidateVisuals() {
+            cachedVisuals = List.of();
+            visualsDirty = true;
+        }
+
+        private List<Visual> visuals() {
+            if (visualsDirty) {
+                Handler currentHandler = handler;
+                cachedVisuals = currentHandler == null
+                        ? List.of()
+                        : List.copyOf(currentHandler.visuals(bukkitFurniture));
+                visualsDirty = false;
+            }
+            return cachedVisuals;
+        }
     }
 
     private static final class StationVisualElement implements FurnitureElement {
+        private final Controller controller;
         private final BukkitFurniture furniture;
         private final int maxElements;
         private final float viewRange;
@@ -147,19 +185,23 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         private final UUID[] entityUuids;
         private final Object removePacket;
 
-        private StationVisualElement(BukkitFurniture furniture, int maxElements,
+        private StationVisualElement(Controller controller, int maxElements,
                                      float viewRange) {
-            this.furniture = furniture;
+            this.controller = controller;
+            this.furniture = controller.bukkitFurniture;
             this.maxElements = maxElements;
             this.viewRange = viewRange;
             this.entityIds = new int[maxElements];
             this.entityUuids = new UUID[maxElements];
             for (int index = 0; index < maxElements; index++) {
                 entityIds[index] = EntityUtils.ENTITY_COUNTER.incrementAndGet();
-                entityUuids[index] = UUID.randomUUID();
+                entityUuids[index] = VirtualEntityIdentity.fromEntityId(entityIds[index]);
             }
             this.removePacket = ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(
                     new IntArrayList(entityIds));
+        }
+
+        private static void prewarm() {
         }
 
         @Override
@@ -182,9 +224,7 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         }
 
         private void sendVisuals(Player player, boolean replace) {
-            Handler currentHandler = handler;
-            List<Visual> current = currentHandler == null
-                    ? List.of() : currentHandler.visuals(furniture);
+            List<Visual> current = controller.visuals();
             int count = Math.min(maxElements, current.size());
             if (count == 0) {
                 if (replace) {

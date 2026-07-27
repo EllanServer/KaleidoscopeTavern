@@ -2,23 +2,30 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EffectSemanticsTest {
     @Test
-    void persistedTickDurationsDoNotAdvanceWhileOffline() {
-        assertEquals(1_200, EffectSemantics.decodeRemainingTicks(
-                1_200, 9_999_999_999L, false));
+    void typedPersistenceRoundTripsTheVisibleAndHiddenStateTree() {
+        EffectSemantics.EffectState state = new EffectSemantics.EffectState(40, 2,
+                new EffectSemantics.EffectState(160, 0, null));
+        long[] encoded = EffectSemantics.encodeState(state);
+
+        assertArrayEquals(new long[]{40, 2, 160, 0}, encoded);
+        assertEquals(state, EffectSemantics.decodeState(encoded));
     }
 
     @Test
-    void legacyEpochExpiryIsConvertedOnce() {
-        assertEquals(21, EffectSemantics.decodeRemainingTicks(
-                1_700_000_001_050L, 1_700_000_000_000L, true));
-        assertEquals(20, EffectSemantics.decodeRemainingTicks(
-                12_000_000, 11_999_000, true));
+    void malformedTypedEffectStateIsRejected() {
+        assertNull(EffectSemantics.decodeState(null));
+        assertNull(EffectSemantics.decodeState(new long[0]));
+        assertNull(EffectSemantics.decodeState(new long[]{20, 1, 40}));
+        assertNull(EffectSemantics.decodeState(
+                new long[]{(long) Integer.MAX_VALUE + 1L, 0}));
     }
 
     @Test
@@ -105,6 +112,43 @@ class EffectSemanticsTest {
                 new EffectSemantics.EffectState(160, 0, null)), state);
         state = EffectSemantics.advanceEffect(state, 60);
         assertEquals(new EffectSemantics.EffectState(100, 0, null), state);
+    }
+
+    @Test
+    void mutableRuntimeCountdownMatchesTheImmutableReferenceChain() {
+        EffectSemantics.EffectState expected = new EffectSemantics.EffectState(40, 2,
+                new EffectSemantics.EffectState(100, 1,
+                        new EffectSemantics.EffectState(200, 0, null)));
+        EffectSemantics.MutableEffectState actual =
+                new EffectSemantics.MutableEffectState(expected);
+
+        for (int elapsed : new int[]{1, 9, 30, 60, 100}) {
+            expected = EffectSemantics.advanceEffect(expected, elapsed);
+            boolean active = actual.advance(elapsed);
+            assertEquals(expected != null, active);
+            assertEquals(expected, actual.snapshot());
+            if (expected != null) {
+                assertEquals(expected.remainingTicks(), actual.remainingTicks());
+                assertEquals(expected.amplifier(), actual.amplifier());
+            }
+        }
+    }
+
+    @Test
+    void mutableRuntimeRetainsExpiredHiddenLayersUntilPromotion() {
+        EffectSemantics.EffectState expected = new EffectSemantics.EffectState(100, 1,
+                new EffectSemantics.EffectState(1, 0, null));
+        EffectSemantics.MutableEffectState actual =
+                new EffectSemantics.MutableEffectState(expected);
+
+        expected = EffectSemantics.advanceEffect(expected, 50);
+        assertTrue(actual.advance(50));
+        assertEquals(expected, actual.snapshot());
+        assertEquals(-49, actual.snapshot().hidden().remainingTicks());
+
+        expected = EffectSemantics.advanceEffect(expected, 50);
+        assertFalse(actual.advance(50));
+        assertEquals(expected, actual.snapshot());
     }
 
     @Test

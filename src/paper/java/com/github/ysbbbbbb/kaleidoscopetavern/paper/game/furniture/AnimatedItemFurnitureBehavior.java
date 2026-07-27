@@ -24,13 +24,12 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -39,7 +38,7 @@ public final class AnimatedItemFurnitureBehavior extends FurnitureBehaviorTempla
     public static final String TYPE = "kaleidoscope_tavern:animated_item_furniture";
 
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
-    private static final ConcurrentMap<UUID, Controller> LOADED = new ConcurrentHashMap<>();
+    private static final Map<UUID, Controller> LOADED = new HashMap<>();
     private static final Map<Channel, Handler> HANDLERS = new EnumMap<>(Channel.class);
 
     private final Channel channel;
@@ -56,24 +55,24 @@ public final class AnimatedItemFurnitureBehavior extends FurnitureBehaviorTempla
 
     public static void register() {
         if (REGISTERED.compareAndSet(false, true)) {
+            VirtualEntityIdentity.prewarm();
+            AnimatedItemElement.prewarm();
             FurnitureBehaviors.register(Key.of(TYPE), AnimatedItemFurnitureBehavior::new);
         }
     }
 
     public static void bind(Channel channel, Handler handler) {
-        synchronized (HANDLERS) {
-            HANDLERS.put(channel, Objects.requireNonNull(handler, "handler"));
-        }
-        refresh(channel);
+        Channel targetChannel = Objects.requireNonNull(channel, "channel");
+        HANDLERS.put(targetChannel, Objects.requireNonNull(handler, "handler"));
+        refresh(targetChannel);
     }
 
     public static void unbind(Channel channel, Handler handler) {
-        synchronized (HANDLERS) {
-            if (HANDLERS.get(channel) == handler) {
-                HANDLERS.remove(channel);
-            }
+        Channel targetChannel = Objects.requireNonNull(channel, "channel");
+        if (HANDLERS.get(targetChannel) == handler) {
+            HANDLERS.remove(targetChannel);
         }
-        refresh(channel);
+        refresh(targetChannel);
     }
 
     public static void updateTransforms(BukkitFurniture furniture) {
@@ -91,15 +90,15 @@ public final class AnimatedItemFurnitureBehavior extends FurnitureBehaviorTempla
     }
 
     private static void refresh(Channel channel) {
-        LOADED.values().stream()
-                .filter(controller -> controller.channel == channel)
-                .forEach(controller -> controller.bukkitFurniture.refreshElements());
+        for (Controller controller : LOADED.values()) {
+            if (controller.channel == channel) {
+                controller.refresh();
+            }
+        }
     }
 
     private static Handler handler(Channel channel) {
-        synchronized (HANDLERS) {
-            return HANDLERS.get(channel);
-        }
+        return HANDLERS.get(channel);
     }
 
     @Override
@@ -139,6 +138,8 @@ public final class AnimatedItemFurnitureBehavior extends FurnitureBehaviorTempla
         private final int maxElements;
         private final float viewRange;
         private AnimatedItemElement element;
+        private List<Visual> cachedVisuals = List.of();
+        private boolean visualsDirty = true;
 
         private Controller(BukkitFurniture furniture, Channel channel,
                            int maxElements, float viewRange) {
@@ -151,8 +152,9 @@ public final class AnimatedItemFurnitureBehavior extends FurnitureBehaviorTempla
 
         @Override
         public void gatherElements(Consumer<FurnitureElement> consumer) {
+            invalidateVisuals();
             element = new AnimatedItemElement(
-                    bukkitFurniture, channel, maxElements, viewRange);
+                    this, maxElements, viewRange);
             consumer.accept(element);
         }
 
@@ -177,41 +179,67 @@ public final class AnimatedItemFurnitureBehavior extends FurnitureBehaviorTempla
         }
 
         private void updateTransforms() {
+            invalidateVisuals();
             if (element != null) {
                 element.updateTransforms();
             }
         }
 
         private void updatePosition() {
+            invalidateVisuals();
             if (element != null) {
                 element.updatePosition();
             }
         }
+
+        private void refresh() {
+            invalidateVisuals();
+            bukkitFurniture.refreshElements();
+        }
+
+        private void invalidateVisuals() {
+            cachedVisuals = List.of();
+            visualsDirty = true;
+        }
+
+        private List<Visual> visuals() {
+            if (visualsDirty) {
+                Handler current = handler(channel);
+                cachedVisuals = current == null
+                        ? List.of()
+                        : List.copyOf(current.visuals(bukkitFurniture));
+                visualsDirty = false;
+            }
+            return cachedVisuals;
+        }
     }
 
     private static final class AnimatedItemElement implements FurnitureElement {
+        private final Controller controller;
         private final BukkitFurniture furniture;
-        private final Channel channel;
         private final int maxElements;
         private final float viewRange;
         private final int[] entityIds;
         private final UUID[] entityUuids;
         private final Object removePacket;
 
-        private AnimatedItemElement(BukkitFurniture furniture, Channel channel,
+        private AnimatedItemElement(Controller controller,
                                     int maxElements, float viewRange) {
-            this.furniture = furniture;
-            this.channel = channel;
+            this.controller = controller;
+            this.furniture = controller.bukkitFurniture;
             this.maxElements = maxElements;
             this.viewRange = viewRange;
             this.entityIds = new int[maxElements];
             this.entityUuids = new UUID[maxElements];
             for (int index = 0; index < maxElements; index++) {
                 entityIds[index] = EntityUtils.ENTITY_COUNTER.incrementAndGet();
-                entityUuids[index] = UUID.randomUUID();
+                entityUuids[index] = VirtualEntityIdentity.fromEntityId(entityIds[index]);
             }
             this.removePacket = ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(
                     new IntArrayList(entityIds));
+        }
+
+        private static void prewarm() {
         }
 
         @Override
@@ -283,8 +311,7 @@ public final class AnimatedItemFurnitureBehavior extends FurnitureBehaviorTempla
         }
 
         private List<Visual> visuals() {
-            Handler current = handler(channel);
-            return current == null ? List.of() : current.visuals(furniture);
+            return controller.visuals();
         }
 
         private Object spawnPacket(int index, Visual visual) {

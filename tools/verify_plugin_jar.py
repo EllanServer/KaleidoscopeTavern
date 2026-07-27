@@ -72,8 +72,8 @@ def main() -> int:
         blocks_document = json.loads(
             archive.read("tavern-pack/configuration/blocks.json").decode("utf-8-sig")
         )
-        if len(blocks_document.get("blocks", {})) != 41:
-            raise SystemExit("Embedded CraftEngine project must contain 41 block ids")
+        if len(blocks_document.get("blocks", {})) != 54:
+            raise SystemExit("Embedded CraftEngine project must contain 54 block ids")
 
         worldgen_document = json.loads(
             archive.read("tavern-pack/configuration/worldgen.json").decode("utf-8-sig")

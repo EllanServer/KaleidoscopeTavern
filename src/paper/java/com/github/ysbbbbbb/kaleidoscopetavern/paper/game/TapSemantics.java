@@ -6,6 +6,7 @@ final class TapSemantics {
     static final int TAKE_TICKS = 30;
     static final int TAKE_PARTICLE_TICKS = 5;
     static final int EMPTY_OPEN_TICKS = 6;
+    static final int FULL_LAVA_CAULDRON_LEVEL = 3;
 
     private TapSemantics() {
     }
@@ -22,6 +23,20 @@ final class TapSemantics {
     /** BarrelTapBehavior uses lava drips only when its current output is Molotov. */
     static boolean isHotBarrelOutput(String resultId) {
         return "kaleidoscope_tavern:molotov".equals(resultId);
+    }
+
+    /** A lava cauldron is consumed after a successful extraction unless infinite mode is explicit. */
+    static boolean shouldConsumeLavaSource(boolean infiniteLavaFromTap) {
+        return !infiniteLavaFromTap;
+    }
+
+    static int lavaLevelAfterExtraction(int currentLevel, int extractedLevels,
+                                        boolean infiniteLavaFromTap) {
+        int normalized = Math.max(0, Math.min(FULL_LAVA_CAULDRON_LEVEL, currentLevel));
+        if (infiniteLavaFromTap) {
+            return normalized;
+        }
+        return Math.max(0, normalized - Math.max(0, extractedLevels));
     }
 
     /**
