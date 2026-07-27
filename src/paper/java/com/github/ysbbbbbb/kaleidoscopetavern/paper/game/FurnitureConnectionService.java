@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Keeps connected sofas, counters, tables and cabinets in their legacy variants. */
+/** Keeps connected counters, tables and cabinets in their legacy variants. */
 public final class FurnitureConnectionService {
     private static final String BAR_COUNTER = "kaleidoscope_tavern:bar_counter";
     private static final String TABLE = "kaleidoscope_tavern:table";
@@ -234,8 +234,7 @@ public final class FurnitureConnectionService {
         if (second == null) return false;
         String firstId = first.id().toString();
         String secondId = second.id().toString();
-        return firstId.endsWith("_sofa") && secondId.endsWith("_sofa")
-                || firstId.equals(BAR_COUNTER) && secondId.equals(BAR_COUNTER);
+        return firstId.equals(BAR_COUNTER) && secondId.equals(BAR_COUNTER);
     }
 
     private static boolean isLinear(BukkitFurniture furniture) {

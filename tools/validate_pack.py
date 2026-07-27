@@ -111,9 +111,6 @@ EXPECTED_LIFECYCLE_FURNITURE: dict[str, tuple[str, ...]] = {
 EXPECTED_LIFECYCLE_FURNITURE.update({
     f"{color}_bar_stool": ("bar_stool",) for color in FURNITURE_COLORS
 })
-EXPECTED_LIFECYCLE_FURNITURE.update({
-    f"{color}_sofa": ("connection",) for color in FURNITURE_COLORS
-})
 CUSTOM_EFFECT_ICON_IDS = (
     "slightly_tipsy",
     "high_heels",
@@ -157,10 +154,10 @@ OBSOLETE_VANILLA_IDS = {"minecraft:chain", "minecraft:grass"}
 SOURCE_STATE_OWNERS = {
     "age": "CustomCrops stage blocks",
     "axis": "FurnitureConnectionService yaw/line selection",
-    "connection": "FurnitureConnectionService",
+    "connection": "CE sofa/storage block states plus FurnitureConnectionService",
     "count": "BottleFurnitureService",
     "face": "CE ground/wall/ceiling placement rules",
-    "facing": "CE tap/storage block state and four-way/sixteen-way furniture rotation",
+    "facing": "CE tap/storage/sofa block state and four-way/sixteen-way furniture rotation",
     "half": "composite multi-element furniture variants",
     "open": "CE incense/tap block state",
     "position": "CE storage block connection state plus FurnitureConnectionService",
@@ -169,7 +166,7 @@ SOURCE_STATE_OWNERS = {
     "tilt": "ground/wall pressing-tub placement variants",
     "triggered": "CE TapBlockBehavior redstone edge latch",
     "type": "CE trellis state variants",
-    "waterlogged": "CE tap/trellis fluid state plus non-displacing carrier semantics",
+    "waterlogged": "CE tap/trellis/sofa fluid state plus non-displacing carrier semantics",
     "waxed": "CE trellis state variants plus blocks.json wax events",
 }
 
@@ -299,8 +296,9 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("ShakerSemantics.java", "AUTO_RELEASE_AFTER_TICKS"),
     ),
     "SofaBlock.java": (
-        ("tools/migrate_legacy.py", "_sofa"),
-        ("FurnitureConnectionService.java", "connectionFor"),
+        ("block/SofaBlockBehavior.java", "updateStateForPlacement"),
+        ("block/SofaBlockBehavior.java", "public Object updateShape"),
+        ("block/SofaBlockShape.java", "new Box(0, 8, 11, 16, 18, 16)"),
     ),
     "StringLightsBlock.java": (("src/paper/pack/configuration/blocks.json", "item.dye.use"),),
     "StringLightsBlockItem.java": (
@@ -384,7 +382,7 @@ EVENT_BEHAVIOR_COVERAGE = {
 
 ENTITY_BEHAVIOR_COVERAGE = {
     "SitEntity.java": (
-        ("tools/migrate_legacy.py", "_sofa"),
+        ("src/paper/pack/configuration/blocks.json", "seat_block"),
         ("tools/migrate_legacy.py", "_bar_stool"),
     ),
     "ThrownMolotovEntity.java": (("MolotovService.java", "spreadFire"),),
@@ -611,10 +609,10 @@ def validate() -> dict[str, int]:
 
     if len(items) != 157:
         raise AssertionError(f"Expected 157 public items, found {len(items)}")
-    if len(blocks) != 54:
-        raise AssertionError(f"Expected 54 grid/state blocks, found {len(blocks)}")
-    if len(furniture) != 120:
-        raise AssertionError(f"Expected 120 furniture definitions, found {len(furniture)}")
+    if len(blocks) != 70:
+        raise AssertionError(f"Expected 70 grid/state blocks, found {len(blocks)}")
+    if len(furniture) != 104:
+        raise AssertionError(f"Expected 104 furniture definitions, found {len(furniture)}")
     if len(render_items) != 554:
         raise AssertionError(f"Expected 554 private render items, found {len(render_items)}")
     if len(recipes) != 114:
@@ -916,6 +914,7 @@ def validate() -> dict[str, int]:
         )),
         *(f"{NAMESPACE}:{incense}" for incense in INCENSE_BLOCK_SPECS),
         *(f"{NAMESPACE}:{storage}" for storage in STORAGE_BLOCK_SPECS),
+        *(f"{NAMESPACE}:{color}_sofa" for color in FURNITURE_COLORS),
     }
     if set(blocks) != expected_grid_blocks:
         unexpected = sorted(set(blocks) - expected_grid_blocks)
@@ -1070,6 +1069,12 @@ def validate() -> dict[str, int]:
     if "StorageBlockBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register CE storage blocks before pack loading")
+    if "SofaBlockBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register CE connected sofas before pack loading")
+    if "SofaBlockShape.install()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must install exact sofa shapes after CE loading")
     incense_behavior_source = (
         game_package / "block/IncenseBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
@@ -1332,6 +1337,59 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "FurnitureConnectionService must not rediscover indexed CE furniture; "
                 f"stale token found: {stale_token}")
+    if "_sofa" in connection_source:
+        raise AssertionError(
+            "CE block neighbor updates own sofa connections; "
+            "FurnitureConnectionService must not index sofas")
+
+    sofa_behavior_source = (
+        game_package / "block" / "SofaBlockBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "extends WaterloggedBlockBehavior",
+            "BlockBehaviors.register(TYPE, SofaBlockBehavior::new)",
+            "context.getHorizontalDirection().opposite()",
+            "public Object updateShape",
+            "update.axis() == facing.clockWise().axis()",
+            "connectionFor(level, pos, facing)",
+            "state.behavior().getFirst(SofaBlockBehavior.class)"):
+        if required_token not in sofa_behavior_source:
+            raise AssertionError(
+                "Connected sofas must use CE block neighbor callbacks with the "
+                f"source six-state semantics; missing token: {required_token}")
+    sofa_shape_source = (
+        game_package / "block" / "SofaBlockShape.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "implements BlockShape",
+            "CraftEngineBlocks.byId",
+            "definition.defaultState()",
+            "getOptionalCustomBlockState(minecraftState)",
+            "collisionConnection(",
+            "getCollisionShape",
+            "getSupportShape",
+            "new Box(0, 8, 11, 16, 18, 16)",
+            "new Box(11, 8, 0, 16, 18, 16)"):
+        if required_token not in sofa_shape_source:
+            raise AssertionError(
+                "CE sofa carrier delegates must retain the source VoxelShape; "
+                f"missing token: {required_token}")
+
+    trellis_shape_source = (
+        game_package / "block" / "TrellisBlockShape.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "implements BlockShape",
+            "definition.defaultState()",
+            "getOptionalCustomBlockState(minecraftState)",
+            "Property.formatValue(",
+            "COLLISION_SHAPES.computeIfAbsent(",
+            "SELECTION_SHAPES.computeIfAbsent(",
+            "public Object getSupportShape"):
+        if required_token not in trellis_shape_source:
+            raise AssertionError(
+                "CE trellis delegates must resolve the current shared block state; "
+                f"missing token: {required_token}")
 
     animated_visual_source = (
         game_package / "furniture" / "AnimatedItemFurnitureBehavior.java"
@@ -2830,20 +2888,15 @@ def validate() -> dict[str, int]:
             != ["0,1.5,0", "0,1.5,0", "0,3,0.5", "72.5,0,0"]):
         raise AssertionError("Barrel body/lid pivot no longer matches BarrelModel")
 
-    sofa = furniture[f"{NAMESPACE}:white_sofa"]["variants"]["ground"]
     stool = furniture[f"{NAMESPACE}:white_bar_stool"]["variants"]["ground"]
     bottle = furniture[f"{NAMESPACE}:empty_bottle"]["variants"]["ground"]
-    if sofa["elements"][0].get("translation") != "0,0.5,0":
-        raise AssertionError("Ground block models must be lifted to the authored target block")
-    if sofa["hitboxes"][0].get("height") != 1.125 or stool["hitboxes"][0].get("height") != 1.3125:
-        raise AssertionError("Seat hitboxes must retain the Forge VoxelShape height")
+    if stool["hitboxes"][0].get("height") != 1.3125:
+        raise AssertionError("Bar-stool hitbox must retain the Forge VoxelShape height")
     # BukkitSeat adds a flat 0.6 to the seat position and then sinks the small
     # armour stand by its own 0.9875 height so the stand's top-mounted passenger
     # lands back on that point. Those two cancel each other, not the 0.6, so the
     # player's feet end up at `furniture origin + seat.y + 0.6` and each seat y is
     # its cushion height minus 0.6.
-    if sofa["hitboxes"][0].get("seats") != ["0,-0.1,0 0"]:
-        raise AssertionError("Sofa seat must rest on the 8/16 cushion, not float above it")
     if stool["hitboxes"][0].get("seats") != ["0,0.3375,0 0"]:
         raise AssertionError("Bar-stool seat must rest on the 15/16 cushion, not float above it")
     stool_render_id = stool["elements"][0].get("item")
@@ -3250,7 +3303,6 @@ def validate() -> dict[str, int]:
         raise AssertionError("Bottle hitboxes must retain the 6x14x6 source VoxelShape")
 
     material_examples = {
-        "white_sofa": ("wool", 3),
         "bell_pendant_lamp": ("chain", 3),
         "glassware_holder": ("metal", 3),
         "shaker": ("lantern", 1),
@@ -3758,6 +3810,155 @@ def validate() -> dict[str, int]:
         if not display_indices or visual_index != display_indices[-1] + 1:
             raise AssertionError(
                 f"{storage_id}: storage visual controller must follow its native slot controllers")
+
+    sofa_connections = {
+        "single", "left", "right", "middle", "left_corner", "right_corner",
+    }
+    opposite_facing = {
+        "north": "south", "south": "north", "west": "east", "east": "west",
+    }
+    expected_sofa_behaviors = [
+        {"type": f"{NAMESPACE}:connected_sofa"},
+        {"type": "seat_block", "seats": ["0,-0.1,0 0"]},
+    ]
+    expected_sofa_sounds = {
+        action: f"minecraft:block.wool.{action}"
+        for action in ("break", "step", "place", "hit", "fall")
+    }
+    for color in FURNITURE_COLORS:
+        sofa_id = f"{color}_sofa"
+        full_id = f"{NAMESPACE}:{sofa_id}"
+        if full_id in furniture:
+            raise AssertionError(
+                f"{sofa_id}: connected sofas must be CE blocks, not indexed furniture")
+        definition = blocks.get(full_id)
+        if definition is None:
+            raise AssertionError(f"{sofa_id}: missing CE block definition")
+        properties = definition.get("states", {}).get("properties", {})
+        if set(properties) != {"connection", "facing", "waterlogged"}:
+            raise AssertionError(
+                f"{sofa_id}: source state properties drifted: {sorted(properties)}")
+        connection_property = properties["connection"]
+        facing_property = properties["facing"]
+        waterlogged_property = properties["waterlogged"]
+        if (connection_property.get("type") != "string"
+                or connection_property.get("default") != "single"
+                or set(connection_property.get("values", [])) != sofa_connections):
+            raise AssertionError(
+                f"{sofa_id}: all six source connection states must remain explicit")
+        if (facing_property.get("type") != "horizontal_direction"
+                or facing_property.get("default") != "north"
+                or set(facing_property.get("values", []))
+                != {"north", "east", "south", "west"}):
+            raise AssertionError(
+                f"{sofa_id}: source horizontal facing states drifted")
+        if waterlogged_property != {"type": "boolean", "default": "false"}:
+            raise AssertionError(
+                f"{sofa_id}: source waterlogged state drifted")
+        if definition.get("behaviors") != expected_sofa_behaviors:
+            raise AssertionError(
+                f"{sofa_id}: CE must own seats while Tavern only adds six-state connection")
+
+        appearances = definition["states"].get("appearances", {})
+        variants = definition["states"].get("variants", {})
+        if len(appearances) != 48 or len(variants) != 48:
+            raise AssertionError(
+                f"{sofa_id}: expected 4 facing x 6 connection x 2 water states, "
+                f"found {len(appearances)}/{len(variants)}")
+        render_ids: set[str] = set()
+        seen_states: set[tuple[str, str, str]] = set()
+        for variant_key, variant in variants.items():
+            values = dict(part.split("=", 1) for part in variant_key.split(","))
+            facing = values.get("facing")
+            connection = values.get("connection")
+            waterlogged = values.get("waterlogged")
+            if (facing not in opposite_facing
+                    or connection not in sofa_connections
+                    or waterlogged not in {"false", "true"}):
+                raise AssertionError(
+                    f"{sofa_id}: malformed source state {variant_key}")
+            seen_states.add((facing, connection, waterlogged))
+            appearance = appearances.get(variant.get("appearance"))
+            if not isinstance(appearance, dict):
+                raise AssertionError(
+                    f"{sofa_id}: missing appearance for {variant_key}")
+            stair_shape = {
+                "left_corner": "inner_left",
+                "right_corner": "inner_right",
+            }.get(connection, "straight")
+            expected_carrier = (
+                "minecraft:cut_copper_stairs"
+                f"[facing={opposite_facing[facing]},half=bottom,"
+                f"shape={stair_shape},waterlogged={waterlogged}]"
+            )
+            if (appearance.get("state") != expected_carrier
+                    or appearance.get("transparent") is not True):
+                raise AssertionError(
+                    f"{sofa_id}: CE stair carrier drifted for {variant_key}")
+            renderer = appearance.get("entity_renderer", {})
+            render_id = renderer.get("item")
+            if (renderer.get("type") != "item_display"
+                    or not isinstance(render_id, str)
+                    or not render_id.startswith(
+                        f"{NAMESPACE}:_render/{sofa_id}/")):
+                raise AssertionError(
+                    f"{sofa_id}: authored model must use a private CE ItemDisplay")
+            render_ids.add(render_id)
+            expected_variant_settings = (
+                {"fluid_state": "water"} if waterlogged == "true" else None
+            )
+            if variant.get("settings") != expected_variant_settings:
+                raise AssertionError(
+                    f"{sofa_id}: water state does not expose CE fluid semantics")
+        if len(seen_states) != 48 or len(render_ids) != 6:
+            raise AssertionError(
+                f"{sofa_id}: expected 48 states and six shared source models, "
+                f"found {len(seen_states)}/{len(render_ids)}")
+
+        settings = definition.get("settings", {})
+        expected_sofa_settings = {
+            "hardness": 0.8,
+            "resistance": 0.8,
+            "push_reaction": "NORMAL",
+            "is_redstone_conductor": False,
+            "is_suffocating": False,
+            "is_view_blocking": False,
+            "can_occlude": False,
+            "propagate_skylight": True,
+            "sounds": expected_sofa_sounds,
+            "tags": ["minecraft:mineable/pickaxe"],
+            "map_color": 27,
+            "instrument": "guitar",
+            "burnable": True,
+            "burn_chance": 5,
+            "fire_spread_chance": 20,
+            "item": full_id,
+        }
+        if settings != expected_sofa_settings:
+            raise AssertionError(
+                f"{sofa_id}: source block settings drifted: {settings!r}")
+        expected_loot = {
+            "pools": [{
+                "rolls": 1,
+                "conditions": [{"type": "survives_explosion"}],
+                "entries": [{"type": "item", "item": full_id}],
+            }]
+        }
+        if definition.get("loot") != expected_loot:
+            raise AssertionError(
+                f"{sofa_id}: CE must own the source one-item block drop")
+        if items[full_id].get("behavior") != {
+                "type": "block_item", "block": full_id}:
+            raise AssertionError(
+                f"{sofa_id}: placement must use CE's native block_item")
+
+    for expected_token in (
+            "EXPECTED_ITEMS = 711",
+            "EXPECTED_BLOCKS = 70",
+            "EXPECTED_FURNITURE = 104"):
+        if expected_token not in plugin_source:
+            raise AssertionError(
+                f"Runtime CE content count guard is stale: {expected_token}")
 
     for storage_id, (slot_count, blocklist, carrier_type) in STORAGE_BLOCK_SPECS.items():
         full_id = f"{NAMESPACE}:{storage_id}"

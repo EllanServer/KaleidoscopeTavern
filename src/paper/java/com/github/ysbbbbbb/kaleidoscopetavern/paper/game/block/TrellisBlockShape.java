@@ -14,10 +14,11 @@ import net.momirealms.craftengine.proxy.minecraft.world.phys.shapes.ShapesProxy;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Replaces the collision/selection delegate of CraftEngine's invisible
- * tripwire carrier with the exact shapes authored by {@code ITrellis}.
+ * Replaces the collision/selection delegate of CraftEngine's visual carrier
+ * with the exact shapes authored by {@code ITrellis}.
  * The visual state remains non-occluding and is still rendered by an item
  * display; only the server-side shape delegate changes.
  */
@@ -32,25 +33,29 @@ public final class TrellisBlockShape implements BlockShape {
     private static final Box SELECTION_VERTICAL = new Box(4, 0, 4, 12, 16, 12);
     private static final Box SELECTION_NORTH_SOUTH = new Box(4, 4, 0, 12, 12, 16);
     private static final Box SELECTION_EAST_WEST = new Box(0, 4, 4, 16, 12, 12);
+    private static final Map<String, Object> SELECTION_SHAPES =
+            new ConcurrentHashMap<>();
+    private static final Map<String, Object> COLLISION_SHAPES =
+            new ConcurrentHashMap<>();
 
     private final BlockShape original;
-    private final Object selectionShape;
-    private final Object collisionShape;
+    private final Property<?> typeProperty;
 
-    private TrellisBlockShape(BlockShape original, String type) {
+    private TrellisBlockShape(BlockShape original, Property<?> typeProperty) {
         this.original = original;
-        this.selectionShape = combine(selectionBoxes(type));
-        this.collisionShape = combine(collisionBoxes(type));
+        this.typeProperty = typeProperty;
     }
 
     /**
-     * Installs one delegate per distinct CraftEngine carrier state. This is
+     * Installs one state-aware delegate per CraftEngine trellis block. All
+     * property variants of a CE block share one NMS block owner, so the
+     * delegate resolves the current custom state on every shape query. This is
      * called after initial project loading and after every CraftEngine reload.
      *
-     * @return number of distinct carrier states updated
+     * @return number of CE trellis block delegates updated
      */
     public static int install() {
-        Map<Object, String> installed = new IdentityHashMap<>();
+        Map<Object, Key> installed = new IdentityHashMap<>();
         for (String blockId : BLOCK_IDS) {
             BlockDefinition definition = CraftEngineBlocks.byId(Key.of(PREFIX + blockId));
             if (definition == null) {
@@ -60,44 +65,61 @@ public final class TrellisBlockShape implements BlockShape {
             if (typeProperty == null) {
                 continue;
             }
-            for (ImmutableBlockState state : definition.variantProvider().states()) {
-                String type = Property.formatValue(typeProperty, state.propertyEntries().get(typeProperty));
-                Object minecraftState = state.customBlockState().minecraftState();
-                Object owner = BlockStateUtils.getBlockOwner(minecraftState);
-                if (!(owner instanceof DelegatingBlock delegatingBlock)) {
-                    continue;
-                }
-                String previous = installed.putIfAbsent(owner, type);
-                if (previous != null) {
-                    if (!previous.equals(type)) {
-                        throw new IllegalStateException("CraftEngine reused one trellis carrier for "
-                                + previous + " and " + type);
-                    }
-                    continue;
-                }
-                BlockShape current = delegatingBlock.shapeDelegate().value();
-                BlockShape original = current instanceof TrellisBlockShape trellis ? trellis.original : current;
-                delegatingBlock.shapeDelegate().bindValue(new TrellisBlockShape(original, type));
+            Object minecraftState = definition.defaultState()
+                    .customBlockState().minecraftState();
+            Object owner = BlockStateUtils.getBlockOwner(minecraftState);
+            if (!(owner instanceof DelegatingBlock delegatingBlock)) {
+                continue;
             }
+            Key previous = installed.putIfAbsent(owner, definition.id());
+            if (previous != null) {
+                throw new IllegalStateException(
+                        "CraftEngine reused one trellis block delegate for "
+                                + previous + " and " + definition.id());
+            }
+            BlockShape current = delegatingBlock.shapeDelegate().value();
+            BlockShape original = current instanceof TrellisBlockShape trellis
+                    ? trellis.original : current;
+            delegatingBlock.shapeDelegate().bindValue(
+                    new TrellisBlockShape(original, typeProperty));
         }
         return installed.size();
     }
 
     @Override
     public Object getShape(Object thisBlock, Object[] args) {
-        return selectionShape;
+        String type = type(args[0]);
+        return type == null ? original.getShape(thisBlock, args)
+                : SELECTION_SHAPES.computeIfAbsent(
+                        type, key -> combine(selectionBoxes(key)));
     }
 
     @Override
     public Object getCollisionShape(Object thisBlock, Object[] args) {
-        return collisionShape;
+        String type = type(args[0]);
+        return type == null ? original.getCollisionShape(thisBlock, args)
+                : COLLISION_SHAPES.computeIfAbsent(
+                        type, key -> combine(collisionBoxes(key)));
     }
 
     @Override
     public Object getSupportShape(Object thisBlock, Object[] args) {
-        // The source trellis is not a sturdy full-cube support. Retain the
-        // transparent carrier's support semantics instead of faking stone.
-        return original.getSupportShape(thisBlock, args);
+        // Vanilla Block#getBlockSupportShape delegates to the collision shape,
+        // which is also what the source TrellisBlock inherited.
+        String type = type(args[0]);
+        return type == null ? original.getSupportShape(thisBlock, args)
+                : COLLISION_SHAPES.computeIfAbsent(
+                        type, key -> combine(collisionBoxes(key)));
+    }
+
+    private String type(Object minecraftState) {
+        ImmutableBlockState state = BlockStateUtils
+                .getOptionalCustomBlockState(minecraftState).orElse(null);
+        if (state == null || !state.propertyEntries().containsKey(typeProperty)) {
+            return null;
+        }
+        return Property.formatValue(
+                typeProperty, state.propertyEntries().get(typeProperty));
     }
 
     static List<Box> collisionBoxes(String type) {

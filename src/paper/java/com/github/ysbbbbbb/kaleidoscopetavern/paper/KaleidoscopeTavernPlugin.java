@@ -22,6 +22,8 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.BlockService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.GrapeSeasonGate;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.IncenseBlockBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.SofaBlockBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.SofaBlockShape;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.StorageBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TapBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
@@ -76,8 +78,8 @@ import java.util.logging.Level;
 public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listener, TabExecutor {
     private static final String NAMESPACE = "kaleidoscope_tavern";
     private static final int EXPECTED_ITEMS = 711; // 157 public items + 554 private render helpers
-    private static final int EXPECTED_BLOCKS = 54;
-    private static final int EXPECTED_FURNITURE = 120;
+    private static final int EXPECTED_BLOCKS = 70;
+    private static final int EXPECTED_FURNITURE = 104;
 
     private PackInstaller.Result packResult;
     private CustomCropsInstaller.Result customCropsResult;
@@ -107,6 +109,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             IncenseBlockBehavior.register();
             StorageBlockBehavior.register();
             TapBlockBehavior.register();
+            SofaBlockBehavior.register();
             StateFurnitureBehavior.register();
             AnimatedItemFurnitureBehavior.register();
             BoardTextFurnitureBehavior.register();
@@ -264,6 +267,10 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         int trellisShapes = TrellisBlockShape.install();
         if (trellisShapes == 0) {
             getLogger().warning("No trellis carrier shapes were available after CraftEngine loading");
+        }
+        int sofaShapes = SofaBlockShape.install();
+        if (sofaShapes == 0) {
+            getLogger().warning("No sofa carrier shapes were available after CraftEngine loading");
         }
         verifyContent(startup);
     }

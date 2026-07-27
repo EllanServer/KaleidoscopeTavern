@@ -185,6 +185,7 @@ def is_grid_block(block_id: str) -> bool:
         or block_id in INCENSE_BLOCKS
         or block_id in STORAGE_BLOCKS
         or block_id == "tap"
+        or block_id.endswith("_sofa")
         or block_id in {
             "wild_grapevine", "wild_grapevine_plant", "trellis",
             "grapevine_trellis", "grape_crop",
@@ -644,6 +645,36 @@ def trellis_carrier_state(trellis_type: str, waterlogged: str) -> str:
     )
 
 
+def sofa_carrier_state(
+    facing: str,
+    connection: str,
+    waterlogged: str,
+) -> str:
+    """Use CE's released copper-stair states as the client-side sofa shape.
+
+    The source sofa's FACING points away from its 5/16-deep backrest, whereas a
+    vanilla stair faces toward its raised half, so the carrier direction is the
+    opposite. Inner stair states make both corner backrests aimable on the
+    client; SofaBlockShape replaces their broader server collision with the
+    source's exact 5/16 strips and 18/16 height.
+    """
+    carrier_facing = {
+        "north": "south",
+        "south": "north",
+        "west": "east",
+        "east": "west",
+    }[facing]
+    shape = {
+        "left_corner": "inner_left",
+        "right_corner": "inner_right",
+    }.get(connection, "straight")
+    return (
+        "minecraft:cut_copper_stairs"
+        f"[facing={carrier_facing},half=bottom,shape={shape},"
+        f"waterlogged={waterlogged}]"
+    )
+
+
 def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
     if isinstance(raw, list):
         if not raw:
@@ -661,6 +692,14 @@ def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
 
 
 def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | list[dict[str, Any]] | None:
+    if block_id.endswith("_sofa"):
+        return [
+            {"type": f"{NAMESPACE}:connected_sofa"},
+            {
+                "type": "seat_block",
+                "seats": [f"0,{seat_offset(8 / 16):g},0 0"],
+            },
+        ]
     if block_id == "tap":
         return {"type": f"{NAMESPACE}:tap"}
     if block_id in STORAGE_BLOCK_SPECS:
@@ -727,7 +766,8 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
     is_wild_vine = block_id in {"wild_grapevine", "wild_grapevine_plant"}
     is_crop = block_id.endswith("_grape_crop") or block_id == "grape_crop"
     is_storage = block_id in STORAGE_BLOCKS
-    sturdy = block_id in STURDY_BLOCKS or is_string_lights or is_storage
+    is_sofa = block_id.endswith("_sofa")
+    sturdy = block_id in STURDY_BLOCKS or is_string_lights or is_storage or is_sofa
     if is_wild_vine:
         sound_type = {
             action: f"minecraft:block.cave_vines.{action}"
@@ -744,7 +784,8 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
     else:
         family = ("metal" if block_id == "tap"
                   else "decorated_pot" if block_id in INCENSE_BLOCKS
-                  else "chain" if is_string_lights else "wood")
+                  else "chain" if is_string_lights
+                  else "wool" if is_sofa else "wood")
         sound_type = {
             action: f"minecraft:block.{family}.{action}"
             for action in ("break", "step", "place", "hit", "fall")
@@ -762,9 +803,18 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
         "propagate_skylight": True,
         "sounds": sound_type,
         "tags": (["minecraft:mineable/pickaxe"] if is_string_lights or block_id == "tap"
+                 or is_sofa
                  else [] if is_wild_vine or is_crop or block_id in INCENSE_BLOCKS
                  else ["minecraft:mineable/axe"]),
     }
+    if is_sofa:
+        settings.update({
+            "map_color": 27,
+            "instrument": "guitar",
+            "burnable": True,
+            "burn_chance": 5,
+            "fire_spread_chance": 20,
+        })
     if has_item:
         settings["item"] = f"{NAMESPACE}:{block_id}"
     if "lamp" in block_id or is_string_lights:
@@ -847,6 +897,10 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             property_values["sheared"] = ["false", "true"]
 
         carrier, carrier_id = carrier_type(block_id)
+        is_sofa = block_id.endswith("_sofa")
+        uses_waterlogged_carrier = (
+            block_id == "tap" or block_id in TRELLIS_BLOCKS or is_sofa
+        )
         appearance_names: dict[Any, str] = {}
         appearances: dict[str, Any] = {}
         mapped_variants: dict[str, Any] = {}
@@ -870,7 +924,7 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             # but need distinct released carrier states so client water
             # rendering follows the source block state.
             appearance_key = ((model, variant_properties.get("waterlogged"))
-                              if block_id == "tap" or block_id in TRELLIS_BLOCKS
+                              if uses_waterlogged_carrier
                               else model)
             appearance_name = appearance_names.get(appearance_key)
             if appearance_name is None:
@@ -883,7 +937,8 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 render_identity = (model[0]
                                    if (block_id in INCENSE_BLOCKS
                                        or block_id in STORAGE_BLOCKS
-                                       or block_id == "tap")
+                                       or block_id == "tap"
+                                       or is_sofa)
                                    else "|".join(map(str, model)))
                 render_hash = hashlib.sha1(render_identity.encode("utf-8")).hexdigest()[:10]
                 render_path = f"_render/{block_id}/{render_hash}"
@@ -914,6 +969,12 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                         "minecraft:lightning_rod"
                         f"[facing={facing},powered=false,waterlogged={waterlogged}]"
                     )
+                elif is_sofa:
+                    appearance["state"] = sofa_carrier_state(
+                        variant_properties["facing"],
+                        variant_properties["connection"],
+                        variant_properties["waterlogged"],
+                    )
                 elif block_id in INCENSE_BLOCKS:
                     # CE 26.7.4 explicitly releases the un-waxed source state
                     # and remaps it to the waxed client state. Its compact,
@@ -943,7 +1004,7 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 appearances[appearance_name] = appearance
             if property_values:
                 mapped_variant: dict[str, Any] = {"appearance": appearance_name}
-                if ((block_id == "tap" or block_id in TRELLIS_BLOCKS)
+                if (uses_waterlogged_carrier
                         and variant_properties.get("waterlogged") == "true"):
                     # The released vanilla state controls the client's shape
                     # and water rendering. CE's custom state still needs an
@@ -975,7 +1036,9 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
 
         config["settings"] = block_settings(block_id, block_id in item_ids)
         behavior = behavior_for(block_id, set(property_values))
-        if behavior is not None:
+        if isinstance(behavior, list):
+            config["behaviors"] = behavior
+        elif behavior is not None:
             config["behavior"] = behavior
         if block_id.startswith("string_lights_"):
             config["events"] = string_lights_dye_events(block_id)
@@ -2345,11 +2408,10 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         lifecycle_channels.append("barrel")
     if block_id == "empty_bottle":
         lifecycle_channels.append("tap_bottle")
-    if (block_id.endswith("_sofa")
-            or block_id in {
-                "bar_counter", "table", "bar_cabinet",
-                "glass_bar_cabinet",
-            }):
+    if block_id in {
+            "bar_counter", "table", "bar_cabinet",
+            "glass_bar_cabinet",
+    }:
         lifecycle_channels.append("connection")
     for channel in lifecycle_channels:
         behaviors.append({
