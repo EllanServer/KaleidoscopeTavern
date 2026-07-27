@@ -2115,6 +2115,36 @@
         ]
       }
     },
+    "kaleidoscope_tavern:_render/tap/8765567028": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.tap>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/brew/tap/close"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/tap/101b752d3e": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.tap>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:block/brew/tap/open"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
     "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7": {
       "material": "paper",
       "data": {
@@ -5213,36 +5243,6 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:block/brew/tilt_pressing_tub"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/tap/8ef74bd5d4": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.tap>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/tap/close"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/tap/ba6a38e250": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.tap>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/tap/open"
       },
       "settings": {
         "tags": [

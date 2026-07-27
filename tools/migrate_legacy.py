@@ -175,6 +175,7 @@ def is_grid_block(block_id: str) -> bool:
     return (
         block_id.startswith("string_lights_")
         or block_id in INCENSE_BLOCKS
+        or block_id == "tap"
         or block_id in {
             "wild_grapevine", "wild_grapevine_plant", "trellis",
             "grapevine_trellis", "grape_crop",
@@ -226,7 +227,6 @@ PAINTINGS = {
 PENDANT_LAMPS = {"bell_pendant_lamp", "yellow_pendant_lamp", "blue_pendant_lamp"}
 SEATS = {"sofa", "bar_stool"}
 SMALL_FURNITURE = {
-    "tap",
     "empty_bottle",
     "empty_glassware",
     "signature_cocktail",
@@ -276,7 +276,7 @@ SMALL_FURNITURE = {
     "vinegar",
     "watermelon_juice",
 }
-BOTTLE_AND_GLASS_ITEMS = SMALL_FURNITURE - {"tap", "shaker"}
+BOTTLE_AND_GLASS_ITEMS = SMALL_FURNITURE - {"shaker"}
 GRAPE_ITEMS = {"grape", "ice_grape", "gold_grape", "green_grape"}
 
 # These families mirror the VoxelShape groups passed to DrinkBlock.create() in
@@ -644,6 +644,8 @@ def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
 
 
 def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | list[dict[str, Any]] | None:
+    if block_id == "tap":
+        return {"type": f"{NAMESPACE}:tap"}
     if block_id in INCENSE_BLOCKS:
         small, large, y_offset, y_range = INCENSE_SPECS[block_id]
         return {
@@ -713,7 +715,8 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
             "fall": "minecraft:block.grass.fall",
         }
     else:
-        family = ("decorated_pot" if block_id in INCENSE_BLOCKS
+        family = ("metal" if block_id == "tap"
+                  else "decorated_pot" if block_id in INCENSE_BLOCKS
                   else "chain" if is_string_lights else "wood")
         sound_type = {
             action: f"minecraft:block.{family}.{action}"
@@ -723,14 +726,14 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
     settings: dict[str, Any] = {
         "hardness": hardness,
         "resistance": hardness,
-        "push_reaction": "NORMAL" if sturdy else "DESTROY",
+        "push_reaction": "NORMAL" if sturdy or block_id == "tap" else "DESTROY",
         "is_redstone_conductor": False,
         "is_suffocating": False,
         "is_view_blocking": False,
         "can_occlude": False,
         "propagate_skylight": True,
         "sounds": sound_type,
-        "tags": (["minecraft:mineable/pickaxe"] if is_string_lights
+        "tags": (["minecraft:mineable/pickaxe"] if is_string_lights or block_id == "tap"
                  else [] if is_wild_vine or is_crop or block_id in INCENSE_BLOCKS
                  else ["minecraft:mineable/axe"]),
     }
@@ -814,7 +817,7 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             property_values["sheared"] = ["false", "true"]
 
         carrier, carrier_id = carrier_type(block_id)
-        appearance_names: dict[tuple[str, int, int, int, bool], str] = {}
+        appearance_names: dict[Any, str] = {}
         appearances: dict[str, Any] = {}
         mapped_variants: dict[str, Any] = {}
 
@@ -822,17 +825,25 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             if isinstance(raw_model, list) and len(raw_model) > 1:
                 metrics["weighted_variants_reduced"] += 1
             model = normalize_model_entry(raw_model)
-            trellis_type = (parse_variant_key(variant_key).get("type")
+            variant_properties = parse_variant_key(variant_key)
+            trellis_type = (variant_properties.get("type")
                             if block_id in TRELLIS_BLOCKS else None)
-            appearance_name = appearance_names.get(model)
+            # Waterlogged tap variants share the same authored model but need
+            # distinct released lightning-rod carrier states so client water
+            # rendering follows the source block state.
+            appearance_key = ((model, variant_properties.get("waterlogged"))
+                              if block_id == "tap" else model)
+            appearance_name = appearance_names.get(appearance_key)
             if appearance_name is None:
                 appearance_name = f"appearance_{len(appearance_names)}"
-                appearance_names[model] = appearance_name
+                appearance_names[appearance_key] = appearance_name
                 appearance: dict[str, Any] = {}
                 # Incense facing is an ItemDisplay transform, not a distinct
                 # item model. Reuse the same two render helpers for all four
                 # directions just as the former furniture definitions did.
-                render_identity = model[0] if block_id in INCENSE_BLOCKS else "|".join(map(str, model))
+                render_identity = (model[0]
+                                   if block_id in INCENSE_BLOCKS or block_id == "tap"
+                                   else "|".join(map(str, model)))
                 render_hash = hashlib.sha1(render_identity.encode("utf-8")).hexdigest()[:10]
                 render_path = f"_render/{block_id}/{render_hash}"
                 render_id = f"{NAMESPACE}:{render_path}"
@@ -852,7 +863,17 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 if any(model[1:4]):
                     renderer["rotation"] = f"{model[1]},{model[2]},{model[3]}"
 
-                if block_id in INCENSE_BLOCKS:
+                if block_id == "tap":
+                    facing = variant_properties["facing"]
+                    waterlogged = variant_properties["waterlogged"]
+                    # CE 26.7.4 releases every horizontal lightning-rod state.
+                    # Open and triggered deliberately do not enter this carrier
+                    # string, so the source shape is identical while operating.
+                    appearance["state"] = (
+                        "minecraft:lightning_rod"
+                        f"[facing={facing},powered=false,waterlogged={waterlogged}]"
+                    )
+                elif block_id in INCENSE_BLOCKS:
                     # CE 26.7.4 explicitly releases the un-waxed source state
                     # and remaps it to the waxed client state. Its compact,
                     # aimable standing-lantern shape replaces the former CE
@@ -879,7 +900,14 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 appearance["entity_renderer"] = renderer
                 appearances[appearance_name] = appearance
             if property_values:
-                mapped_variants[variant_key] = {"appearance": appearance_name}
+                mapped_variant: dict[str, Any] = {"appearance": appearance_name}
+                if (block_id == "tap"
+                        and variant_properties.get("waterlogged") == "true"):
+                    # The released vanilla state controls the client's shape
+                    # and water rendering. CE's custom state still needs an
+                    # explicit fluid state for server-side waterlogging.
+                    mapped_variant["settings"] = {"fluid_state": "water"}
+                mapped_variants[variant_key] = mapped_variant
 
         if block_id == "wild_grapevine":
             appearance = next(iter(appearances))
@@ -1166,11 +1194,6 @@ def source_boxes(block_id: str, anchor: str, properties: dict[str, str]) -> list
             (0, 4, 4, 16, 12, 12),
             (0, 8, 0, 16, 16, 8),
         ]
-    if block_id == "tap":
-        # TapBlock's north-authored shape has its mounting plate at z=16 and
-        # its nozzle extending toward z=6.  The wall furniture direction is
-        # the outward direction, so this is the source orientation verbatim.
-        return [(5, 5, 6, 11, 13, 16)]
     if block_id == "glassware_holder":
         return [(0, 11, 1, 16, 16, 15)]
     if block_id in COCKTAILS:
@@ -1558,12 +1581,6 @@ def furniture_hitboxes(
         return [shulker_box(hitbox_position(anchor, 8, 0, 8))]
     if block_id == "circular_rack":
         return [interaction_box(aggregate, anchor)]
-    if block_id == "tap":
-        hitboxes = [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
-        # TapBlock#getShape depends only on FACING; OPEN never changes its
-        # outline or collision. Keep every visual variant on the same boxes.
-        hitboxes[0]["position"] = "0,-0.1875,0.35"
-        return hitboxes
     if block_id in {"tilted_rack", "holder"}:
         return [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
     if block_id in SMALL_FURNITURE:
@@ -2435,15 +2452,10 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     elif block_id in {"circular_rack", "molotov"}:
         behaviors.append({"type": "glowing_furniture", "lights": ["0,0,0 14"]})
 
-    redstone_channel: str | None = None
-    if block_id == "tap":
-        redstone_channel = "tap"
-    elif block_id in {"cellar_cabinet", "tilted_rack", "circular_rack", "holder"}:
-        redstone_channel = "storage"
-    if redstone_channel is not None:
+    if block_id in {"cellar_cabinet", "tilted_rack", "circular_rack", "holder"}:
         behaviors.append({
             "type": f"{NAMESPACE}:redstone_furniture",
-            "channel": redstone_channel,
+            "channel": "storage",
             # The controller owns one persistent edge latch per furniture
             # instance.  Keep the key deterministic and independent from
             # behavior ordering so future native CE behaviors cannot alias it.
@@ -2491,7 +2503,7 @@ def furniture_settings(block_id: str) -> dict[str, Any]:
         family = "wool"
     elif block_id in PENDANT_LAMPS:
         family = "chain"
-    elif block_id in {"tap", "glassware_holder"}:
+    elif block_id == "glassware_holder":
         family = "metal"
     elif block_id == "shaker":
         family = "lantern"
@@ -2727,7 +2739,7 @@ def build_furniture(
                     "hitboxes": furniture_hitboxes(block_id, anchor),
                 }
         else:
-            anchor = "wall" if block_id == "tap" else "ceiling" if block_id == "glassware_holder" else "ground"
+            anchor = "ceiling" if block_id == "glassware_holder" else "ground"
             grouped: dict[tuple[tuple[str, str], ...], list[tuple[dict[str, str], tuple[str, int, int, int, bool]]]] = defaultdict(list)
             for record in records:
                 semantic = tuple(sorted(

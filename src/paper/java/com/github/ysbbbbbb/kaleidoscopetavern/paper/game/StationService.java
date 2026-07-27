@@ -22,10 +22,12 @@ import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.item.Item;
-import net.momirealms.craftengine.core.item.behavior.FurnitureItem;
+import net.momirealms.craftengine.core.item.behavior.BlockItem;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
+import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockHitResult;
+import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import net.momirealms.craftengine.core.world.context.UseOnContext;
@@ -175,7 +177,7 @@ public final class StationService implements Listener {
         if (id.equals(BARREL) && TapSemantics.shouldDelegateBarrelTapPlacement(
                 context.isSecondaryUseActive(),
                 context.getItem().id().toString())) {
-            return placeHeldFurnitureWithCraftEngine(context);
+            return placeHeldTapBlockWithCraftEngine(furniture, context);
         }
         boolean handled = switch (id) {
             case PRESSING_TUB -> interactPress(player, furniture, context.getHand());
@@ -188,29 +190,46 @@ public final class StationService implements Listener {
             case SHAKER -> interactShaker(player, furniture);
             case EMPTY_GLASSWARE -> pourPortableShaker(
                     player, furniture, context.getHand());
-            // Incense toggling lives in the generated CE furniture events.
+            // Incense and tap interactions live on their generated CE blocks.
             default -> false;
         };
         return handled ? InteractionResult.SUCCESS_AND_CANCEL : InteractionResult.PASS;
     }
 
     /**
-     * Invokes the held item's CE furniture behavior while the exact barrel
-     * hitbox and hand are still available. Returning PASS and waiting for
-     * CE's later generic entity-item fallback loses that reliable dispatch
-     * point (and CE 26.7.4's fallback reads the main hand unconditionally).
+     * Places the CE tap block at the source multiblock's canonical front-centre
+     * cell. A furniture hit has no real support block for CE's ordinary block
+     * fallback, so the barrel controller supplies the target grid position.
      */
-    private static InteractionResult placeHeldFurnitureWithCraftEngine(
-            InteractEntityContext context) {
+    private static InteractionResult placeHeldTapBlockWithCraftEngine(
+            BukkitFurniture barrel, InteractEntityContext context) {
         ItemBehavior behavior = context.getItem().getBehavior().orElse(null);
-        FurnitureItem furnitureItem = behavior == null
-                ? null : behavior.getFirst(FurnitureItem.class);
-        if (!(furnitureItem instanceof ItemBehavior placementBehavior)) {
+        BlockItem blockItem = behavior == null
+                ? null : behavior.getFirst(BlockItem.class);
+        if (!(blockItem instanceof ItemBehavior placementBehavior)) {
             return InteractionResult.FAIL;
         }
+
+        Location origin = barrel.location();
+        Vector horizontal = origin.getDirection().setY(0);
+        int x;
+        int z;
+        if (Math.abs(horizontal.getX()) >= Math.abs(horizontal.getZ())) {
+            x = horizontal.getX() < 0 ? -1 : 1;
+            z = 0;
+        } else {
+            x = 0;
+            z = horizontal.getZ() < 0 ? -1 : 1;
+        }
+        Direction facing = x < 0 ? Direction.WEST : x > 0 ? Direction.EAST
+                : z < 0 ? Direction.NORTH : Direction.SOUTH;
+        BlockPos target = new BlockPos(
+                origin.getBlockX() + x * 2,
+                origin.getBlockY() + 1,
+                origin.getBlockZ() + z * 2);
         BlockHitResult hit = new BlockHitResult(
-                context.getClickLocation(), context.getClickedFace(),
-                context.getClickedPos(), false);
+                new Vec3d(target.x() + 0.5, target.y() + 0.5, target.z() + 0.5),
+                facing, target, false);
         InteractionResult result = placementBehavior.useOnBlock(new UseOnContext(
                 context.getPlayer(), context.getHand(), context.getItem(), hit));
         // Sneaking skipped BarrelBlock.use in Forge. A rejected placement must

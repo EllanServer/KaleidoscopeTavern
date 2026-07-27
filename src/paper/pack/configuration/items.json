@@ -2177,14 +2177,8 @@
         "path": "kaleidoscope_tavern:item/tap"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:tap",
-        "rules": {
-          "wall": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:tap"
       }
     },
     "kaleidoscope_tavern:barrel": {

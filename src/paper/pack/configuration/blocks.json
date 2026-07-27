@@ -20155,6 +20155,412 @@
       "behavior": {
         "type": "kaleidoscope_tavern:hanging_grape_crop"
       }
+    },
+    "kaleidoscope_tavern:tap": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "east",
+              "north",
+              "south",
+              "west"
+            ]
+          },
+          "open": {
+            "type": "boolean",
+            "default": "false"
+          },
+          "triggered": {
+            "type": "boolean",
+            "default": "false"
+          },
+          "waterlogged": {
+            "type": "boolean",
+            "default": "false"
+          }
+        },
+        "appearances": {
+          "appearance_0": {
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/8765567028",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_1": {
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/8765567028",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_2": {
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/101b752d3e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_3": {
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/101b752d3e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_4": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/8765567028",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_5": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/8765567028",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_6": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/101b752d3e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_7": {
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/101b752d3e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:lightning_rod[facing=south,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/8765567028",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_9": {
+            "state": "minecraft:lightning_rod[facing=south,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/8765567028",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_10": {
+            "state": "minecraft:lightning_rod[facing=south,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/101b752d3e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_11": {
+            "state": "minecraft:lightning_rod[facing=south,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/101b752d3e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_12": {
+            "state": "minecraft:lightning_rod[facing=west,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/8765567028",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_13": {
+            "state": "minecraft:lightning_rod[facing=west,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/8765567028",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_14": {
+            "state": "minecraft:lightning_rod[facing=west,powered=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/101b752d3e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_15": {
+            "state": "minecraft:lightning_rod[facing=west,powered=false,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tap/101b752d3e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=east,open=false,triggered=false,waterlogged=false": {
+            "appearance": "appearance_0"
+          },
+          "facing=east,open=false,triggered=false,waterlogged=true": {
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=east,open=false,triggered=true,waterlogged=false": {
+            "appearance": "appearance_0"
+          },
+          "facing=east,open=false,triggered=true,waterlogged=true": {
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=east,open=true,triggered=false,waterlogged=false": {
+            "appearance": "appearance_2"
+          },
+          "facing=east,open=true,triggered=false,waterlogged=true": {
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=east,open=true,triggered=true,waterlogged=false": {
+            "appearance": "appearance_2"
+          },
+          "facing=east,open=true,triggered=true,waterlogged=true": {
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=north,open=false,triggered=false,waterlogged=false": {
+            "appearance": "appearance_4"
+          },
+          "facing=north,open=false,triggered=false,waterlogged=true": {
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=north,open=false,triggered=true,waterlogged=false": {
+            "appearance": "appearance_4"
+          },
+          "facing=north,open=false,triggered=true,waterlogged=true": {
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=north,open=true,triggered=false,waterlogged=false": {
+            "appearance": "appearance_6"
+          },
+          "facing=north,open=true,triggered=false,waterlogged=true": {
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=north,open=true,triggered=true,waterlogged=false": {
+            "appearance": "appearance_6"
+          },
+          "facing=north,open=true,triggered=true,waterlogged=true": {
+            "appearance": "appearance_7",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=south,open=false,triggered=false,waterlogged=false": {
+            "appearance": "appearance_8"
+          },
+          "facing=south,open=false,triggered=false,waterlogged=true": {
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=south,open=false,triggered=true,waterlogged=false": {
+            "appearance": "appearance_8"
+          },
+          "facing=south,open=false,triggered=true,waterlogged=true": {
+            "appearance": "appearance_9",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=south,open=true,triggered=false,waterlogged=false": {
+            "appearance": "appearance_10"
+          },
+          "facing=south,open=true,triggered=false,waterlogged=true": {
+            "appearance": "appearance_11",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=south,open=true,triggered=true,waterlogged=false": {
+            "appearance": "appearance_10"
+          },
+          "facing=south,open=true,triggered=true,waterlogged=true": {
+            "appearance": "appearance_11",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=west,open=false,triggered=false,waterlogged=false": {
+            "appearance": "appearance_12"
+          },
+          "facing=west,open=false,triggered=false,waterlogged=true": {
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=west,open=false,triggered=true,waterlogged=false": {
+            "appearance": "appearance_12"
+          },
+          "facing=west,open=false,triggered=true,waterlogged=true": {
+            "appearance": "appearance_13",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=west,open=true,triggered=false,waterlogged=false": {
+            "appearance": "appearance_14"
+          },
+          "facing=west,open=true,triggered=false,waterlogged=true": {
+            "appearance": "appearance_15",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=west,open=true,triggered=true,waterlogged=false": {
+            "appearance": "appearance_14"
+          },
+          "facing=west,open=true,triggered=true,waterlogged=true": {
+            "appearance": "appearance_15",
+            "settings": {
+              "fluid_state": "water"
+            }
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.metal.break",
+          "step": "minecraft:block.metal.step",
+          "place": "minecraft:block.metal.place",
+          "hit": "minecraft:block.metal.hit",
+          "fall": "minecraft:block.metal.fall"
+        },
+        "tags": [
+          "minecraft:mineable/pickaxe"
+        ],
+        "item": "kaleidoscope_tavern:tap"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:tap"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:tap"
+              }
+            ]
+          }
+        ]
+      }
     }
   }
 }

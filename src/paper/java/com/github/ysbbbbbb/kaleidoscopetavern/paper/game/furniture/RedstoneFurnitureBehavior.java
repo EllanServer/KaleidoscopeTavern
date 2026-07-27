@@ -11,19 +11,14 @@ import net.momirealms.craftengine.core.entity.furniture.FurnitureDefinition;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehaviorTemplate;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehaviors;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureController;
-import net.momirealms.craftengine.core.entity.furniture.hitbox.FurnitureHitBox;
-import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import net.momirealms.craftengine.libraries.nbt.CompoundTag;
 import net.momirealms.craftengine.proxy.bukkit.craftbukkit.CraftWorldProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.SignalGetterProxy;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
@@ -33,7 +28,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -190,24 +184,6 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
     }
 
-    public static void bindInteraction(Channel channel, InteractionHandler handler) {
-        Channel boundChannel = Objects.requireNonNull(channel, "channel");
-        InteractionHandler boundHandler = Objects.requireNonNull(handler, "handler");
-        synchronized (boundChannel) {
-            boundChannel.interactionHandler = boundHandler;
-        }
-    }
-
-    public static void unbindInteraction(Channel channel, InteractionHandler handler) {
-        Channel boundChannel = Objects.requireNonNull(channel, "channel");
-        InteractionHandler boundHandler = Objects.requireNonNull(handler, "handler");
-        synchronized (boundChannel) {
-            if (boundChannel.interactionHandler == boundHandler) {
-                boundChannel.interactionHandler = null;
-            }
-        }
-    }
-
     @Override
     public FurnitureController createController(Furniture furniture) {
         if (!(furniture instanceof BukkitFurniture bukkitFurniture)) {
@@ -228,13 +204,11 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
     }
 
     public enum Channel {
-        TAP,
         STORAGE;
 
         private final Set<Controller> activeControllers = new HashSet<>();
         private Controller[] activeSnapshot = NO_CONTROLLERS;
         private volatile Handler handler;
-        private volatile InteractionHandler interactionHandler;
 
         private void add(Controller controller) {
             if (activeControllers.add(controller)) {
@@ -269,12 +243,6 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
     }
 
-    @FunctionalInterface
-    public interface InteractionHandler {
-        InteractionResult interact(BukkitFurniture furniture,
-                                   InteractEntityContext context);
-    }
-
     private static final class Controller extends FurnitureController {
         private static final String INITIALIZED = "initialized";
         private static final String POWERED = "powered";
@@ -289,10 +257,8 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         private UUID worldId;
         private long[] indexedPowerChanges;
         private Block primaryPowerBlock;
-        private Block secondaryPowerBlock;
         private Object minecraftWorld;
         private Object primaryPowerPos;
-        private Object secondaryPowerPos;
         private Handler deliveredHandler;
 
         private Controller(BukkitFurniture furniture, Channel channel, String dataKey) {
@@ -334,15 +300,6 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
 
         @Override
-        public InteractionResult useOnFurniture(FurnitureHitBox hitBox,
-                                                InteractEntityContext context) {
-            InteractionHandler handler = channel.interactionHandler;
-            return handler == null
-                    ? InteractionResult.PASS
-                    : handler.interact(bukkitFurniture, context);
-        }
-
-        @Override
         public void onUnload(boolean isStopping) {
             Handler handler = channel.handler;
             deactivate();
@@ -351,10 +308,8 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
             }
             deliveredHandler = null;
             primaryPowerBlock = null;
-            secondaryPowerBlock = null;
             minecraftWorld = null;
             primaryPowerPos = null;
-            secondaryPowerPos = null;
         }
 
         @Override
@@ -378,9 +333,6 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
             worldId = primaryPowerBlock.getWorld().getUID();
             LongSet keys = new LongOpenHashSet();
             addProbeChanges(keys, primaryPowerBlock);
-            if (secondaryPowerBlock != null) {
-                addProbeChanges(keys, secondaryPowerBlock);
-            }
             indexedPowerChanges = keys.toLongArray();
             Long2ObjectMap<Set<Controller>> worldIndex = POWER_INDEX.computeIfAbsent(
                     worldId, ignored -> new Long2ObjectOpenHashMap<>());
@@ -460,7 +412,7 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
                 handler.onPowerState(bukkitFurniture, current, false);
             }
             // Furniture reloads and handler rebinds deliver the handler again.
-            // An unchanged saved level is not another edge (especially for taps).
+            // An unchanged saved level is not another edge.
         }
 
         private void forget(Handler handler) {
@@ -481,45 +433,21 @@ public final class RedstoneFurnitureBehavior extends FurnitureBehaviorTemplate {
             if (primaryPowerBlock == null) {
                 cachePowerProbe();
             }
-            return switch (channel) {
-                // Every source block calls Level#hasNeighborSignal. CraftBlock
-                // exposes that exact NMS query as isBlockIndirectlyPowered();
-                // isBlockPowered() performs a second, stronger-signal scan and
-                // would both widen the source behavior and duplicate hot-path
-                // work for every loaded storage controller each tick.
-                case STORAGE -> SignalGetterProxy.INSTANCE.hasNeighborSignal(
-                        minecraftWorld, primaryPowerPos);
-                case TAP -> SignalGetterProxy.INSTANCE.hasNeighborSignal(
-                        minecraftWorld, primaryPowerPos)
-                        || SignalGetterProxy.INSTANCE.hasNeighborSignal(
-                                minecraftWorld, secondaryPowerPos);
-            };
+            // Source storage furniture calls Level#hasNeighborSignal. A second
+            // stronger-signal scan would widen behavior and duplicate hot-path
+            // work for every loaded controller.
+            return SignalGetterProxy.INSTANCE.hasNeighborSignal(
+                    minecraftWorld, primaryPowerPos);
         }
 
         private void cachePowerProbe() {
             if (primaryPowerBlock != null) {
                 return;
             }
-            if (channel != Channel.TAP) {
-                primaryPowerBlock = bukkitFurniture.location().getBlock();
-            } else {
-                Location origin = bukkitFurniture.location().clone();
-                Vector outward = origin.getDirection().setY(0);
-                if (outward.lengthSquared() < 0.001) {
-                    outward = new Vector(0, 0, 1);
-                } else {
-                    outward.normalize();
-                }
-                primaryPowerBlock = origin.add(outward.multiply(0.05)).getBlock();
-                secondaryPowerBlock = primaryPowerBlock.getRelative(BlockFace.UP);
-            }
+            primaryPowerBlock = bukkitFurniture.location().getBlock();
             minecraftWorld = CraftWorldProxy.INSTANCE.getWorld(primaryPowerBlock.getWorld());
             primaryPowerPos = LocationUtils.toBlockPos(
                     primaryPowerBlock.getX(), primaryPowerBlock.getY(), primaryPowerBlock.getZ());
-            if (secondaryPowerBlock != null) {
-                secondaryPowerPos = LocationUtils.toBlockPos(
-                        secondaryPowerBlock.getX(), secondaryPowerBlock.getY(), secondaryPowerBlock.getZ());
-            }
         }
     }
 

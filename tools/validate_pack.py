@@ -17,7 +17,6 @@ PLUGIN_CONFIG = ROOT / "src/paper/resources/config.yml"
 NAMESPACE = "kaleidoscope_tavern"
 EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
 EXPECTED_REDSTONE_FURNITURE = {
-    "tap": "tap",
     "cellar_cabinet": "storage",
     "tilted_rack": "storage",
     "circular_rack": "storage",
@@ -166,16 +165,16 @@ SOURCE_STATE_OWNERS = {
     "connection": "FurnitureConnectionService",
     "count": "BottleFurnitureService",
     "face": "CE ground/wall/ceiling placement rules",
-    "facing": "CE four-way/sixteen-way furniture rotation",
+    "facing": "CE tap block state and four-way/sixteen-way furniture rotation",
     "half": "composite multi-element furniture variants",
-    "open": "CE incense block state and TapService furniture state",
+    "open": "CE incense/tap block state",
     "position": "FurnitureConnectionService",
-    "powered": "CE incense block state and RedstoneFurnitureBehavior callbacks",
+    "powered": "CE incense block state and storage furniture callbacks",
     "rotation": "CE sixteen-way sandwich-board rotation",
     "tilt": "ground/wall pressing-tub placement variants",
-    "triggered": "RedstoneFurnitureBehavior tap edge latch",
+    "triggered": "CE TapBlockBehavior redstone edge latch",
     "type": "CE trellis state variants",
-    "waterlogged": "entity furniture / CE non-displacing carrier semantics",
+    "waterlogged": "CE tap state plus non-displacing carrier semantics",
     "waxed": "CE trellis state variants plus blocks.json wax events",
 }
 
@@ -311,11 +310,12 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("src/paper/resources/catalog/tags.tsv", "curios:charm"),
     ),
     "TapBlock.java": (
-        ("furniture/RedstoneFurnitureBehavior.java", "loadCustomData"),
-        ("furniture/RedstoneFurnitureBehavior.java", "useOnFurniture"),
-        ("TapService.java", "RedstoneFurnitureBehavior.bind("),
-        ("TapService.java", "RedstoneFurnitureBehavior.bindInteraction("),
-        ("TapService.java", "RedstoneFurnitureBehavior.Channel.TAP"),
+        ("src/paper/pack/configuration/blocks.json", "minecraft:lightning_rod"),
+        ("block/TapBlockBehavior.java", "updateStateForPlacement"),
+        ("block/TapBlockBehavior.java", "neighborChanged"),
+        ("block/TapBlockBehavior.java", "useOnBlock"),
+        ("block/TapBlockBehavior.java", "TAKE_TICKS = 30"),
+        ("TapService.java", "TapBlockBehavior.bind(this)"),
         ("TapSemantics.java", "isBarrelConnection"),
     ),
     "TiltedRackBlock.java": (("DisplayStorageService.java", "TILTED_RACK"),),
@@ -345,7 +345,7 @@ TAP_BEHAVIOR_COVERAGE = {
 TICKING_BLOCK_ENTITY_COVERAGE = {
     "BarrelBlockEntity.java": ("StationService.java", "barrelTickingHandler"),
     "BarStoolBlockEntity.java": ("BarStoolVisualService.java", "tickOccupied"),
-    "TapBlockEntity.java": ("TapService.java", "TAKE_PARTICLE_TICKS"),
+    "TapBlockEntity.java": ("block/TapBlockBehavior.java", "TAKE_PARTICLE_TICKS = 5"),
     "TextBlockEntity.java": ("BoardTextService.java", "validateEditDistance"),
 }
 
@@ -397,7 +397,10 @@ BLOCK_ENTITY_COVERAGE = {
     "DrinkBlockEntity.java": (("BottleFurnitureService.java", "storedItems"),),
     "PotionBottleBlockEntity.java": (("BottleFurnitureService.java", "sourceItem"),),
     "PressingTubBlockEntity.java": (("StationService.java", "press_count"),),
-    "TapBlockEntity.java": (("TapService.java", "running"),),
+    "TapBlockEntity.java": (
+        ("block/TapBlockBehavior.java", "private Cycle cycle"),
+        ("block/TapBlockBehavior.java", "DRIP_LIFETIME_TICKS = 18"),
+    ),
     "BarStoolBlockEntity.java": (
         ("BarStoolVisualService.java", "AnimatedItemFurnitureBehavior.updatePosition"),
     ),
@@ -608,10 +611,10 @@ def validate() -> dict[str, int]:
 
     if len(items) != 157:
         raise AssertionError(f"Expected 157 public items, found {len(items)}")
-    if len(blocks) != 49:
-        raise AssertionError(f"Expected 49 grid/state blocks, found {len(blocks)}")
-    if len(furniture) != 125:
-        raise AssertionError(f"Expected 125 furniture definitions, found {len(furniture)}")
+    if len(blocks) != 50:
+        raise AssertionError(f"Expected 50 grid/state blocks, found {len(blocks)}")
+    if len(furniture) != 124:
+        raise AssertionError(f"Expected 124 furniture definitions, found {len(furniture)}")
     if len(render_items) != 554:
         raise AssertionError(f"Expected 554 private render items, found {len(render_items)}")
     if len(recipes) != 114:
@@ -892,6 +895,7 @@ def validate() -> dict[str, int]:
         f"{NAMESPACE}:grape_crop",
         f"{NAMESPACE}:ice_grape_crop",
         f"{NAMESPACE}:gold_grape_crop",
+        f"{NAMESPACE}:tap",
         *(f"{NAMESPACE}:_crop/{crop}/stage_{point}"
           for crop in ("grape_crop", "ice_grape_crop", "gold_grape_crop")
           for point in range(1, 6)),
@@ -1040,6 +1044,9 @@ def validate() -> dict[str, int]:
     if "IncenseBlockBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register the CE incense block behavior before pack loading")
+    if "TapBlockBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register the CE tap block behavior before pack loading")
     incense_behavior_source = (
         game_package / "block/IncenseBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
@@ -1576,28 +1583,110 @@ def validate() -> dict[str, int]:
                 f"stale token: {stale_station_element_token}")
     tap_source = (game_package / "TapService.java").read_text(
         encoding="utf-8-sig")
+    tap_block_source = (game_package / "block/TapBlockBehavior.java").read_text(
+        encoding="utf-8-sig")
     tap_semantics_source = (game_package / "TapSemantics.java").read_text(
         encoding="utf-8-sig")
     for required_token in (
             "TapSemantics.shouldDelegateBarrelTapPlacement(",
             "context.isSecondaryUseActive()",
             "context.getItem().id().toString()",
-            "placeHeldFurnitureWithCraftEngine(context)",
-            "behavior.getFirst(FurnitureItem.class)",
+            "placeHeldTapBlockWithCraftEngine(furniture, context)",
+            "behavior.getFirst(BlockItem.class)",
+            "origin.getBlockX() + x * 2",
+            "origin.getBlockY() + 1",
+            "origin.getBlockZ() + z * 2",
             "placementBehavior.useOnBlock(new UseOnContext("):
         if required_token not in station_source:
             raise AssertionError(
-                "Sneaking with a tap on barrel furniture must directly invoke CE placement; "
+                "Sneaking with a tap on barrel furniture must place the CE block in its "
+                "canonical front-centre cell; "
                 f"missing token: {required_token}")
     if 'secondaryUse && TAP_ITEM.equals(heldItemId)' not in tap_semantics_source:
         raise AssertionError(
             "Barrel tap placement must retain Forge's secondary-use bypass rule")
     tap_item_behavior = items[f"{NAMESPACE}:tap"].get("behavior", {})
-    if (tap_item_behavior.get("type") != "furniture_item"
-            or tap_item_behavior.get("furniture") != f"{NAMESPACE}:tap"
-            or "wall" not in tap_item_behavior.get("rules", {})):
+    if tap_item_behavior != {
+            "type": "block_item", "block": f"{NAMESPACE}:tap"}:
         raise AssertionError(
-            "Tap installation must remain owned by CE's wall furniture_item behavior")
+            "Tap installation must be owned by CE's native block_item behavior")
+    if f"{NAMESPACE}:tap" in furniture:
+        raise AssertionError("Tap must not retain a duplicate CE furniture definition")
+
+    tap_definition = blocks[f"{NAMESPACE}:tap"]
+    tap_states = tap_definition.get("states", {})
+    tap_properties = tap_states.get("properties", {})
+    if set(tap_properties) != {"facing", "open", "triggered", "waterlogged"}:
+        raise AssertionError(
+            f"Tap CE block properties drifted: {sorted(tap_properties)}")
+    if tap_definition.get("behavior") != {"type": f"{NAMESPACE}:tap"}:
+        raise AssertionError("Tap must use the Tavern CE block behavior")
+    tap_appearances = tap_states.get("appearances", {})
+    tap_variants = tap_states.get("variants", {})
+    if len(tap_appearances) != 16 or len(tap_variants) != 32:
+        raise AssertionError(
+            "Tap needs 4 facing x 2 open x 2 waterlogged appearances and "
+            f"32 complete states; found {len(tap_appearances)}/{len(tap_variants)}")
+    tap_render_items: set[str] = set()
+    for variant_key, mapped in tap_variants.items():
+        properties = dict(part.split("=", 1) for part in variant_key.split(","))
+        appearance = tap_appearances[mapped["appearance"]]
+        expected_carrier = (
+            "minecraft:lightning_rod"
+            f"[facing={properties['facing']},powered=false,"
+            f"waterlogged={properties['waterlogged']}]"
+        )
+        if appearance.get("state") != expected_carrier:
+            raise AssertionError(
+                f"Tap {variant_key} carrier must preserve facing/waterlogging")
+        expected_settings = ({"fluid_state": "water"}
+                             if properties["waterlogged"] == "true" else None)
+        if mapped.get("settings") != expected_settings:
+            raise AssertionError(
+                f"Tap {variant_key} must preserve CE's server-side fluid state")
+        renderer = appearance.get("entity_renderer", {})
+        render_item = renderer.get("item")
+        tap_render_items.add(render_item)
+        expected_model = (f"{NAMESPACE}:block/brew/tap/open"
+                          if properties["open"] == "true"
+                          else f"{NAMESPACE}:block/brew/tap/close")
+        if (renderer.get("type") != "item_display"
+                or render_items.get(render_item, {}).get("model", {}).get("path")
+                != expected_model):
+            raise AssertionError(
+                f"Tap {variant_key} must render its authored open/closed model")
+    if len(tap_render_items) != 2:
+        raise AssertionError(
+            f"Tap must reuse exactly two private render items, found {tap_render_items}")
+    for facing in ("north", "south", "west", "east"):
+        for waterlogged in ("false", "true"):
+            common = f"facing={facing},triggered=false,waterlogged={waterlogged}"
+            closed_key = (
+                f"facing={facing},open=false,triggered=false,waterlogged={waterlogged}")
+            open_key = (
+                f"facing={facing},open=true,triggered=false,waterlogged={waterlogged}")
+            closed = tap_appearances[tap_variants[closed_key]["appearance"]]
+            opened = tap_appearances[tap_variants[open_key]["appearance"]]
+            if closed["state"] != opened["state"]:
+                raise AssertionError(
+                    f"Tap open/closed collision carrier changed for {common}")
+            for open_value in ("false", "true"):
+                untriggered = (
+                    f"facing={facing},open={open_value},triggered=false,"
+                    f"waterlogged={waterlogged}")
+                triggered = untriggered.replace("triggered=false", "triggered=true")
+                if tap_variants[untriggered] != tap_variants[triggered]:
+                    raise AssertionError(
+                        "Tap triggered is a server edge latch and must not change rendering")
+    tap_settings = tap_definition.get("settings", {})
+    if (tap_settings.get("hardness") != 0.8
+            or tap_settings.get("push_reaction") != "NORMAL"
+            or tap_settings.get("tags") != ["minecraft:mineable/pickaxe"]
+            or any(tap_settings.get("sounds", {}).get(action)
+                   != f"minecraft:block.metal.{action}"
+                   for action in ("break", "step", "place", "hit", "fall"))):
+        raise AssertionError("Tap CE block must retain the source metal settings")
+
     for variant_name, variant in furniture[f"{NAMESPACE}:barrel"]["variants"].items():
         if any(hitbox.get("can_use_item_on") is not True
                for hitbox in variant.get("hitboxes", [])):
@@ -1607,54 +1696,57 @@ def validate() -> dict[str, int]:
             "LifecycleFurnitureBehavior.Channel.TAP_BOTTLE, block",
             "LifecycleFurnitureBehavior.Channel.BARREL,",
             "center, 3.25, 3.25",
-            "TapGeometry initialGeometry = geometry(tap)",
-            "Location dripOrigin = initialGeometry.tapBlock().getLocation()",
-            "spawnDrip(dripOrigin, extracting",
-            "spawnFallingDrip(dripOrigin, initial.hot())",
-            "private TapPlan resolve(BukkitFurniture tap, Player feedback, TapGeometry geometry)"):
+            "private TapPlan resolve(Block tapBlock, BlockFace facing",
+            "tapBlock.getRelative(facing.getOppositeFace())",
+            "tapBlock.getRelative(BlockFace.DOWN)",
+            "findConnectedBarrel(tapBlock, facing)",
+            "TapBlockBehavior.bind(this)",
+            "TapBlockBehavior.unbind(this)"):
         if required_token not in tap_source:
             raise AssertionError(
-                "TapService must use CE lifecycle indexes for placed bottles and barrels; "
+                "TapService must remain a business-only block handler using CE lifecycle "
+                "indexes for placed bottles and barrels; "
                 f"missing token: {required_token}")
     if "findFurnitureAtBlock" in tap_source:
         raise AssertionError(
             "TapService must not rediscover indexed placed bottles through Bukkit entities")
-    for stale_token in (
-            "private static Block tapBlock(",
-            "spawnDrip(BukkitFurniture tap",
-            "spawnFallingDrip(BukkitFurniture tap"):
-        if stale_token in tap_source:
-            raise AssertionError(
-                "An active tap must reuse its fixed drip geometry instead of rebuilding it per tick; "
-                f"found {stale_token}")
+
     for required_token in (
-            "RedstoneFurnitureBehavior.bindInteraction(",
-            "RedstoneFurnitureBehavior.unbindInteraction(",
-            "private InteractionResult interact(",
+            "implements EntityBlock",
+            "BlockBehaviors.register(TYPE, TapBlockBehavior::new)",
             "context.getHand() != InteractionHand.MAIN_HAND",
-            "public void onRemove(BukkitFurniture furniture)",
-            "closeTap(furniture, false)",
-            "InteractionResult.SUCCESS_AND_CANCEL"):
-        if required_token not in tap_source:
+            "clickedFace.axis().isHorizontal()",
+            "FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER",
+            "SignalGetterProxy.INSTANCE.hasNeighborSignal(level, minecraftPos)",
+            "LocationUtils.above(minecraftPos)",
+            "powered && !triggered",
+            "!powered && triggered",
+            "TAKE_TICKS = 30",
+            "TAKE_PARTICLE_TICKS = 5",
+            "EMPTY_OPEN_TICKS = 6",
+            "DRIP_LIFETIME_TICKS = 18",
+            "current.finish("):
+        if required_token not in tap_block_source:
             raise AssertionError(
-                "Tap clicks must be dispatched by the tap's CE redstone controller; "
+                "TapBlockBehavior must own source-equivalent state, redstone and timing; "
                 f"missing token: {required_token}")
-    for stale_token in (
-            "FurnitureInteractEvent", "public void onInteract(",
-            "FurnitureBreakEvent", "public void onBreak(", "implements Listener"):
+    for stale_token in ("BukkitTask", "runTaskTimer", "PersistentDataContainer",
+                        "BukkitFurniture", "FurnitureInteractEvent"):
+        if stale_token in tap_block_source:
+            raise AssertionError(
+                "The CE tap block must not duplicate its state through furniture/PDC/tasks; "
+                f"found {stale_token}")
+    for stale_token in ("BukkitRunnable", "BukkitTask", "running",
+                        "RedstoneFurnitureBehavior", "TapGeometry", "geometry(tap)"):
         if stale_token in tap_source:
             raise AssertionError(
-                "TapService must not retain a global Paper furniture interaction listener; "
+                "TapService must remain free of scheduler, furniture-redstone and geometry state; "
                 f"found {stale_token}")
+
     redstone_behavior_source = (
         game_package / "furniture/RedstoneFurnitureBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
-            "public static void bindInteraction(",
-            "public static void unbindInteraction(",
-            "public InteractionResult useOnFurniture(",
-            "channel.interactionHandler",
-            "handler.interact(bukkitFurniture, context)",
             "public void preRemove(Player player)",
             "handler.onRemove(bukkitFurniture)",
             "BlockRedstoneEvent",
@@ -1674,8 +1766,15 @@ def validate() -> dict[str, int]:
             "SignalGetterProxy.INSTANCE.hasNeighborSignal("):
         if required_token not in redstone_behavior_source:
             raise AssertionError(
-                "CE redstone furniture must also own channel-scoped player interaction; "
+                "CE storage redstone furniture must retain indexed edge notifications; "
                 f"missing token: {required_token}")
+    for stale_token in (
+            "Channel.TAP", "TAP,", "InteractionHandler", "bindInteraction(",
+            "useOnFurniture(", "secondaryPowerBlock", "secondaryPowerPos"):
+        if stale_token in redstone_behavior_source:
+            raise AssertionError(
+                "Tap is a CE block; redstone_furniture must be storage-only, found "
+                f"{stale_token}")
     if ".isBlockPowered()" in redstone_behavior_source:
         raise AssertionError(
             "CE redstone furniture must sample the source mod's hasNeighborSignal "
@@ -3078,7 +3177,6 @@ def validate() -> dict[str, int]:
     material_examples = {
         "white_sofa": ("wool", 3),
         "bell_pendant_lamp": ("chain", 3),
-        "tap": ("metal", 3),
         "glassware_holder": ("metal", 3),
         "shaker": ("lantern", 1),
         "empty_bottle": ("glass", 1),
@@ -3148,22 +3246,6 @@ def validate() -> dict[str, int]:
             if particle != "minecraft:block/iron_chain":
                 raise AssertionError(
                     f"{pendant_id}/{half}: Paper 26.2 requires the iron_chain particle texture")
-    tap = furniture[f"{NAMESPACE}:tap"]["variants"]["wall"]["elements"][0]
-    if tap.get("position") != "0,0,0.01" or tap.get("translation") != "0,0,0.49":
-        raise AssertionError("Wall model must retain its target-block offset after anti-blackening compensation")
-    if "rotation" in tap or render_items[tap["item"]]["model"]["path"] != (
-            f"{NAMESPACE}:block/brew/tap/close"):
-        raise AssertionError("Tap must retain the north-authored mounting-plate orientation")
-    tap_hitboxes = furniture[f"{NAMESPACE}:tap"]["variants"]["wall"]["hitboxes"]
-    tap_hitbox = tap_hitboxes[0]
-    if tap_hitbox.get("position") != "0,-0.1875,0.35":
-        raise AssertionError("Tap interaction hitbox must retain its corrected wall depth")
-    tap_open_hitboxes = furniture[
-        f"{NAMESPACE}:tap"]["variants"]["wall_open"]["hitboxes"]
-    if tap_open_hitboxes != tap_hitboxes:
-        raise AssertionError(
-            "TapBlock OPEN does not affect the source shape; both variants need identical hitboxes")
-
     pressing_tub_wall = furniture[
         f"{NAMESPACE}:pressing_tub"]["variants"]["wall"]["elements"][0]
     if (pressing_tub_wall.get("position") != "0,0,0.01"
