@@ -306,10 +306,10 @@ public final class TapBlockBehavior extends WaterloggedBlockBehavior implements 
 
         private static void tick(CEWorld world, BlockPos pos, ImmutableBlockState state,
                                  Controller controller) {
-            controller.tick(world, pos, state);
+            controller.tickCycle(world, pos, state);
         }
 
-        private void tick(CEWorld world, BlockPos pos, ImmutableBlockState state) {
+        private void tickCycle(CEWorld world, BlockPos pos, ImmutableBlockState state) {
             if (!state.get(behavior.openProperty)) {
                 if (cycle != Cycle.DEFAULT) {
                     reset();
