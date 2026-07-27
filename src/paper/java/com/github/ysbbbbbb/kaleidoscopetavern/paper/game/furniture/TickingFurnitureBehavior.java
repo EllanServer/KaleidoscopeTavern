@@ -14,12 +14,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -67,7 +68,9 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
             schedulerTask = Bukkit.getScheduler().runTaskTimer(owner,
                     TickingFurnitureBehavior::runDueControllers, 1L, 1L);
             for (Channel channel : Channel.values()) {
-                channel.activeControllers.forEach(Controller::restartSchedule);
+                for (Controller controller : channel.snapshot()) {
+                    controller.restartSchedule();
+                }
             }
         }
     }
@@ -86,7 +89,9 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         runtimePlugin = null;
         DUE.clear();
         for (Channel channel : Channel.values()) {
-            channel.activeControllers.forEach(controller -> controller.scheduledRun = null);
+            for (Controller controller : channel.snapshot()) {
+                controller.scheduledRun = null;
+            }
         }
         schedulerTick = 0;
         nextSequence = 0;
@@ -98,7 +103,9 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         synchronized (boundChannel) {
             boundChannel.handler = boundHandler;
         }
-        boundChannel.activeControllers.forEach(controller -> controller.deliver(boundHandler));
+        for (Controller controller : boundChannel.snapshot()) {
+            controller.deliver(boundHandler);
+        }
     }
 
     public static void unbind(Channel channel, Handler handler) {
@@ -110,7 +117,19 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
             }
             boundChannel.handler = null;
         }
-        boundChannel.activeControllers.forEach(controller -> controller.forget(boundHandler));
+        for (Controller controller : boundChannel.snapshot()) {
+            controller.forget(boundHandler);
+        }
+    }
+
+    /** Re-evaluates one furniture after gameplay changes its scheduling state. */
+    public static void refreshSchedule(Channel channel, BukkitFurniture furniture) {
+        Channel targetChannel = Objects.requireNonNull(channel, "channel");
+        BukkitFurniture targetFurniture = Objects.requireNonNull(furniture, "furniture");
+        Controller controller = targetChannel.activeControllers.get(targetFurniture.uuid());
+        if (controller != null) {
+            controller.refreshSchedule();
+        }
     }
 
     @Override
@@ -139,8 +158,12 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         RACK_PARTICLE,
         BARREL;
 
-        private final Set<Controller> activeControllers = ConcurrentHashMap.newKeySet();
+        private final Map<UUID, Controller> activeControllers = new HashMap<>();
         private volatile Handler handler;
+
+        private List<Controller> snapshot() {
+            return new ArrayList<>(activeControllers.values());
+        }
     }
 
     @FunctionalInterface
@@ -150,7 +173,14 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         default void onReady(BukkitFurniture furniture) {
         }
 
+        default boolean shouldSchedule(BukkitFurniture furniture) {
+            return true;
+        }
+
         default void onUnload(BukkitFurniture furniture, boolean isStopping) {
+        }
+
+        default void onRemove(BukkitFurniture furniture) {
         }
     }
 
@@ -189,10 +219,19 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
             }
         }
 
+        @Override
+        public void preRemove(Player player) {
+            Handler handler = deliveredHandler;
+            deactivate();
+            if (handler != null) {
+                handler.onRemove(bukkitFurniture);
+            }
+        }
+
         private void activate() {
             if (!active) {
                 active = true;
-                channel.activeControllers.add(this);
+                channel.activeControllers.put(bukkitFurniture.uuid(), this);
             }
             deliver(channel.handler);
         }
@@ -202,7 +241,7 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
                 return;
             }
             active = false;
-            channel.activeControllers.remove(this);
+            channel.activeControllers.remove(bukkitFurniture.uuid(), this);
             cancelSchedule();
             deliveredHandler = null;
         }
@@ -214,7 +253,7 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
             cancelSchedule();
             handler.onReady(bukkitFurniture);
             deliveredHandler = handler;
-            scheduleInitial();
+            refreshSchedule();
         }
 
         private void forget(Handler handler) {
@@ -225,7 +264,17 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
 
         private void restartSchedule() {
-            if (active && deliveredHandler != null && scheduledRun == null) {
+            refreshSchedule();
+        }
+
+        private void refreshSchedule() {
+            Handler handler = deliveredHandler;
+            if (!active || handler == null || schedulerTask == null
+                    || !handler.shouldSchedule(bukkitFurniture)) {
+                cancelSchedule();
+                return;
+            }
+            if (scheduledRun == null) {
                 scheduleInitial();
             }
         }
@@ -263,7 +312,7 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
 
         private void runScheduled() {
-            if (!active || !bukkitFurniture.isValid()) {
+            if (!active) {
                 return;
             }
             Handler handler = channel.handler;
@@ -279,7 +328,11 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
                 handler.tick(bukkitFurniture);
             } finally {
                 if (active && deliveredHandler == handler) {
-                    scheduleNext();
+                    if (handler.shouldSchedule(bukkitFurniture)) {
+                        scheduleNext();
+                    } else {
+                        cancelSchedule();
+                    }
                 }
             }
         }

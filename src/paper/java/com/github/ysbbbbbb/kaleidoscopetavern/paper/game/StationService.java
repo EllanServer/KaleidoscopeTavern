@@ -115,6 +115,11 @@ public final class StationService implements Listener {
                 public void onReady(BukkitFurniture furniture) {
                     syncBarrelState(furniture);
                 }
+
+                @Override
+                public boolean shouldSchedule(BukkitFurniture furniture) {
+                    return shouldTickBarrel(furniture);
+                }
             };
 
     public StationService(JavaPlugin plugin, ContentCatalog catalog, ItemService items,
@@ -916,6 +921,8 @@ public final class StationService implements Listener {
         }
         boolean variantChanged = furniture.setVariant(
                 open ? "ground" : "ground_closed", true);
+        TickingFurnitureBehavior.refreshSchedule(
+                TickingFurnitureBehavior.Channel.BARREL, furniture);
         if (playSound) {
             // The Forge implementation intentionally uses BARREL_OPEN for
             // both transitions and plays it at the lid, two blocks above.
@@ -1344,6 +1351,17 @@ public final class StationService implements Listener {
             return;
         }
         beginBrewing(furniture, state);
+    }
+
+    private boolean shouldTickBarrel(BukkitFurniture furniture) {
+        if (furniture == null || isBarrelOpen(furniture)) {
+            return false;
+        }
+        FurnitureState state = new FurnitureState(furniture);
+        return BarrelSemantics.needsTick(false,
+                state.integer("barrel_level"),
+                state.integer("barrel_amount"),
+                BARREL_CAPACITY);
     }
 
     private void refreshStationVisuals(BukkitFurniture furniture) {

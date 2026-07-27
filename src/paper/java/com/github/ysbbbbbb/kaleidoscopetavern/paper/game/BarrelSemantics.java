@@ -43,6 +43,16 @@ final class BarrelSemantics {
     record BrewState(int level, int remainingTicks) {
     }
 
+    /** Whether the source's next 97-tick barrel check can change gameplay state. */
+    static boolean needsTick(boolean open, int level, int fluidAmount, int capacity) {
+        if (open) {
+            return false;
+        }
+        int brewLevel = Math.clamp(level, 0, 6);
+        return brewLevel >= 1 && brewLevel < 6
+                || brewLevel == 0 && fluidAmount >= capacity;
+    }
+
     /** Mirrors Minecraft's {@code StringUtil.formatTickDuration}. */
     static String formatTickDuration(int ticks) {
         int totalSeconds = Math.max(0, ticks) / 20;

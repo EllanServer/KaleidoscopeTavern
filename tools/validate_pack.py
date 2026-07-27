@@ -1421,6 +1421,11 @@ def validate() -> dict[str, int]:
             "InteractionResult.SUCCESS_AND_CANCEL",
             "StationVisualFurnitureBehavior.bind(stationVisualHandler)",
             "StationVisualFurnitureBehavior.unbind(stationVisualHandler)",
+            "public boolean shouldSchedule(BukkitFurniture furniture)",
+            "return shouldTickBarrel(furniture)",
+            "TickingFurnitureBehavior.refreshSchedule(",
+            "private boolean shouldTickBarrel(",
+            "BarrelSemantics.needsTick(false,",
             "PressingTubFurnitureBehavior.hasPotentialBelow(feet)",
             "PressingTubFurnitureBehavior.findBelow(feet)",
             "PressingTubFurnitureBehavior.occupiesBlock(block)",
@@ -1627,7 +1632,12 @@ def validate() -> dict[str, int]:
             "geometricDelay",
             "firstFutureDelay",
             "public void onLoad()",
-            "public void onPlace(Player player)"):
+            "public void onPlace(Player player)",
+            "public void preRemove(Player player)",
+            "public static void refreshSchedule(",
+            "default boolean shouldSchedule(",
+            "handler.shouldSchedule(bukkitFurniture)",
+            "targetChannel.activeControllers.get(targetFurniture.uuid())"):
         if required_token not in ticking_behavior_source:
             raise AssertionError(
                 "Sparse furniture ticks must be driven by one CE lifecycle due-time queue; "
@@ -1635,6 +1645,10 @@ def validate() -> dict[str, int]:
     if "createFurnitureTicker" in ticking_behavior_source:
         raise AssertionError(
             "Sparse furniture must not retain one CraftEngine ticker callback per instance")
+    if "bukkitFurniture.isValid()" in ticking_behavior_source:
+        raise AssertionError(
+            "CE lifecycle removal must keep the sparse due queue free of repeated "
+            "Bukkit entity validity lookups")
     if "registerEvents(taps, this)" in plugin_source:
         raise AssertionError(
             "TapService has no Paper events after CE interaction/removal migration")
