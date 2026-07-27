@@ -122,6 +122,7 @@ public final class EffectService implements Listener {
     private final Map<UUID, Set<UUID>> upsideDownPacketTargets = new HashMap<>();
     private final Set<UUID> stealthHidden = new HashSet<>();
     private final Map<String, Color> effectColorCache = new HashMap<>();
+    private final Map<String, Object> effectParticleOptionCache = new HashMap<>();
     private final Map<String, CompiledBlockTag> blockTagCache = new HashMap<>();
     private final Map<String, CompiledEntityTag> entityTagCache = new HashMap<>();
     private final boolean builtinHud;
@@ -130,6 +131,7 @@ public final class EffectService implements Listener {
     private long elapsedTicks;
     private BukkitTask task;
     private boolean upsideDownPacketsAvailable = true;
+    private boolean particlePacketsAvailable = true;
 
     public EffectService(JavaPlugin plugin, ContentCatalog catalog, ItemService items) {
         this.plugin = plugin;
@@ -797,11 +799,28 @@ public final class EffectService implements Listener {
             color = Color.fromRGB(rgb);
             effectColorCache.put(chosen, color);
         }
+        double x = living.getX() + (random.nextDouble() - 0.5) * living.getWidth();
+        double y = living.getY() + random.nextDouble() * living.getHeight();
+        double z = living.getZ() + (random.nextDouble() - 0.5) * living.getWidth();
+        if (particlePacketsAvailable) {
+            try {
+                Object particleOption = effectParticleOptionCache.get(chosen);
+                if (particleOption == null) {
+                    particleOption = ViewerEffectPackets.entityEffectParticle(color);
+                    effectParticleOptionCache.put(chosen, particleOption);
+                }
+                ViewerEffectPackets.sendEntityEffectParticle(
+                        living.getWorld(), receivers, particleOption, x, y, z);
+                return;
+            } catch (RuntimeException | LinkageError error) {
+                particlePacketsAvailable = false;
+                effectParticleOptionCache.clear();
+                plugin.getLogger().warning(
+                        "无法使用 Paper 26.2 粒子数据包桥接，将回退 Bukkit API：" + error);
+            }
+        }
         living.getWorld().spawnParticle(Particle.ENTITY_EFFECT, receivers, null,
-                living.getX() + (random.nextDouble() - 0.5) * living.getWidth(),
-                living.getY() + random.nextDouble() * living.getHeight(),
-                living.getZ() + (random.nextDouble() - 0.5) * living.getWidth(),
-                1, 0.0, 0.0, 0.0, 0.0, color, false);
+                x, y, z, 1, 0.0, 0.0, 0.0, 0.0, color, false);
     }
 
     private boolean tickEffect(LivingEntity living, ActiveEffect effect) {

@@ -1895,6 +1895,9 @@ def validate() -> dict[str, int]:
     for tracked_particle_token in (
             "Set<Player> trackedBy = living.getTrackedBy()",
             "if (trackedBy.isEmpty() && !includeSelf)",
+            "effectParticleOptionCache.get(chosen)",
+            "effectParticleOptionCache.put(chosen, particleOption)",
+            "ViewerEffectPackets.sendEntityEffectParticle(",
             "spawnParticle(Particle.ENTITY_EFFECT, receivers, null",
             "living.getX() + (random.nextDouble() - 0.5) * living.getWidth()"):
         if tracked_particle_token not in effect_service_source:
@@ -1904,6 +1907,17 @@ def validate() -> dict[str, int]:
     if "living.getWorld().spawnParticle(Particle.ENTITY_EFFECT,\n                box." in effect_service_source:
         raise AssertionError(
             "Custom effect particles must not scan every player in the world")
+    for particle_bridge_token in (
+            'Class.forName("org.bukkit.craftbukkit.CraftParticle")',
+            '"createParticleParam", Particle.class, Object.class',
+            "ServerLevelProxy.CLASS.getMethods()",
+            'method.getName().equals("sendParticlesSource")',
+            "CraftWorldProxy.INSTANCE.getWorld(world)",
+            "CraftEntityProxy.INSTANCE.getEntity(receiver)"):
+        if particle_bridge_token not in viewer_packet_source:
+            raise AssertionError(
+                "Custom effect particles must reuse Paper's receiver-aware native packet path; "
+                f"missing {particle_bridge_token}")
     for allocation_free_tick_token in (
             "Iterator<Map.Entry<String, ActiveEffect>> effectIterator",
             "effectIterator.remove()",
