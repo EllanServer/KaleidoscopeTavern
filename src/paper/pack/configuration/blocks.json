@@ -16122,18 +16122,7 @@
     },
     "kaleidoscope_tavern:wild_grapevine_plant": {
       "state": {
-        "auto_state": {
-          "type": "higher_tripwire",
-          "id": "kaleidoscope-tavern-decor-transparent"
-        },
-        "transparent": true,
-        "entity_renderer": {
-          "type": "item_display",
-          "item": "kaleidoscope_tavern:_render/wild_grapevine_plant/29a0d486e0",
-          "display_transform": "none",
-          "shadow_radius": 0,
-          "view_range": 1.25
-        }
+        "state": "minecraft:weeping_vines_plant"
       },
       "settings": {
         "hardness": 0.0,

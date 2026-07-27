@@ -794,32 +794,47 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             if appearance_name is None:
                 appearance_name = f"appearance_{len(appearance_names)}"
                 appearance_names[model] = appearance_name
-                render_hash = hashlib.sha1("|".join(map(str, model)).encode("utf-8")).hexdigest()[:10]
-                render_path = f"_render/{block_id}/{render_hash}"
-                render_id = f"{NAMESPACE}:{render_path}"
-                render_items[render_id] = {
-                    "material": "paper",
-                    "data": {"item_name": render_item_name(block_id)},
-                    "model": {"type": "minecraft:model", "path": model[0]},
-                    "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
-                }
-                renderer: dict[str, Any] = {
-                    "type": "item_display",
-                    "item": render_id,
-                    "display_transform": "none",
-                    "shadow_radius": 0,
-                    "view_range": 1.25,
-                }
-                if any(model[1:4]):
-                    renderer["rotation"] = f"{model[1]},{model[2]},{model[3]}"
                 appearance: dict[str, Any] = {}
+                renderer: dict[str, Any] | None = None
+                if block_id == "wild_grapevine_plant":
+                    # The body has no grape-specific geometry or state.  Let
+                    # the client render the vanilla weeping-vine body directly
+                    # instead of spawning one ItemDisplay for every segment.
+                    # Its custom CE id and vine_crop lifecycle remain intact.
+                    appearance["state"] = "minecraft:weeping_vines_plant"
+                else:
+                    render_hash = hashlib.sha1(
+                        "|".join(map(str, model)).encode("utf-8")
+                    ).hexdigest()[:10]
+                    render_path = f"_render/{block_id}/{render_hash}"
+                    render_id = f"{NAMESPACE}:{render_path}"
+                    render_items[render_id] = {
+                        "material": "paper",
+                        "data": {"item_name": render_item_name(block_id)},
+                        "model": {"type": "minecraft:model", "path": model[0]},
+                        "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
+                    }
+                    renderer = {
+                        "type": "item_display",
+                        "item": render_id,
+                        "display_transform": "none",
+                        "shadow_radius": 0,
+                        "view_range": 1.25,
+                    }
+                    if any(model[1:4]):
+                        renderer["rotation"] = f"{model[1]},{model[2]},{model[3]}"
+
                 if trellis_type is not None:
                     appearance["state"] = trellis_carrier_state(trellis_type)
                     metrics["collidable_trellises"] += 1
-                else:
+                elif "state" not in appearance:
                     appearance["auto_state"] = {"type": carrier, "id": carrier_id}
-                appearance["transparent"] = True
-                appearance["entity_renderer"] = renderer
+                if renderer is not None:
+                    # Hide the carrier only when a display entity supplies the
+                    # visible geometry.  Native visual states must keep their
+                    # own vanilla block model.
+                    appearance["transparent"] = True
+                    appearance["entity_renderer"] = renderer
                 appearances[appearance_name] = appearance
             if property_values:
                 mapped_variants[variant_key] = {"appearance": appearance_name}

@@ -620,8 +620,8 @@ def validate() -> dict[str, int]:
         raise AssertionError(f"Expected 41 grid/state blocks, found {len(blocks)}")
     if len(furniture) != 133:
         raise AssertionError(f"Expected 133 furniture definitions, found {len(furniture)}")
-    if len(render_items) != 554:
-        raise AssertionError(f"Expected 554 private render items, found {len(render_items)}")
+    if len(render_items) != 553:
+        raise AssertionError(f"Expected 553 private render items, found {len(render_items)}")
     if len(recipes) != 114:
         raise AssertionError(f"Expected 114 crafting recipes, found {len(recipes)}")
 
@@ -2147,6 +2147,10 @@ def validate() -> dict[str, int]:
         raise AssertionError("Wild grapevine body must delegate native bone meal to its head")
     if "max_height" in wild_behavior:
         raise AssertionError("Wild grapevine must not retain the invented 16-block growth cap")
+    wild_body_appearance = blocks[f"{NAMESPACE}:wild_grapevine_plant"].get("state", {})
+    if wild_body_appearance != {"state": "minecraft:weeping_vines_plant"}:
+        raise AssertionError(
+            "Wild grapevine body must use the native weeping-vine visual without an ItemDisplay")
     wild_settings = blocks[f"{NAMESPACE}:wild_grapevine"]["settings"]
     if (wild_settings.get("hardness") != 0
             or wild_settings.get("resistance") != 0
@@ -2268,7 +2272,13 @@ def validate() -> dict[str, int]:
         states = block.get("states")
         appearances = states["appearances"] if states else {"default": block["state"]}
         for appearance in appearances.values():
-            render_id = appearance.get("entity_renderer", {}).get("item")
+            renderer = appearance.get("entity_renderer")
+            if renderer is None:
+                if (block_id != f"{NAMESPACE}:wild_grapevine_plant"
+                        or appearance.get("state") != "minecraft:weeping_vines_plant"):
+                    raise AssertionError(f"{block_id}: missing entity renderer")
+                continue
+            render_id = renderer.get("item")
             if render_id not in render_items:
                 raise AssertionError(f"{block_id}: missing renderer item {render_id}")
 

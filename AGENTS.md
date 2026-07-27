@@ -36,7 +36,7 @@
 - 只编译：`.\gradlew.bat compileJava`。
 - 重新迁移：`.\gradlew.bat migrateLegacyContent`。
 - 单独校验 CE 配置：`.\gradlew.bat validatePack` 或 `python tools/validate_pack.py`。
-- 迁移与校验会生成/检查 157 个公共物品、41 个方块 id、133 个家具、484 个私有渲染物品、114 个配方
+- 迁移与校验会生成/检查 157 个公共物品、41 个方块 id、133 个家具、553 个私有渲染物品、114 个配方
   和 3 个 CustomCrops 作物。
 
 ## 生成文件
