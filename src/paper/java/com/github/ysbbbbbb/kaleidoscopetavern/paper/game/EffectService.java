@@ -62,6 +62,8 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.persistence.ListPersistentDataType;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -85,6 +87,10 @@ import java.util.concurrent.ThreadLocalRandom;
 /** Applies migrated drink data, including the twelve custom Forge effects. */
 public final class EffectService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
+    private static final ListPersistentDataType<String, String> STRING_LIST =
+            PersistentDataType.LIST.strings();
+    private static final ListPersistentDataType<long[], long[]> LONG_ARRAY_LIST =
+            PersistentDataType.LIST.longArrays();
     private static final Set<String> INSTANT_EFFECTS = Set.of(
             PREFIX + "shriek_attack", PREFIX + "upside_down", PREFIX + "zenith");
     private static final Set<Material> VANILLA_CROP_BLOCKS = Set.of(
@@ -98,6 +104,8 @@ public final class EffectService implements Listener {
     private final ContentCatalog catalog;
     private final ItemService items;
     private final NamespacedKey activeKey;
+    private final NamespacedKey effectIdsKey;
+    private final NamespacedKey effectValuesKey;
     private final NamespacedKey collisionKey;
     private final NamespacedKey heelsModifierKey;
     private final NamespacedKey blockReachModifierKey;
@@ -138,6 +146,8 @@ public final class EffectService implements Listener {
         this.cornerHud = !"line".equals(plugin.getConfig().getString("effect-hud.style", "corner"));
         this.hudGuiHalfWidth = plugin.getConfig().getInt("effect-hud.gui-half-width", 240);
         this.activeKey = new NamespacedKey(plugin, "active_drink_effects");
+        this.effectIdsKey = new NamespacedKey(plugin, "effect_ids");
+        this.effectValuesKey = new NamespacedKey(plugin, "effect_values");
         this.collisionKey = new NamespacedKey(plugin, "ardent_heat_collisions");
         this.heelsModifierKey = new NamespacedKey(plugin, "effect_high_heels");
         this.blockReachModifierKey = new NamespacedKey(plugin, "effect_long_reach_block");
@@ -153,7 +163,7 @@ public final class EffectService implements Listener {
         for (org.bukkit.World world : Bukkit.getWorlds()) {
             for (LivingEntity living : world.getLivingEntities()) {
                 if (!(living instanceof Player)
-                        && living.getPersistentDataContainer().has(activeKey, PersistentDataType.STRING)) {
+                        && hasPersistedEffects(living)) {
                     load(living);
                 }
             }
@@ -262,8 +272,6 @@ public final class EffectService implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPotionSplash(PotionSplashEvent event) {
-        String encoded = event.getPotion().getPersistentDataContainer()
-                .get(splashCustomEffectsKey, PersistentDataType.STRING);
         if (!event.getPotion().getPersistentDataContainer()
                 .has(splashPreparedKey, PersistentDataType.BYTE)) {
             return;
@@ -272,7 +280,8 @@ public final class EffectService implements Listener {
         // Do not cancel the real event. Vanilla applies the rolled Minecraft
         // effects with its own direct-hit handling and instantaneous-effect
         // intensity. Only the custom Forge effects need a Paper-side bridge.
-        List<EffectSpec> customEffects = decodeSplashEffects(encoded);
+        List<EffectSpec> customEffects = readSplashEffects(
+                event.getPotion().getPersistentDataContainer());
         for (LivingEntity target : event.getAffectedEntities()) {
             if (target.isDead()) {
                 continue;
@@ -362,7 +371,7 @@ public final class EffectService implements Listener {
     public void onEntitiesLoad(EntitiesLoadEvent event) {
         for (Entity entity : event.getEntities()) {
             if (entity instanceof LivingEntity living
-                    && living.getPersistentDataContainer().has(activeKey, PersistentDataType.STRING)) {
+                    && hasPersistedEffects(living)) {
                 load(living);
             }
         }
@@ -537,35 +546,44 @@ public final class EffectService implements Listener {
         potion.setItem(payload);
         potion.getPersistentDataContainer().set(splashPreparedKey, PersistentDataType.BYTE, (byte) 1);
         if (!customEffects.isEmpty()) {
-            potion.getPersistentDataContainer().set(splashCustomEffectsKey,
-                    PersistentDataType.STRING, encodeSplashEffects(customEffects));
+            writeSplashEffects(potion.getPersistentDataContainer(), customEffects);
         }
     }
 
-    private static String encodeSplashEffects(List<EffectSpec> effects) {
-        return effects.stream()
-                .map(spec -> spec.effect() + "," + spec.durationTicks() + "," + spec.amplifier())
-                .reduce((left, right) -> left + ";" + right)
-                .orElse("");
+    private void writeSplashEffects(PersistentDataContainer owner, List<EffectSpec> effects) {
+        PersistentDataContainer encoded = owner.getAdapterContext().newPersistentDataContainer();
+        List<String> ids = new ArrayList<>(effects.size());
+        List<long[]> values = new ArrayList<>(effects.size());
+        for (EffectSpec effect : effects) {
+            ids.add(effect.effect());
+            values.add(new long[]{effect.durationTicks(), effect.amplifier()});
+        }
+        encoded.set(effectIdsKey, STRING_LIST, List.copyOf(ids));
+        encoded.set(effectValuesKey, LONG_ARRAY_LIST, List.copyOf(values));
+        owner.set(splashCustomEffectsKey, PersistentDataType.TAG_CONTAINER, encoded);
     }
 
-    private static List<EffectSpec> decodeSplashEffects(String encoded) {
-        if (encoded == null || encoded.isBlank()) {
+    private List<EffectSpec> readSplashEffects(PersistentDataContainer owner) {
+        PersistentDataContainer encoded = owner.get(
+                splashCustomEffectsKey, PersistentDataType.TAG_CONTAINER);
+        if (encoded == null) {
+            return List.of();
+        }
+        List<String> ids = encoded.get(effectIdsKey, STRING_LIST);
+        List<long[]> values = encoded.get(effectValuesKey, LONG_ARRAY_LIST);
+        if (ids == null || values == null) {
             return List.of();
         }
         List<EffectSpec> effects = new ArrayList<>();
-        for (String entry : encoded.split(";")) {
-            String[] fields = entry.split(",", 3);
-            if (fields.length != 3) {
+        for (int index = 0; index < Math.min(ids.size(), values.size()); index++) {
+            long[] packed = values.get(index);
+            if (packed == null || packed.length != 2
+                    || packed[0] <= 0 || packed[0] > Integer.MAX_VALUE
+                    || packed[1] < Integer.MIN_VALUE || packed[1] > Integer.MAX_VALUE) {
                 continue;
             }
-            try {
-                effects.add(new EffectSpec(fields[0], Integer.parseInt(fields[1]),
-                        Integer.parseInt(fields[2]), 1.0));
-            } catch (NumberFormatException ignored) {
-                // A malformed or externally edited projectile payload should
-                // break harmlessly rather than aborting the splash event.
-            }
+            effects.add(new EffectSpec(ids.get(index), (int) packed[0],
+                    (int) packed[1], 1.0));
         }
         return List.copyOf(effects);
     }
@@ -1249,44 +1267,25 @@ public final class EffectService implements Listener {
     }
 
     private Map<String, ActiveEffect> read(LivingEntity living) {
-        String encoded = living.getPersistentDataContainer().get(activeKey, PersistentDataType.STRING);
         Map<String, ActiveEffect> result = new LinkedHashMap<>();
-        if (encoded == null || encoded.isBlank()) {
+        PersistentDataContainer encoded = living.getPersistentDataContainer()
+                .get(activeKey, PersistentDataType.TAG_CONTAINER);
+        if (encoded == null) {
             return result;
         }
-        boolean versionThree = encoded.startsWith("v3|");
-        boolean versionTwo = encoded.startsWith("v2|");
-        boolean legacyEpochMillis = !versionThree && !versionTwo;
-        if (versionThree || versionTwo) {
-            encoded = encoded.substring(3);
+        List<String> ids = encoded.get(effectIdsKey, STRING_LIST);
+        List<long[]> values = encoded.get(effectValuesKey, LONG_ARRAY_LIST);
+        if (ids == null || values == null) {
+            return result;
         }
-        for (String entry : encoded.split(";")) {
-            String[] fields = entry.split(",", -1);
-            if ((!versionThree && fields.length != 3)
-                    || (versionThree && (fields.length < 3 || fields.length % 2 == 0))) {
+        for (int index = 0; index < Math.min(ids.size(), values.size()); index++) {
+            EffectSemantics.EffectState state = EffectSemantics.decodeState(values.get(index));
+            if (state == null || state.remainingTicks() <= 0) {
                 continue;
             }
-            try {
-                long storedTime = Long.parseLong(fields[1]);
-                // Releases before this semantic audit persisted an epoch-millis expiry.
-                // Convert it once without allowing offline time to advance thereafter.
-                int remaining = EffectSemantics.decodeRemainingTicks(
-                        storedTime, System.currentTimeMillis(), legacyEpochMillis);
-                EffectSemantics.EffectState hidden = null;
-                if (versionThree) {
-                    for (int index = fields.length - 2; index >= 3; index -= 2) {
-                        hidden = new EffectSemantics.EffectState(
-                                Integer.parseInt(fields[index]), Integer.parseInt(fields[index + 1]), hidden);
-                    }
-                }
-                EffectSemantics.EffectState state = new EffectSemantics.EffectState(
-                        remaining, Integer.parseInt(fields[2]), hidden);
-                ActiveEffect effect = new ActiveEffect(fields[0], state);
-                if (effect.remainingTicks() > 0) {
-                    result.put(effect.effect(), effect);
-                }
-            } catch (NumberFormatException ignored) {
-                // Ignore one corrupt entry and retain all valid persisted effects.
+            String id = ids.get(index);
+            if (id != null && NamespacedKey.fromString(id) != null) {
+                result.put(id, new ActiveEffect(id, state));
             }
         }
         return result;
@@ -1298,26 +1297,21 @@ public final class EffectService implements Listener {
             living.getPersistentDataContainer().remove(activeKey);
             return;
         }
-        StringBuilder encoded = new StringBuilder("v3|");
-        boolean first = true;
+        PersistentDataContainer owner = living.getPersistentDataContainer();
+        PersistentDataContainer encoded = owner.getAdapterContext().newPersistentDataContainer();
+        List<String> ids = new ArrayList<>(effects.size());
+        List<long[]> values = new ArrayList<>(effects.size());
         for (ActiveEffect effect : effects.values()) {
-            if (!first) {
-                encoded.append(';');
-            }
-            appendEncoded(encoded, effect);
-            first = false;
+            ids.add(effect.effect());
+            values.add(EffectSemantics.encodeState(effect.state()));
         }
-        living.getPersistentDataContainer().set(activeKey, PersistentDataType.STRING, encoded.toString());
+        encoded.set(effectIdsKey, STRING_LIST, List.copyOf(ids));
+        encoded.set(effectValuesKey, LONG_ARRAY_LIST, List.copyOf(values));
+        owner.set(activeKey, PersistentDataType.TAG_CONTAINER, encoded);
     }
 
-    private static void appendEncoded(StringBuilder encoded, ActiveEffect effect) {
-        encoded.append(effect.effect());
-        EffectSemantics.EffectState state = effect.state();
-        while (state != null) {
-            encoded.append(',').append(state.remainingTicks())
-                    .append(',').append(state.amplifier());
-            state = state.hidden();
-        }
+    private boolean hasPersistedEffects(LivingEntity living) {
+        return living.getPersistentDataContainer().has(activeKey, PersistentDataType.TAG_CONTAINER);
     }
 
     /**

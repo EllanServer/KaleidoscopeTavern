@@ -1870,6 +1870,27 @@ def validate() -> dict[str, int]:
     if "new ArrayList<>(effects.values())" in effect_service_source:
         raise AssertionError(
             "Custom effect ticking must not allocate an effects snapshot every entity tick")
+    for typed_effect_storage_token in (
+            "PersistentDataType.LIST.strings()",
+            "PersistentDataType.LIST.longArrays()",
+            ".get(activeKey, PersistentDataType.TAG_CONTAINER)",
+            "owner.set(activeKey, PersistentDataType.TAG_CONTAINER, encoded)",
+            "owner.set(splashCustomEffectsKey, PersistentDataType.TAG_CONTAINER, encoded)",
+            "EffectSemantics.encodeState(effect.state())",
+            "EffectSemantics.decodeState(values.get(index))"):
+        if typed_effect_storage_token not in effect_service_source:
+            raise AssertionError(
+                "Custom effect persistence must use typed compound/list NBT instead of "
+                f"delimiter parsing; missing {typed_effect_storage_token}")
+    for stale_effect_storage_token in (
+            "get(activeKey, PersistentDataType.STRING)",
+            "set(activeKey, PersistentDataType.STRING",
+            "encodeSplashEffects", "decodeSplashEffects",
+            'new StringBuilder("v3|")', "decodeRemainingTicks"):
+        if stale_effect_storage_token in effect_service_source:
+            raise AssertionError(
+                "Legacy string effect persistence is intentionally unsupported; "
+                f"found {stale_effect_storage_token}")
     for packet_token in (
             "ClientboundSetEntityDataPacketProxy",
             'ComponentProxy.INSTANCE.literal("Grumm")',

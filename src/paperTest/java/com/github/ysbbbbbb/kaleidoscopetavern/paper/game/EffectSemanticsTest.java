@@ -2,23 +2,30 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EffectSemanticsTest {
     @Test
-    void persistedTickDurationsDoNotAdvanceWhileOffline() {
-        assertEquals(1_200, EffectSemantics.decodeRemainingTicks(
-                1_200, 9_999_999_999L, false));
+    void typedPersistenceRoundTripsTheVisibleAndHiddenStateTree() {
+        EffectSemantics.EffectState state = new EffectSemantics.EffectState(40, 2,
+                new EffectSemantics.EffectState(160, 0, null));
+        long[] encoded = EffectSemantics.encodeState(state);
+
+        assertArrayEquals(new long[]{40, 2, 160, 0}, encoded);
+        assertEquals(state, EffectSemantics.decodeState(encoded));
     }
 
     @Test
-    void legacyEpochExpiryIsConvertedOnce() {
-        assertEquals(21, EffectSemantics.decodeRemainingTicks(
-                1_700_000_001_050L, 1_700_000_000_000L, true));
-        assertEquals(20, EffectSemantics.decodeRemainingTicks(
-                12_000_000, 11_999_000, true));
+    void malformedTypedEffectStateIsRejected() {
+        assertNull(EffectSemantics.decodeState(null));
+        assertNull(EffectSemantics.decodeState(new long[0]));
+        assertNull(EffectSemantics.decodeState(new long[]{20, 1, 40}));
+        assertNull(EffectSemantics.decodeState(
+                new long[]{(long) Integer.MAX_VALUE + 1L, 0}));
     }
 
     @Test

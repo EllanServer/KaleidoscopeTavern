@@ -7,9 +7,35 @@ final class EffectSemantics {
     private EffectSemantics() {
     }
 
-    static int decodeRemainingTicks(long stored, long nowMillis, boolean legacyEpochMillis) {
-        long ticks = legacyEpochMillis ? (stored - nowMillis + 49L) / 50L : stored;
-        return (int) Math.max(0, Math.min(Integer.MAX_VALUE, ticks));
+    static long[] encodeState(EffectState state) {
+        int layers = 0;
+        for (EffectState current = state; current != null; current = current.hidden()) {
+            layers++;
+        }
+        long[] encoded = new long[layers * 2];
+        int index = 0;
+        for (EffectState current = state; current != null; current = current.hidden()) {
+            encoded[index++] = current.remainingTicks();
+            encoded[index++] = current.amplifier();
+        }
+        return encoded;
+    }
+
+    static EffectState decodeState(long[] encoded) {
+        if (encoded == null || encoded.length < 2 || encoded.length % 2 != 0) {
+            return null;
+        }
+        EffectState state = null;
+        for (int index = encoded.length - 2; index >= 0; index -= 2) {
+            long remaining = encoded[index];
+            long amplifier = encoded[index + 1];
+            if (remaining < Integer.MIN_VALUE || remaining > Integer.MAX_VALUE
+                    || amplifier < Integer.MIN_VALUE || amplifier > Integer.MAX_VALUE) {
+                return null;
+            }
+            state = new EffectState((int) remaining, (int) amplifier, state);
+        }
+        return state;
     }
 
     static boolean ticksAt(int remainingTicks, int interval) {
