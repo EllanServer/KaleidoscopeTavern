@@ -393,6 +393,7 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         private final boolean[] visualsDirty;
         private final StorageVisualElement element;
         private ImmutableBlockState renderState;
+        private int occupiedSlots;
         private boolean dropContents = true;
 
         private Controller(BlockEntity blockEntity, StorageBlockBehavior behavior) {
@@ -427,6 +428,7 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                 return false;
             }
             items[slot] = item.copyWithCount(1);
+            occupiedSlots++;
             changed(slot);
             return true;
         }
@@ -437,12 +439,13 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
             }
             Item taken = items[slot];
             items[slot] = Item.empty();
+            occupiedSlots--;
             changed(slot);
             return taken;
         }
 
         public boolean hasAny() {
-            return Arrays.stream(items).anyMatch(item -> item != null && !item.isEmpty());
+            return occupiedSlots != 0;
         }
 
         public Direction facing() {
@@ -487,6 +490,7 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         @Override
         public void loadCustomData(CompoundTag tag) {
             Arrays.fill(items, Item.empty());
+            occupiedSlots = 0;
             CompoundTag data = tag.getCompound(behavior.dataKey);
             if (data == null) {
                 invalidateVisuals();
@@ -499,6 +503,9 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                 if (itemTag != null) {
                     items[slot] = ItemStackUtils.wrap(
                             ItemStackUtils.parseMinecraftItem(itemTag, dataVersion));
+                    if (!items[slot].isEmpty()) {
+                        occupiedSlots++;
+                    }
                 }
             }
             invalidateVisuals();
@@ -532,6 +539,7 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                 }
             }
             Arrays.fill(items, Item.empty());
+            occupiedSlots = 0;
             invalidateVisuals();
             dropContents = true;
         }
