@@ -55,19 +55,14 @@ class StorageSemanticsTest {
     }
 
     @Test
-    void asymmetricRackItemDisplaysReflectOnlyEastWestFacing() {
+    void asymmetricRackEastWestPositionAndModelRotationsRemainIndependent() {
         for (StorageSemantics.Kind kind : new StorageSemantics.Kind[]{TILTED_RACK, HOLDER}) {
-            assertEquals(0F,
-                    StorageSemantics.correctedFacingYaw(kind, 0F, false), EPSILON);
-            assertEquals(180F,
-                    StorageSemantics.correctedFacingYaw(kind, 180F, false), EPSILON);
-            assertEquals(90F,
-                    StorageSemantics.correctedFacingYaw(kind, -90F, true), EPSILON);
-            assertEquals(-90F,
-                    StorageSemantics.correctedFacingYaw(kind, 90F, true), EPSILON);
+            assertFacingRotation(kind, 0F, false, 0F, 0F);
+            assertFacingRotation(kind, 180F, false, 180F, 180F);
+            assertFacingRotation(kind, -90F, true, -90F, 90F);
+            assertFacingRotation(kind, 90F, true, 90F, -90F);
         }
-        assertEquals(-90F,
-                StorageSemantics.correctedFacingYaw(CIRCULAR_RACK, -90F, true), EPSILON);
+        assertFacingRotation(CIRCULAR_RACK, -90F, true, -90F, -90F);
     }
 
     @Test
@@ -128,5 +123,14 @@ class StorageSemanticsTest {
         } else {
             assertFalse(actual.rotateWithFacing());
         }
+    }
+
+    private static void assertFacingRotation(StorageSemantics.Kind kind,
+                                             float sourceYaw, boolean axisX,
+                                             float positionYaw, float modelYaw) {
+        StorageSemantics.FacingRotation actual = StorageSemantics.facingRotation(
+                kind, sourceYaw, axisX);
+        assertEquals(positionYaw, actual.positionYaw(), EPSILON);
+        assertEquals(modelYaw, actual.modelYaw(), EPSILON);
     }
 }

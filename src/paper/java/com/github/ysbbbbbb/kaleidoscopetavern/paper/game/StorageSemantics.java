@@ -24,6 +24,9 @@ public final class StorageSemantics {
                          float scale, float yRot, float xRot, boolean rotateWithFacing) {
     }
 
+    public record FacingRotation(float positionYaw, float modelYaw) {
+    }
+
     public static Visual visual(Kind kind, int slot, boolean irregular, boolean facingAxisX) {
         return switch (kind) {
             case BAR_CABINET -> {
@@ -46,14 +49,16 @@ public final class StorageSemantics {
         };
     }
 
-    public static float correctedFacingYaw(Kind kind, float facingYaw, boolean facingAxisX) {
+    public static FacingRotation facingRotation(
+            Kind kind, float facingYaw, boolean facingAxisX) {
         // CE's ItemDisplay yaw mirrors the east/west block-model mapping for
-        // these two asymmetric racks. Keep north/south byte-for-byte stable
-        // and reflect only the quarter turns, matching their corrected bases.
+        // these two asymmetric racks. The slot position still follows the
+        // physical block rotation; only the displayed bottle model is
+        // reflected to match the corrected carrier model.
         if (facingAxisX && (kind == Kind.TILTED_RACK || kind == Kind.HOLDER)) {
-            return -facingYaw;
+            return new FacingRotation(facingYaw, -facingYaw);
         }
-        return facingYaw;
+        return new FacingRotation(facingYaw, facingYaw);
     }
 
     public static boolean changesRenderedArrangement(
