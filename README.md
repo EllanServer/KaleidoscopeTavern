@@ -6,6 +6,8 @@
 
 - **代码**：[BSD 3-Clause](LICENSE-CODE)，版权归 Kaleidoscope Official Production Team 所有。
 - **素材**（贴图、模型、音效等美术资源）：[CC BY-NC-SA 4.0](LICENSE-ASSETS)——署名、非商业性使用、相同方式共享。
+- **素材来源与修改说明**：[ASSET-CREDITS.md](ASSET-CREDITS.md)。代码许可证不会覆盖或放宽素材的非商业限制。
+- **第三方组件**：[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。CraftEngine、CustomCrops、Paper 与可选的 PlaceholderAPI 均由服务器分别安装，其类不会打入本插件 JAR。
 - **上游致谢**：本项目源自 [KaleidoscopeTavern](https://github.com/KaleidoscopeMods/KaleidoscopeTavern)（作者 ysbbbbbb、tartaric_acid），并依赖 [CraftEngine](https://github.com/Xiao-MoMi/craft-engine) 与 [CustomCrops](https://github.com/Xiao-MoMi/Custom-Crops) 运行。
 
 ## 兼容范围

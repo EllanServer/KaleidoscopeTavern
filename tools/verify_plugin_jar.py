@@ -13,6 +13,10 @@ from pathlib import Path
 REQUIRED_ENTRIES = (
     "plugin.yml",
     "META-INF/MANIFEST.MF",
+    "META-INF/LICENSE-CODE",
+    "META-INF/LICENSE-ASSETS",
+    "META-INF/ASSET-CREDITS.md",
+    "META-INF/THIRD-PARTY-NOTICES.md",
     "tavern-pack/pack.yml",
     "tavern-pack/configuration/blocks.json",
     "tavern-pack/configuration/furniture.json",
@@ -47,8 +51,13 @@ def main() -> int:
             raise SystemExit("Deployable JAR is missing: " + ", ".join(missing))
 
         forbidden_prefixes = (
+            "net/momirealms/craftengine/",
             "net/momirealms/customcrops/",
             "net/momirealms/sparrow/",
+            "me/clip/placeholderapi/",
+            "io/papermc/paper/",
+            "org/bukkit/",
+            "org/junit/",
         )
         embedded = sorted(
             name for name in names if name.endswith(".class")
@@ -59,6 +68,35 @@ def main() -> int:
                 "Runtime dependencies must remain separate plugins; embedded class found: "
                 + embedded[0]
             )
+
+        legal_markers = {
+            "META-INF/LICENSE-CODE": (
+                "BSD 3-Clause License",
+                "Kaleidoscope Official Production Team",
+            ),
+            "META-INF/LICENSE-ASSETS": (
+                "Creative Commons Attribution-NonCommercial-ShareAlike 4.0",
+                "https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode",
+            ),
+            "META-INF/ASSET-CREDITS.md": (
+                "KaleidoscopeMods/KaleidoscopeTavern",
+                "NonCommercial",
+                "modified",
+            ),
+            "META-INF/THIRD-PARTY-NOTICES.md": (
+                "CraftEngine",
+                "CustomCrops",
+                "GPL-3.0",
+                "not bundled",
+            ),
+        }
+        for entry, markers in legal_markers.items():
+            document = archive.read(entry).decode("utf-8-sig")
+            missing_markers = [marker for marker in markers if marker not in document]
+            if missing_markers:
+                raise SystemExit(
+                    f"{entry} is missing required legal marker: {missing_markers[0]}"
+                )
 
         manifest = archive.read("META-INF/MANIFEST.MF").decode("utf-8")
         unfolded_manifest = manifest.replace("\r\n ", "").replace("\n ", "")
@@ -127,7 +165,7 @@ def main() -> int:
 
     print(
         f"Plugin JAR verified: Paper 26.2, CustomCrops {args.custom_crops_version}, "
-        "managed CraftEngine project and resource pack present"
+        "managed CraftEngine project, resource pack and legal notices present"
     )
     return 0
 
