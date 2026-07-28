@@ -46,6 +46,16 @@ public final class StorageSemantics {
         };
     }
 
+    public static float correctedFacingYaw(Kind kind, float facingYaw, boolean facingAxisX) {
+        // CE's ItemDisplay yaw mirrors the east/west block-model mapping for
+        // these two asymmetric racks. Keep north/south byte-for-byte stable
+        // and reflect only the quarter turns, matching their corrected bases.
+        if (facingAxisX && (kind == Kind.TILTED_RACK || kind == Kind.HOLDER)) {
+            return -facingYaw;
+        }
+        return facingYaw;
+    }
+
     static int clickedSlot(Kind kind, double sourceX, double sourceY, double sourceZ,
                            boolean facingAxisX) {
         // GlasswareHolderBlock#getSlotFromHit only used the hit's block-local

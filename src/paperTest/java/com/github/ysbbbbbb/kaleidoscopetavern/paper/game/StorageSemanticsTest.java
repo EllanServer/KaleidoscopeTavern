@@ -55,6 +55,22 @@ class StorageSemanticsTest {
     }
 
     @Test
+    void asymmetricRackItemDisplaysReflectOnlyEastWestFacing() {
+        for (StorageSemantics.Kind kind : new StorageSemantics.Kind[]{TILTED_RACK, HOLDER}) {
+            assertEquals(0F,
+                    StorageSemantics.correctedFacingYaw(kind, 0F, false), EPSILON);
+            assertEquals(180F,
+                    StorageSemantics.correctedFacingYaw(kind, 180F, false), EPSILON);
+            assertEquals(90F,
+                    StorageSemantics.correctedFacingYaw(kind, -90F, true), EPSILON);
+            assertEquals(-90F,
+                    StorageSemantics.correctedFacingYaw(kind, 90F, true), EPSILON);
+        }
+        assertEquals(-90F,
+                StorageSemantics.correctedFacingYaw(CIRCULAR_RACK, -90F, true), EPSILON);
+    }
+
+    @Test
     void clickedSlotsMatchForgeBlockAlgorithms() {
         assertEquals(0, StorageSemantics.clickedSlot(BAR_CABINET, 0.75, 0.5, 0, false));
         assertEquals(0, StorageSemantics.clickedSlot(BAR_CABINET, 0.25, 0.5, 0, true));

@@ -697,7 +697,10 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
     private static RenderPosition renderPosition(
             Controller controller, StorageSemantics.Visual visual) {
         BlockPos pos = controller.pos();
-        double angle = Math.toRadians(facingAngle(controller.facing()));
+        Direction facing = controller.facing();
+        float facingYaw = StorageSemantics.correctedFacingYaw(
+                controller.kind(), facingAngle(facing), facing.axis() == Direction.Axis.X);
+        double angle = Math.toRadians(facingYaw);
         double dx = visual.centerX() - 0.5;
         double dz = visual.centerZ() - 0.5;
         double rotatedX = Math.cos(angle) * dx + Math.sin(angle) * dz;
@@ -706,7 +709,7 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                 pos.x() + 0.5 + rotatedX,
                 pos.y() + visual.centerY(),
                 pos.z() + 0.5 + rotatedZ,
-                facingAngle(controller.facing()) + visual.yRot());
+                facingYaw + visual.yRot());
     }
 
     private static float facingAngle(Direction facing) {
