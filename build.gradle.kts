@@ -57,12 +57,12 @@ tasks.processResources {
         expand(replacements)
     }
 
-    from(
+    from(listOf(
         "LICENSE-CODE",
         "LICENSE-ASSETS",
         "ASSET-CREDITS.md",
         "THIRD-PARTY-NOTICES.md"
-    ) {
+    )) {
         into("META-INF")
     }
 
