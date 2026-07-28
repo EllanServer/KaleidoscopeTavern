@@ -7257,24 +7257,10 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-tilted-rack-transparent"
-            },
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/tilted_rack/0b95975b59",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_2": {
             "auto_state": {
               "type": "cactus",
               "id": "kaleidoscope-tavern-tilted-rack-transparent"
@@ -7289,6 +7275,20 @@
               "rotation": "0,180,0"
             }
           },
+          "appearance_2": {
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-tilted-rack-transparent"
+            },
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tilted_rack/0b95975b59",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_3": {
             "auto_state": {
               "type": "cactus",
@@ -7301,7 +7301,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },
@@ -7553,10 +7553,7 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-holder-transparent"
-            },
+            "state": "minecraft:copper_lantern[hanging=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7564,28 +7561,11 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-holder-transparent"
-            },
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/holder/d532879009",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_2": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-holder-transparent"
-            },
+            "state": "minecraft:copper_lantern[hanging=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7596,11 +7576,19 @@
               "rotation": "0,180,0"
             }
           },
+          "appearance_2": {
+            "state": "minecraft:copper_lantern[hanging=false,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/holder/d532879009",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_3": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-holder-transparent"
-            },
+            "state": "minecraft:copper_lantern[hanging=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7608,7 +7596,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           }
         },

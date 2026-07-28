@@ -220,6 +220,9 @@ GRAPE_CARRIER_ID = "kaleidoscope-tavern-wild-grapevine-transparent"
 # carrier, barrier does not consume a model-overridable state and therefore
 # cannot collide with another CraftEngine project's stair allocation.
 SOFA_CARRIER_STATE = "minecraft:barrier"
+COPPER_LANTERN_CARRIER_STATE = (
+    "minecraft:copper_lantern[hanging=false,waterlogged=false]"
+)
 
 PAINTINGS = {
     "ysbb_painting",
@@ -610,7 +613,7 @@ def carrier_type(block_id: str) -> tuple[str, str]:
         return "solid", "kaleidoscope-tavern-cellar-cabinet-transparent"
     if block_id == "circular_rack":
         return "pressure_plate", "kaleidoscope-tavern-circular-rack-transparent"
-    if block_id in {"tilted_rack", "holder"}:
+    if block_id == "tilted_rack":
         return "cactus", f"kaleidoscope-tavern-{block_id.replace('_', '-')}-transparent"
     return "higher_tripwire", "kaleidoscope-tavern-decor-transparent"
 
@@ -933,6 +936,15 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 metrics["weighted_variants_reduced"] += 1
             variant_properties = parse_variant_key(variant_key)
             model = normalize_model_entry(raw_model)
+            if block_id in {"tilted_rack", "holder"}:
+                # CE's ItemDisplay path presents these two asymmetric rack
+                # models back-to-front. The native hard-coded `facing`
+                # placement already matches AbstractStorageBlock (opposite the
+                # player), so compensate only the visible base model and keep
+                # slot selection, bottle visuals and redstone launch semantics
+                # on the original block state.
+                model = (model[0], model[1], (model[2] + 180) % 360,
+                         model[3], model[4])
             if is_sofa:
                 # CE places sofa facing in the player's horizontal direction;
                 # the source block faced the opposite direction. Rotate only
@@ -1003,15 +1015,17 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                     # so do not mark this appearance transparent (which would
                     # try to bind CE's empty model to the shared vanilla state).
                     appearance["state"] = SOFA_CARRIER_STATE
+                elif block_id == "holder":
+                    # CE 26.7.4 releases this compact, aimable standing
+                    # lantern state. Use it as HolderBlock's client carrier in
+                    # place of the former broad cactus auto-state.
+                    appearance["state"] = COPPER_LANTERN_CARRIER_STATE
                 elif block_id in INCENSE_BLOCKS:
                     # CE 26.7.4 explicitly releases the un-waxed source state
                     # and remaps it to the waxed client state. Its compact,
                     # aimable standing-lantern shape replaces the former CE
                     # Interaction plus shulker furniture hitboxes.
-                    appearance["state"] = (
-                        "minecraft:copper_lantern"
-                        "[hanging=false,waterlogged=false]"
-                    )
+                    appearance["state"] = COPPER_LANTERN_CARRIER_STATE
                 elif trellis_type is not None:
                     appearance["state"] = trellis_carrier_state(
                         trellis_type, variant_properties["waterlogged"])
