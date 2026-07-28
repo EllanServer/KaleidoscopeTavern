@@ -611,8 +611,11 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
 def carrier_type(block_id: str) -> tuple[str, str]:
     if block_id == "cellar_cabinet":
         return "solid", "kaleidoscope-tavern-cellar-cabinet-transparent"
-    if block_id == "circular_rack":
-        return "pressure_plate", "kaleidoscope-tavern-circular-rack-transparent"
+    if block_id in {"circular_rack", "holder"}:
+        return (
+            "pressure_plate",
+            f"kaleidoscope-tavern-{block_id.replace('_', '-')}-transparent",
+        )
     if block_id == "tilted_rack":
         return "cactus", f"kaleidoscope-tavern-{block_id.replace('_', '-')}-transparent"
     return "higher_tripwire", "kaleidoscope-tavern-decor-transparent"
@@ -937,13 +940,13 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             variant_properties = parse_variant_key(variant_key)
             model = normalize_model_entry(raw_model)
             if block_id in {"tilted_rack", "holder"}:
-                # CE's ItemDisplay path presents these two asymmetric rack
-                # models back-to-front. The native hard-coded `facing`
-                # placement already matches AbstractStorageBlock (opposite the
-                # player), so compensate only the visible base model and keep
-                # slot selection, bottle visuals and redstone launch semantics
-                # on the original block state.
-                model = (model[0], model[1], (model[2] + 180) % 360,
+                # CE's ItemDisplay yaw uses the opposite sign from the legacy
+                # block-state model. Reflecting around 180 degrees keeps the
+                # already-correct north/south variants and swaps east/west into
+                # place. Only the visible base model changes; slot selection,
+                # bottle visuals and redstone launch semantics still use the
+                # original block state.
+                model = (model[0], model[1], (180 - model[2]) % 360,
                          model[3], model[4])
             if is_sofa:
                 # CE places sofa facing in the player's horizontal direction;
@@ -1015,11 +1018,6 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                     # so do not mark this appearance transparent (which would
                     # try to bind CE's empty model to the shared vanilla state).
                     appearance["state"] = SOFA_CARRIER_STATE
-                elif block_id == "holder":
-                    # CE 26.7.4 releases this compact, aimable standing
-                    # lantern state. Use it as HolderBlock's client carrier in
-                    # place of the former broad cactus auto-state.
-                    appearance["state"] = COPPER_LANTERN_CARRIER_STATE
                 elif block_id in INCENSE_BLOCKS:
                     # CE 26.7.4 explicitly releases the un-waxed source state
                     # and remaps it to the waxed client state. Its compact,

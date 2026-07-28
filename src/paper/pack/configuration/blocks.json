@@ -7257,7 +7257,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_1": {
@@ -7301,7 +7301,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           }
         },
@@ -7553,7 +7553,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:copper_lantern[hanging=false,waterlogged=false]",
+            "auto_state": {
+              "type": "pressure_plate",
+              "id": "kaleidoscope-tavern-holder-transparent"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7561,11 +7564,14 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "appearance_1": {
-            "state": "minecraft:copper_lantern[hanging=false,waterlogged=false]",
+            "auto_state": {
+              "type": "pressure_plate",
+              "id": "kaleidoscope-tavern-holder-transparent"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7577,7 +7583,10 @@
             }
           },
           "appearance_2": {
-            "state": "minecraft:copper_lantern[hanging=false,waterlogged=false]",
+            "auto_state": {
+              "type": "pressure_plate",
+              "id": "kaleidoscope-tavern-holder-transparent"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7588,7 +7597,10 @@
             }
           },
           "appearance_3": {
-            "state": "minecraft:copper_lantern[hanging=false,waterlogged=false]",
+            "auto_state": {
+              "type": "pressure_plate",
+              "id": "kaleidoscope-tavern-holder-transparent"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7596,7 +7608,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           }
         },

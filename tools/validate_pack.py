@@ -23,7 +23,7 @@ STORAGE_BLOCK_SPECS = {
     "cellar_cabinet": (9, "cellar_cabinet_blocklist", "solid"),
     "tilted_rack": (3, "tilted_rack_blocklist", "cactus"),
     "circular_rack": (6, "circular_rack_blocklist", "pressure_plate"),
-    "holder": (1, "holder_blocklist", COPPER_LANTERN_CARRIER_STATE),
+    "holder": (1, "holder_blocklist", "pressure_plate"),
 }
 EXPECTED_TICKING_FURNITURE = {
     "mystery_cocktail": (
@@ -4329,10 +4329,10 @@ def validate() -> dict[str, int]:
                 f"found {render_ids}")
         if storage_id in {"tilted_rack", "holder"}:
             expected_rotations = {
-                "east": "0,270,0",
+                "east": "0,90,0",
                 "north": "0,180,0",
                 "south": None,
-                "west": "0,90,0",
+                "west": "0,270,0",
             }
             for facing, expected_rotation in expected_rotations.items():
                 variant = variants[f"facing={facing},powered=false"]
@@ -4341,7 +4341,7 @@ def validate() -> dict[str, int]:
                 if actual_rotation != expected_rotation:
                     raise AssertionError(
                         f"{storage_id}: {facing} model must retain the corrected "
-                        f"180-degree orientation, got {actual_rotation!r}")
+                        f"ItemDisplay yaw mapping, got {actual_rotation!r}")
         settings = definition.get("settings", {})
         if (settings.get("hardness") != 2.5
                 or settings.get("resistance") != 2.5
