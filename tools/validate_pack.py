@@ -16,11 +16,14 @@ CUSTOM_CROPS = ROOT / "src/paper/customcrops/contents/crops/kaleidoscope_tavern.
 PLUGIN_CONFIG = ROOT / "src/paper/resources/config.yml"
 NAMESPACE = "kaleidoscope_tavern"
 EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
+COPPER_LANTERN_CARRIER_STATE = (
+    "minecraft:copper_lantern[hanging=false,waterlogged=false]"
+)
 STORAGE_BLOCK_SPECS = {
     "cellar_cabinet": (9, "cellar_cabinet_blocklist", "solid"),
     "tilted_rack": (3, "tilted_rack_blocklist", "cactus"),
     "circular_rack": (6, "circular_rack_blocklist", "pressure_plate"),
-    "holder": (1, "holder_blocklist", "cactus"),
+    "holder": (1, "holder_blocklist", "pressure_plate"),
 }
 EXPECTED_TICKING_FURNITURE = {
     "mystery_cocktail": (
@@ -4303,10 +4306,17 @@ def validate() -> dict[str, int]:
                 f"{len(appearances)}/{len(variants)}")
         render_ids = set()
         for appearance in appearances.values():
-            auto_state = appearance.get("auto_state", {})
-            if auto_state.get("type") != carrier_type:
-                raise AssertionError(
-                    f"{storage_id}: expected {carrier_type} carrier, got {auto_state!r}")
+            if carrier_type.startswith("minecraft:"):
+                if (appearance.get("state") != carrier_type
+                        or "auto_state" in appearance):
+                    raise AssertionError(
+                        f"{storage_id}: expected released carrier state {carrier_type}, "
+                        f"got {appearance!r}")
+            else:
+                auto_state = appearance.get("auto_state", {})
+                if auto_state.get("type") != carrier_type:
+                    raise AssertionError(
+                        f"{storage_id}: expected {carrier_type} carrier, got {auto_state!r}")
             renderer = appearance.get("entity_renderer", {})
             if renderer.get("type") != "item_display":
                 raise AssertionError(
@@ -4317,6 +4327,21 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{storage_id}: expected {expected_render_items} shared base render items, "
                 f"found {render_ids}")
+        if storage_id in {"tilted_rack", "holder"}:
+            expected_rotations = {
+                "east": "0,90,0",
+                "north": "0,180,0",
+                "south": None,
+                "west": "0,270,0",
+            }
+            for facing, expected_rotation in expected_rotations.items():
+                variant = variants[f"facing={facing},powered=false"]
+                appearance = appearances[variant["appearance"]]
+                actual_rotation = appearance["entity_renderer"].get("rotation")
+                if actual_rotation != expected_rotation:
+                    raise AssertionError(
+                        f"{storage_id}: {facing} model must retain the corrected "
+                        f"ItemDisplay yaw mapping, got {actual_rotation!r}")
         settings = definition.get("settings", {})
         if (settings.get("hardness") != 2.5
                 or settings.get("resistance") != 2.5

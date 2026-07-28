@@ -55,6 +55,29 @@ class StorageSemanticsTest {
     }
 
     @Test
+    void asymmetricRackEastWestPositionAndModelRotationsRemainIndependent() {
+        for (StorageSemantics.Kind kind : new StorageSemantics.Kind[]{TILTED_RACK, HOLDER}) {
+            assertFacingRotation(kind, 0F, false, 0F, 0F);
+            assertFacingRotation(kind, 180F, false, 180F, 180F);
+            assertFacingRotation(kind, -90F, true, -90F, 90F);
+            assertFacingRotation(kind, 90F, true, 90F, -90F);
+        }
+        assertFacingRotation(CIRCULAR_RACK, -90F, true, -90F, -90F);
+    }
+
+    @Test
+    void cellarConnectionChangesRefreshStoredBottleDisplays() {
+        assertTrue(StorageSemantics.changesRenderedArrangement(
+                CELLAR_CABINET, false, true));
+        assertTrue(StorageSemantics.changesRenderedArrangement(
+                CELLAR_CABINET, true, false));
+        assertFalse(StorageSemantics.changesRenderedArrangement(
+                CELLAR_CABINET, false, false));
+        assertFalse(StorageSemantics.changesRenderedArrangement(
+                HOLDER, false, true));
+    }
+
+    @Test
     void clickedSlotsMatchForgeBlockAlgorithms() {
         assertEquals(0, StorageSemantics.clickedSlot(BAR_CABINET, 0.75, 0.5, 0, false));
         assertEquals(0, StorageSemantics.clickedSlot(BAR_CABINET, 0.25, 0.5, 0, true));
@@ -100,5 +123,14 @@ class StorageSemanticsTest {
         } else {
             assertFalse(actual.rotateWithFacing());
         }
+    }
+
+    private static void assertFacingRotation(StorageSemantics.Kind kind,
+                                             float sourceYaw, boolean axisX,
+                                             float positionYaw, float modelYaw) {
+        StorageSemantics.FacingRotation actual = StorageSemantics.facingRotation(
+                kind, sourceYaw, axisX);
+        assertEquals(positionYaw, actual.positionYaw(), EPSILON);
+        assertEquals(modelYaw, actual.modelYaw(), EPSILON);
     }
 }

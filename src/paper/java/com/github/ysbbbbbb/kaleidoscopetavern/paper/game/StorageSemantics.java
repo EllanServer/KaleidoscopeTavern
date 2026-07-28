@@ -24,6 +24,9 @@ public final class StorageSemantics {
                          float scale, float yRot, float xRot, boolean rotateWithFacing) {
     }
 
+    public record FacingRotation(float positionYaw, float modelYaw) {
+    }
+
     public static Visual visual(Kind kind, int slot, boolean irregular, boolean facingAxisX) {
         return switch (kind) {
             case BAR_CABINET -> {
@@ -44,6 +47,23 @@ public final class StorageSemantics {
             case HOLDER -> renderStack(0.5, 0.125, 0.75, 0.95F, 0, -45, true);
             case GLASSWARE_HOLDER -> glasswareHolder(slot);
         };
+    }
+
+    public static FacingRotation facingRotation(
+            Kind kind, float facingYaw, boolean facingAxisX) {
+        // CE's ItemDisplay yaw mirrors the east/west block-model mapping for
+        // these two asymmetric racks. The slot position still follows the
+        // physical block rotation; only the displayed bottle model is
+        // reflected to match the corrected carrier model.
+        if (facingAxisX && (kind == Kind.TILTED_RACK || kind == Kind.HOLDER)) {
+            return new FacingRotation(facingYaw, -facingYaw);
+        }
+        return new FacingRotation(facingYaw, facingYaw);
+    }
+
+    public static boolean changesRenderedArrangement(
+            Kind kind, boolean facingChanged, boolean connectionChanged) {
+        return facingChanged || (kind == Kind.CELLAR_CABINET && connectionChanged);
     }
 
     static int clickedSlot(Kind kind, double sourceX, double sourceY, double sourceZ,

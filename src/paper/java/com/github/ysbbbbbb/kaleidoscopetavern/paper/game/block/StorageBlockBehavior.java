@@ -477,14 +477,27 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
 
         @Override
         public void preBlockStateChange(ImmutableBlockState newState) {
-            Direction oldFacing = blockEntity.blockState.get(behavior.facingProperty);
+            ImmutableBlockState oldState = blockEntity.blockState;
+            Direction oldFacing = oldState.get(behavior.facingProperty);
             Direction newFacing = newState.get(behavior.facingProperty);
-            if (oldFacing == newFacing || blockEntity.world == null) {
+            boolean connectionChanged = behavior.positionProperty != null
+                    && !Objects.equals(
+                    oldState.get(behavior.positionProperty),
+                    newState.get(behavior.positionProperty));
+            if (!StorageSemantics.changesRenderedArrangement(
+                    behavior.kind, oldFacing != newFacing, connectionChanged)
+                    || blockEntity.world == null) {
                 return;
             }
             renderState = newState;
-            updateTrackedPlayers();
-            renderState = null;
+            try {
+                // CE replaces the cabinet's constant renderer when its
+                // connection appearance changes. Respawn the independent
+                // packet-only bottle displays in the same state transition.
+                updateTrackedPlayers();
+            } finally {
+                renderState = null;
+            }
         }
 
         @Override
@@ -697,7 +710,10 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
     private static RenderPosition renderPosition(
             Controller controller, StorageSemantics.Visual visual) {
         BlockPos pos = controller.pos();
-        double angle = Math.toRadians(facingAngle(controller.facing()));
+        Direction facing = controller.facing();
+        StorageSemantics.FacingRotation facingRotation = StorageSemantics.facingRotation(
+                controller.kind(), facingAngle(facing), facing.axis() == Direction.Axis.X);
+        double angle = Math.toRadians(facingRotation.positionYaw());
         double dx = visual.centerX() - 0.5;
         double dz = visual.centerZ() - 0.5;
         double rotatedX = Math.cos(angle) * dx + Math.sin(angle) * dz;
@@ -706,7 +722,7 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                 pos.x() + 0.5 + rotatedX,
                 pos.y() + visual.centerY(),
                 pos.z() + 0.5 + rotatedZ,
-                facingAngle(controller.facing()) + visual.yRot());
+                facingRotation.modelYaw() + visual.yRot());
     }
 
     private static float facingAngle(Direction facing) {

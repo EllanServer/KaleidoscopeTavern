@@ -7271,7 +7271,8 @@
               "item": "kaleidoscope_tavern:_render/tilted_rack/0b95975b59",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -7285,8 +7286,7 @@
               "item": "kaleidoscope_tavern:_render/tilted_rack/0b95975b59",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -7554,7 +7554,7 @@
         "appearances": {
           "appearance_0": {
             "auto_state": {
-              "type": "cactus",
+              "type": "pressure_plate",
               "id": "kaleidoscope-tavern-holder-transparent"
             },
             "transparent": true,
@@ -7569,21 +7569,7 @@
           },
           "appearance_1": {
             "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-holder-transparent"
-            },
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/holder/d532879009",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_2": {
-            "auto_state": {
-              "type": "cactus",
+              "type": "pressure_plate",
               "id": "kaleidoscope-tavern-holder-transparent"
             },
             "transparent": true,
@@ -7596,9 +7582,23 @@
               "rotation": "0,180,0"
             }
           },
+          "appearance_2": {
+            "auto_state": {
+              "type": "pressure_plate",
+              "id": "kaleidoscope-tavern-holder-transparent"
+            },
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/holder/d532879009",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
           "appearance_3": {
             "auto_state": {
-              "type": "cactus",
+              "type": "pressure_plate",
               "id": "kaleidoscope-tavern-holder-transparent"
             },
             "transparent": true,

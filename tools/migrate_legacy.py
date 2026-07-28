@@ -220,6 +220,9 @@ GRAPE_CARRIER_ID = "kaleidoscope-tavern-wild-grapevine-transparent"
 # carrier, barrier does not consume a model-overridable state and therefore
 # cannot collide with another CraftEngine project's stair allocation.
 SOFA_CARRIER_STATE = "minecraft:barrier"
+COPPER_LANTERN_CARRIER_STATE = (
+    "minecraft:copper_lantern[hanging=false,waterlogged=false]"
+)
 
 PAINTINGS = {
     "ysbb_painting",
@@ -608,9 +611,12 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
 def carrier_type(block_id: str) -> tuple[str, str]:
     if block_id == "cellar_cabinet":
         return "solid", "kaleidoscope-tavern-cellar-cabinet-transparent"
-    if block_id == "circular_rack":
-        return "pressure_plate", "kaleidoscope-tavern-circular-rack-transparent"
-    if block_id in {"tilted_rack", "holder"}:
+    if block_id in {"circular_rack", "holder"}:
+        return (
+            "pressure_plate",
+            f"kaleidoscope-tavern-{block_id.replace('_', '-')}-transparent",
+        )
+    if block_id == "tilted_rack":
         return "cactus", f"kaleidoscope-tavern-{block_id.replace('_', '-')}-transparent"
     return "higher_tripwire", "kaleidoscope-tavern-decor-transparent"
 
@@ -933,6 +939,15 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 metrics["weighted_variants_reduced"] += 1
             variant_properties = parse_variant_key(variant_key)
             model = normalize_model_entry(raw_model)
+            if block_id in {"tilted_rack", "holder"}:
+                # CE's ItemDisplay yaw uses the opposite sign from the legacy
+                # block-state model. Reflecting around 180 degrees keeps the
+                # already-correct north/south variants and swaps east/west into
+                # place. Only the visible base model changes; slot selection,
+                # bottle visuals and redstone launch semantics still use the
+                # original block state.
+                model = (model[0], model[1], (180 - model[2]) % 360,
+                         model[3], model[4])
             if is_sofa:
                 # CE places sofa facing in the player's horizontal direction;
                 # the source block faced the opposite direction. Rotate only
@@ -1008,10 +1023,7 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                     # and remaps it to the waxed client state. Its compact,
                     # aimable standing-lantern shape replaces the former CE
                     # Interaction plus shulker furniture hitboxes.
-                    appearance["state"] = (
-                        "minecraft:copper_lantern"
-                        "[hanging=false,waterlogged=false]"
-                    )
+                    appearance["state"] = COPPER_LANTERN_CARRIER_STATE
                 elif trellis_type is not None:
                     appearance["state"] = trellis_carrier_state(
                         trellis_type, variant_properties["waterlogged"])
