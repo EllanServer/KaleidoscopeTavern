@@ -477,14 +477,27 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
 
         @Override
         public void preBlockStateChange(ImmutableBlockState newState) {
-            Direction oldFacing = blockEntity.blockState.get(behavior.facingProperty);
+            ImmutableBlockState oldState = blockEntity.blockState;
+            Direction oldFacing = oldState.get(behavior.facingProperty);
             Direction newFacing = newState.get(behavior.facingProperty);
-            if (oldFacing == newFacing || blockEntity.world == null) {
+            boolean connectionChanged = behavior.positionProperty != null
+                    && !Objects.equals(
+                    oldState.get(behavior.positionProperty),
+                    newState.get(behavior.positionProperty));
+            if (!StorageSemantics.changesRenderedArrangement(
+                    behavior.kind, oldFacing != newFacing, connectionChanged)
+                    || blockEntity.world == null) {
                 return;
             }
             renderState = newState;
-            updateTrackedPlayers();
-            renderState = null;
+            try {
+                // CE replaces the cabinet's constant renderer when its
+                // connection appearance changes. Respawn the independent
+                // packet-only bottle displays in the same state transition.
+                updateTrackedPlayers();
+            } finally {
+                renderState = null;
+            }
         }
 
         @Override

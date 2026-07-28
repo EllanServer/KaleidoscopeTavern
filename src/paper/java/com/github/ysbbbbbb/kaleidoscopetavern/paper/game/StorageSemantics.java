@@ -56,6 +56,11 @@ public final class StorageSemantics {
         return facingYaw;
     }
 
+    public static boolean changesRenderedArrangement(
+            Kind kind, boolean facingChanged, boolean connectionChanged) {
+        return facingChanged || (kind == Kind.CELLAR_CABINET && connectionChanged);
+    }
+
     static int clickedSlot(Kind kind, double sourceX, double sourceY, double sourceZ,
                            boolean facingAxisX) {
         // GlasswareHolderBlock#getSlotFromHit only used the hit's block-local

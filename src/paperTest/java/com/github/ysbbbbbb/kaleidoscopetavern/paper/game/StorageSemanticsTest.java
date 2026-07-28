@@ -71,6 +71,18 @@ class StorageSemanticsTest {
     }
 
     @Test
+    void cellarConnectionChangesRefreshStoredBottleDisplays() {
+        assertTrue(StorageSemantics.changesRenderedArrangement(
+                CELLAR_CABINET, false, true));
+        assertTrue(StorageSemantics.changesRenderedArrangement(
+                CELLAR_CABINET, true, false));
+        assertFalse(StorageSemantics.changesRenderedArrangement(
+                CELLAR_CABINET, false, false));
+        assertFalse(StorageSemantics.changesRenderedArrangement(
+                HOLDER, false, true));
+    }
+
+    @Test
     void clickedSlotsMatchForgeBlockAlgorithms() {
         assertEquals(0, StorageSemantics.clickedSlot(BAR_CABINET, 0.75, 0.5, 0, false));
         assertEquals(0, StorageSemantics.clickedSlot(BAR_CABINET, 0.25, 0.5, 0, true));
