@@ -57,6 +57,15 @@ tasks.processResources {
         expand(replacements)
     }
 
+    from(
+        "LICENSE-CODE",
+        "LICENSE-ASSETS",
+        "ASSET-CREDITS.md",
+        "THIRD-PARTY-NOTICES.md"
+    ) {
+        into("META-INF")
+    }
+
     from("src/paper/pack") {
         into("tavern-pack")
     }

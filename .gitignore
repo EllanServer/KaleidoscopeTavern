@@ -119,6 +119,9 @@ __pycache__/
 run/
 runs/
 
+# Local CraftEngine source/decompilation scratch space
+.tmp-ce/
+
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
 
