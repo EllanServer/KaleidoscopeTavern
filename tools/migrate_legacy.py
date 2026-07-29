@@ -926,9 +926,12 @@ def build_chalkboard_block(
         for size, model_path in model_paths.items()
     }
     # The baked north model occupies the cell's south edge (z=15..16), just
-    # like the source. CE's display quaternion therefore rotates EAST onto
-    # x=0 with -90 degrees and WEST onto x=15..16 with +90 degrees.
-    facing_yaw = {"north": 0, "east": 270, "south": 180, "west": 90}
+    # like the source and a closed north-facing door. Minecraft 26.2's
+    # ItemDisplayRenderer adds an intrinsic +180-degree Y turn when it submits
+    # the item model, after CE's display transformation. Counter that turn and
+    # then apply the vanilla facing rotation so every panel shares the door's
+    # edge and its painted face looks outward.
+    facing_yaw = {"north": 180, "east": 90, "south": 0, "west": 270}
     appearances: dict[str, Any] = {}
     variants: dict[str, Any] = {}
 
