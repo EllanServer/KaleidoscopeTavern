@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 from pathlib import Path
 from typing import Any
@@ -2484,7 +2485,33 @@ def validate() -> dict[str, int]:
 
     chalkboard_appearances = chalkboard_states.get("appearances", {})
     referenced_appearances: set[str] = set()
-    facing_yaw = {"north": None, "east": 270, "south": 180, "west": 90}
+    # The base north model has its panel on the south edge and its painted front
+    # looking north. Minecraft 26.2's ItemDisplay renderer turns the submitted
+    # item model +180 degrees after CE's metadata transform, so each configured
+    # yaw must include the inverse compensation. Lock both the carrier-side
+    # position and visible direction; checking only the raw rotation string
+    # previously allowed every board to render opposite its closed-door state.
+    facing_yaw = {"north": 180, "east": 90, "south": None, "west": 270}
+    expected_panel_edge = {
+        "north": "south", "east": "west",
+        "south": "north", "west": "east",
+    }
+    expected_front_direction = {
+        "north": "north", "east": "east",
+        "south": "south", "west": "west",
+    }
+
+    def rotated_cardinal(x: int, z: int, yaw: int) -> str:
+        # ItemDisplayRenderer.submitInner contributes the final +180-degree Y
+        # item turn; horizontal rotations commute with CE's metadata quaternion.
+        angle = math.radians(yaw + 180)
+        rotated_x = round(x * math.cos(angle) + z * math.sin(angle))
+        rotated_z = round(-x * math.sin(angle) + z * math.cos(angle))
+        return {
+            (0, -1): "north", (1, 0): "east",
+            (0, 1): "south", (-1, 0): "west",
+        }[(rotated_x, rotated_z)]
+
     for variant_key, variant in chalkboard_variants.items():
         properties = dict(part.split("=", 1) for part in variant_key.split(","))
         facing = properties["facing"]
@@ -2538,6 +2565,12 @@ def validate() -> dict[str, int]:
         if renderer != expected_renderer:
             raise AssertionError(
                 f"Chalkboard {variant_key} model renderer drifted: {renderer}")
+        yaw = facing_yaw[facing] or 0
+        if (rotated_cardinal(0, 1, yaw) != expected_panel_edge[facing]
+                or rotated_cardinal(0, -1, yaw)
+                != expected_front_direction[facing]):
+            raise AssertionError(
+                f"Chalkboard {facing} model must share its door edge and look outward")
     if (referenced_appearances != set(chalkboard_appearances)
             or len(chalkboard_appearances) != 16):
         raise AssertionError("Chalkboard appearance set contains stale or missing states")

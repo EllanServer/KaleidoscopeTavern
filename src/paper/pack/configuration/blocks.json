@@ -49,7 +49,8 @@
               "item": "kaleidoscope_tavern:_render/chalkboard/small",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "large_north_lower": {
@@ -60,7 +61,8 @@
               "item": "kaleidoscope_tavern:_render/chalkboard/large",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "hidden_north_upper": {
@@ -80,7 +82,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "large_east_lower": {
@@ -92,7 +94,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,270,0"
+              "rotation": "0,90,0"
             }
           },
           "hidden_east_upper": {
@@ -111,8 +113,7 @@
               "item": "kaleidoscope_tavern:_render/chalkboard/small",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "large_south_lower": {
@@ -123,8 +124,7 @@
               "item": "kaleidoscope_tavern:_render/chalkboard/large",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "hidden_south_upper": {
@@ -144,7 +144,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "large_west_lower": {
@@ -156,7 +156,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "rotation": "0,90,0"
+              "rotation": "0,270,0"
             }
           },
           "hidden_west_upper": {
