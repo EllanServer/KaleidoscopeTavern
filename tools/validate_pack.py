@@ -20,7 +20,7 @@ COPPER_LANTERN_CARRIER_STATE = (
     "minecraft:copper_lantern[hanging=false,waterlogged=false]"
 )
 CIRCULAR_RACK_CARRIER_STATE = (
-    "minecraft:copper_chain[axis=y,waterlogged=false]"
+    "minecraft:cave_vines[age=1,berries=true]"
 )
 
 
@@ -2989,13 +2989,14 @@ def validate() -> dict[str, int]:
                 "their real server-side effects are rendered as custom lore")
         potion_contents = data.get("components", {}).get("minecraft:potion_contents")
         if (not isinstance(potion_contents, dict)
-                or potion_contents.get("potion") != "minecraft:water"
+                or potion_contents.get("potion") != "minecraft:mundane"
                 or not set(potion_contents).issubset({"potion", "custom_color"})
                 or ("custom_color" in potion_contents
                     and not isinstance(potion_contents["custom_color"], int))):
             raise AssertionError(
-                f"{item_id}: drink potion_contents must use the neutral water base "
-                "and may only add an integer custom_color")
+                f"{item_id}: drink potion_contents must use the effectless mundane base "
+                "to prevent PotionItem water-on-dirt conversion, and may only add an "
+                "integer custom_color")
 
     public_vessel_ids = {
         f"{NAMESPACE}:{vessel_id}"

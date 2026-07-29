@@ -7957,7 +7957,7 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
+            "state": "minecraft:cave_vines[age=1,berries=true]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7969,7 +7969,7 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
+            "state": "minecraft:cave_vines[age=1,berries=true]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7980,7 +7980,7 @@
             }
           },
           "appearance_2": {
-            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
+            "state": "minecraft:cave_vines[age=1,berries=true]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7992,7 +7992,7 @@
             }
           },
           "appearance_3": {
-            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
+            "state": "minecraft:cave_vines[age=1,berries=true]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",

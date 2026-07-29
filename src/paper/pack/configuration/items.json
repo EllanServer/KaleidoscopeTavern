@@ -2458,7 +2458,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.signature_cocktail>",
@@ -2491,7 +2491,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.mystery_cocktail>",
@@ -2527,7 +2527,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.white_lady>",
@@ -2566,7 +2566,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.emerald>",
@@ -2606,7 +2606,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.brass_heart>",
@@ -2642,7 +2642,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.godfather>",
@@ -2678,7 +2678,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.grasshopper>",
@@ -2714,7 +2714,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.screwdriver>",
@@ -2750,7 +2750,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.mojito>",
@@ -2786,7 +2786,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.allium_garden>",
@@ -2822,7 +2822,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.depth_charge>",
@@ -2858,7 +2858,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.nether_special>",
@@ -2894,7 +2894,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.bloody_mary>",
@@ -2930,7 +2930,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.sculk_special>",
@@ -3071,7 +3071,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16733695
           }
         },
@@ -3109,7 +3109,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16733695
           }
         },
@@ -3147,7 +3147,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16777215
           }
         },
@@ -3187,7 +3187,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16733695
           }
         },
@@ -3229,7 +3229,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16733695
           }
         },
@@ -3271,7 +3271,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16733695
           }
         },
@@ -3309,7 +3309,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16733525
           }
         },
@@ -3347,7 +3347,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16777215
           }
         },
@@ -3385,7 +3385,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 5592575
           }
         },
@@ -3423,7 +3423,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 5592575
           }
         },
@@ -3461,7 +3461,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16755200
           }
         },
@@ -3499,7 +3499,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16733525
           }
         },
@@ -3537,7 +3537,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16755200
           }
         },
@@ -3577,7 +3577,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16777215
           }
         },
@@ -3617,7 +3617,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 5635925
           }
         },
@@ -3657,7 +3657,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16755200
           }
         },
@@ -3697,7 +3697,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16755200
           }
         },
@@ -3737,7 +3737,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16733525
           }
         },
@@ -3777,7 +3777,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 5592575
           }
         },
@@ -3815,7 +3815,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 5592575
           }
         },
@@ -3855,7 +3855,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16777045
           }
         },
@@ -3893,7 +3893,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 16777045
           }
         },
@@ -3931,7 +3931,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water",
+            "potion": "minecraft:mundane",
             "custom_color": 5635925
           }
         },
@@ -3969,7 +3969,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.vinegar>",
@@ -4002,7 +4002,7 @@
         "components": {
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
-            "potion": "minecraft:water"
+            "potion": "minecraft:mundane"
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.watermelon_juice>",

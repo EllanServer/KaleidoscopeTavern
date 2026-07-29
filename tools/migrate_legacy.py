@@ -224,7 +224,7 @@ COPPER_LANTERN_CARRIER_STATE = (
     "minecraft:copper_lantern[hanging=false,waterlogged=false]"
 )
 CIRCULAR_RACK_CARRIER_STATE = (
-    "minecraft:copper_chain[axis=y,waterlogged=false]"
+    "minecraft:cave_vines[age=1,berries=true]"
 )
 
 
@@ -638,9 +638,10 @@ def carrier_type(block_id: str) -> tuple[str, str]:
     if block_id == "cellar_cabinet":
         return "solid", "kaleidoscope-tavern-cellar-cabinet-transparent"
     if block_id == "circular_rack":
-        # The model is built around a vertical 2x14 centre post. CE releases
-        # this standing copper-chain state, so the client target follows that
-        # post instead of remaining a two-pixel floor plate.
+        # CE releases every non-zero cave-vines age. The berry-bearing state
+        # supplies a broad, full-height selection column without collision,
+        # making every side of the circular rack easy to target while the
+        # authored ItemDisplay remains its only visible model.
         return "state", CIRCULAR_RACK_CARRIER_STATE
     if block_id == "holder":
         # HolderBlock rotates its long horizontal axis with FACING. CE releases
@@ -3441,12 +3442,12 @@ def build_items(
             config["data"]["components"] = {"minecraft:max_stack_size": 16}
         if config["material"] == "potion":
             # PotionItem#getName derives its title from potion_contents and does
-            # not honor ITEM_NAME. A valid neutral base avoids "Uncraftable
-            # Potion", while CUSTOM_NAME wins in ItemStack#getHoverName and
-            # retains the authored drink name. Tagged drinks also keep their
-            # source liquid tint.
+            # not honor ITEM_NAME. Mundane is a valid effectless base, but unlike
+            # WATER it cannot invoke PotionItem#useOn to turn dirt into mud.
+            # CUSTOM_NAME still wins in ItemStack#getHoverName and retains the
+            # authored drink name. Tagged drinks also keep their liquid tint.
             components = config["data"].setdefault("components", {})
-            potion_contents: dict[str, Any] = {"potion": "minecraft:water"}
+            potion_contents: dict[str, Any] = {"potion": "minecraft:mundane"}
             color = drink_color(memberships.get(item_id, []))
             if color is not None:
                 potion_contents["custom_color"] = color
