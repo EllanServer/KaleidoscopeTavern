@@ -19,14 +19,26 @@ EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
 COPPER_LANTERN_CARRIER_STATE = (
     "minecraft:copper_lantern[hanging=false,waterlogged=false]"
 )
-HOLDER_CARRIER_STATE = (
-    "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]"
+CIRCULAR_RACK_CARRIER_STATE = (
+    "minecraft:copper_chain[axis=y,waterlogged=false]"
 )
+
+
+def holder_carrier_state(facing: str) -> str:
+    if facing not in {"north", "east", "south", "west"}:
+        raise AssertionError(f"Unsupported holder facing: {facing}")
+    return (
+        "minecraft:lightning_rod"
+        f"[facing={facing},powered=false,waterlogged=false]"
+    )
+
+
 STORAGE_BLOCK_SPECS = {
     "cellar_cabinet": (9, "cellar_cabinet_blocklist", "solid"),
     "tilted_rack": (3, "tilted_rack_blocklist", "cactus"),
-    "circular_rack": (6, "circular_rack_blocklist", "pressure_plate"),
-    "holder": (1, "holder_blocklist", HOLDER_CARRIER_STATE),
+    "circular_rack": (
+        6, "circular_rack_blocklist", CIRCULAR_RACK_CARRIER_STATE),
+    "holder": (1, "holder_blocklist", "horizontal_lightning_rod"),
 }
 EXPECTED_TICKING_FURNITURE = {
     "mystery_cocktail": (
@@ -4463,7 +4475,15 @@ def validate() -> dict[str, int]:
                 f"{len(appearances)}/{len(variants)}")
         render_ids = set()
         for appearance in appearances.values():
-            if carrier_type.startswith("minecraft:"):
+            if carrier_type == "horizontal_lightning_rod":
+                if (appearance.get("state") not in {
+                        holder_carrier_state(facing)
+                        for facing in ("north", "east", "south", "west")
+                    } or "auto_state" in appearance):
+                    raise AssertionError(
+                        f"{storage_id}: expected a released horizontal "
+                        f"lightning-rod carrier, got {appearance!r}")
+            elif carrier_type.startswith("minecraft:"):
                 if (appearance.get("state") != carrier_type
                         or "auto_state" in appearance):
                     raise AssertionError(
@@ -4499,6 +4519,12 @@ def validate() -> dict[str, int]:
                     raise AssertionError(
                         f"{storage_id}: {facing} model must retain the corrected "
                         f"ItemDisplay yaw mapping, got {actual_rotation!r}")
+                if (storage_id == "holder"
+                        and appearance.get("state")
+                        != holder_carrier_state(facing)):
+                    raise AssertionError(
+                        f"holder: {facing} carrier must rotate horizontally "
+                        f"with the block state, got {appearance.get('state')!r}")
         settings = definition.get("settings", {})
         expected_mining_tag = ("minecraft:mineable/axe"
                                if storage_id == "cellar_cabinet"

@@ -223,9 +223,20 @@ SOFA_CARRIER_STATE = "minecraft:barrier"
 COPPER_LANTERN_CARRIER_STATE = (
     "minecraft:copper_lantern[hanging=false,waterlogged=false]"
 )
-HOLDER_CARRIER_STATE = (
-    "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]"
+CIRCULAR_RACK_CARRIER_STATE = (
+    "minecraft:copper_chain[axis=y,waterlogged=false]"
 )
+
+
+def holder_carrier_state(facing: str) -> str:
+    """Return the released horizontal lightning-rod state for a holder."""
+
+    if facing not in {"north", "east", "south", "west"}:
+        raise ValueError(f"Unsupported holder facing: {facing}")
+    return (
+        "minecraft:lightning_rod"
+        f"[facing={facing},powered=false,waterlogged=false]"
+    )
 
 
 def chalkboard_carrier_state(facing: str, half: str) -> str:
@@ -627,17 +638,15 @@ def carrier_type(block_id: str) -> tuple[str, str]:
     if block_id == "cellar_cabinet":
         return "solid", "kaleidoscope-tavern-cellar-cabinet-transparent"
     if block_id == "circular_rack":
-        return (
-            "pressure_plate",
-            f"kaleidoscope-tavern-{block_id.replace('_', '-')}-transparent",
-        )
+        # The model is built around a vertical 2x14 centre post. CE releases
+        # this standing copper-chain state, so the client target follows that
+        # post instead of remaining a two-pixel floor plate.
+        return "state", CIRCULAR_RACK_CARRIER_STATE
     if block_id == "holder":
-        # HolderBlock is a full-height, narrow rack. A pressure plate preserves
-        # neither its selection column nor a usable survival-mode mining target:
-        # aiming above the floor never produces START_DESTROY_BLOCK. CE releases
-        # this vertical rod state, whose narrow full-height outline is the closest
-        # client carrier to the source 6x12x16 voxel shape.
-        return "state", HOLDER_CARRIER_STATE
+        # HolderBlock rotates its long horizontal axis with FACING. CE releases
+        # all four horizontal lightning-rod states, allowing the client target
+        # to rotate with the authored rack instead of remaining upright.
+        return "horizontal_lightning_rod", "kaleidoscope-tavern-holder"
     if block_id == "tilted_rack":
         return "cactus", f"kaleidoscope-tavern-{block_id.replace('_', '-')}-transparent"
     return "higher_tripwire", "kaleidoscope-tavern-decor-transparent"
@@ -1194,6 +1203,9 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                         "minecraft:lightning_rod"
                         f"[facing={facing},powered=false,waterlogged={waterlogged}]"
                     )
+                elif carrier == "horizontal_lightning_rod":
+                    appearance["state"] = holder_carrier_state(
+                        variant_properties["facing"])
                 elif carrier == "state":
                     appearance["state"] = carrier_id
                 elif is_sofa:
