@@ -19,11 +19,14 @@ EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
 COPPER_LANTERN_CARRIER_STATE = (
     "minecraft:copper_lantern[hanging=false,waterlogged=false]"
 )
+HOLDER_CARRIER_STATE = (
+    "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]"
+)
 STORAGE_BLOCK_SPECS = {
     "cellar_cabinet": (9, "cellar_cabinet_blocklist", "solid"),
     "tilted_rack": (3, "tilted_rack_blocklist", "cactus"),
     "circular_rack": (6, "circular_rack_blocklist", "pressure_plate"),
-    "holder": (1, "holder_blocklist", "pressure_plate"),
+    "holder": (1, "holder_blocklist", HOLDER_CARRIER_STATE),
 }
 EXPECTED_TICKING_FURNITURE = {
     "mystery_cocktail": (
@@ -2422,6 +2425,57 @@ def validate() -> dict[str, int]:
         large = chalkboard_variants[f"{anchor}_large"]["elements"][0].get("item")
         if small == large or not small or not large:
             raise AssertionError("Chalkboard variants must reference the small/large render items")
+
+    # The archived entity models use CubeListBuilder.texOffs(0, 0): a complete
+    # six-face net with one-pixel depth. Lock the exact normalized UV rectangles
+    # so the large merged board cannot regress to the former cropped two-face
+    # approximation (and keep the small/large sides visually identical).
+    expected_chalkboard_models = {
+        "small": {
+            "from": [0, 2, 15],
+            "to": [16, 30, 16],
+            "texture": f"{NAMESPACE}:entity/deco/small_chalkboard",
+            "faces": {
+                "down": [0.25, 0, 4.25, 0.25],
+                "up": [4.25, 0, 8.25, 0.25],
+                "west": [0, 0.25, 0.25, 7.25],
+                "north": [0.25, 0.25, 4.25, 7.25],
+                "east": [4.25, 0.25, 4.5, 7.25],
+                "south": [4.5, 0.25, 8.5, 7.25],
+            },
+        },
+        "large": {
+            "from": [-16, 2, 15],
+            "to": [32, 30, 16],
+            "texture": f"{NAMESPACE}:entity/deco/large_chalkboard",
+            "faces": {
+                "down": [0.125, 0, 6.125, 0.25],
+                "up": [6.125, 0, 12.125, 0.25],
+                "west": [0, 0.25, 0.125, 7.25],
+                "north": [0.125, 0.25, 6.125, 7.25],
+                "east": [6.125, 0.25, 6.25, 7.25],
+                "south": [6.25, 0.25, 12.25, 7.25],
+            },
+        },
+    }
+    for size, expected in expected_chalkboard_models.items():
+        model = asset_json(f"{NAMESPACE}:furniture/chalkboard_{size}", "models")
+        elements = [] if model is None else model.get("elements", [])
+        if len(elements) != 1:
+            raise AssertionError(
+                f"Chalkboard {size} must contain exactly one source cuboid")
+        element = elements[0]
+        actual_faces = {
+            face: data.get("uv")
+            for face, data in element.get("faces", {}).items()
+            if data.get("texture") == "#board"
+        }
+        if (element.get("from") != expected["from"]
+                or element.get("to") != expected["to"]
+                or model.get("textures", {}).get("board") != expected["texture"]
+                or actual_faces != expected["faces"]):
+            raise AssertionError(
+                f"Chalkboard {size} geometry/UV no longer matches its archived entity cube")
     for suffix in ("", "_large"):
         ground_element = chalkboard_variants[f"ground{suffix}"]["elements"][0]
         wall_element = chalkboard_variants[f"wall{suffix}"]["elements"][0]
@@ -4343,12 +4397,17 @@ def validate() -> dict[str, int]:
                         f"{storage_id}: {facing} model must retain the corrected "
                         f"ItemDisplay yaw mapping, got {actual_rotation!r}")
         settings = definition.get("settings", {})
+        expected_mining_tag = ("minecraft:mineable/axe"
+                               if storage_id == "cellar_cabinet"
+                               else "minecraft:mineable/pickaxe")
         if (settings.get("hardness") != 2.5
                 or settings.get("resistance") != 2.5
                 or settings.get("push_reaction") != "NORMAL"
-                or settings.get("tags") != ["minecraft:mineable/axe"]):
+                or settings.get("tags") != [expected_mining_tag]
+                or settings.get("destroy_stages") != {
+                    "template": "internal:destroy_stages"}):
             raise AssertionError(
-                f"{storage_id}: source wood block settings drifted")
+                f"{storage_id}: source mining settings or CE destroy stages drifted")
         expected_luminance = 14 if storage_id == "circular_rack" else None
         if settings.get("luminance") != expected_luminance:
             raise AssertionError(
