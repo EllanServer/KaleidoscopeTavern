@@ -562,9 +562,9 @@ public final class EffectService implements Listener {
         ItemStack payload = potion.getItem().clone();
         payload.setAmount(1);
         if (payload.getItemMeta() instanceof PotionMeta potionMeta) {
-            // The deployable custom item uses water only as a neutral tooltip
-            // base. Forge's DrinkBlockItem was not a water potion, so remove
-            // that base before putting it into a projectile entity.
+            // The deployable custom item uses mundane only as an effectless
+            // consume base. Forge's DrinkBlockItem had no vanilla base potion,
+            // so remove it before putting the authored effects into a projectile.
             potionMeta.setBasePotionType(null);
             potionMeta.clearCustomEffects();
             boolean hasVanillaEffect = false;
