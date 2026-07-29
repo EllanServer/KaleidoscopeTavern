@@ -1,5 +1,35 @@
 {
   "items": {
+    "kaleidoscope_tavern:_render/chalkboard/small": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.chalkboard>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:furniture/chalkboard_small"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_render/chalkboard/large": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.chalkboard>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:furniture/chalkboard_large"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
     "kaleidoscope_tavern:_render/sakura_incense/ee7ab522f7": {
       "material": "paper",
       "data": {
@@ -2903,36 +2933,6 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:block/deco/bar_stool/pink"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/chalkboard/a3aecdc0b3": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.chalkboard>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:furniture/chalkboard_small"
-      },
-      "settings": {
-        "tags": [
-          "kaleidoscope_tavern:internal_render_items"
-        ]
-      }
-    },
-    "kaleidoscope_tavern:_render/chalkboard/8f8e3db382": {
-      "material": "paper",
-      "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.chalkboard>"
-      },
-      "model": {
-        "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:furniture/chalkboard_large"
       },
       "settings": {
         "tags": [

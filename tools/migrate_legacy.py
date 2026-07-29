@@ -183,7 +183,7 @@ def is_grid_block(block_id: str) -> bool:
     return (
         block_id in INCENSE_BLOCKS
         or block_id in STORAGE_BLOCKS
-        or block_id == "tap"
+        or block_id in {"tap", "chalkboard"}
         or block_id in {
             "wild_grapevine", "wild_grapevine_plant", "trellis",
             "grapevine_trellis", "grape_crop",
@@ -226,6 +226,18 @@ COPPER_LANTERN_CARRIER_STATE = (
 HOLDER_CARRIER_STATE = (
     "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]"
 )
+
+
+def chalkboard_carrier_state(facing: str, half: str) -> str:
+    """Return the released closed iron-door state for one board cell."""
+
+    # Vanilla doors do not expose a waterlogged property. CE still stores the
+    # source fluid state on the custom variant; the door only supplies the
+    # client's continuous two-block wall outline.
+    return (
+        "minecraft:iron_door"
+        f"[facing={facing},half={half},hinge=left,open=false,powered=true]"
+    )
 
 PAINTINGS = {
     "ysbb_painting",
@@ -700,6 +712,13 @@ def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | li
         ]
     if block_id == "tap":
         return {"type": f"{NAMESPACE}:tap"}
+    if block_id == "chalkboard":
+        # CE owns the two-block lifecycle. Tavern only adds the source's
+        # three-wide blank-board merge and persistent editable text.
+        return [
+            {"type": "double_high_block"},
+            {"type": f"{NAMESPACE}:chalkboard"},
+        ]
     if block_id in STORAGE_BLOCK_SPECS:
         slots, blocklist = STORAGE_BLOCK_SPECS[block_id]
         return {
@@ -764,7 +783,7 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
     is_crop = block_id.endswith("_grape_crop") or block_id == "grape_crop"
     is_storage = block_id in STORAGE_BLOCKS
     is_sofa = block_id.endswith("_sofa")
-    sturdy = block_id in STURDY_BLOCKS or is_storage or is_sofa
+    sturdy = block_id in STURDY_BLOCKS or is_storage or is_sofa or block_id == "chalkboard"
     if is_wild_vine:
         sound_type = {
             action: f"minecraft:block.cave_vines.{action}"
@@ -804,11 +823,19 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
                  else [] if is_wild_vine or is_crop or block_id in INCENSE_BLOCKS
                  else ["minecraft:mineable/axe"]),
     }
-    if is_storage:
-        # Every storage rack is rendered by an ItemDisplay. Without CE's native
-        # destroy-stage display, survival mining has no visible progress because
-        # the transparent carrier itself cannot show block crack overlays.
+    if is_storage or block_id == "chalkboard":
+        # Storage racks and the chalkboard are rendered by ItemDisplays.
+        # Without CE's native destroy-stage display, survival mining has no
+        # visible progress because the transparent carrier cannot show cracks.
         settings["destroy_stages"] = {"template": "internal:destroy_stages"}
+    if block_id == "chalkboard":
+        settings.update({
+            "map_color": 13,
+            "instrument": "guitar",
+            "burnable": True,
+            "burn_chance": 5,
+            "fire_spread_chance": 20,
+        })
     if is_sofa:
         settings.update({
             "map_color": 27,
@@ -869,12 +896,150 @@ def split_hanging_crop_stages(block_id: str, config: dict[str, Any]) -> dict[str
     return stage_blocks
 
 
+def build_chalkboard_block(
+    has_item: bool,
+) -> tuple[dict[str, Any], dict[str, Any], int]:
+    """Build the source 2x1/3x2 board on released iron-door carriers."""
+
+    create_chalkboard_models()
+    model_paths = {
+        "small": f"{NAMESPACE}:furniture/chalkboard_small",
+        "large": f"{NAMESPACE}:furniture/chalkboard_large",
+    }
+    render_items = {
+        f"{NAMESPACE}:_render/chalkboard/{size}": {
+            "material": "paper",
+            "data": {"item_name": render_item_name("chalkboard")},
+            "model": {"type": "minecraft:model", "path": model_path},
+            "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
+        }
+        for size, model_path in model_paths.items()
+    }
+    # The baked north model occupies the cell's south edge (z=15..16), just
+    # like the source. CE's display quaternion therefore rotates EAST onto
+    # x=0 with -90 degrees and WEST onto x=15..16 with +90 degrees.
+    facing_yaw = {"north": 0, "east": 270, "south": 180, "west": 90}
+    appearances: dict[str, Any] = {}
+    variants: dict[str, Any] = {}
+
+    for facing in ("north", "east", "south", "west"):
+        for half in ("lower", "upper"):
+            carrier = chalkboard_carrier_state(facing, half)
+            hidden_name = f"hidden_{facing}_{half}"
+            appearances[hidden_name] = {
+                "state": carrier,
+                "transparent": True,
+            }
+
+            visible_names: dict[str, str] = {}
+            if half == "lower":
+                for size in ("small", "large"):
+                    appearance_name = f"{size}_{facing}_{half}"
+                    renderer: dict[str, Any] = {
+                        "type": "item_display",
+                        "item": f"{NAMESPACE}:_render/chalkboard/{size}",
+                        "display_transform": "none",
+                        "shadow_radius": 0,
+                        "view_range": 1.25,
+                    }
+                    yaw = facing_yaw[facing]
+                    if yaw:
+                        renderer["rotation"] = f"0,{yaw},0"
+                    appearances[appearance_name] = {
+                        "state": carrier,
+                        "transparent": True,
+                        "entity_renderer": renderer,
+                    }
+                    visible_names[size] = appearance_name
+
+            for waterlogged in ("false", "true"):
+                for position in ("single", "left", "middle", "right"):
+                    if half == "lower" and position == "single":
+                        appearance_name = visible_names["small"]
+                    elif half == "lower" and position == "middle":
+                        appearance_name = visible_names["large"]
+                    else:
+                        appearance_name = hidden_name
+                    key = (
+                        f"facing={facing},half={half},position={position},"
+                        f"waterlogged={waterlogged}"
+                    )
+                    mapped: dict[str, Any] = {"appearance": appearance_name}
+                    if waterlogged == "true":
+                        mapped["settings"] = {"fluid_state": "water"}
+                    variants[key] = mapped
+
+    config: dict[str, Any] = {
+        "states": {
+            "properties": {
+                "facing": {
+                    "type": "horizontal_direction",
+                    "default": "north",
+                    "values": ["north", "east", "south", "west"],
+                },
+                "half": {
+                    "type": "double_block_half",
+                    "default": "lower",
+                    "values": ["lower", "upper"],
+                },
+                "position": {
+                    "type": "string",
+                    "default": "single",
+                    "values": ["single", "left", "middle", "right"],
+                },
+                "waterlogged": {
+                    "type": "boolean",
+                    "default": "false",
+                },
+            },
+            "appearances": appearances,
+            "variants": variants,
+        },
+        "settings": block_settings("chalkboard", has_item),
+        "behaviors": behavior_for(
+            "chalkboard", {"facing", "half", "position", "waterlogged"}),
+    }
+    if has_item:
+        count_functions = [
+            {
+                "type": "set_count",
+                "count": 3,
+                "add": False,
+                "conditions": [{
+                    "type": "match_block_property",
+                    "properties": {"position": position},
+                }],
+            }
+            for position in ("left", "middle", "right")
+        ]
+        config["loot"] = {
+            "pools": [{
+                "rolls": 1,
+                "conditions": [{"type": "survives_explosion"}],
+                "entries": [{
+                    "type": "item",
+                    "item": f"{NAMESPACE}:chalkboard",
+                    "functions": count_functions,
+                }],
+            }],
+        }
+    return config, render_items, len(appearances)
+
+
 def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, Any], dict[str, Any], dict[str, int]]:
     blocks: dict[str, Any] = {}
     render_items: dict[str, Any] = {}
     metrics = {"appearances": 0, "weighted_variants_reduced": 0, "collidable_trellises": 0}
 
     for block_id in block_ids:
+        if block_id == "chalkboard":
+            config, chalkboard_render_items, appearance_count = (
+                build_chalkboard_block(block_id in item_ids)
+            )
+            blocks[f"{NAMESPACE}:{block_id}"] = config
+            render_items.update(chalkboard_render_items)
+            metrics["appearances"] += appearance_count
+            continue
         state_path = find_file(BLOCKSTATES, Path(f"{block_id}.json"))
         if state_path is None:
             raise FileNotFoundError(f"No blockstate for {block_id}")
@@ -2601,7 +2766,7 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         # CE sourceItem is the complete state for a single placed bottle.
         # Only count variants can contain additional, non-identical bottles.
         (block_id in BOTTLE_AND_GLASS_ITEMS and "ground_count_2" in variants)
-        or block_id in {"pressing_tub", "barrel", "chalkboard"}
+        or block_id in {"pressing_tub", "barrel"}
         or block_id.endswith("_sandwich_board")
     )
     if uses_tavern_state:
@@ -2615,7 +2780,7 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         behaviors.append({"type": f"{NAMESPACE}:pressing_tub_furniture"})
 
     lifecycle_channels: list[str] = []
-    if block_id == "chalkboard" or block_id.endswith("_sandwich_board"):
+    if block_id.endswith("_sandwich_board"):
         lifecycle_channels.append("board")
     if block_id.endswith("_bar_stool"):
         lifecycle_channels.append("bar_stool")
@@ -2638,9 +2803,7 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         })
 
     board_text_max_lines: int | None = None
-    if block_id == "chalkboard":
-        board_text_max_lines = 11
-    elif block_id.endswith("_sandwich_board"):
+    if block_id.endswith("_sandwich_board"):
         board_text_max_lines = 8
     if board_text_max_lines is not None:
         behaviors.append({
@@ -2830,7 +2993,6 @@ def build_furniture(
     render_items: dict[str, Any] = {}
     placement: dict[str, dict[str, Any]] = {}
     metrics = {"furniture_variants": 0}
-    create_chalkboard_models()
     create_barrel_models()
 
     ignored_semantics = {"facing", "waterlogged", "powered", "triggered", "rotation", "axis", "half", "face"}
@@ -2852,80 +3014,6 @@ def build_furniture(
                         render_items, block_id, "wall", selected, "wall")
                 ],
                 "hitboxes": furniture_hitboxes(block_id, "wall"),
-            }
-        elif block_id == "chalkboard":
-            small_model = (f"{NAMESPACE}:furniture/chalkboard_small", 0, 0, 0, False)
-            large_model = (f"{NAMESPACE}:furniture/chalkboard_large", 0, 0, 0, False)
-
-            def chalkboard_hitboxes(columns: tuple[int, ...], anchor: str) -> list[dict[str, Any]]:
-                # ChalkboardBlock occupied its placed column's two blocks (and,
-                # for the large board, the neighbouring columns), regardless of
-                # which cell edge the thin panel hugs, so every interaction box
-                # is centred on its column.  A panel-hugging box would sit on
-                # the wrong side anyway: hitbox +z is the furniture front while
-                # the model's +z panel lands on the back, so the old offset box
-                # crossed into the placer-side neighbour cell.  CE interaction
-                # boxes also have square bases, which is why the large board
-                # cannot be one width-3 box (that claims a 3x3 footprint where
-                # Forge only occupied a 3x1 row).
-                # The wall anchor's centre alignment lifts the furniture origin
-                # to n+0.5, so wall boxes drop half a block to cover the same
-                # world span as their ground counterparts.  A full centred wall
-                # box would overlap the supporting wall and reject every
-                # placement.  Split each column into two half-width boxes in
-                # front of the wall instead: their z span is 0..0.5, so they
-                # retain CE's block/entity/furniture obstruction checks without
-                # intersecting the support block.
-                shift = -8 if anchor == "wall" else 0
-                hitboxes = []
-                for column in columns:
-                    if anchor == "wall":
-                        for half_start in (column, column + 8):
-                            hitboxes.append(interaction_box(
-                                (half_start, 2 + shift, 8,
-                                 half_start + 8, 30 + shift, 16),
-                                "ground"))
-                    else:
-                        hitboxes.append(interaction_box(
-                            (column, 2, 0, column + 16, 30, 16), "ground"))
-                return hitboxes
-
-            def chalkboard_element(
-                label: str,
-                model: tuple[str, int, int, int, bool],
-                anchor: str,
-            ) -> dict[str, Any]:
-                if anchor == "ground":
-                    return furniture_element(render_items, block_id, label, model, "ground")
-                # CE's wall yaw already maps the authored north-facing model
-                # onto the clicked face. Applying another 180-degree element
-                # rotation moves the thin panel to the outer edge of the
-                # target cell, a full block away from its support (and from the
-                # packet-only text). Keep the native wall depth and no extra
-                # rotation so the panel remains flush with the clicked wall.
-                return furniture_element(
-                    render_items, block_id, label, model, "wall")
-
-            variants["ground"] = {
-                "elements": [chalkboard_element("small", small_model, "ground")],
-                "hitboxes": chalkboard_hitboxes((0,), "ground"),
-            }
-            variants["ground_large"] = {
-                "elements": [chalkboard_element("large", large_model, "ground")],
-                "hitboxes": chalkboard_hitboxes((-16, 0, 16), "ground"),
-            }
-            # ChalkboardBlock.getStateForPlacement also accepts horizontal
-            # clicked faces (FACING = clickedFace, no support requirement),
-            # which maps to CE's wall anchor; without a wall variant CE fails
-            # those clicks silently.  Forge's remaining ceiling-click branch
-            # stays unsupported for now -- see the README deviations.
-            variants["wall"] = {
-                "elements": [chalkboard_element("small", small_model, "wall")],
-                "hitboxes": chalkboard_hitboxes((0,), "wall"),
-            }
-            variants["wall_large"] = {
-                "elements": [chalkboard_element("large", large_model, "wall")],
-                "hitboxes": chalkboard_hitboxes((-16, 0, 16), "wall"),
             }
         elif block_id.endswith("_sandwich_board"):
             bottom = select_record(records, {"half": "bottom", "rotation": "0", "waterlogged": "false"})[1]
@@ -3083,19 +3171,6 @@ def build_furniture(
                 "type": "furniture_item",
                 "item": full_id,
             }
-            if block_id == "chalkboard":
-                # CE exposes the current furniture in its loot context. A merged
-                # chalkboard is one furniture with a large variant but represents
-                # the three source boards consumed by the legacy merge, so let CE
-                # return that exact count without a Paper break listener.
-                loot_entry["functions"] = [{
-                    "type": "set_count",
-                    "count": 3,
-                    "conditions": [{
-                        "type": "match_furniture_variant",
-                        "variants": ["ground_large", "wall_large"],
-                    }],
-                }]
             config["loot"] = {
                 "pools": [{
                     "rolls": 1,
@@ -3472,14 +3547,14 @@ def build_items(
                 # shape and otherwise reject placement while the player is
                 # standing close enough to click the support block.
                 furniture_behavior["ignore_placer"] = True
-            elif item_id == "chalkboard":
-                # Forge checks entities against a 1/16-thick panel at the far
-                # edge of the target cell.  CE has square horizontal interaction
-                # boxes; even the wall-safe approximation is 1/2 block deep and
-                # can overlap the player who is close enough to place it.  Ignore
-                # only the placer while keeping every other obstruction check.
-                furniture_behavior["ignore_placer"] = True
             behaviors.append(furniture_behavior)
+        elif item_id == "chalkboard":
+            # CE's dedicated item behavior validates/reverts the upper cell and
+            # preserves its fluid before double_high_block installs the pair.
+            behaviors.append({
+                "type": "double_high_block_item",
+                "block": f"{NAMESPACE}:chalkboard",
+            })
         elif item_id in block_ids:
             behaviors.append({"type": "block_item", "block": f"{NAMESPACE}:{item_id}"})
         elif item_id == "grapevine":
