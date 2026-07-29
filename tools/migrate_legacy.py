@@ -3429,10 +3429,10 @@ def build_items(
             "model": {"type": "minecraft:model", "path": f"{NAMESPACE}:item/{item_id}"},
         }
         behaviors: list[dict[str, Any]] = []
-        # Drinks keep vanilla potion consumption. A thin custom CE behavior
-        # delegates to the native furniture_item only while sneaking and
-        # returns PASS for ordinary right-clicks so they still drink normally.
-        manually_placed_drink = is_drink(item_id, drink_ids)
+        # Every portable vessel uses the same interaction contract: ordinary
+        # right-click keeps its held-item action (drink, throw or shake), while
+        # sneak + right-click delegates placement to CE's native furniture_item.
+        sneak_placeable_vessel = item_id in SMALL_FURNITURE
         if item_id in BOTTLE_AND_GLASS_ITEMS or item_id.endswith("_bucket"):
             # The Forge BottleBlockItem/GlasswareBlockItem hierarchy stacks to
             # 16. Potion is used as the server-side material for drinking, but
@@ -3461,7 +3461,9 @@ def build_items(
                 "minecraft:max_stack_size": 1,
                 "minecraft:consumable": {
                     "consume_seconds": 3_600.0,
-                    "animation": "brush",
+                    # NONE retains the active-use timer without the brush
+                    # animation's continuous left/right first-person sway.
+                    "animation": "none",
                     "has_consume_particles": False,
                 },
             })
@@ -3540,12 +3542,12 @@ def build_items(
         if item_id in furniture_ids:
             if item_id == "shaker":
                 # Right-click air is owned by CE's existing item-use listener;
-                # the following native furniture behavior still owns block
-                # placement. Paper only observes release to finish the mix.
+                # the following sneak gate delegates block placement to CE.
+                # Paper only observes release to finish the mix.
                 behaviors.append({"type": f"{NAMESPACE}:shaker_item"})
             furniture_behavior: dict[str, Any] = {
                 "type": (f"{NAMESPACE}:sneak_place_drink"
-                         if manually_placed_drink else "furniture_item"),
+                         if sneak_placeable_vessel else "furniture_item"),
                 "furniture": f"{NAMESPACE}:{item_id}",
                 "rules": furniture_placement[item_id],
             }
