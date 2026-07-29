@@ -2418,7 +2418,7 @@
         "path": "kaleidoscope_tavern:item/empty_bottle"
       },
       "behavior": {
-        "type": "furniture_item",
+        "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:empty_bottle",
         "rules": {
           "ground": {
@@ -2441,7 +2441,7 @@
         "path": "kaleidoscope_tavern:item/empty_glassware"
       },
       "behavior": {
-        "type": "furniture_item",
+        "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:empty_glassware",
         "rules": {
           "ground": {
@@ -2967,7 +2967,7 @@
           "minecraft:max_stack_size": 1,
           "minecraft:consumable": {
             "consume_seconds": 3600.0,
-            "animation": "brush",
+            "animation": "none",
             "has_consume_particles": false
           }
         }
@@ -2997,7 +2997,7 @@
           "type": "kaleidoscope_tavern:shaker_item"
         },
         {
-          "type": "furniture_item",
+          "type": "kaleidoscope_tavern:sneak_place_drink",
           "furniture": "kaleidoscope_tavern:shaker",
           "rules": {
             "ground": {
@@ -3054,7 +3054,7 @@
         }
       },
       "behavior": {
-        "type": "furniture_item",
+        "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:molotov",
         "rules": {
           "ground": {

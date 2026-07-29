@@ -826,7 +826,7 @@ def validate() -> dict[str, int]:
             "SneakPlaceDrinkItemBehavior.register()",
             "FurnitureItemBehavior.FACTORY.create"):
         if token not in plugin_source + item_behavior_source:
-            raise AssertionError("Drink placement behavior must delegate to native CE furniture placement")
+            raise AssertionError("Vessel placement behavior must delegate to native CE furniture placement")
     for token in (
             "if (!context.isSecondaryUseActive())",
             "return InteractionResult.PASS;",
@@ -834,7 +834,13 @@ def validate() -> dict[str, int]:
             "return InteractionResult.SUCCESS_AND_CANCEL;"):
         if token not in item_behavior_source:
             raise AssertionError(
-                "Drink CE behavior must preserve normal drinking and own rejected sneak placement")
+                "Vessel CE behavior must preserve normal item use and own rejected sneak placement")
+    for token in (
+            "event.getAction() != Action.RIGHT_CLICK_BLOCK",
+            "!event.getPlayer().isSneaking()"):
+        if token not in bottle_placement_source:
+            raise AssertionError(
+                "Vanilla-source bottle furniture placement must require sneak + right-click block")
     if "new Placement(customId" in bottle_placement_source:
         raise AssertionError("Paper must not duplicate custom drink player placement")
     for redundant_owner in (
@@ -1627,13 +1633,13 @@ def validate() -> dict[str, int]:
             "Portable shaker right-click must not retain a duplicate global Paper listener")
     shaker_behaviors = items[f"{NAMESPACE}:shaker"].get("behaviors", [])
     if ([behavior.get("type") for behavior in shaker_behaviors]
-            != [f"{NAMESPACE}:shaker_item", "furniture_item"]
+            != [f"{NAMESPACE}:shaker_item", f"{NAMESPACE}:sneak_place_drink"]
             or shaker_behaviors[1].get("furniture") != f"{NAMESPACE}:shaker"
             or shaker_behaviors[1].get("rules") != {
                 "ground": {"rotation": "four", "alignment": "center"}
             }):
         raise AssertionError(
-            "Shaker must run CE portable use before native furniture placement")
+            "Shaker must run CE portable use before sneak-gated native furniture placement")
     for stale_token in (
             "bootstrapPressVisuals", "onEntitiesLoad(EntitiesLoadEvent event)",
             "pressingTubBelow", "getNearbyEntities(feet"):
@@ -2991,6 +2997,32 @@ def validate() -> dict[str, int]:
                 f"{item_id}: drink potion_contents must use the neutral water base "
                 "and may only add an integer custom_color")
 
+    public_vessel_ids = {
+        f"{NAMESPACE}:{vessel_id}"
+        for vessel_id in EXPECTED_BOTTLE_FURNITURE | {"shaker"}
+        if f"{NAMESPACE}:{vessel_id}" in items
+    }
+    expected_ground_rule = {
+        "ground": {"rotation": "four", "alignment": "center"}
+    }
+    for item_id in public_vessel_ids:
+        item = items[item_id]
+        item_behaviors = (
+            item.get("behaviors", []) or ([item["behavior"]] if "behavior" in item else [])
+        )
+        placement_behaviors = [
+            behavior for behavior in item_behaviors
+            if behavior.get("furniture") == item_id
+        ]
+        if placement_behaviors != [{
+                "type": f"{NAMESPACE}:sneak_place_drink",
+                "furniture": item_id,
+                "rules": expected_ground_rule,
+                }]:
+            raise AssertionError(
+                f"{item_id}: every custom bottle, glass and shaker must place only through "
+                "sneak-gated native CE furniture placement")
+
     for item_id in EFFECTLESS_DRINKS:
         replacement = items[item_id].get("settings", {}).get("consume_replacement")
         if replacement != f"{NAMESPACE}:empty_bottle":
@@ -3103,11 +3135,11 @@ def validate() -> dict[str, int]:
             or shaker_components.get("minecraft:max_stack_size") != 1
             or shaker_components.get("minecraft:consumable") != {
                 "consume_seconds": 3_600.0,
-                "animation": "brush",
+                "animation": "none",
                 "has_consume_particles": False,
             }):
         raise AssertionError(
-            "Shaker must use a behavior-free material with a component-only brush animation")
+            "Shaker must retain active-use timing without the brush animation's lateral sway")
     if shaker_item.get("model") != {
             "type": "minecraft:select",
             "property": "display_context",

@@ -16,7 +16,7 @@ import org.bukkit.block.Block;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Keeps normal drink use vanilla while delegating sneak-placement to
+ * Keeps the normal held-vessel action while delegating sneak-placement to
  * CraftEngine's native furniture item implementation.
  */
 public final class SneakPlaceDrinkItemBehavior extends ItemBehavior {
@@ -41,7 +41,8 @@ public final class SneakPlaceDrinkItemBehavior extends ItemBehavior {
     @Override
     public InteractionResult useOnBlock(UseOnContext context) {
         if (!context.isSecondaryUseActive()) {
-            // Let the potion base continue through CE to vanilla consumption.
+            // Let drinking, throwing or portable shaking continue through the
+            // ordinary CE/vanilla item-use pipeline.
             return InteractionResult.PASS;
         }
 
@@ -74,7 +75,7 @@ public final class SneakPlaceDrinkItemBehavior extends ItemBehavior {
         furnitureItem.useOnBlock(placement);
 
         // A recognized sneak placement owns the interaction even when CE
-        // rejects it. Otherwise the potion can fall through and be drunk.
+        // rejects it. Otherwise the held item action could run as a fallback.
         return InteractionResult.SUCCESS_AND_CANCEL;
     }
 }

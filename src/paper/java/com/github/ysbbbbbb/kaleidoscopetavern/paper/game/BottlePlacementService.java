@@ -78,7 +78,7 @@ public final class BottlePlacementService implements Listener {
                 || event.getItem() == null) {
             return;
         }
-        // Custom drinks are handled later by CE's sneak_place_drink item
+        // Custom drinks are handled later by CE's sneak-place vessel item
         // behavior. Returning here is essential: this LOW listener must not
         // cancel the event before CE's HIGHEST item dispatcher sees it.
         if (isPlaceableDrink(items.id(event.getItem()))) {
