@@ -7198,6 +7198,9 @@
         "tags": [
           "minecraft:mineable/axe"
         ],
+        "destroy_stages": {
+          "template": "internal:destroy_stages"
+        },
         "item": "kaleidoscope_tavern:cellar_cabinet"
       },
       "behavior": {
@@ -7349,8 +7352,11 @@
           "fall": "minecraft:block.wood.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
+        "destroy_stages": {
+          "template": "internal:destroy_stages"
+        },
         "item": "kaleidoscope_tavern:tilted_rack"
       },
       "behavior": {
@@ -7502,8 +7508,11 @@
           "fall": "minecraft:block.wood.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
+        "destroy_stages": {
+          "template": "internal:destroy_stages"
+        },
         "item": "kaleidoscope_tavern:circular_rack",
         "luminance": 14
       },
@@ -7553,10 +7562,7 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "pressure_plate",
-              "id": "kaleidoscope-tavern-holder-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7568,10 +7574,7 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "pressure_plate",
-              "id": "kaleidoscope-tavern-holder-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7583,10 +7586,7 @@
             }
           },
           "appearance_2": {
-            "auto_state": {
-              "type": "pressure_plate",
-              "id": "kaleidoscope-tavern-holder-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7597,10 +7597,7 @@
             }
           },
           "appearance_3": {
-            "auto_state": {
-              "type": "pressure_plate",
-              "id": "kaleidoscope-tavern-holder-transparent"
-            },
+            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7656,8 +7653,11 @@
           "fall": "minecraft:block.wood.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
+        "destroy_stages": {
+          "template": "internal:destroy_stages"
+        },
         "item": "kaleidoscope_tavern:holder"
       },
       "behavior": {

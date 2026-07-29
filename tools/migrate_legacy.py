@@ -223,6 +223,9 @@ SOFA_CARRIER_STATE = "minecraft:barrier"
 COPPER_LANTERN_CARRIER_STATE = (
     "minecraft:copper_lantern[hanging=false,waterlogged=false]"
 )
+HOLDER_CARRIER_STATE = (
+    "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]"
+)
 
 PAINTINGS = {
     "ysbb_painting",
@@ -611,11 +614,18 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
 def carrier_type(block_id: str) -> tuple[str, str]:
     if block_id == "cellar_cabinet":
         return "solid", "kaleidoscope-tavern-cellar-cabinet-transparent"
-    if block_id in {"circular_rack", "holder"}:
+    if block_id == "circular_rack":
         return (
             "pressure_plate",
             f"kaleidoscope-tavern-{block_id.replace('_', '-')}-transparent",
         )
+    if block_id == "holder":
+        # HolderBlock is a full-height, narrow rack. A pressure plate preserves
+        # neither its selection column nor a usable survival-mode mining target:
+        # aiming above the floor never produces START_DESTROY_BLOCK. CE releases
+        # this vertical rod state, whose narrow full-height outline is the closest
+        # client carrier to the source 6x12x16 voxel shape.
+        return "state", HOLDER_CARRIER_STATE
     if block_id == "tilted_rack":
         return "cactus", f"kaleidoscope-tavern-{block_id.replace('_', '-')}-transparent"
     return "higher_tripwire", "kaleidoscope-tavern-decor-transparent"
@@ -790,9 +800,15 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
         "sounds": sound_type,
         "tags": (["minecraft:mineable/pickaxe"] if block_id == "tap"
                  or is_sofa
+                 or block_id in {"tilted_rack", "circular_rack", "holder"}
                  else [] if is_wild_vine or is_crop or block_id in INCENSE_BLOCKS
                  else ["minecraft:mineable/axe"]),
     }
+    if is_storage:
+        # Every storage rack is rendered by an ItemDisplay. Without CE's native
+        # destroy-stage display, survival mining has no visible progress because
+        # the transparent carrier itself cannot show block crack overlays.
+        settings["destroy_stages"] = {"template": "internal:destroy_stages"}
     if is_sofa:
         settings.update({
             "map_color": 27,
@@ -1013,6 +1029,8 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                         "minecraft:lightning_rod"
                         f"[facing={facing},powered=false,waterlogged={waterlogged}]"
                     )
+                elif carrier == "state":
+                    appearance["state"] = carrier_id
                 elif is_sofa:
                     # Match CE's bundled sofa: barrier is already invisible,
                     # so do not mark this appearance transparent (which would
@@ -1755,6 +1773,38 @@ def furniture_hitboxes(
 def create_chalkboard_models() -> None:
     model_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture"
     texture_root = f"{NAMESPACE}:entity/deco"
+
+    def cube_faces(width: int, texture_width: int) -> dict[str, Any]:
+        """Convert CubeListBuilder's texOffs(0, 0) unwrap without cropping.
+
+        The entity textures contain a one-pixel-deep six-face cube net. The old
+        Paper conversion sampled 0..width for both broad faces, pulling the top
+        seam into the front and replacing the wooden back with a duplicate front;
+        it also omitted the four one-pixel edge faces entirely.
+        """
+        def uv(left: int, top: int, right: int, bottom: int) -> list[float]:
+            return [
+                left * 16 / texture_width,
+                top / 4,
+                right * 16 / texture_width,
+                bottom / 4,
+            ]
+
+        depth = 1
+        height = 28
+        front_left = depth
+        front_right = front_left + width
+        east_right = front_right + depth
+        back_right = east_right + width
+        return {
+            "down": {"uv": uv(front_left, 0, front_right, depth), "texture": "#board"},
+            "up": {"uv": uv(front_right, 0, front_right + width, depth), "texture": "#board"},
+            "west": {"uv": uv(0, depth, depth, depth + height), "texture": "#board"},
+            "north": {"uv": uv(front_left, depth, front_right, depth + height), "texture": "#board"},
+            "east": {"uv": uv(front_right, depth, east_right, depth + height), "texture": "#board"},
+            "south": {"uv": uv(east_right, depth, back_right, depth + height), "texture": "#board"},
+        }
+
     small = {
         "ambientocclusion": False,
         "textures": {"board": f"{texture_root}/small_chalkboard", "particle": f"{NAMESPACE}:block/deco/chalkboard_particle"},
@@ -1763,10 +1813,7 @@ def create_chalkboard_models() -> None:
             # spans source y=2..30 across the original two-block structure.
             "from": [0, 2, 15],
             "to": [16, 30, 16],
-            "faces": {
-                "north": {"uv": [0, 0, 4, 7], "texture": "#board"},
-                "south": {"uv": [0, 0, 4, 7], "texture": "#board"},
-            },
+            "faces": cube_faces(16, 64),
         }],
     }
     large = {
@@ -1775,10 +1822,7 @@ def create_chalkboard_models() -> None:
         "elements": [{
             "from": [-16, 2, 15],
             "to": [32, 30, 16],
-            "faces": {
-                "north": {"uv": [0, 0, 6, 7], "texture": "#board"},
-                "south": {"uv": [0, 0, 6, 7], "texture": "#board"},
-            },
+            "faces": cube_faces(48, 128),
         }],
     }
     write_json(model_root / "chalkboard_small.json", small)
