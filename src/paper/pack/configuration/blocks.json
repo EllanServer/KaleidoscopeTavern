@@ -7957,10 +7957,7 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "pressure_plate",
-              "id": "kaleidoscope-tavern-circular-rack-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7972,10 +7969,7 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "pressure_plate",
-              "id": "kaleidoscope-tavern-circular-rack-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7986,10 +7980,7 @@
             }
           },
           "appearance_2": {
-            "auto_state": {
-              "type": "pressure_plate",
-              "id": "kaleidoscope-tavern-circular-rack-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -8001,10 +7992,7 @@
             }
           },
           "appearance_3": {
-            "auto_state": {
-              "type": "pressure_plate",
-              "id": "kaleidoscope-tavern-circular-rack-transparent"
-            },
+            "state": "minecraft:copper_chain[axis=y,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -8114,7 +8102,7 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -8126,7 +8114,7 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -8138,7 +8126,7 @@
             }
           },
           "appearance_2": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "state": "minecraft:lightning_rod[facing=south,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -8149,7 +8137,7 @@
             }
           },
           "appearance_3": {
-            "state": "minecraft:lightning_rod[facing=up,powered=false,waterlogged=false]",
+            "state": "minecraft:lightning_rod[facing=west,powered=false,waterlogged=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
