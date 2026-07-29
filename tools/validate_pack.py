@@ -47,7 +47,6 @@ INCENSE_BLOCK_SPECS = {
     "firefly_incense": ("FIREFLY", "FIREFLY", -0.67, 5.33),
 }
 EXPECTED_STATE_FURNITURE = {
-    "chalkboard",
     "base_sandwich_board", "grass_sandwich_board", "allium_sandwich_board",
     "azure_bluet_sandwich_board", "cornflower_sandwich_board",
     "orchid_sandwich_board", "peony_sandwich_board",
@@ -95,7 +94,6 @@ FURNITURE_COLORS = {
     "white", "yellow",
 }
 EXPECTED_LIFECYCLE_FURNITURE: dict[str, tuple[str, ...]] = {
-    "chalkboard": ("board",),
     "base_sandwich_board": ("board",),
     "grass_sandwich_board": ("board",),
     "allium_sandwich_board": ("board",),
@@ -170,16 +168,16 @@ SOURCE_STATE_OWNERS = {
     "connection": "FurnitureConnectionService sofa/furniture variants and storage block states",
     "count": "BottleFurnitureService",
     "face": "CE ground/wall/ceiling placement rules",
-    "facing": "CE tap/storage state plus native wall and four-way/sixteen-way furniture rotation",
-    "half": "composite multi-element furniture variants",
+    "facing": "CE chalkboard/tap/storage state plus native wall and four-way/sixteen-way furniture rotation",
+    "half": "CE native double-high chalkboard plus composite multi-element furniture variants",
     "open": "CE incense/tap block state",
-    "position": "CE storage block connection state plus FurnitureConnectionService",
+    "position": "CE chalkboard/storage block connection state plus FurnitureConnectionService",
     "powered": "CE incense/storage block redstone edge state",
     "rotation": "CE sixteen-way sandwich-board rotation",
     "tilt": "ground/wall pressing-tub placement variants",
     "triggered": "CE TapBlockBehavior redstone edge latch",
     "type": "CE trellis state variants",
-    "waterlogged": "CE tap/trellis state plus water-preserving glowing string-light furniture",
+    "waterlogged": "CE chalkboard/tap/trellis state plus water-preserving glowing string-light furniture",
     "waxed": "CE trellis state variants plus blocks.json wax events",
 }
 
@@ -192,7 +190,8 @@ RENDERER_COVERAGE = {
     "BarrelBlockEntityRender.java": ("StationService.java", "BarrelSemantics"),
     "BarStoolBlockEntityRender.java": ("BarStoolVisualService.java", "getBodyYaw"),
     "CellarCabinetBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
-    "ChalkboardBlockEntityRender.java": ("BoardTextService.java", "chalkboard"),
+    "ChalkboardBlockEntityRender.java": (
+        "block/ChalkboardBlockBehavior.java", "class BlockTextElement"),
     "CircularRackBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
     "GlasswareHolderBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
     "HolderBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
@@ -241,7 +240,11 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("DisplayStorageService.java", "CELLAR_CABINET"),
         ("block/StorageBlockBehavior.java", "cellarPosition"),
     ),
-    "ChalkboardBlock.java": (("BoardTextService.java", "CHALKBOARD"),),
+    "ChalkboardBlock.java": (
+        ("block/ChalkboardBlockBehavior.java", "private void tryMerge("),
+        ("block/ChalkboardBlockBehavior.java", "private void removeOtherParts("),
+        ("BoardTextService.java", "private InteractionResult interactChalkboard("),
+    ),
     "CircularRackBlock.java": (
         ("DisplayStorageService.java", "CIRCULAR_RACK"),
         ("block/StorageBlockBehavior.java", "tickCircularRack"),
@@ -420,7 +423,10 @@ BLOCK_ENTITY_COVERAGE = {
     "BarStoolBlockEntity.java": (
         ("BarStoolVisualService.java", "AnimatedItemFurnitureBehavior.updatePosition"),
     ),
-    "ChalkboardBlockEntity.java": (("BoardTextService.java", "CHALKBOARD"),),
+    "ChalkboardBlockEntity.java": (
+        ("block/ChalkboardBlockBehavior.java", "private static final String DATA_KEY"),
+        ("BoardTextService.java", "controller.isLarge() ? 1_500 : 350"),
+    ),
     "CircularRackBlockEntity.java": (
         ("DisplayStorageService.java", "CIRCULAR_RACK"),
         ("block/StorageBlockBehavior.java", "tickCircularRack"),
@@ -627,10 +633,10 @@ def validate() -> dict[str, int]:
 
     if len(items) != 157:
         raise AssertionError(f"Expected 157 public items, found {len(items)}")
-    if len(blocks) != 37:
-        raise AssertionError(f"Expected 37 grid/state blocks, found {len(blocks)}")
-    if len(furniture) != 137:
-        raise AssertionError(f"Expected 137 furniture definitions, found {len(furniture)}")
+    if len(blocks) != 38:
+        raise AssertionError(f"Expected 38 grid/state blocks, found {len(blocks)}")
+    if len(furniture) != 136:
+        raise AssertionError(f"Expected 136 furniture definitions, found {len(furniture)}")
     if len(render_items) != 503:
         raise AssertionError(f"Expected 503 private render items, found {len(render_items)}")
     if len(recipes) != 114:
@@ -918,6 +924,9 @@ def validate() -> dict[str, int]:
 
     board_text_source = (game_package / "BoardTextService.java").read_text(
         encoding="utf-8-sig")
+    chalkboard_behavior_source = (
+        game_package / "block/ChalkboardBlockBehavior.java"
+    ).read_text(encoding="utf-8-sig")
     if ("runTaskTimer" in board_text_source
             or "onMove(PlayerMoveEvent event)" not in board_text_source
             or "validateEditDistance(event.getPlayer())" not in board_text_source):
@@ -946,7 +955,6 @@ def validate() -> dict[str, int]:
             "BoardTextFurnitureBehavior.unbindInteraction(boardInteractionHandler)",
             "private InteractionResult interactBoard(",
             "public void onFurniturePlace(FurniturePlaceEvent event)",
-            "!event.player().isSneaking()",
             "context.getHand() != InteractionHand.MAIN_HAND",
             "InteractionResult.SUCCESS_AND_CANCEL",
             "private List<BoardTextFurnitureBehavior.Visual> boardVisuals",
@@ -956,6 +964,39 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Board text must use CE packet-only elements while retaining its spatial "
                 f"lifecycle index; missing token: {required_token}")
+    for required_token in (
+            "ChalkboardBlockBehavior.bind(chalkboardHandler)",
+            "ChalkboardBlockBehavior.unbind(chalkboardHandler)",
+            "private InteractionResult interactChalkboard(",
+            "private List<ChalkboardBlockBehavior.Visual> chalkboardVisuals",
+            "EditSession.chalkboard(",
+            "private void cancelChalkboardEditors(",
+            "matchesChalkboard(world, pos)"):
+        if required_token not in board_text_source:
+            raise AssertionError(
+                "Chalkboard block text lifecycle is incomplete; "
+                f"missing token: {required_token}")
+    for required_token in (
+            "extends WaterloggedBlockBehavior",
+            "implements EntityBlock",
+            "private void tryMerge(",
+            "resetMergedData(world,",
+            "private BlockPos rootPos(",
+            "double_high_block behavior",
+            "blockEntity.world.blockEntityChanged(blockEntity.pos)",
+            "current.unavailable(this)",
+            "new WeakHashMap<>()"):
+        if required_token not in chalkboard_behavior_source:
+            raise AssertionError(
+                "Chalkboard must keep only its source-specific horizontal merge and "
+                f"block-entity text bridge; missing token: {required_token}")
+    for stale_token in (
+            "tryMergeChalkboards(", "nearbyFurniture(",
+            "chalkboardMergeOrigin(", 'currentVariant().name() + "_large"'):
+        if stale_token in board_text_source:
+            raise AssertionError(
+                "Legacy furniture-scanning chalkboard merge must stay removed; "
+                f"found {stale_token}")
     for stale_token in (
             "org.bukkit.entity.TextDisplay", "PersistentDataType", "NamespacedKey",
             "board_owner", "board_line", "board_displays", "getNearbyEntities(",
@@ -968,6 +1009,7 @@ def validate() -> dict[str, int]:
                 f"PDC; stale token found: {stale_token}")
 
     expected_grid_blocks = {
+        f"{NAMESPACE}:chalkboard",
         f"{NAMESPACE}:wild_grapevine",
         f"{NAMESPACE}:wild_grapevine_plant",
         f"{NAMESPACE}:trellis",
@@ -1138,6 +1180,9 @@ def validate() -> dict[str, int]:
     if "StorageBlockBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register CE storage blocks before pack loading")
+    if "ChalkboardBlockBehavior.register()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must register the chalkboard block behavior before pack loading")
     for stale_token in ("SofaBlockBehavior", "SofaBlockShape"):
         if stale_token in plugin_source:
             raise AssertionError(
@@ -1390,7 +1435,6 @@ def validate() -> dict[str, int]:
 
     indexed_query_services = {
         "BarStoolVisualService.java": "Channel.BAR_STOOL, mount, 1.5, 1.5",
-        "BoardTextService.java": "Channel.BOARD, center, radius, radius",
         "FurnitureConnectionService.java": "Channel.CONNECTION, center, 3.25, 1.25",
     }
     for service_name, required_query in indexed_query_services.items():
@@ -2327,7 +2371,7 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Source particle-only model set changed: "
             f"found={sorted(geometryless_source_models)}")
-    for block_id in expected_geometryless:
+    for block_id in expected_geometryless - {"chalkboard"}:
         definition = furniture[f"{NAMESPACE}:{block_id}"]
         for variant_name, variant in definition["variants"].items():
             if not variant.get("elements"):
@@ -2378,53 +2422,163 @@ def validate() -> dict[str, int]:
             "Stepladder hitboxes must retain the server-tested compact layout: "
             f"found={sorted(actual_stepladder_hitboxes)}")
 
-    # ChalkboardBlock parity: the board occupies its own column(s), never the
-    # cell in front of the panel; the large board is a 3x1 row, not a 3x3
-    # square; horizontal clicks place a wall variant; wall boxes remain wholly
-    # in front of their support so CE still performs obstruction checks; and
-    # placement ignores only the placing player to approximate Forge's thin
-    # panel collision with CE's necessarily deeper square interaction boxes.
-    chalkboard = furniture[f"{NAMESPACE}:chalkboard"]
-    chalkboard_variants = chalkboard.get("variants", {})
-    if set(chalkboard_variants) != {"ground", "ground_large", "wall", "wall_large"}:
-        raise AssertionError(
-            "Chalkboard must expose ground, ground_large, wall and wall_large "
-            f"variants, found {sorted(chalkboard_variants)}")
-    expected_chalkboard_hitboxes = {
-        "ground": ("0,0.125,0",),
-        "ground_large": ("-1,0.125,0", "0,0.125,0", "1,0.125,0"),
-        "wall": ("-0.25,-0.375,0.25", "0.25,-0.375,0.25"),
-        "wall_large": (
-            "-1.25,-0.375,0.25", "-0.75,-0.375,0.25",
-            "-0.25,-0.375,0.25", "0.25,-0.375,0.25",
-            "0.75,-0.375,0.25", "1.25,-0.375,0.25",
-        ),
+    # ChalkboardBlock parity now uses real CE block cells: native double-high
+    # behavior owns each vertical pair, released closed iron-door states provide
+    # a continuous two-block client target, and Tavern owns only the source's
+    # three-wide blank-board merge and text block entity.
+    chalkboard_id = f"{NAMESPACE}:chalkboard"
+    if chalkboard_id in furniture:
+        raise AssertionError("Chalkboard must not remain CE furniture")
+    chalkboard = blocks[chalkboard_id]
+    chalkboard_states = chalkboard.get("states", {})
+    expected_chalkboard_properties = {
+        "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": ["north", "east", "south", "west"],
+        },
+        "half": {
+            "type": "double_block_half",
+            "default": "lower",
+            "values": ["lower", "upper"],
+        },
+        "position": {
+            "type": "string",
+            "default": "single",
+            "values": ["single", "left", "middle", "right"],
+        },
+        "waterlogged": {"type": "boolean", "default": "false"},
     }
-    for variant_name, expected_positions in expected_chalkboard_hitboxes.items():
-        hitboxes = chalkboard_variants[variant_name].get("hitboxes", [])
-        positions = tuple(sorted(hitbox.get("position") for hitbox in hitboxes))
-        if positions != tuple(sorted(expected_positions)):
+    if chalkboard_states.get("properties") != expected_chalkboard_properties:
+        raise AssertionError("Chalkboard CE state schema drifted")
+
+    chalkboard_variants = chalkboard_states.get("variants", {})
+    expected_chalkboard_variant_keys = {
+        f"facing={facing},half={half},position={position},waterlogged={waterlogged}"
+        for facing in ("north", "east", "south", "west")
+        for half in ("lower", "upper")
+        for position in ("single", "left", "middle", "right")
+        for waterlogged in ("false", "true")
+    }
+    if set(chalkboard_variants) != expected_chalkboard_variant_keys:
+        raise AssertionError(
+            "Chalkboard must expose all 64 facing/half/position/fluid states")
+
+    chalkboard_appearances = chalkboard_states.get("appearances", {})
+    referenced_appearances: set[str] = set()
+    facing_yaw = {"north": None, "east": 270, "south": 180, "west": 90}
+    for variant_key, variant in chalkboard_variants.items():
+        properties = dict(part.split("=", 1) for part in variant_key.split(","))
+        facing = properties["facing"]
+        half = properties["half"]
+        position = properties["position"]
+        waterlogged = properties["waterlogged"]
+        visible_size = (
+            "small" if half == "lower" and position == "single"
+            else "large" if half == "lower" and position == "middle"
+            else None
+        )
+        appearance_name = (
+            f"{visible_size}_{facing}_{half}"
+            if visible_size is not None
+            else f"hidden_{facing}_{half}"
+        )
+        if variant.get("appearance") != appearance_name:
             raise AssertionError(
-                f"Chalkboard {variant_name} hitbox layout drifted, "
-                f"found positions={positions}")
-        for hitbox in hitboxes:
-            wall_variant = variant_name.startswith("wall")
-            if (hitbox.get("type") != "interaction"
-                    or hitbox.get("width") != (0.5 if wall_variant else 1.0)
-                    or hitbox.get("height") != 1.75
-                    or hitbox.get("blocks_building") is not True
-                    or hitbox.get("interactive") is not True
-                    or hitbox.get("can_use_item_on") is not True
-                    or hitbox.get("can_be_hit_by_projectile") is not True):
+                f"Chalkboard {variant_key} maps to the wrong renderer")
+        expected_variant_settings = (
+            {"fluid_state": "water"} if waterlogged == "true" else {})
+        if variant.get("settings", {}) != expected_variant_settings:
+            raise AssertionError(
+                f"Chalkboard {variant_key} fluid state drifted")
+
+        appearance = chalkboard_appearances.get(appearance_name, {})
+        referenced_appearances.add(appearance_name)
+        expected_carrier = (
+            "minecraft:iron_door"
+            f"[facing={facing},half={half},hinge=left,open=false,powered=true]"
+        )
+        if (appearance.get("state") != expected_carrier
+                or appearance.get("transparent") is not True):
+            raise AssertionError(
+                f"Chalkboard {variant_key} must use its released closed-door carrier")
+        renderer = appearance.get("entity_renderer")
+        if visible_size is None:
+            if renderer is not None:
                 raise AssertionError(
-                    f"Chalkboard {variant_name} hitboxes must retain their "
-                    "interactive, obstruction-checking geometry, found "
-                    f"{hitbox}")
-    for anchor in ("ground", "wall"):
-        small = chalkboard_variants[anchor]["elements"][0].get("item")
-        large = chalkboard_variants[f"{anchor}_large"]["elements"][0].get("item")
-        if small == large or not small or not large:
-            raise AssertionError("Chalkboard variants must reference the small/large render items")
+                    f"Chalkboard side/upper cell {variant_key} must stay visually hidden")
+            continue
+        expected_renderer = {
+            "type": "item_display",
+            "item": f"{NAMESPACE}:_render/chalkboard/{visible_size}",
+            "display_transform": "none",
+            "shadow_radius": 0,
+            "view_range": 1.25,
+        }
+        if facing_yaw[facing] is not None:
+            expected_renderer["rotation"] = f"0,{facing_yaw[facing]},0"
+        if renderer != expected_renderer:
+            raise AssertionError(
+                f"Chalkboard {variant_key} model renderer drifted: {renderer}")
+    if (referenced_appearances != set(chalkboard_appearances)
+            or len(chalkboard_appearances) != 16):
+        raise AssertionError("Chalkboard appearance set contains stale or missing states")
+
+    expected_chalkboard_behaviors = [
+        {"type": "double_high_block"},
+        {"type": f"{NAMESPACE}:chalkboard"},
+    ]
+    if chalkboard.get("behaviors") != expected_chalkboard_behaviors:
+        raise AssertionError(
+            "Chalkboard vertical lifecycle must remain CE-native and precede Tavern merge/text")
+    settings = chalkboard.get("settings", {})
+    if (settings.get("item") != chalkboard_id
+            or settings.get("hardness") != 0.8
+            or settings.get("resistance") != 0.8
+            or settings.get("push_reaction") != "NORMAL"
+            or settings.get("tags") != ["minecraft:mineable/axe"]
+            or settings.get("destroy_stages")
+            != {"template": "internal:destroy_stages"}
+            or settings.get("map_color") != 13
+            or settings.get("instrument") != "guitar"
+            or settings.get("burnable") is not True
+            or settings.get("burn_chance") != 5
+            or settings.get("fire_spread_chance") != 20):
+        raise AssertionError("Chalkboard survival mining settings drifted")
+
+    expected_count_functions = [
+        {
+            "type": "set_count",
+            "count": 3,
+            "add": False,
+            "conditions": [{
+                "type": "match_block_property",
+                "properties": {"position": position},
+            }],
+        }
+        for position in ("left", "middle", "right")
+    ]
+    expected_chalkboard_loot = {
+        "pools": [{
+            "rolls": 1,
+            "conditions": [{"type": "survives_explosion"}],
+            "entries": [{
+                "type": "item",
+                "item": chalkboard_id,
+                "functions": expected_count_functions,
+            }],
+        }],
+    }
+    if chalkboard.get("loot") != expected_chalkboard_loot:
+        raise AssertionError(
+            "CE must own chalkboard drops and return three items for any merged cell")
+    expected_chalkboard_item_behavior = {
+        "type": "double_high_block_item",
+        "block": chalkboard_id,
+    }
+    if items[chalkboard_id].get("behavior") != expected_chalkboard_item_behavior:
+        raise AssertionError(
+            "Chalkboard placement must use CE's native double_high_block_item")
 
     # The archived entity models use CubeListBuilder.texOffs(0, 0): a complete
     # six-face net with one-pixel depth. Lock the exact normalized UV rectangles
@@ -2459,6 +2613,10 @@ def validate() -> dict[str, int]:
         },
     }
     for size, expected in expected_chalkboard_models.items():
+        helper_id = f"{NAMESPACE}:_render/chalkboard/{size}"
+        if render_items.get(helper_id, {}).get("model", {}).get("path") != (
+                f"{NAMESPACE}:furniture/chalkboard_{size}"):
+            raise AssertionError(f"Chalkboard {size} render helper drifted")
         model = asset_json(f"{NAMESPACE}:furniture/chalkboard_{size}", "models")
         elements = [] if model is None else model.get("elements", [])
         if len(elements) != 1:
@@ -2476,62 +2634,6 @@ def validate() -> dict[str, int]:
                 or actual_faces != expected["faces"]):
             raise AssertionError(
                 f"Chalkboard {size} geometry/UV no longer matches its archived entity cube")
-    for suffix in ("", "_large"):
-        ground_element = chalkboard_variants[f"ground{suffix}"]["elements"][0]
-        wall_element = chalkboard_variants[f"wall{suffix}"]["elements"][0]
-        if (wall_element.get("item") != ground_element.get("item")
-                or wall_element.get("translation") != "0,0,0.49"
-                or wall_element.get("position") != "0,0,0.01"
-                or wall_element.get("rotation") is not None):
-            raise AssertionError(
-                f"Chalkboard wall{suffix} must reuse the north-authored ground "
-                "model without a duplicate yaw and stay flush with its support")
-    chalkboard_loot_entries = [
-        entry
-        for pool in chalkboard.get("loot", {}).get("pools", [])
-        for entry in pool.get("entries", [])
-    ]
-    if len(chalkboard_loot_entries) != 1:
-        raise AssertionError("Chalkboard must have one CE-owned furniture-item loot entry")
-    chalkboard_loot = chalkboard_loot_entries[0]
-    expected_large_count_function = {
-        "type": "set_count",
-        "count": 3,
-        "conditions": [{
-            "type": "match_furniture_variant",
-            "variants": ["ground_large", "wall_large"],
-        }],
-    }
-    if (chalkboard_loot.get("type") != "furniture_item"
-            or chalkboard_loot.get("item") != f"{NAMESPACE}:chalkboard"
-            or chalkboard_loot.get("functions") != [expected_large_count_function]):
-        raise AssertionError(
-            "CE must own chalkboard drops and return three source items for large variants")
-    if "FurnitureBreakEvent" in board_text_source or "board_large_count" in board_text_source:
-        raise AssertionError(
-            "BoardTextService must not duplicate CE's variant-aware chalkboard loot")
-    chalkboard_item_behavior = items[f"{NAMESPACE}:chalkboard"].get("behavior", {})
-    if chalkboard_item_behavior.get("type") != "furniture_item":
-        raise AssertionError("Chalkboard item must keep its furniture_item behavior")
-    if chalkboard_item_behavior.get("ignore_placer") is not True:
-        raise AssertionError(
-            "Chalkboard placement must ignore the placer for CE square-box approximation")
-    chalkboard_rules = chalkboard_item_behavior.get("rules", {})
-    expected_chalkboard_rules = {
-        "ground": {"rotation": "four", "alignment": "center"},
-        "wall": {"rotation": "four", "alignment": "center"},
-    }
-    if chalkboard_rules != expected_chalkboard_rules:
-        raise AssertionError(
-            "Chalkboard ground/wall placement must retain four-way rotation and "
-            f"centre alignment, found {chalkboard_rules}")
-    for merge_token in (
-            "chalkboardMergeOrigin(center)",
-            "chalkboardMergeOrigin(candidate)",
-            'center.currentVariant().name() + "_large"'):
-        if merge_token not in board_text_source:
-            raise AssertionError(
-                "Ground- and wall-placed chalkboards must remain merge-compatible")
 
     trellis = blocks[f"{NAMESPACE}:trellis"]
     if "support_shape" in trellis.get("settings", {}):
@@ -2764,6 +2866,10 @@ def validate() -> dict[str, int]:
         for appearance in appearances.values():
             renderer = appearance.get("entity_renderer")
             if renderer is None:
+                if block_id == f"{NAMESPACE}:chalkboard":
+                    # Upper and side cells keep only the transparent door
+                    # carrier; the lower root renders the complete board.
+                    continue
                 raise AssertionError(f"{block_id}: missing entity renderer")
             render_id = renderer.get("item")
             if render_id not in render_items:
@@ -3898,12 +4004,9 @@ def validate() -> dict[str, int]:
 
     board_text_type = f"{NAMESPACE}:board_text_furniture"
     expected_board_text = {
-        "chalkboard": 11,
-        **{
-            block_id: 8
-            for block_id in EXPECTED_STATE_FURNITURE
-            if block_id.endswith("_sandwich_board")
-        },
+        block_id: 8
+        for block_id in EXPECTED_STATE_FURNITURE
+        if block_id.endswith("_sandwich_board")
     }
     configured_board_text: dict[str, tuple[int, dict[str, Any]]] = {}
     for furniture_id, definition in furniture.items():
@@ -4321,8 +4424,8 @@ def validate() -> dict[str, int]:
 
     for expected_token in (
             "EXPECTED_ITEMS = 660",
-            "EXPECTED_BLOCKS = 37",
-            "EXPECTED_FURNITURE = 137"):
+            "EXPECTED_BLOCKS = 38",
+            "EXPECTED_FURNITURE = 136"):
         if expected_token not in plugin_source:
             raise AssertionError(
                 f"Runtime CE content count guard is stale: {expected_token}")

@@ -1,5 +1,557 @@
 {
   "blocks": {
+    "kaleidoscope_tavern:chalkboard": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          },
+          "half": {
+            "type": "double_block_half",
+            "default": "lower",
+            "values": [
+              "lower",
+              "upper"
+            ]
+          },
+          "position": {
+            "type": "string",
+            "default": "single",
+            "values": [
+              "single",
+              "left",
+              "middle",
+              "right"
+            ]
+          },
+          "waterlogged": {
+            "type": "boolean",
+            "default": "false"
+          }
+        },
+        "appearances": {
+          "hidden_north_lower": {
+            "state": "minecraft:iron_door[facing=north,half=lower,hinge=left,open=false,powered=true]",
+            "transparent": true
+          },
+          "small_north_lower": {
+            "state": "minecraft:iron_door[facing=north,half=lower,hinge=left,open=false,powered=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/chalkboard/small",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "large_north_lower": {
+            "state": "minecraft:iron_door[facing=north,half=lower,hinge=left,open=false,powered=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/chalkboard/large",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "hidden_north_upper": {
+            "state": "minecraft:iron_door[facing=north,half=upper,hinge=left,open=false,powered=true]",
+            "transparent": true
+          },
+          "hidden_east_lower": {
+            "state": "minecraft:iron_door[facing=east,half=lower,hinge=left,open=false,powered=true]",
+            "transparent": true
+          },
+          "small_east_lower": {
+            "state": "minecraft:iron_door[facing=east,half=lower,hinge=left,open=false,powered=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/chalkboard/small",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "large_east_lower": {
+            "state": "minecraft:iron_door[facing=east,half=lower,hinge=left,open=false,powered=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/chalkboard/large",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "hidden_east_upper": {
+            "state": "minecraft:iron_door[facing=east,half=upper,hinge=left,open=false,powered=true]",
+            "transparent": true
+          },
+          "hidden_south_lower": {
+            "state": "minecraft:iron_door[facing=south,half=lower,hinge=left,open=false,powered=true]",
+            "transparent": true
+          },
+          "small_south_lower": {
+            "state": "minecraft:iron_door[facing=south,half=lower,hinge=left,open=false,powered=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/chalkboard/small",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "large_south_lower": {
+            "state": "minecraft:iron_door[facing=south,half=lower,hinge=left,open=false,powered=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/chalkboard/large",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "hidden_south_upper": {
+            "state": "minecraft:iron_door[facing=south,half=upper,hinge=left,open=false,powered=true]",
+            "transparent": true
+          },
+          "hidden_west_lower": {
+            "state": "minecraft:iron_door[facing=west,half=lower,hinge=left,open=false,powered=true]",
+            "transparent": true
+          },
+          "small_west_lower": {
+            "state": "minecraft:iron_door[facing=west,half=lower,hinge=left,open=false,powered=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/chalkboard/small",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "large_west_lower": {
+            "state": "minecraft:iron_door[facing=west,half=lower,hinge=left,open=false,powered=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/chalkboard/large",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "hidden_west_upper": {
+            "state": "minecraft:iron_door[facing=west,half=upper,hinge=left,open=false,powered=true]",
+            "transparent": true
+          }
+        },
+        "variants": {
+          "facing=north,half=lower,position=single,waterlogged=false": {
+            "appearance": "small_north_lower"
+          },
+          "facing=north,half=lower,position=left,waterlogged=false": {
+            "appearance": "hidden_north_lower"
+          },
+          "facing=north,half=lower,position=middle,waterlogged=false": {
+            "appearance": "large_north_lower"
+          },
+          "facing=north,half=lower,position=right,waterlogged=false": {
+            "appearance": "hidden_north_lower"
+          },
+          "facing=north,half=lower,position=single,waterlogged=true": {
+            "appearance": "small_north_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=north,half=lower,position=left,waterlogged=true": {
+            "appearance": "hidden_north_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=north,half=lower,position=middle,waterlogged=true": {
+            "appearance": "large_north_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=north,half=lower,position=right,waterlogged=true": {
+            "appearance": "hidden_north_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=north,half=upper,position=single,waterlogged=false": {
+            "appearance": "hidden_north_upper"
+          },
+          "facing=north,half=upper,position=left,waterlogged=false": {
+            "appearance": "hidden_north_upper"
+          },
+          "facing=north,half=upper,position=middle,waterlogged=false": {
+            "appearance": "hidden_north_upper"
+          },
+          "facing=north,half=upper,position=right,waterlogged=false": {
+            "appearance": "hidden_north_upper"
+          },
+          "facing=north,half=upper,position=single,waterlogged=true": {
+            "appearance": "hidden_north_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=north,half=upper,position=left,waterlogged=true": {
+            "appearance": "hidden_north_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=north,half=upper,position=middle,waterlogged=true": {
+            "appearance": "hidden_north_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=north,half=upper,position=right,waterlogged=true": {
+            "appearance": "hidden_north_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=east,half=lower,position=single,waterlogged=false": {
+            "appearance": "small_east_lower"
+          },
+          "facing=east,half=lower,position=left,waterlogged=false": {
+            "appearance": "hidden_east_lower"
+          },
+          "facing=east,half=lower,position=middle,waterlogged=false": {
+            "appearance": "large_east_lower"
+          },
+          "facing=east,half=lower,position=right,waterlogged=false": {
+            "appearance": "hidden_east_lower"
+          },
+          "facing=east,half=lower,position=single,waterlogged=true": {
+            "appearance": "small_east_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=east,half=lower,position=left,waterlogged=true": {
+            "appearance": "hidden_east_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=east,half=lower,position=middle,waterlogged=true": {
+            "appearance": "large_east_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=east,half=lower,position=right,waterlogged=true": {
+            "appearance": "hidden_east_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=east,half=upper,position=single,waterlogged=false": {
+            "appearance": "hidden_east_upper"
+          },
+          "facing=east,half=upper,position=left,waterlogged=false": {
+            "appearance": "hidden_east_upper"
+          },
+          "facing=east,half=upper,position=middle,waterlogged=false": {
+            "appearance": "hidden_east_upper"
+          },
+          "facing=east,half=upper,position=right,waterlogged=false": {
+            "appearance": "hidden_east_upper"
+          },
+          "facing=east,half=upper,position=single,waterlogged=true": {
+            "appearance": "hidden_east_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=east,half=upper,position=left,waterlogged=true": {
+            "appearance": "hidden_east_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=east,half=upper,position=middle,waterlogged=true": {
+            "appearance": "hidden_east_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=east,half=upper,position=right,waterlogged=true": {
+            "appearance": "hidden_east_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=south,half=lower,position=single,waterlogged=false": {
+            "appearance": "small_south_lower"
+          },
+          "facing=south,half=lower,position=left,waterlogged=false": {
+            "appearance": "hidden_south_lower"
+          },
+          "facing=south,half=lower,position=middle,waterlogged=false": {
+            "appearance": "large_south_lower"
+          },
+          "facing=south,half=lower,position=right,waterlogged=false": {
+            "appearance": "hidden_south_lower"
+          },
+          "facing=south,half=lower,position=single,waterlogged=true": {
+            "appearance": "small_south_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=south,half=lower,position=left,waterlogged=true": {
+            "appearance": "hidden_south_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=south,half=lower,position=middle,waterlogged=true": {
+            "appearance": "large_south_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=south,half=lower,position=right,waterlogged=true": {
+            "appearance": "hidden_south_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=south,half=upper,position=single,waterlogged=false": {
+            "appearance": "hidden_south_upper"
+          },
+          "facing=south,half=upper,position=left,waterlogged=false": {
+            "appearance": "hidden_south_upper"
+          },
+          "facing=south,half=upper,position=middle,waterlogged=false": {
+            "appearance": "hidden_south_upper"
+          },
+          "facing=south,half=upper,position=right,waterlogged=false": {
+            "appearance": "hidden_south_upper"
+          },
+          "facing=south,half=upper,position=single,waterlogged=true": {
+            "appearance": "hidden_south_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=south,half=upper,position=left,waterlogged=true": {
+            "appearance": "hidden_south_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=south,half=upper,position=middle,waterlogged=true": {
+            "appearance": "hidden_south_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=south,half=upper,position=right,waterlogged=true": {
+            "appearance": "hidden_south_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=west,half=lower,position=single,waterlogged=false": {
+            "appearance": "small_west_lower"
+          },
+          "facing=west,half=lower,position=left,waterlogged=false": {
+            "appearance": "hidden_west_lower"
+          },
+          "facing=west,half=lower,position=middle,waterlogged=false": {
+            "appearance": "large_west_lower"
+          },
+          "facing=west,half=lower,position=right,waterlogged=false": {
+            "appearance": "hidden_west_lower"
+          },
+          "facing=west,half=lower,position=single,waterlogged=true": {
+            "appearance": "small_west_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=west,half=lower,position=left,waterlogged=true": {
+            "appearance": "hidden_west_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=west,half=lower,position=middle,waterlogged=true": {
+            "appearance": "large_west_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=west,half=lower,position=right,waterlogged=true": {
+            "appearance": "hidden_west_lower",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=west,half=upper,position=single,waterlogged=false": {
+            "appearance": "hidden_west_upper"
+          },
+          "facing=west,half=upper,position=left,waterlogged=false": {
+            "appearance": "hidden_west_upper"
+          },
+          "facing=west,half=upper,position=middle,waterlogged=false": {
+            "appearance": "hidden_west_upper"
+          },
+          "facing=west,half=upper,position=right,waterlogged=false": {
+            "appearance": "hidden_west_upper"
+          },
+          "facing=west,half=upper,position=single,waterlogged=true": {
+            "appearance": "hidden_west_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=west,half=upper,position=left,waterlogged=true": {
+            "appearance": "hidden_west_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=west,half=upper,position=middle,waterlogged=true": {
+            "appearance": "hidden_west_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "facing=west,half=upper,position=right,waterlogged=true": {
+            "appearance": "hidden_west_upper",
+            "settings": {
+              "fluid_state": "water"
+            }
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wood.break",
+          "step": "minecraft:block.wood.step",
+          "place": "minecraft:block.wood.place",
+          "hit": "minecraft:block.wood.hit",
+          "fall": "minecraft:block.wood.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "destroy_stages": {
+          "template": "internal:destroy_stages"
+        },
+        "map_color": 13,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "item": "kaleidoscope_tavern:chalkboard"
+      },
+      "behaviors": [
+        {
+          "type": "double_high_block"
+        },
+        {
+          "type": "kaleidoscope_tavern:chalkboard"
+        }
+      ],
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:chalkboard",
+                "functions": [
+                  {
+                    "type": "set_count",
+                    "count": 3,
+                    "add": false,
+                    "conditions": [
+                      {
+                        "type": "match_block_property",
+                        "properties": {
+                          "position": "left"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "set_count",
+                    "count": 3,
+                    "add": false,
+                    "conditions": [
+                      {
+                        "type": "match_block_property",
+                        "properties": {
+                          "position": "middle"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "set_count",
+                    "count": 3,
+                    "add": false,
+                    "conditions": [
+                      {
+                        "type": "match_block_property",
+                        "properties": {
+                          "position": "right"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
     "kaleidoscope_tavern:sakura_incense": {
       "states": {
         "properties": {

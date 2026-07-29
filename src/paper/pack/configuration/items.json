@@ -650,19 +650,8 @@
         "path": "kaleidoscope_tavern:item/chalkboard"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:chalkboard",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          },
-          "wall": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        },
-        "ignore_placer": true
+        "type": "double_high_block_item",
+        "block": "kaleidoscope_tavern:chalkboard"
       }
     },
     "kaleidoscope_tavern:table": {

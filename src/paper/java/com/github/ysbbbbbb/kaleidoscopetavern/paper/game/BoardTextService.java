@@ -1,8 +1,8 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.ChalkboardBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BoardTextFurnitureBehavior;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -13,7 +13,9 @@ import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.util.Key;
+import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.context.InteractEntityContext;
+import net.momirealms.craftengine.core.world.context.UseOnContext;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.GameMode;
@@ -42,10 +44,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Persistent editable text for the chalkboard and sandwich-board furniture families. */
+/** Persistent editable text for the chalkboard block and sandwich-board furniture. */
 public final class BoardTextService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
-    private static final String CHALKBOARD = PREFIX + "chalkboard";
     private static final String BASE_SANDWICH_BOARD = PREFIX + "base_sandwich_board";
     private static final float VANILLA_TEXT_SCALE = 0.025F;
     private static final float SANDWICH_TEXT_SCALE = 0.01F;
@@ -85,20 +86,38 @@ public final class BoardTextService implements Listener {
     );
 
     private final JavaPlugin plugin;
-    private final ItemService items;
     private final LifecycleFurnitureBehavior.Handler lifecycleHandler;
     private final BoardTextFurnitureBehavior.Handler boardVisualHandler =
             this::boardVisuals;
     private final BoardTextFurnitureBehavior.InteractionHandler boardInteractionHandler =
             this::interactBoard;
+    private final ChalkboardBlockBehavior.Handler chalkboardHandler =
+            new ChalkboardBlockBehavior.Handler() {
+                @Override
+                public InteractionResult interact(
+                        ChalkboardBlockBehavior.Controller controller,
+                        UseOnContext context) {
+                    return interactChalkboard(controller, context);
+                }
+
+                @Override
+                public List<ChalkboardBlockBehavior.Visual> visuals(
+                        ChalkboardBlockBehavior.Controller controller) {
+                    return chalkboardVisuals(controller);
+                }
+
+                @Override
+                public void unavailable(ChalkboardBlockBehavior.Controller controller) {
+                    cancelChalkboardEditors(controller);
+                }
+            };
     // AsyncChatEvent removes entries off the main thread.
     private final Map<UUID, EditSession> editors = new ConcurrentHashMap<>();
     private final EditSessionListener editSessionListener = new EditSessionListener();
     private boolean editSessionListenerRegistered;
 
-    public BoardTextService(JavaPlugin plugin, ItemService items) {
+    public BoardTextService(JavaPlugin plugin) {
         this.plugin = plugin;
-        this.items = items;
         this.lifecycleHandler = new LifecycleFurnitureBehavior.Handler() {
             @Override
             public void onReady(BukkitFurniture furniture,
@@ -110,13 +129,14 @@ public final class BoardTextService implements Listener {
                                       boolean removed, boolean stopping) {
                 UUID owner = furnitureOwner(furniture);
                 editors.entrySet().removeIf(
-                        entry -> entry.getValue().furniture().equals(owner));
+                        entry -> owner.equals(entry.getValue().furniture()));
                 stopEditSessionListenerIfIdle();
             }
         };
     }
 
     public void start() {
+        ChalkboardBlockBehavior.bind(chalkboardHandler);
         BoardTextFurnitureBehavior.bind(boardVisualHandler);
         BoardTextFurnitureBehavior.bindInteraction(boardInteractionHandler);
         LifecycleFurnitureBehavior.bind(
@@ -126,6 +146,7 @@ public final class BoardTextService implements Listener {
     public void stop() {
         HandlerList.unregisterAll(editSessionListener);
         editSessionListenerRegistered = false;
+        ChalkboardBlockBehavior.unbind(chalkboardHandler);
         BoardTextFurnitureBehavior.unbindInteraction(boardInteractionHandler);
         BoardTextFurnitureBehavior.unbind(boardVisualHandler);
         LifecycleFurnitureBehavior.unbind(
@@ -186,11 +207,75 @@ public final class BoardTextService implements Listener {
 
         Entity entity = furniture.bukkitEntity();
         if (entity != null) {
-            editors.put(player.getUniqueId(), new EditSession(entity.getUniqueId()));
+            editors.put(player.getUniqueId(), EditSession.furniture(entity.getUniqueId()));
             ensureEditSessionListener();
             player.sendMessage(Component.text("请在聊天栏输入文字（\\n 换行；[left]/[center]/[right] 设置对齐；!clear 清空；!cancel 取消）。"));
         }
         return InteractionResult.SUCCESS_AND_CANCEL;
+    }
+
+    private InteractionResult interactChalkboard(
+            ChalkboardBlockBehavior.Controller controller,
+            UseOnContext context) {
+        if (context.getHand() != InteractionHand.MAIN_HAND || !controller.isValid()) {
+            return InteractionResult.PASS;
+        }
+        Player player = (Player) context.getPlayer().platformPlayer();
+        ItemStack hand = player.getInventory().getItemInMainHand();
+        Location location = controller.location();
+
+        if (controller.bool("board_waxed")) {
+            player.playSound(location, "minecraft:block.waxed_sign.interact_fail", 1F, 1F);
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+        DyeColor dye = dyeColor(hand.getType());
+        if (dye != null
+                && !dye.name().equals(controller.string("board_color", "WHITE"))) {
+            controller.putString("board_color", dye.name());
+            consumeUnlessCreative(player, hand);
+            player.playSound(location, Sound.ITEM_DYE_USE, 1F, 1F);
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+        if (hand.getType() == Material.GLOW_INK_SAC
+                && !controller.bool("board_glowing")) {
+            controller.bool("board_glowing", true);
+            consumeUnlessCreative(player, hand);
+            player.playSound(location, Sound.ITEM_GLOW_INK_SAC_USE, 1F, 1F);
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+        if (hand.getType() == Material.INK_SAC && controller.bool("board_glowing")) {
+            controller.bool("board_glowing", false);
+            consumeUnlessCreative(player, hand);
+            player.playSound(location, Sound.ITEM_INK_SAC_USE, 1F, 1F);
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+        if (hand.getType() == Material.HONEYCOMB) {
+            controller.bool("board_waxed", true);
+            consumeUnlessCreative(player, hand);
+            World world = location.getWorld();
+            world.playSound(location, Sound.ITEM_HONEYCOMB_WAX_ON, 1F, 1F);
+            world.spawnParticle(Particle.WAX_ON, location.clone().add(0, 1, 0),
+                    10, 0.4, 0.4, 0.4, 0.05);
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+
+        BlockPos pos = controller.pos();
+        editors.put(player.getUniqueId(), EditSession.chalkboard(
+                controller.world().getUID(), pos.x(), pos.y(), pos.z()));
+        ensureEditSessionListener();
+        player.sendMessage(Component.text(
+                "请在聊天栏输入文字（\\n 换行；[left]/[center]/[right] 设置对齐；"
+                        + "!clear 清空；!cancel 取消）。"));
+        return InteractionResult.SUCCESS_AND_CANCEL;
+    }
+
+    private void cancelChalkboardEditors(
+            ChalkboardBlockBehavior.Controller controller) {
+        UUID world = controller.world().getUID();
+        BlockPos pos = controller.pos();
+        editors.entrySet().removeIf(entry ->
+                entry.getValue().matchesChalkboard(world, pos));
+        stopEditSessionListenerIfIdle();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -199,14 +284,9 @@ public final class BoardTextService implements Listener {
         if (!isBoard(placed)) {
             return;
         }
-        boolean mergeChalkboards = placed.id().toString().equals(CHALKBOARD)
-                && !event.player().isSneaking();
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (!placed.isValid()) {
                 return;
-            }
-            if (mergeChalkboards) {
-                tryMergeChalkboards(placed);
             }
             refreshDisplay(placed);
         });
@@ -215,6 +295,10 @@ public final class BoardTextService implements Listener {
     private void applyChatInput(Player player, EditSession session, String rawInput) {
         if (rawInput.equalsIgnoreCase("!cancel")) {
             player.sendMessage(Component.text("已取消编辑。"));
+            return;
+        }
+        if (session.isChalkboard()) {
+            applyChalkboardChatInput(player, session, rawInput);
             return;
         }
         Entity entity = Bukkit.getEntity(session.furniture());
@@ -268,15 +352,82 @@ public final class BoardTextService implements Listener {
         player.sendMessage(Component.text(input.isBlank() ? "已清空写字板。" : "写字板文字已更新。"));
     }
 
+    private void applyChalkboardChatInput(
+            Player player, EditSession session, String rawInput) {
+        ChalkboardBlockBehavior.Controller controller = chalkboard(session);
+        if (controller == null || !controller.isValid()) {
+            player.sendMessage(Component.text("黑板已经不存在或所在区块未加载。"));
+            return;
+        }
+        Location location = controller.location();
+        if (!location.getWorld().equals(player.getWorld())
+                || location.distanceSquared(player.getLocation()) > 64) {
+            player.sendMessage(Component.text("你离黑板太远，编辑已取消。"));
+            return;
+        }
+        if (controller.bool("board_waxed")) {
+            player.sendMessage(Component.text("黑板已打蜡，不能修改。"));
+            return;
+        }
+
+        String input = rawInput.replace("\\n", "\n");
+        boolean clearRequested = input.equalsIgnoreCase("!clear");
+        if (clearRequested) {
+            input = "";
+        }
+        String lower = input.toLowerCase(Locale.ROOT);
+        boolean alignmentUpdated = false;
+        for (String alignment : List.of("left", "center", "right")) {
+            String prefix = '[' + alignment + ']';
+            if (lower.startsWith(prefix)) {
+                controller.putString("board_alignment", alignment);
+                input = input.substring(prefix.length()).stripLeading();
+                alignmentUpdated = true;
+                break;
+            }
+        }
+        if (alignmentUpdated && input.isEmpty() && !clearRequested) {
+            player.sendMessage(Component.text("对齐方式已更新。"));
+            return;
+        }
+        int maxLength = controller.isLarge() ? 1_500 : 350;
+        if (input.length() > maxLength) {
+            player.sendMessage(Component.text("文字过长：最多 " + maxLength + " 个字符。"));
+            return;
+        }
+        controller.putString("board_text", input);
+        player.sendMessage(Component.text(input.isBlank()
+                ? "已清空黑板。" : "黑板文字已更新。"));
+    }
+
+    private static ChalkboardBlockBehavior.Controller chalkboard(EditSession session) {
+        if (!session.isChalkboard()) {
+            return null;
+        }
+        World world = Bukkit.getWorld(session.world());
+        return world == null ? null : ChalkboardBlockBehavior.controller(
+                world, new BlockPos(session.x(), session.y(), session.z()));
+    }
+
     /** Event-driven equivalent of TextBlockEntity.tick's eight-block editor check. */
     private void validateEditDistance(Player player) {
         EditSession session = editors.get(player.getUniqueId());
         if (session == null) {
             return;
         }
-        Entity entity = Bukkit.getEntity(session.furniture());
-        if (entity == null || !entity.isValid() || !player.getWorld().equals(entity.getWorld())
-                || player.getLocation().distanceSquared(entity.getLocation()) > 64) {
+        boolean invalid;
+        if (session.isChalkboard()) {
+            ChalkboardBlockBehavior.Controller controller = chalkboard(session);
+            invalid = controller == null || !controller.isValid()
+                    || !player.getWorld().equals(controller.world())
+                    || player.getLocation().distanceSquared(controller.location()) > 64;
+        } else {
+            Entity entity = Bukkit.getEntity(session.furniture());
+            invalid = entity == null || !entity.isValid()
+                    || !player.getWorld().equals(entity.getWorld())
+                    || player.getLocation().distanceSquared(entity.getLocation()) > 64;
+        }
+        if (invalid) {
             editors.remove(player.getUniqueId());
             stopEditSessionListenerIfIdle();
         }
@@ -362,76 +513,6 @@ public final class BoardTextService implements Listener {
         return true;
     }
 
-    private void tryMergeChalkboards(BukkitFurniture placed) {
-        String variant = placed.currentVariant().name();
-        if (!placed.isValid() || !(variant.equals("ground") || variant.equals("wall"))
-                || !new FurnitureState(placed).string("board_text", "").isBlank()) {
-            return;
-        }
-        List<BukkitFurniture> candidates = nearbyFurniture(placed.location(), 2.25).stream()
-                .filter(furniture -> furniture.id().toString().equals(CHALKBOARD))
-                .filter(furniture -> {
-                    String candidateVariant = furniture.currentVariant().name();
-                    return candidateVariant.equals("ground") || candidateVariant.equals("wall");
-                })
-                .filter(furniture -> new FurnitureState(furniture).string("board_text", "").isBlank())
-                .filter(furniture -> yawDistance(furniture.location().getYaw(), placed.location().getYaw()) < 1F)
-                .toList();
-        if (candidates.size() < 3) {
-            return;
-        }
-        Vector right = horizontalRight(placed.location().getYaw());
-        for (BukkitFurniture center : candidates) {
-            BukkitFurniture left = sideAt(candidates, center, right, -1);
-            BukkitFurniture rightBoard = sideAt(candidates, center, right, 1);
-            if (left == null || rightBoard == null || left == rightBoard) {
-                continue;
-            }
-            CraftEngineFurniture.remove(left, false, false);
-            CraftEngineFurniture.remove(rightBoard, false, false);
-            center.setVariant(center.currentVariant().name() + "_large", true);
-            refreshDisplay(center);
-            center.location().getWorld().playSound(center.location(), Sound.BLOCK_WOOD_PLACE, 1F, 0.9F);
-            return;
-        }
-    }
-
-    private static BukkitFurniture sideAt(List<BukkitFurniture> candidates, BukkitFurniture center,
-                                          Vector right, int side) {
-        Location origin = chalkboardMergeOrigin(center);
-        BukkitFurniture best = null;
-        double bestError = Double.MAX_VALUE;
-        for (BukkitFurniture candidate : candidates) {
-            if (candidate == center) {
-                continue;
-            }
-            Vector delta = chalkboardMergeOrigin(candidate).toVector().subtract(origin.toVector());
-            double projection = delta.dot(right);
-            Vector lateral = delta.clone().subtract(right.clone().multiply(projection));
-            double error = Math.abs(projection - side) + lateral.length() * 2;
-            if (Math.signum(projection) == side && error < 0.35 && error < bestError) {
-                best = candidate;
-                bestError = error;
-            }
-        }
-        return best;
-    }
-
-    private static Location chalkboardMergeOrigin(BukkitFurniture furniture) {
-        Location origin = furniture.location().clone();
-        if (!isWallBoard(furniture)) {
-            return origin;
-        }
-        // CE stores a centred wall anchor half a block above and half a block
-        // behind the equivalent ground anchor.  Normalise to the rendered panel
-        // so boards placed through either Forge-supported gesture share a row.
-        Vector forward = origin.getDirection().setY(0);
-        if (forward.lengthSquared() > 0) {
-            origin.add(forward.normalize().multiply(0.5));
-        }
-        return origin.subtract(0, 0.5, 0);
-    }
-
     private void refreshDisplay(BukkitFurniture furniture) {
         if (furniture.isValid()) {
             BoardTextFurnitureBehavior.refresh(furniture);
@@ -449,13 +530,11 @@ public final class BoardTextService implements Listener {
             return List.of();
         }
 
-        boolean sandwich = isSandwichBoard(furniture);
-        int maxWidth = textMaxWidth(furniture);
+        int maxWidth = 55;
         int maxWidthUnits = maxWidth * FONT_UNITS_PER_PIXEL;
-        int maxLines = sandwich ? SANDWICH_MAX_LINES : CHALKBOARD_MAX_LINES;
         List<BoardTextLayout.Line> lines = BoardTextLayout.wrap(
-                text, maxWidthUnits, maxLines,
-                codePoint -> minecraftGlyphAdvanceUnits(codePoint, sandwich));
+                text, maxWidthUnits, SANDWICH_MAX_LINES,
+                codePoint -> minecraftGlyphAdvanceUnits(codePoint, true));
 
         DyeColor dye = parseDye(state.string("board_color", "WHITE"));
         boolean glowing = state.bool("board_glowing");
@@ -465,7 +544,7 @@ public final class BoardTextService implements Listener {
         }
         BoardAlignment alignment = parseAlignment(
                 state.string("board_alignment", "center"));
-        float displayScale = legacyTextScale(furniture) / VANILLA_TEXT_SCALE;
+        float displayScale = SANDWICH_TEXT_SCALE / VANILLA_TEXT_SCALE;
         List<BoardTextFurnitureBehavior.Visual> result =
                 new ArrayList<>(lines.size());
         for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
@@ -475,11 +554,8 @@ public final class BoardTextService implements Listener {
             }
             Location position = textLineLocation(
                     furniture, lineIndex, line.width(), maxWidthUnits, alignment);
-            Component component = Component.text(line.text(), TextColor.color(rgb));
-            if (sandwich) {
-                component = component.decorate(
-                        net.kyori.adventure.text.format.TextDecoration.BOLD);
-            }
+            Component component = Component.text(line.text(), TextColor.color(rgb))
+                    .decorate(net.kyori.adventure.text.format.TextDecoration.BOLD);
             result.add(new BoardTextFurnitureBehavior.Visual(
                     component,
                     position.getX(), position.getY(), position.getZ(),
@@ -489,9 +565,46 @@ public final class BoardTextService implements Listener {
         return result;
     }
 
-    private List<BukkitFurniture> nearbyFurniture(Location center, double radius) {
-        return LifecycleFurnitureBehavior.nearby(
-                LifecycleFurnitureBehavior.Channel.BOARD, center, radius, radius);
+    private List<ChalkboardBlockBehavior.Visual> chalkboardVisuals(
+            ChalkboardBlockBehavior.Controller controller) {
+        if (!controller.isValid()) {
+            return List.of();
+        }
+        String text = controller.string("board_text", "");
+        if (text.isBlank()) {
+            return List.of();
+        }
+
+        int maxWidth = controller.isLarge() ? 232 : 63;
+        int maxWidthUnits = maxWidth * FONT_UNITS_PER_PIXEL;
+        List<BoardTextLayout.Line> lines = BoardTextLayout.wrap(
+                text, maxWidthUnits, CHALKBOARD_MAX_LINES,
+                codePoint -> minecraftGlyphAdvanceUnits(codePoint, false));
+        DyeColor dye = parseDye(controller.string("board_color", "WHITE"));
+        boolean glowing = controller.bool("board_glowing");
+        int rgb = dye.getColor().asRGB();
+        if (!glowing) {
+            rgb = darken(rgb, 0.6);
+        }
+        BoardAlignment alignment = parseAlignment(
+                controller.string("board_alignment", "center"));
+        float displayScale = CHALKBOARD_TEXT_SCALE / VANILLA_TEXT_SCALE;
+        List<ChalkboardBlockBehavior.Visual> result =
+                new ArrayList<>(lines.size());
+        for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
+            BoardTextLayout.Line line = lines.get(lineIndex);
+            if (line.text().isBlank()) {
+                continue;
+            }
+            Location position = chalkboardTextLineLocation(
+                    controller, lineIndex, line.width(), maxWidthUnits, alignment);
+            result.add(new ChalkboardBlockBehavior.Visual(
+                    Component.text(line.text(), TextColor.color(rgb)),
+                    position.getX(), position.getY(), position.getZ(),
+                    position.getYaw(), position.getPitch(), displayScale,
+                    glowing, dye.getColor().asRGB()));
+        }
+        return result;
     }
 
     private static UUID furnitureOwner(BukkitFurniture furniture) {
@@ -503,30 +616,19 @@ public final class BoardTextService implements Listener {
                                              int lineWidthUnits, int maxWidthUnits,
                                              BoardAlignment alignment) {
         Location origin = furniture.location().clone();
-        boolean sandwich = isSandwichBoard(furniture);
-        boolean wall = !sandwich && isWallBoard(furniture);
-        float scale = sandwich ? SANDWICH_TEXT_SCALE : CHALKBOARD_TEXT_SCALE;
-        int lineHeight = sandwich ? SANDWICH_LINE_HEIGHT : CHALKBOARD_LINE_HEIGHT;
-        double localVerticalOffset = (FIRST_LINE_ENTITY_OFFSET - lineIndex * lineHeight) * scale;
-        // A ground chalkboard's panel hangs at the back of its cell, 0.4375
-        // behind the furniture origin; a wall chalkboard's origin sits on the
-        // wall plane with the panel 0..1/16 in front of it, so its text goes
-        // just outside the panel's outward face instead.
-        double forwardOffset = sandwich
-                ? 0.06 - localVerticalOffset * Math.sin(SANDWICH_TILT_RADIANS)
-                : wall ? 0.07 : -0.43;
+        double localVerticalOffset =
+                (FIRST_LINE_ENTITY_OFFSET - lineIndex * SANDWICH_LINE_HEIGHT)
+                        * SANDWICH_TEXT_SCALE;
+        double forwardOffset =
+                0.06 - localVerticalOffset * Math.sin(SANDWICH_TILT_RADIANS);
         Vector forward = origin.getDirection().setY(0);
         if (forward.lengthSquared() > 0) {
             forward.normalize().multiply(forwardOffset);
             origin.add(forward);
         }
-        double verticalOffset = sandwich
-                ? localVerticalOffset * Math.cos(SANDWICH_TILT_RADIANS)
-                : localVerticalOffset;
-        // The wall anchor's centre alignment stores the furniture origin half
-        // a block above a ground board's, while the board itself renders at
-        // the same world height, so wall text drops the same half block.
-        origin.add(0, (sandwich ? 1.06 : wall ? 1.035 : 1.535) + verticalOffset, 0);
+        double verticalOffset =
+                localVerticalOffset * Math.cos(SANDWICH_TILT_RADIANS);
+        origin.add(0, 1.06 + verticalOffset, 0);
 
         double alignedCenterUnits = switch (alignment) {
             case LEFT -> (lineWidthUnits - maxWidthUnits) / 2.0;
@@ -536,20 +638,48 @@ public final class BoardTextService implements Listener {
         double alignedCenterPixels = alignedCenterUnits / FONT_UNITS_PER_PIXEL;
         // The 26.2 TextDisplay renderer adds a one-pixel left background margin.
         // Counter it so alignment matches TextBlockEntityRender#getPosX exactly.
-        origin.add(horizontalRight(origin.getYaw()).multiply((alignedCenterPixels - 1.0) * scale));
-        origin.setPitch(sandwich ? -22.5F : 0F);
+        origin.add(horizontalRight(origin.getYaw()).multiply(
+                (alignedCenterPixels - 1.0) * SANDWICH_TEXT_SCALE));
+        origin.setPitch(-22.5F);
         return origin;
     }
 
-    private static float legacyTextScale(BukkitFurniture furniture) {
-        return isSandwichBoard(furniture) ? SANDWICH_TEXT_SCALE : CHALKBOARD_TEXT_SCALE;
-    }
-
-    private static int textMaxWidth(BukkitFurniture furniture) {
-        if (isLargeBoard(furniture)) {
-            return 232;
+    private static Location chalkboardTextLineLocation(
+            ChalkboardBlockBehavior.Controller controller, int lineIndex,
+            int lineWidthUnits, int maxWidthUnits, BoardAlignment alignment) {
+        Location origin = controller.location();
+        switch (controller.facing()) {
+            case EAST -> {
+                origin.add(-0.42, 1.535, 0);
+                origin.setYaw(-90F);
+            }
+            case WEST -> {
+                origin.add(0.42, 1.535, 0);
+                origin.setYaw(90F);
+            }
+            case SOUTH -> {
+                origin.add(0, 1.535, -0.42);
+                origin.setYaw(0F);
+            }
+            default -> {
+                origin.add(0, 1.535, 0.42);
+                origin.setYaw(180F);
+            }
         }
-        return isSandwichBoard(furniture) ? 55 : 63;
+        origin.add(0,
+                (FIRST_LINE_ENTITY_OFFSET - lineIndex * CHALKBOARD_LINE_HEIGHT)
+                        * CHALKBOARD_TEXT_SCALE,
+                0);
+
+        double alignedCenterUnits = switch (alignment) {
+            case LEFT -> (lineWidthUnits - maxWidthUnits) / 2.0;
+            case RIGHT -> (maxWidthUnits - lineWidthUnits) / 2.0;
+            case CENTER -> 0.0;
+        };
+        double alignedCenterPixels = alignedCenterUnits / FONT_UNITS_PER_PIXEL;
+        origin.add(horizontalRight(origin.getYaw()).multiply(
+                (alignedCenterPixels - 1.0) * CHALKBOARD_TEXT_SCALE));
+        return origin;
     }
 
     /** Returns 26.2 font advance in half-pixel units. */
@@ -617,28 +747,12 @@ public final class BoardTextService implements Listener {
         return new Vector(Math.cos(radians), 0, Math.sin(radians)).normalize();
     }
 
-    private static float yawDistance(float left, float right) {
-        return Math.abs(((left - right + 540F) % 360F) - 180F);
-    }
-
     private static int maxTextLength(BukkitFurniture furniture) {
-        if (furniture.id().toString().equals(CHALKBOARD)) {
-            return isLargeBoard(furniture) ? 1_500 : 350;
-        }
         return 320;
     }
 
     private static boolean isBoard(BukkitFurniture furniture) {
-        return furniture.id().toString().equals(CHALKBOARD) || isSandwichBoard(furniture);
-    }
-
-    /** Matches ground_large and wall_large; sandwich boards have no large variants. */
-    private static boolean isLargeBoard(BukkitFurniture furniture) {
-        return furniture.currentVariant().name().endsWith("_large");
-    }
-
-    private static boolean isWallBoard(BukkitFurniture furniture) {
-        return furniture.currentVariant().name().startsWith("wall");
+        return isSandwichBoard(furniture);
     }
 
     private static boolean isSandwichBoard(BukkitFurniture furniture) {
@@ -693,7 +807,23 @@ public final class BoardTextService implements Listener {
         RIGHT
     }
 
-    private record EditSession(UUID furniture) {
+    private record EditSession(UUID furniture, UUID world, int x, int y, int z) {
+        private static EditSession furniture(UUID furniture) {
+            return new EditSession(furniture, null, 0, 0, 0);
+        }
+
+        private static EditSession chalkboard(UUID world, int x, int y, int z) {
+            return new EditSession(null, world, x, y, z);
+        }
+
+        private boolean isChalkboard() {
+            return world != null;
+        }
+
+        private boolean matchesChalkboard(UUID expectedWorld, BlockPos pos) {
+            return expectedWorld.equals(world)
+                    && x == pos.x() && y == pos.y() && z == pos.z();
+        }
     }
 
     private record BoardStateSnapshot(String text, String color, String alignment,

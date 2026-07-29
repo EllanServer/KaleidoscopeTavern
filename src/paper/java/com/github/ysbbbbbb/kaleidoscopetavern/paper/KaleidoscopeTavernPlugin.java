@@ -19,6 +19,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.ShakerVisualService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.StationService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.TapService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.BlockService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.ChalkboardBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.GrapeSeasonGate;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.IncenseBlockBehavior;
@@ -76,8 +77,8 @@ import java.util.logging.Level;
 public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listener, TabExecutor {
     private static final String NAMESPACE = "kaleidoscope_tavern";
     private static final int EXPECTED_ITEMS = 660; // 157 public items + 503 private render helpers
-    private static final int EXPECTED_BLOCKS = 37;
-    private static final int EXPECTED_FURNITURE = 137;
+    private static final int EXPECTED_BLOCKS = 38;
+    private static final int EXPECTED_FURNITURE = 136;
 
     private PackInstaller.Result packResult;
     private CustomCropsInstaller.Result customCropsResult;
@@ -105,6 +106,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             HangingGrapeCropBehavior.register();
             WildGrapevineBehavior.register();
             IncenseBlockBehavior.register();
+            ChalkboardBlockBehavior.register();
             StorageBlockBehavior.register();
             TapBlockBehavior.register();
             StateFurnitureBehavior.register();
@@ -161,7 +163,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         shakerVisuals = new ShakerVisualService(this, items);
         stations = new StationService(this, catalog, items, messages, shakerVisuals);
         effects = new EffectService(this, catalog, items);
-        boards = new BoardTextService(this, items);
+        boards = new BoardTextService(this);
         taps = new TapService(this, stations, items);
         displayStorage = new DisplayStorageService(this, catalog, items);
         ambientFurniture = new AmbientFurnitureService();
