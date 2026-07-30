@@ -1,6 +1,7 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.TheBrewingProjectCompat;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
@@ -76,6 +77,13 @@ public final class BottlePlacementService implements Listener {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getHand() == null
                 || !event.getPlayer().isSneaking() || event.getClickedBlock() == null
                 || event.getItem() == null) {
+            return;
+        }
+        // Never hijack TheBrewingProject brews: TBP's sealing mechanic
+        // (sneak + right-click a crafting table with paper in the off hand)
+        // runs at NORMAL priority and would be starved by this LOW handler
+        // cancelling the event first.
+        if (TheBrewingProjectCompat.isBrew(event.getItem())) {
             return;
         }
         // Custom drinks are handled later by CE's sneak-place vessel item
