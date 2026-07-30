@@ -1423,9 +1423,10 @@ def furniture_element(
     anchor: str,
     translation: str | None = None,
 ) -> dict[str, Any]:
+    render_id = ensure_render_item(render_items, block_id, label, model)
     element: dict[str, Any] = {
         "type": "item_display",
-        "item": ensure_render_item(render_items, block_id, label, model),
+        "item": render_id,
         "display_transform": "none",
         "shadow_radius": 0,
         "view_range": 1.25,
@@ -1458,6 +1459,14 @@ def furniture_element(
     # tint from the exact source item's potion_contents component.
     if block_id in {"potion_bottle", "signature_cocktail"}:
         element["tint_source"] = ["potion_contents"]
+        # tint_source only copies the component onto the displayed stack on
+        # the server. The client item model still needs a potion tint bound
+        # to the model's tintindex 0 fluid layer, or the placed bottle
+        # renders untinted (white) regardless of the actual potion color.
+        render_items[render_id]["model"]["tints"] = [{
+            "type": "minecraft:potion",
+            "default": -13083194,
+        }]
     if any(model[1:4]):
         element["rotation"] = f"{model[1]},{model[2]},{model[3]}"
     return element
