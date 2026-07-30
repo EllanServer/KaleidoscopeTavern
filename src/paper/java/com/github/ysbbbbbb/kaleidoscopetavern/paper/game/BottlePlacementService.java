@@ -1,6 +1,7 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.TheBrewingProjectCompat;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
@@ -26,7 +27,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
@@ -57,9 +57,6 @@ public final class BottlePlacementService implements Listener {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String POTION_BOTTLE = PREFIX + "potion_bottle";
     private static final String WATERMELON_JUICE = PREFIX + "watermelon_juice";
-    // TheBrewingProject marks every brew (sealed or not) with this PDC key;
-    // see BrewAdapterAccess#applyBrewData. Detected without a hard dependency.
-    private static final NamespacedKey BREWERY_DATA_VERSION = new NamespacedKey("brewery", "version");
     private static final Set<String> DISPENSABLE_BOTTLES = Set.of(
             PREFIX + "empty_bottle", PREFIX + "molotov", PREFIX + "water_bottle",
             PREFIX + "honey_bottle", PREFIX + "dragon_breath_bottle", PREFIX + "xp_bottle"
@@ -82,12 +79,11 @@ public final class BottlePlacementService implements Listener {
                 || event.getItem() == null) {
             return;
         }
-        // TheBrewingProject brews are vanilla potions carrying `brewery:*`
-        // PDC data. Never hijack them for furniture placement: TBP's sealing
-        // mechanic (sneak + right-click a crafting table with paper in the
-        // off hand) runs at NORMAL priority and would be starved by this
-        // LOW handler cancelling the event first.
-        if (isExternalBrew(event.getItem())) {
+        // Never hijack TheBrewingProject brews: TBP's sealing mechanic
+        // (sneak + right-click a crafting table with paper in the off hand)
+        // runs at NORMAL priority and would be starved by this LOW handler
+        // cancelling the event first.
+        if (TheBrewingProjectCompat.isBrew(event.getItem())) {
             return;
         }
         // Custom drinks are handled later by CE's sneak-place vessel item
@@ -230,10 +226,6 @@ public final class BottlePlacementService implements Listener {
     private boolean isDispensableBottle(String id) {
         return DISPENSABLE_BOTTLES.contains(id)
                 || isBottleDrink(id);
-    }
-
-    private static boolean isExternalBrew(ItemStack stack) {
-        return stack.getPersistentDataContainer().has(BREWERY_DATA_VERSION);
     }
 
     private boolean isPlaceableDrink(String id) {
