@@ -4642,7 +4642,13 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/signature_cocktail"
+        "path": "kaleidoscope_tavern:block/mixology/signature_cocktail",
+        "tints": [
+          {
+            "type": "minecraft:potion",
+            "default": -13083194
+          }
+        ]
       },
       "settings": {
         "tags": [
@@ -5092,7 +5098,13 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/potion_bottle"
+        "path": "kaleidoscope_tavern:block/brew/potion_bottle",
+        "tints": [
+          {
+            "type": "minecraft:potion",
+            "default": -13083194
+          }
+        ]
       },
       "settings": {
         "tags": [
