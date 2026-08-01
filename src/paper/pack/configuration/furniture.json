@@ -11124,7 +11124,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -13603,7 +13603,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -15932,7 +15932,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -18261,7 +18261,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -20590,7 +20590,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -22919,7 +22919,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -25248,7 +25248,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -27577,7 +27577,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -29906,7 +29906,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -32235,7 +32235,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -34564,7 +34564,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -36893,7 +36893,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -39222,7 +39222,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -41551,7 +41551,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -43880,7 +43880,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -46209,7 +46209,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
@@ -48538,7 +48538,7 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "position": "0,0,0.01",
-              "translation": "0,0,0.49"
+              "translation": "0,0.0625,0.4275"
             }
           ],
           "hitboxes": [
