@@ -3445,7 +3445,9 @@ def validate() -> dict[str, int]:
         if (element.get("type") != "item_display"
                 or element.get("display_transform") != "none"
                 or element.get("position") != "0,0,0.01"
-                or element.get("translation") != "0,0,0.49"
+                # Keep CE's 0.01 lighting-safe entity offset, then move the
+                # model one pixel up and one pixel wallward: 0.49 - 1/16.
+                or element.get("translation") != "0,0.0625,0.4275"
                 or any(key in element for key in ("rotation", "scale"))
                 or not isinstance(render_id, str)):
             raise AssertionError(

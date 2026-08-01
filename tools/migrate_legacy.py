@@ -3029,14 +3029,17 @@ def build_furniture(
             # The authored north state hugs the support side of its target
             # cell. CE's native wall yaw rotates this one model onto all four
             # clicked horizontal faces, so no directional render duplicates
-            # or Paper placement bridge are needed.
+            # or Paper placement bridge are needed. Move the visible model one
+            # source pixel upward and one pixel back toward the support; local
+            # -z is wallward for every native wall-anchor yaw.
             selected = select_record(records, {
                 "facing": "north", "waterlogged": "false",
             })[1]
             variants["wall"] = {
                 "elements": [
                     furniture_element(
-                        render_items, block_id, "wall", selected, "wall")
+                        render_items, block_id, "wall", selected, "wall",
+                        "0,0.0625,-0.0625")
                 ],
                 "hitboxes": furniture_hitboxes(block_id, "wall"),
             }
