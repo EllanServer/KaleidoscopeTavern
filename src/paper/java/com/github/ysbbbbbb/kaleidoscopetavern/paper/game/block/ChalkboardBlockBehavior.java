@@ -336,10 +336,17 @@ public final class ChalkboardBlockBehavior extends WaterloggedBlockBehavior
         }
 
         for (ExpectedPart part : parts) {
-            // Leave the clicked column's upper/lower lifecycle to CE's native
-            // double_high_block behavior. Only remove the other two columns
-            // that belong to Tavern's horizontal merged board.
-            if (part.pos().x() == clicked.x() && part.pos().z() == clicked.z()) {
+            // The clicked cell keeps its own CE loot roll and its vertical
+            // lifecycle stays with CE's native double_high_block behavior.
+            // Every other cell - the two sibling columns of a merged board and
+            // the clicked column's other half - is removed with
+            // UPDATE_SUPPRESS_DROPS so Paper's shape-update cascade cannot
+            // roll the loot table a second time through Block.updateOrDestroy.
+            // UPDATE_KNOWN_SHAPE stops the removal from propagating a shape
+            // update back into the clicked cell, which would otherwise destroy
+            // it through Level.destroyBlock(pos, true) before the player's
+            // own break.
+            if (part.pos().equals(clicked)) {
                 continue;
             }
             ImmutableBlockState current = stateAt(level, part.pos());
@@ -354,7 +361,8 @@ public final class ChalkboardBlockBehavior extends WaterloggedBlockBehavior
             LevelWriterProxy.INSTANCE.setBlock(
                     level, LocationUtils.toBlockPos(part.pos()), replacement,
                     UpdateFlags.UPDATE_NEIGHBORS | UpdateFlags.UPDATE_CLIENTS
-                            | UpdateFlags.UPDATE_SUPPRESS_DROPS);
+                            | UpdateFlags.UPDATE_SUPPRESS_DROPS
+                            | UpdateFlags.UPDATE_KNOWN_SHAPE);
             LevelUtils.levelEvent(level, player,
                     net.momirealms.craftengine.core.world.WorldEvents.BLOCK_BREAK_EFFECT,
                     LocationUtils.toBlockPos(part.pos()),
