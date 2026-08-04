@@ -1664,6 +1664,35 @@ def validate() -> dict[str, int]:
             or "registerEvents(shakerVisuals, this)" in plugin_source):
         raise AssertionError(
             "Shaker visuals are CE lifecycle-driven and must not retain an empty Bukkit listener")
+    shaker_hud_source = (
+        game_package / "ShakerHudSemantics.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            'FONT_KEY = "kaleidoscope_tavern:shaker_hud"',
+            "BAR_GLYPH = '\\uE400'",
+            "POINTER_GLYPH = '\\uE401'",
+            "INGREDIENT_GLYPH = '\\uE402'",
+            "BAR_ADVANCE_PIXELS = 182",
+            "Math.round(Math.max(0, ticks) * 1.5F)",
+            "static Component ingredientSubtitle(List<Integer> colors)"):
+        if required_token not in shaker_hud_source:
+            raise AssertionError(
+                "Shaker HUD must retain the archived overlay geometry and tintable markers; "
+                f"missing token: {required_token}")
+    for required_token in (
+            "player.getTargetEntity(5)",
+            "CraftEngineFurniture.getLoadedFurnitureByCollider(target)",
+            "CraftEngineFurniture.getLoadedFurnitureByMetaEntity(target)",
+            "items.shakerIngredients(shaker)",
+            "ShakerSemantics.ingredientColor(",
+            "ShakerHudSemantics.progressSubtitle(ticks)",
+            "ShakerHudSemantics.ingredientSubtitle(colors)",
+            "ensureIngredientHudTask()",
+            "stopIngredientHudTaskIfIdle()"):
+        if required_token not in shaker_visual_service_source:
+            raise AssertionError(
+                "Loaded shakers must drive their source-compatible progress and ingredient HUD; "
+                f"missing token: {required_token}")
     bar_stool_visual_source = (
         game_package / "BarStoolVisualService.java"
     ).read_text(encoding="utf-8-sig")
@@ -1729,13 +1758,13 @@ def validate() -> dict[str, int]:
             "Portable shaker right-click must not retain a duplicate global Paper listener")
     shaker_behaviors = items[f"{NAMESPACE}:shaker"].get("behaviors", [])
     if ([behavior.get("type") for behavior in shaker_behaviors]
-            != [f"{NAMESPACE}:shaker_item", f"{NAMESPACE}:sneak_place_drink"]
+            != [f"{NAMESPACE}:shaker_item", "furniture_item"]
             or shaker_behaviors[1].get("furniture") != f"{NAMESPACE}:shaker"
             or shaker_behaviors[1].get("rules") != {
                 "ground": {"rotation": "four", "alignment": "center"}
             }):
         raise AssertionError(
-            "Shaker must run CE portable use before sneak-gated native furniture placement")
+            "Shaker must run portable air use before ordinary right-click furniture placement")
     for stale_token in (
             "bootstrapPressVisuals", "onEntitiesLoad(EntitiesLoadEvent event)",
             "pressingTubBelow", "getNearbyEntities(feet"):
@@ -1749,6 +1778,9 @@ def validate() -> dict[str, int]:
             "new PortableShakerUse(player, hand, 0)",
             "var iterator = portableShakers.entrySet().iterator()",
             "Player player = use.player()",
+            "shakerVisuals.beginMix(player)",
+            "shakerVisuals.updateMix(player, ticks)",
+            "shakerVisuals.endMix(player)",
             "private record PortableShakerUse(Player player, EquipmentSlot hand, int ticks)"):
         if required_token not in station_source:
             raise AssertionError(
@@ -3143,14 +3175,16 @@ def validate() -> dict[str, int]:
             behavior for behavior in item_behaviors
             if behavior.get("furniture") == item_id
         ]
+        placement_type = ("furniture_item" if item_id == f"{NAMESPACE}:shaker"
+                          else f"{NAMESPACE}:sneak_place_drink")
         if placement_behaviors != [{
-                "type": f"{NAMESPACE}:sneak_place_drink",
+                "type": placement_type,
                 "furniture": item_id,
                 "rules": expected_ground_rule,
                 }]:
             raise AssertionError(
-                f"{item_id}: every custom bottle, glass and shaker must place only through "
-                "sneak-gated native CE furniture placement")
+                f"{item_id}: shaker must use ordinary placement while custom bottles and "
+                "glasses remain sneak-gated")
 
     for item_id in EFFECTLESS_DRINKS:
         replacement = items[item_id].get("settings", {}).get("consume_replacement")
@@ -3377,6 +3411,46 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Shaker inventory model must remain vanilla-compatible instead of using Forge loaders")
     paper_asset_roots = (ROOT / "src/paper/pack/resourcepack/assets",)
+    hud_offset_powers = (1, 2, 4, 8, 16, 32, 64, 128, 256)
+    expected_shaker_hud_providers = [{
+        "type": "space",
+        "advances": {
+            **{chr(0xE410 + index): power / 2
+               for index, power in enumerate(hud_offset_powers)},
+            **{chr(0xE420 + index): -power / 2
+               for index, power in enumerate(hud_offset_powers)},
+        },
+    }, {
+        "type": "bitmap",
+        "file": f"{NAMESPACE}:font/shaker/bar.png",
+        "ascent": 0,
+        "height": 9,
+        "chars": [chr(0xE400)],
+    }, {
+        "type": "bitmap",
+        "file": f"{NAMESPACE}:font/shaker/pointer.png",
+        "ascent": 3,
+        "height": 7,
+        "chars": [chr(0xE401)],
+    }, {
+        "type": "bitmap",
+        "file": f"{NAMESPACE}:gui/rhombus.png",
+        "ascent": 3,
+        "height": 8,
+        "chars": [chr(0xE402)],
+    }]
+    shaker_hud_font = asset_json(
+        f"{NAMESPACE}:shaker_hud", "font", paper_asset_roots)
+    if (shaker_hud_font is None
+            or shaker_hud_font.get("providers") != expected_shaker_hud_providers):
+        raise AssertionError(
+            "Shaker HUD font must preserve the source bar, pointer and ingredient layout")
+    for shaker_texture in ("bar", "pointer"):
+        if not asset_exists(
+                f"{NAMESPACE}:font/shaker/{shaker_texture}", "textures", ".png"):
+            raise AssertionError(f"Missing generated shaker HUD texture: {shaker_texture}")
+    if not asset_exists(f"{NAMESPACE}:gui/rhombus", "textures", ".png"):
+        raise AssertionError("Missing archived tintable shaker ingredient rhombus")
     custom_effect_font = asset_json(
         f"{NAMESPACE}:custom_effects", "font", paper_asset_roots)
     expected_effect_providers = [{
@@ -3396,7 +3470,6 @@ def validate() -> dict[str, int]:
 
     # The corner HUD font must mirror tools/migrate_legacy.py and the glyph
     # tables hard-coded in CustomEffectHudSemantics exactly.
-    hud_offset_powers = (1, 2, 4, 8, 16, 32, 64, 128, 256)
     expected_hud_providers: list[dict] = [{
         "type": "space",
         "advances": {

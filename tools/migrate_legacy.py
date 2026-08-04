@@ -2253,6 +2253,76 @@ def create_custom_effect_hud_assets() -> None:
     )
 
 
+def create_shaker_hud_assets() -> None:
+    """Convert the archived shaker overlay into title-font HUD glyphs.
+
+    Minecraft renders subtitle glyphs at twice their bitmap-font size.  The
+    source overlay's 181x17 bar and 11x13 pointer are therefore reduced by
+    half with nearest-neighbour sampling; their final in-game geometry remains
+    the same while the font advances can layer the pointer over the bar.
+    """
+    try:
+        from PIL import Image
+    except ImportError as error:  # pragma: no cover - developer machine setup
+        raise AssertionError(
+            "Pillow is required to regenerate the shaker HUD assets (pip install pillow)"
+        ) from error
+
+    source_path = MAIN_RESOURCES / f"assets/{NAMESPACE}/textures/gui/shaker.png"
+    with Image.open(source_path) as source:
+        overlay = source.convert("RGBA")
+    if overlay.size != (256, 256):
+        raise AssertionError(
+            f"shaker overlay: expected a 256x256 texture, got {overlay.size}"
+        )
+
+    texture_root = (
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/textures/font/shaker"
+    )
+    texture_root.mkdir(parents=True, exist_ok=True)
+    overlay.crop((0, 0, 181, 17)).resize(
+        (90, 9), Image.Resampling.NEAREST
+    ).save(texture_root / "bar.png")
+    overlay.crop((181, 0, 192, 13)).resize(
+        (6, 7), Image.Resampling.NEAREST
+    ).save(texture_root / "pointer.png")
+
+    # Space advances are expressed in font units; subtitle rendering doubles
+    # them on screen.  Half-unit entries retain every one-pixel source offset.
+    advances: dict[str, float] = {}
+    for index, power in enumerate(HUD_OFFSET_POWERS):
+        advances[chr(0xE410 + index)] = power / 2
+        advances[chr(0xE420 + index)] = -power / 2
+    providers: list[dict[str, Any]] = [{"type": "space", "advances": advances}]
+    providers.extend((
+        {
+            "type": "bitmap",
+            "file": f"{NAMESPACE}:font/shaker/bar.png",
+            "ascent": 0,
+            "height": 9,
+            "chars": [chr(0xE400)],
+        },
+        {
+            "type": "bitmap",
+            "file": f"{NAMESPACE}:font/shaker/pointer.png",
+            "ascent": 3,
+            "height": 7,
+            "chars": [chr(0xE401)],
+        },
+        {
+            "type": "bitmap",
+            "file": f"{NAMESPACE}:gui/rhombus.png",
+            "ascent": 3,
+            "height": 8,
+            "chars": [chr(0xE402)],
+        },
+    ))
+    write_json(
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/font/shaker_hud.json",
+        {"providers": providers},
+    )
+
+
 def trellis_wax_events() -> list[dict[str, Any]]:
     """TrellisBlock#use waxing branches as CraftEngine block events.
 
@@ -3663,12 +3733,13 @@ def build_items(
         if item_id in furniture_ids:
             if item_id == "shaker":
                 # Right-click air is owned by CE's existing item-use listener;
-                # the following sneak gate delegates block placement to CE.
+                # native furniture_item then owns ordinary block placement.
                 # Paper only observes release to finish the mix.
                 behaviors.append({"type": f"{NAMESPACE}:shaker_item"})
             furniture_behavior: dict[str, Any] = {
-                "type": (f"{NAMESPACE}:sneak_place_drink"
-                         if sneak_placeable_vessel else "furniture_item"),
+                "type": ("furniture_item" if item_id == "shaker"
+                         else (f"{NAMESPACE}:sneak_place_drink"
+                               if sneak_placeable_vessel else "furniture_item")),
                 "furniture": f"{NAMESPACE}:{item_id}",
                 "rules": furniture_placement[item_id],
             }
@@ -3845,6 +3916,7 @@ def main() -> None:
     create_pendant_lamp_models()
     create_custom_effect_font()
     create_custom_effect_hud_assets()
+    create_shaker_hud_assets()
     create_molotov_charging_model()
     create_worldgen_features()
     create_bar_stool_body_models()

@@ -2997,7 +2997,7 @@
           "type": "kaleidoscope_tavern:shaker_item"
         },
         {
-          "type": "kaleidoscope_tavern:sneak_place_drink",
+          "type": "furniture_item",
           "furniture": "kaleidoscope_tavern:shaker",
           "rules": {
             "ground": {

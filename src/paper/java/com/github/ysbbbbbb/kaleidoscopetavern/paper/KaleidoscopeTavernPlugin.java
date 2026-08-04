@@ -160,7 +160,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         GrapeSeasonGate.configure(getConfig(), getLogger());
         items = new ItemService(this, catalog);
         Messages messages = new Messages(this);
-        shakerVisuals = new ShakerVisualService(this, items);
+        shakerVisuals = new ShakerVisualService(this, catalog, items);
         stations = new StationService(this, catalog, items, messages, shakerVisuals);
         effects = new EffectService(this, catalog, items);
         boards = new BoardTextService(this);
