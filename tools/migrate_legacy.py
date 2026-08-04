@@ -445,12 +445,17 @@ def migrate_translucent_model(model: dict[str, Any], owner: str) -> dict[str, An
     ``render_type`` is a Forge model-loader extension and is ignored by the
     vanilla 26.2 client.  Since 26.1, vanilla assigns render passes per texture
     slot; an object with ``force_translucent`` preserves the source model's
-    explicit translucent pass even for opaque texels and their mipmaps.
+    explicit translucent pass even for opaque texels and their mipmaps.  Both
+    Forge ``cutout`` and ``translucent`` exports land here: cutout glasses and
+    liquids need the blended pass once they render as ItemDisplay furniture,
+    because the per-item alpha test would otherwise flatten their
+    semi-transparent texels into opaque ones.
     """
     render_type = model.pop("render_type", None)
-    if render_type not in {"translucent", "minecraft:translucent"}:
+    if render_type not in {
+            "cutout", "minecraft:cutout", "translucent", "minecraft:translucent"}:
         raise AssertionError(
-            f"{owner}: expected Forge translucent render_type, found {render_type!r}")
+            f"{owner}: expected Forge cutout/translucent render_type, found {render_type!r}")
 
     textures = model.get("textures")
     if not isinstance(textures, dict):
@@ -488,7 +493,10 @@ def placed_drink_model(
     the quad winding.  Its one-sided renderer consequently hides the near face
     and exposes the far face through the glass.  Forge's archived assets remain
     untouched; Paper furniture receives a private copy whose bounds are ordered
-    on every axis while retaining the exact positions, UVs and rotations.
+    on every axis while retaining the exact positions, UVs and rotations.  The
+    same copy also drops Forge's ``render_type``: the vanilla client ignores it,
+    so cutout/translucent glasses must migrate to the per-slot
+    ``force_translucent`` descriptor or they render opaque.
     """
     if block_id not in BOTTLE_AND_GLASS_ITEMS:
         return model
@@ -517,8 +525,12 @@ def placed_drink_model(
                 start[axis], end[axis] = end[axis], start[axis]
                 corrected = True
 
-    if not corrected:
+    needs_migration = "render_type" in copied
+    if not corrected and not needs_migration:
         return model
+
+    if needs_migration:
+        migrate_translucent_model(copied, resource_id)
 
     private_path = f"furniture/placed_drink/{namespace}/{resource_path}"
     write_json(
@@ -2819,13 +2831,18 @@ def create_bar_stool_body_models() -> None:
         if key not in {"display", "gui_light"}
     }
     body["elements"] = deepcopy(source["elements"][3:])
+    # Forge's cutout render_type is ignored by the vanilla client.  The
+    # upholstered body renders as ItemDisplay furniture, so the concrete child
+    # models below carry the 26.1+ force_translucent descriptor on their
+    # texture slot instead.
+    body.pop("render_type", None)
     write_json(model_root / "bar_stool_body_base.json", body)
     for color in BAR_STOOL_COLORS:
         write_json(model_root / "bar_stool_body" / f"{color}.json", {
             "parent": f"{NAMESPACE}:furniture/bar_stool_body_base",
             "textures": {
                 "particle": f"minecraft:block/{color}_wool",
-                "texture": f"{NAMESPACE}:block/deco/bar_stool/{color}",
+                "texture": translucent_texture(f"{NAMESPACE}:block/deco/bar_stool/{color}"),
             },
         })
 

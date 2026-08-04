@@ -1,13 +1,15 @@
 {
   "format_version": "1.21.6",
   "credit": "Made with Blockbench",
-  "render_type": "cutout",
   "texture_size": [
     32,
     32
   ],
   "textures": {
-    "1": "kaleidoscope_tavern:block/mixology/signature_cocktail",
+    "1": {
+      "sprite": "kaleidoscope_tavern:block/mixology/signature_cocktail",
+      "force_translucent": true
+    },
     "particle": "block/glass"
   },
   "elements": [

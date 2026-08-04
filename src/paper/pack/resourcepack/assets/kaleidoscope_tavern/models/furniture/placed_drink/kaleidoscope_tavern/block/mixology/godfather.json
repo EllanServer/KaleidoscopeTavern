@@ -1,13 +1,15 @@
 {
   "format_version": "1.9.0",
   "credit": "Made with Blockbench",
-  "render_type": "cutout",
   "texture_size": [
     32,
     32
   ],
   "textures": {
-    "1": "kaleidoscope_tavern:block/mixology/godfather",
+    "1": {
+      "sprite": "kaleidoscope_tavern:block/mixology/godfather",
+      "force_translucent": true
+    },
     "particle": "block/glass"
   },
   "elements": [

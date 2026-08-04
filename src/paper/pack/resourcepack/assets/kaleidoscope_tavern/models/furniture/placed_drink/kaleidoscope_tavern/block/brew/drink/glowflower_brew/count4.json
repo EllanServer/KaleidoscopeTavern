@@ -1,9 +1,11 @@
 {
   "format_version": "1.21.6",
   "credit": "Made with Blockbench",
-  "render_type": "cutout",
   "textures": {
-    "0": "kaleidoscope_tavern:block/brew/glowflower_brew",
+    "0": {
+      "sprite": "kaleidoscope_tavern:block/brew/glowflower_brew",
+      "force_translucent": true
+    },
     "particle": "kaleidoscope_tavern:block/brew/glowflower_brew"
   },
   "elements": [

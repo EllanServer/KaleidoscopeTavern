@@ -1,13 +1,15 @@
 {
   "format_version": "1.9.0",
   "credit": "Made with Blockbench",
-  "render_type": "cutout",
   "texture_size": [
     32,
     32
   ],
   "textures": {
-    "0": "kaleidoscope_tavern:block/mixology/allium_garden",
+    "0": {
+      "sprite": "kaleidoscope_tavern:block/mixology/allium_garden",
+      "force_translucent": true
+    },
     "particle": "block/glass"
   },
   "elements": [

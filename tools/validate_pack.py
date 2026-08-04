@@ -180,6 +180,11 @@ PRESS_FLUIDS = {
     "sweet_berries_juice",
 }
 BARREL_FLUIDS = PRESS_FLUIDS | {"water", "lava"}
+BAR_STOOL_COLORS = (
+    "black", "blue", "brown", "cyan", "gray", "green", "light_blue",
+    "light_gray", "lime", "magenta", "orange", "pink", "purple", "red",
+    "white", "yellow",
+)
 
 # Every source blockstate property is intentionally assigned to either a CE
 # representation or a named Paper runtime owner.  Comparing this manifest to
@@ -565,6 +570,22 @@ def assert_forced_translucency(
                 "force_translucent=true")
 
 
+def assert_no_forge_render_type(resource_id: str, owner: str) -> None:
+    """Reject any Forge ``render_type`` left on a model the vanilla client loads.
+
+    The vanilla client ignores Forge's render_type extension, so migrated
+    furniture that kept it silently renders opaque instead of cutout or
+    translucent.
+    """
+    model = asset_json(resource_id, "models")
+    if model is None:
+        raise AssertionError(f"{owner}: missing displayed model {resource_id}")
+    if "render_type" in model:
+        raise AssertionError(
+            f"{owner}: {resource_id} keeps Forge render_type, which the vanilla "
+            "26.2 client ignores and renders opaque")
+
+
 def model_references(value: Any):
     if isinstance(value, dict):
         model = value.get("model")
@@ -764,6 +785,13 @@ def validate() -> dict[str, int]:
             placed_drink_models[model_path] = render_id
     for model_path, owner in placed_drink_models.items():
         assert_ordered_model_bounds(model_path, owner)
+        assert_no_forge_render_type(model_path, owner)
+
+    assert_no_forge_render_type(
+        f"{NAMESPACE}:furniture/bar_stool_body_base", "bar_stool_body_base")
+    for color in BAR_STOOL_COLORS:
+        assert_no_forge_render_type(
+            f"{NAMESPACE}:furniture/bar_stool_body/{color}", f"bar_stool_body/{color}")
 
     game_package = (
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game")
