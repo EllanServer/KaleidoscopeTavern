@@ -4612,7 +4612,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/empty_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/empty_bottle"
       },
       "settings": {
         "tags": [
@@ -4627,7 +4627,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/empty_glassware"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/empty_glassware"
       },
       "settings": {
         "tags": [
@@ -4642,7 +4642,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/signature_cocktail",
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/signature_cocktail",
         "tints": [
           {
             "type": "minecraft:potion",
@@ -4663,7 +4663,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/mystery_cocktail"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/mystery_cocktail"
       },
       "settings": {
         "tags": [
@@ -4678,7 +4678,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/white_lady"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/white_lady"
       },
       "settings": {
         "tags": [
@@ -4693,7 +4693,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/emerald"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/emerald"
       },
       "settings": {
         "tags": [
@@ -4708,7 +4708,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/brass_heart"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/brass_heart"
       },
       "settings": {
         "tags": [
@@ -4723,7 +4723,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/godfather"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/godfather"
       },
       "settings": {
         "tags": [
@@ -4738,7 +4738,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/grasshopper"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/grasshopper"
       },
       "settings": {
         "tags": [
@@ -4753,7 +4753,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/screwdriver"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/screwdriver"
       },
       "settings": {
         "tags": [
@@ -4768,7 +4768,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/mojito"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/mojito"
       },
       "settings": {
         "tags": [
@@ -4783,7 +4783,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/allium_garden"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/allium_garden"
       },
       "settings": {
         "tags": [
@@ -4798,7 +4798,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/depth_charge"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/depth_charge"
       },
       "settings": {
         "tags": [
@@ -4813,7 +4813,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/nether_special"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/nether_special"
       },
       "settings": {
         "tags": [
@@ -4828,7 +4828,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/bloody_mary"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/bloody_mary"
       },
       "settings": {
         "tags": [
@@ -4843,7 +4843,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/sculk_special"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/sculk_special"
       },
       "settings": {
         "tags": [
@@ -5119,7 +5119,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/xp_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/xp_bottle"
       },
       "settings": {
         "tags": [
@@ -6289,7 +6289,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/luminous_bride/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/luminous_bride/count1"
       },
       "settings": {
         "tags": [
@@ -6304,7 +6304,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/luminous_bride/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/luminous_bride/count2"
       },
       "settings": {
         "tags": [
@@ -6319,7 +6319,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/luminous_bride/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/luminous_bride/count3"
       },
       "settings": {
         "tags": [
@@ -6334,7 +6334,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/luminous_bride/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/luminous_bride/count4"
       },
       "settings": {
         "tags": [
@@ -6349,7 +6349,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/glowflower_brew/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/glowflower_brew/count1"
       },
       "settings": {
         "tags": [
@@ -6364,7 +6364,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/glowflower_brew/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/glowflower_brew/count2"
       },
       "settings": {
         "tags": [
@@ -6379,7 +6379,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/glowflower_brew/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/glowflower_brew/count3"
       },
       "settings": {
         "tags": [
@@ -6394,7 +6394,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/glowflower_brew/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/glowflower_brew/count4"
       },
       "settings": {
         "tags": [
@@ -6649,7 +6649,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/empty_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/empty_bottle"
       },
       "settings": {
         "tags": [
@@ -6664,7 +6664,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/mixology/empty_glassware"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/empty_glassware"
       },
       "settings": {
         "tags": [
@@ -6679,7 +6679,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/glowflower_brew/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/glowflower_brew/count1"
       },
       "settings": {
         "tags": [
@@ -6739,7 +6739,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/luminous_bride/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/luminous_bride/count1"
       },
       "settings": {
         "tags": [
@@ -7075,7 +7075,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/xp_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/xp_bottle"
       },
       "settings": {
         "tags": [

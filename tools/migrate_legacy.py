@@ -431,6 +431,58 @@ def find_file(roots: Iterable[Path], relative: Path) -> Path | None:
     return None
 
 
+def placed_drink_model(
+    block_id: str,
+    model: tuple[str, int, int, int, bool],
+) -> tuple[str, int, int, int, bool]:
+    """Return an ItemDisplay-safe copy of a legacy bottle/glass model.
+
+    Several Blockbench exports modelled the glass and liquid shells with a
+    descending cuboid axis (``from`` greater than ``to``).  The occupied volume
+    is still correct, but current vanilla ItemDisplay baking uses that order for
+    the quad winding.  Its one-sided renderer consequently hides the near face
+    and exposes the far face through the glass.  Forge's archived assets remain
+    untouched; Paper furniture receives a private copy whose bounds are ordered
+    on every axis while retaining the exact positions, UVs and rotations.
+    """
+    if block_id not in BOTTLE_AND_GLASS_ITEMS:
+        return model
+
+    resource_id = model[0]
+    if ":" not in resource_id:
+        return model
+    namespace, resource_path = resource_id.split(":", 1)
+    source = find_file(
+        (MAIN_RESOURCES, GENERATED),
+        Path("assets") / namespace / "models" / f"{resource_path}.json",
+    )
+    if source is None:
+        return model
+
+    copied = deepcopy(read_json(source))
+    corrected = False
+    for element in copied.get("elements", []):
+        start = element.get("from")
+        end = element.get("to")
+        if not (isinstance(start, list) and isinstance(end, list)
+                and len(start) == 3 and len(end) == 3):
+            continue
+        for axis in range(3):
+            if start[axis] > end[axis]:
+                start[axis], end[axis] = end[axis], start[axis]
+                corrected = True
+
+    if not corrected:
+        return model
+
+    private_path = f"furniture/placed_drink/{namespace}/{resource_path}"
+    write_json(
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/{private_path}.json",
+        copied,
+    )
+    return (f"{NAMESPACE}:{private_path}", *model[1:])
+
+
 def load_raw_tags() -> dict[str, list[str]]:
     tags: dict[str, list[str]] = {}
     for resource_root in (MAIN_RESOURCES, GENERATED):
@@ -1376,11 +1428,12 @@ def ensure_render_item(
     model: tuple[str, int, int, int, bool],
 ) -> str:
     digest = hashlib.sha1("|".join(map(str, model)).encode("utf-8")).hexdigest()[:10]
+    display_model = placed_drink_model(block_id, model)
     render_id = f"{NAMESPACE}:_render/{block_id}/{digest}"
     render_items.setdefault(render_id, {
         "material": "paper",
         "data": {"item_name": render_item_name(block_id)},
-        "model": {"type": "minecraft:model", "path": model[0]},
+        "model": {"type": "minecraft:model", "path": display_model[0]},
         "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
     })
     return render_id
@@ -2707,10 +2760,11 @@ def add_runtime_render_items(render_items: dict[str, Any]) -> None:
     """Add stable ids used by Paper-side block-entity visual emulation."""
     for block_id in sorted(STORAGE_RENDER_ITEMS):
         model = min(blockstate_records(block_id), key=record_score)[1]
+        display_model = placed_drink_model(block_id, model)
         definition: dict[str, Any] = {
             "material": "paper",
             "data": {"item_name": render_item_name(block_id)},
-            "model": {"type": "minecraft:model", "path": model[0]},
+            "model": {"type": "minecraft:model", "path": display_model[0]},
             "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
         }
         if block_id == "potion_bottle":

@@ -511,6 +511,25 @@ def asset_json(resource_id: str, folder: str, roots=ASSET_ROOTS) -> dict[str, An
     return None
 
 
+def assert_ordered_model_bounds(resource_id: str, owner: str) -> None:
+    """Reject cuboids whose descending bounds invert ItemDisplay face winding."""
+    model = asset_json(resource_id, "models")
+    if model is None:
+        raise AssertionError(f"{owner}: missing displayed model {resource_id}")
+    axis_names = ("x", "y", "z")
+    for index, element in enumerate(model.get("elements", [])):
+        start = element.get("from")
+        end = element.get("to")
+        if not (isinstance(start, list) and isinstance(end, list)
+                and len(start) == 3 and len(end) == 3):
+            continue
+        for axis, axis_name in enumerate(axis_names):
+            if start[axis] > end[axis]:
+                raise AssertionError(
+                    f"{owner}: {resource_id} element {index} has descending {axis_name} "
+                    "bounds, which exposes its back face when rendered as furniture")
+
+
 def model_references(value: Any):
     if isinstance(value, dict):
         model = value.get("model")
@@ -669,6 +688,30 @@ def validate() -> dict[str, int]:
         if "item" in config.get("settings", {}):
             raise AssertionError(
                 f"{bottle_id}: vanilla-source bottle must not invent a duplicate CE item")
+
+    placed_drink_models: dict[str, str] = {}
+    for bottle_id in sorted(EXPECTED_BOTTLE_FURNITURE):
+        config = furniture[f"{NAMESPACE}:{bottle_id}"]
+        for variant_name, variant in config.get("variants", {}).items():
+            for element in variant.get("elements", []):
+                if element.get("type") != "item_display":
+                    continue
+                render_id = element.get("item")
+                definition = render_items.get(render_id, {})
+                model_path = definition.get("model", {}).get("path")
+                if not isinstance(model_path, str):
+                    raise AssertionError(
+                        f"{bottle_id}/{variant_name}: displayed drink item {render_id!r} "
+                        "must select a vanilla model path")
+                placed_drink_models[model_path] = f"{bottle_id}/{variant_name}"
+    for render_id, definition in render_items.items():
+        if not render_id.startswith(f"{NAMESPACE}:_render/storage/"):
+            continue
+        model_path = definition.get("model", {}).get("path")
+        if isinstance(model_path, str):
+            placed_drink_models[model_path] = render_id
+    for model_path, owner in placed_drink_models.items():
+        assert_ordered_model_bounds(model_path, owner)
 
     game_package = (
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game")
