@@ -100,8 +100,7 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         // behaviors and has already copied the clicked face axis into state.
         // Keep that native placement axis as the permanent base member while
         // Tavern adds only the neighbouring trellis connections.
-        String type = TrellisConnectionSemantics.typeFor(
-                axisName(state.get(axisProperty)), x, y, z);
+        String type = typeFor(axisName(state.get(axisProperty)), x, y, z);
         Object fluid = BlockGetterProxy.INSTANCE.getFluidState(
                 context.getLevel().minecraftWorld(), LocationUtils.toBlockPos(position));
         return state.with(typeProperty, type).with(
@@ -133,9 +132,46 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         boolean yConnected = axisHasTrellis(world, x, y, z, Direction.Axis.Y);
         boolean zConnected = axisHasTrellis(world, x, y, z, Direction.Axis.Z);
         String baseAxis = axisName(state.get(axisProperty));
-        String updated = TrellisConnectionSemantics.typeFor(
-                baseAxis, xConnected, yConnected, zConnected);
+        String updated = typeFor(baseAxis, xConnected, yConnected, zConnected);
         return state.with(typeProperty, updated).customBlockState().minecraftState();
+    }
+
+    /**
+     * Combines CE's native placement axis with every axis that has an adjacent
+     * trellis. The base axis is never discarded merely because it has no
+     * neighbour, so a vertical placement cannot collapse into a horizontal
+     * shape during CE's immediate placement update.
+     */
+    static String typeFor(String baseAxis, boolean xConnected,
+                          boolean yConnected, boolean zConnected) {
+        if (!baseAxis.equals("x") && !baseAxis.equals("y") && !baseAxis.equals("z")) {
+            throw new IllegalArgumentException("Unknown trellis axis: " + baseAxis);
+        }
+        boolean x = xConnected || baseAxis.equals("x");
+        boolean y = yConnected || baseAxis.equals("y");
+        boolean z = zConnected || baseAxis.equals("z");
+        if (x && y && z) {
+            return "six_direction";
+        }
+        if (x && y) {
+            return "cross_east_west";
+        }
+        if (y && z) {
+            return "cross_north_south";
+        }
+        if (x && z) {
+            return "cross_up_down";
+        }
+        if (x) {
+            return "east_west";
+        }
+        if (z) {
+            return "north_south";
+        }
+        if (y) {
+            return "single";
+        }
+        throw new IllegalStateException("A valid trellis axis must produce a shape");
     }
 
     @Override

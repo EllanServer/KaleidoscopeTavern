@@ -756,7 +756,11 @@ def validate() -> dict[str, int]:
             "private final Property<Boolean> waterloggedProperty",
             'block, "axis", Direction.Axis.class',
             "state.get(axisProperty)",
-            "TrellisConnectionSemantics.typeFor(",
+            "typeFor(axisName(state.get(axisProperty)), x, y, z)",
+            "typeFor(baseAxis, xConnected, yConnected, zConnected)",
+            'xConnected || baseAxis.equals("x")',
+            'yConnected || baseAxis.equals("y")',
+            'zConnected || baseAxis.equals("z")',
             'copyNamed(targetState, grown, "axis")',
             "FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER",
             "LevelAccessorProxy.INSTANCE.scheduleTick$1("):
@@ -775,17 +779,9 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "TrellisBehavior must let CE own its placement axis; found duplicate "
                 f"implementation {duplicate_token}")
-    trellis_semantics_source = (
-        game_package / "block/TrellisConnectionSemantics.java"
-    ).read_text(encoding="utf-8-sig")
-    for required_token in (
-            'xConnected || baseAxis.equals("x")',
-            'yConnected || baseAxis.equals("y")',
-            'zConnected || baseAxis.equals("z")'):
-        if required_token not in trellis_semantics_source:
-            raise AssertionError(
-                "Trellis connection reduction must preserve CE's native placement axis; "
-                f"missing {required_token}")
+    if (game_package / "block/TrellisConnectionSemantics.java").exists():
+        raise AssertionError(
+            "Trellis connection reduction must remain merged into TrellisBehavior")
     trellis_semantics_test = (
         ROOT / "src/paperTest/java/com/github/ysbbbbbb/kaleidoscopetavern/"
         "paper/game/block/TrellisConnectionSemanticsTest.java"

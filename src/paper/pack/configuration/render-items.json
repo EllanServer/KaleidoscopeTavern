@@ -4642,7 +4642,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/signature_cocktail",
+"path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/signature_cocktail",
         "tints": [
           {
             "type": "minecraft:potion",

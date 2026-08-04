@@ -28,6 +28,7 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:5.14.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("net.momirealms:craft-engine-core:${providers.gradleProperty("craft_engine_version").get()}")
+    testImplementation("net.momirealms:craft-engine-bukkit:${providers.gradleProperty("craft_engine_version").get()}")
     // MiniMessage round-trips in CustomEffectHudSemanticsTest use the same
     // adventure version Paper ships at runtime.
     testImplementation("io.papermc.paper:paper-api:${providers.gradleProperty("paper_version").get()}")

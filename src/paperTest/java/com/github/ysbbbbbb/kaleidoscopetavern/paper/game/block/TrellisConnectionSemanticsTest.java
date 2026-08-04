@@ -9,24 +9,42 @@ class TrellisConnectionSemanticsTest {
     @Test
     void verticalPlacementNeverCollapsesIntoAHorizontalShape() {
         assertEquals("single",
-                TrellisConnectionSemantics.typeFor("y", false, false, false));
+                TrellisBehavior.typeFor("y", false, false, false));
         assertEquals("cross_east_west",
-                TrellisConnectionSemantics.typeFor("y", true, false, false));
+                TrellisBehavior.typeFor("y", true, false, false));
         assertEquals("cross_north_south",
-                TrellisConnectionSemantics.typeFor("y", false, false, true));
+                TrellisBehavior.typeFor("y", false, false, true));
         assertEquals("six_direction",
-                TrellisConnectionSemantics.typeFor("y", true, false, true));
+                TrellisBehavior.typeFor("y", true, false, true));
     }
 
     @Test
     void nativePlacementAxisIsAlwaysPartOfTheResult() {
         for (String axis : new String[]{"x", "y", "z"}) {
             for (int mask = 0; mask < 8; mask++) {
-                String type = TrellisConnectionSemantics.typeFor(
+                String type = TrellisBehavior.typeFor(
                         axis, (mask & 1) != 0, (mask & 2) != 0, (mask & 4) != 0);
-                assertTrue(TrellisConnectionSemantics.containsAxis(type, axis),
+                assertTrue(containsAxis(type, axis),
                         axis + " was lost from " + type + " for mask " + mask);
             }
         }
+    }
+
+    private static boolean containsAxis(String type, String axis) {
+        return switch (axis) {
+            case "x" -> type.equals("east_west")
+                    || type.equals("cross_east_west")
+                    || type.equals("cross_up_down")
+                    || type.equals("six_direction");
+            case "y" -> type.equals("single")
+                    || type.equals("cross_east_west")
+                    || type.equals("cross_north_south")
+                    || type.equals("six_direction");
+            case "z" -> type.equals("north_south")
+                    || type.equals("cross_north_south")
+                    || type.equals("cross_up_down")
+                    || type.equals("six_direction");
+            default -> false;
+        };
     }
 }
