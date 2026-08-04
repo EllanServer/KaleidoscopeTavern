@@ -1,8 +1,10 @@
 {
   "ambientocclusion": false,
-  "render_type": "translucent",
   "textures": {
-    "fluid": "kaleidoscope_tavern:block/sweet_berries_juice_still",
+    "fluid": {
+      "sprite": "kaleidoscope_tavern:block/sweet_berries_juice_still",
+      "force_translucent": true
+    },
     "particle": "kaleidoscope_tavern:block/sweet_berries_juice_still"
   },
   "elements": [

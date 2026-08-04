@@ -1,8 +1,10 @@
 {
   "ambientocclusion": false,
-  "render_type": "translucent",
   "textures": {
-    "fluid": "minecraft:block/water_still",
+    "fluid": {
+      "sprite": "minecraft:block/water_still",
+      "force_translucent": true
+    },
     "particle": "minecraft:block/water_still"
   },
   "elements": [

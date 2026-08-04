@@ -170,6 +170,16 @@ ASSET_ROOTS = (
     ROOT / "src/main/resources/assets",
 )
 OBSOLETE_VANILLA_IDS = {"minecraft:chain", "minecraft:grass"}
+PENDANT_LAMPS = {"bell_pendant_lamp", "blue_pendant_lamp", "yellow_pendant_lamp"}
+PRESS_FLUIDS = {
+    "glow_berries_juice",
+    "gold_grape_juice",
+    "grape_juice",
+    "green_grape_juice",
+    "ice_grape_juice",
+    "sweet_berries_juice",
+}
+BARREL_FLUIDS = PRESS_FLUIDS | {"water", "lava"}
 
 # Every source blockstate property is intentionally assigned to either a CE
 # representation or a named Paper runtime owner.  Comparing this manifest to
@@ -530,6 +540,31 @@ def assert_ordered_model_bounds(resource_id: str, owner: str) -> None:
                     "bounds, which exposes its back face when rendered as furniture")
 
 
+def assert_forced_translucency(
+    resource_id: str,
+    texture_slots: set[str],
+    owner: str,
+) -> None:
+    """Require the Minecraft 26.1+ texture descriptor on translucent geometry."""
+    model = asset_json(resource_id, "models", roots=(ASSET_ROOTS[0],))
+    if model is None:
+        raise AssertionError(f"{owner}: missing generated translucent model {resource_id}")
+    if "render_type" in model:
+        raise AssertionError(
+            f"{owner}: Forge render_type is ignored by the vanilla 26.2 client")
+    textures = model.get("textures")
+    if not isinstance(textures, dict):
+        raise AssertionError(f"{owner}: generated translucent model has no textures")
+    for slot in sorted(texture_slots):
+        descriptor = textures.get(slot)
+        if (not isinstance(descriptor, dict)
+                or not isinstance(descriptor.get("sprite"), str)
+                or descriptor.get("force_translucent") is not True):
+            raise AssertionError(
+                f"{owner}: texture slot {slot!r} must use a sprite descriptor with "
+                "force_translucent=true")
+
+
 def model_references(value: Any):
     if isinstance(value, dict):
         model = value.get("model")
@@ -673,6 +708,23 @@ def validate() -> dict[str, int]:
         raise AssertionError(f"Expected 503 private render items, found {len(render_items)}")
     if len(recipes) != 114:
         raise AssertionError(f"Expected 114 crafting recipes, found {len(recipes)}")
+
+    for lamp in sorted(PENDANT_LAMPS):
+        for half in ("top", "bottom"):
+            assert_forced_translucency(
+                f"{NAMESPACE}:block/deco/{lamp}/{half}", {"2"}, f"{lamp}/{half}")
+    for fluid in sorted(PRESS_FLUIDS):
+        assert_forced_translucency(
+            f"{NAMESPACE}:furniture/pressing_fluid/{fluid}",
+            {"fluid"},
+            f"pressing_fluid/{fluid}",
+        )
+    for fluid in sorted(BARREL_FLUIDS):
+        assert_forced_translucency(
+            f"{NAMESPACE}:furniture/barrel_fluid/{fluid}",
+            {"fluid"},
+            f"barrel_fluid/{fluid}",
+        )
 
     source_item_loot = {
         "pools": [{

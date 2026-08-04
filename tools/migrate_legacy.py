@@ -431,6 +431,51 @@ def find_file(roots: Iterable[Path], relative: Path) -> Path | None:
     return None
 
 
+def translucent_texture(sprite: str) -> dict[str, Any]:
+    """Select Minecraft 26.1+'s translucent render pass for one texture slot."""
+    return {
+        "sprite": sprite,
+        "force_translucent": True,
+    }
+
+
+def migrate_translucent_model(model: dict[str, Any], owner: str) -> dict[str, Any]:
+    """Translate Forge's model-wide render type into vanilla texture slots.
+
+    ``render_type`` is a Forge model-loader extension and is ignored by the
+    vanilla 26.2 client.  Since 26.1, vanilla assigns render passes per texture
+    slot; an object with ``force_translucent`` preserves the source model's
+    explicit translucent pass even for opaque texels and their mipmaps.
+    """
+    render_type = model.pop("render_type", None)
+    if render_type not in {"translucent", "minecraft:translucent"}:
+        raise AssertionError(
+            f"{owner}: expected Forge translucent render_type, found {render_type!r}")
+
+    textures = model.get("textures")
+    if not isinstance(textures, dict):
+        raise AssertionError(f"{owner}: missing model textures")
+
+    rendered_slots = {
+        texture[1:]
+        for element in model.get("elements", [])
+        for face in element.get("faces", {}).values()
+        if isinstance(face, dict)
+        for texture in (face.get("texture"),)
+        if isinstance(texture, str) and texture.startswith("#")
+    }
+    if not rendered_slots:
+        raise AssertionError(f"{owner}: translucent model has no rendered texture slots")
+    for slot in sorted(rendered_slots):
+        sprite = textures.get(slot)
+        if not isinstance(sprite, str) or sprite.startswith("#"):
+            raise AssertionError(
+                f"{owner}: translucent texture slot {slot!r} must resolve directly, "
+                f"found {sprite!r}")
+        textures[slot] = translucent_texture(sprite)
+    return model
+
+
 def placed_drink_model(
     block_id: str,
     model: tuple[str, int, int, int, bool],
@@ -2084,15 +2129,17 @@ def create_pendant_lamp_models() -> None:
     target_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/block/deco"
     for block_id in sorted(PENDANT_LAMPS):
         for half in ("top", "bottom"):
-            model = read_json(source_root / block_id / f"{half}.json")
+            owner = f"{block_id}/{half}"
+            model = migrate_translucent_model(
+                read_json(source_root / block_id / f"{half}.json"), owner)
             textures = model.get("textures")
             if not isinstance(textures, dict):
-                raise AssertionError(f"{block_id}/{half}: missing model textures")
+                raise AssertionError(f"{owner}: missing model textures")
             particle = textures.get("particle")
             normalized = LEGACY_MODEL_TEXTURE_RENAMES.get(particle, particle)
             if normalized != "minecraft:block/iron_chain":
                 raise AssertionError(
-                    f"{block_id}/{half}: unexpected particle texture {particle!r}")
+                    f"{owner}: unexpected particle texture {particle!r}")
             textures["particle"] = normalized
             write_json(target_root / block_id / f"{half}.json", model)
 
@@ -2637,8 +2684,10 @@ def create_pressing_fluid_models() -> None:
         texture = f"{NAMESPACE}:block/{fluid}_still"
         model = {
             "ambientocclusion": False,
-            "render_type": "translucent",
-            "textures": {"fluid": texture, "particle": texture},
+            "textures": {
+                "fluid": translucent_texture(texture),
+                "particle": texture,
+            },
             "elements": [{
                 # RenderUtils.renderFluid(..., 12, y) used a centred 12x12
                 # surface.  ItemDisplay/NONE centres model coordinates around
@@ -2665,8 +2714,10 @@ def create_barrel_fluid_models() -> None:
             face["tintindex"] = 0
         model = {
             "ambientocclusion": False,
-            "render_type": "translucent",
-            "textures": {"fluid": texture, "particle": texture},
+            "textures": {
+                "fluid": translucent_texture(texture),
+                "particle": texture,
+            },
             "elements": [{
                 "from": [0, 7.99, 0],
                 "to": [16, 8.01, 16],
