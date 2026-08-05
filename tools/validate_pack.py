@@ -2356,16 +2356,20 @@ def validate() -> dict[str, int]:
     if "viewer.sendPotionEffectChange" not in effect_service_source:
         raise AssertionError("Vision must use Paper's per-viewer effect packet")
     for tipsy_packet_token in (
-            "private final Set<UUID> privateTipsyVisual",
+            "private final Map<UUID, Integer> privateTipsyRemaining",
             "syncPrivateTipsyVisual(player, effects)",
             "player.sendPotionEffectChange(player, new PotionEffect(",
-            "nausea, PotionEffect.INFINITE_DURATION",
             "player.sendPotionEffectChangeRemove(player, type)",
             "restorePrivateTipsyVisual(player)"):
         if tipsy_packet_token not in effect_service_source:
             raise AssertionError(
                 "Slightly-tipsy must retain its viewer-only client visual; "
                 f"missing {tipsy_packet_token}")
+    if "nausea, PotionEffect.INFINITE_DURATION" in effect_service_source:
+        raise AssertionError(
+            "Slightly-tipsy nausea proxy must carry the remaining tipsy "
+            "duration, not an infinite effect: a missed restore would leave "
+            "permanent nausea on the player")
     if "player.addPotionEffect(new PotionEffect(nausea" in effect_service_source:
         raise AssertionError(
             "Slightly-tipsy must not add a real server-side nausea effect")
