@@ -118,6 +118,7 @@ public final class EffectService implements Listener {
     private final Map<UUID, BossBar> effectHudBars = new HashMap<>();
     private final Map<UUID, String> effectHudLines = new HashMap<>();
     private final Set<UUID> privateTipsyVisual = new HashSet<>();
+    private final Map<UUID, Integer> privateTipsyRemaining = new HashMap<>();
     private final Map<UUID, Map<UUID, Long>> visionPacketExpiry = new HashMap<>();
     private final Map<UUID, Set<UUID>> upsideDownPacketTargets = new HashMap<>();
     private final Set<UUID> stealthHidden = new HashSet<>();
@@ -208,6 +209,7 @@ public final class EffectService implements Listener {
         effectHudBars.clear();
         effectHudLines.clear();
         privateTipsyVisual.clear();
+        privateTipsyRemaining.clear();
         for (UUID uuid : new ArrayList<>(stealthHidden)) {
             if (Bukkit.getEntity(uuid) instanceof LivingEntity living) {
                 living.setInvisible(false);
@@ -346,6 +348,7 @@ public final class EffectService implements Listener {
         hideEffectHud(event.getPlayer());
         restoreStealthVisibility(event.getPlayer());
         privateTipsyVisual.remove(event.getPlayer().getUniqueId());
+        privateTipsyRemaining.remove(event.getPlayer().getUniqueId());
         visionPacketExpiry.remove(event.getPlayer().getUniqueId());
         upsideDownPacketTargets.remove(event.getPlayer().getUniqueId());
         effectParticleDataCache.remove(event.getPlayer().getUniqueId());
@@ -1613,19 +1616,35 @@ public final class EffectService implements Listener {
         UUID uuid = player.getUniqueId();
         if (tipsy == null || tipsy.remainingTicks() <= 0) {
             if (privateTipsyVisual.remove(uuid)) {
+                privateTipsyRemaining.remove(uuid);
                 restorePotionEffectView(player, nausea, realNausea);
             }
             return;
         }
         if (realNausea != null) {
+            // A genuine vanilla nausea is present: never hide it behind the
+            // tipsy proxy, and clear any previously sent proxy so the real
+            // effect is shown with its own remaining duration.
             if (privateTipsyVisual.remove(uuid)) {
+                privateTipsyRemaining.remove(uuid);
                 player.sendPotionEffectChange(player, realNausea);
             }
             return;
         }
+        // Mirror the remaining tipsy duration instead of an infinite effect:
+        // the client expires the proxy by itself, so a missed restore (logout
+        // mid-drink, world change, respawn) can never leave nausea forever.
+        int remaining = Math.max(1, tipsy.remainingTicks());
         if (privateTipsyVisual.add(uuid)) {
+            privateTipsyRemaining.put(uuid, remaining);
             player.sendPotionEffectChange(player, new PotionEffect(
-                    nausea, PotionEffect.INFINITE_DURATION, 0, false, false, false));
+                    nausea, remaining, 0, false, false, false));
+        } else if (privateTipsyRemaining.getOrDefault(uuid, -1) != remaining) {
+            // The proxy is not part of the player's real effect collection,
+            // so refresh it only when the remaining duration actually changed.
+            privateTipsyRemaining.put(uuid, remaining);
+            player.sendPotionEffectChange(player, new PotionEffect(
+                    nausea, remaining, 0, false, false, false));
         }
     }
 
@@ -1634,6 +1653,7 @@ public final class EffectService implements Listener {
         if (nausea == null || !privateTipsyVisual.remove(player.getUniqueId())) {
             return;
         }
+        privateTipsyRemaining.remove(player.getUniqueId());
         restorePotionEffectView(player, nausea, player.getPotionEffect(nausea));
     }
 
