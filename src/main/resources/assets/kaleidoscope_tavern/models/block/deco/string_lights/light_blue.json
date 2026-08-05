@@ -1,7 +1,7 @@
 {
 	"format_version": "1.21.6",
 	"credit": "Made with Blockbench",
-	"render_type": "cutout",
+	"render_type": "translucent",
 	"textures": {
 		"0": "kaleidoscope_tavern:block/deco/string_lights/light_blue",
 		"particle": "kaleidoscope_tavern:block/deco/string_lights/light_blue"
