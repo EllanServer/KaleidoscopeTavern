@@ -1,6 +1,7 @@
 {
 	"format_version": "1.21.6",
 	"credit": "Made with Blockbench",
+	"_comment": "为何此模型无法同时实现[半透明外壳 + 内部发光小方块可见]：CE 家具经 item_display 实体渲染，走物品模型管道；26.1+ 的 force_translucent 纹理描述符与 per-sprite 渲染通道拆分仅对方块模型生效，对物品模型无效。物品管道中整个模型落入单个 translucent 通道：外壳半透明面先绘制并写深度，内部不透明 core 元素被深度测试剔除，故在掉落物/放置(世界)中不可见；GUI 不写深度、按序绘制，所以物品栏正常。已尝试：元素重排(本分支 b49b51a)、单纹理烘焙(cdae9ec)，均无法在保留半透明外壳的同时显示内部立体小方块；将外壳 alpha 二值化 + cutout 可显示但失去半透明(986425a，后回滚)。对应 Mojira：MC-306624 (26.1 半透明几何不可见，官方确认，26.1 Pre-Release 1 修复) —— 同为 translucent 深度导致的不可见缺陷。",
 	"textures": {
 		"0": {
 			"sprite": "kaleidoscope_tavern:block/deco/string_lights/light_blue",
