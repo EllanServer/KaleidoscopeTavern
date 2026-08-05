@@ -218,7 +218,7 @@ public final class TapService implements TapBlockBehavior.Handler {
             return false;
         }
         return stations.transferTapOutput(plan.barrel(), player,
-                output -> replaceBottle(plan.bottle(), plan.destination(), output));
+                output -> replaceBottle(plan.bottle(), plan.destination(), output, null));
     }
 
     private boolean replaceBottle(BottleCarrier bottle, Block destination, String resultId, Player player) {
