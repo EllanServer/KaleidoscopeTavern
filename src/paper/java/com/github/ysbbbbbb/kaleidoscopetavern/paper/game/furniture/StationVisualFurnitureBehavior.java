@@ -312,6 +312,11 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
         private Object viewRangePacket(int index, Player player) {
             List<Object> metadata = new ArrayList<>(1);
+            // ViewRange 只在首次 show / 新增实体时随玩家当前的
+            // displayEntityViewDistance() 一起烘焙发送，后续差量刷新不再重发。
+            // 这与 CraftEngine 原生元素（ItemDisplayFurnitureElementConfig 等）
+            // 的行为一致：setDisplayEntityViewDistanceScale 只更新字段与 PDC，
+            // 不会统一重发已存在实体的 ViewRange，玩家改设置后需重新 show 才生效。
             DisplayData.ViewRange.addEntityDataIfNotDefaultValue(
                     (float) (viewRange * player.displayEntityViewDistance()), metadata);
             return metadata.isEmpty() ? null
