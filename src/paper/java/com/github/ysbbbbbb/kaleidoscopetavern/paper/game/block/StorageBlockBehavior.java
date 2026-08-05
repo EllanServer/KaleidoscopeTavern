@@ -172,7 +172,13 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         if (controller == null) {
             return InteractionResult.PASS;
         }
-        int slot = clickedSlot(context, state.get(facingProperty));
+        Direction facing;
+        try {
+            facing = state.get(facingProperty);
+        } catch (IllegalArgumentException e) {
+            return InteractionResult.FAIL;
+        }
+        int slot = clickedSlot(context, facing);
         if (slot < 0 || slot >= slots) {
             return InteractionResult.FAIL;
         }
@@ -194,7 +200,15 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
 
     private void handlePower(Object level, Object minecraftPos, ImmutableBlockState state) {
         boolean powered = SignalGetterProxy.INSTANCE.hasNeighborSignal(level, minecraftPos);
-        boolean wasPowered = state.get(poweredProperty);
+        boolean wasPowered;
+        try {
+            wasPowered = state.get(poweredProperty);
+        } catch (IllegalArgumentException e) {
+            // The custom state surfaced from neighborChanged may carry an
+            // incomplete property map; skip redstone handling rather than
+            // failing the whole block update.
+            return;
+        }
         if (powered == wasPowered) {
             return;
         }
@@ -478,8 +492,16 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         @Override
         public void preBlockStateChange(ImmutableBlockState newState) {
             ImmutableBlockState oldState = blockEntity.blockState;
-            Direction oldFacing = oldState.get(behavior.facingProperty);
-            Direction newFacing = newState.get(behavior.facingProperty);
+            Direction oldFacing;
+            Direction newFacing;
+            try {
+                oldFacing = oldState.get(behavior.facingProperty);
+                newFacing = newState.get(behavior.facingProperty);
+            } catch (IllegalArgumentException e) {
+                // The incoming state may lack the facing property; the visual
+                // arrangement cannot be recomputed, so keep the previous one.
+                return;
+            }
             boolean connectionChanged = behavior.positionProperty != null
                     && !Objects.equals(
                     oldState.get(behavior.positionProperty),

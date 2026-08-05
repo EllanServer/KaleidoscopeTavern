@@ -1,9 +1,11 @@
 {
   "format_version": "1.21.6",
   "credit": "Made with Blockbench",
-  "render_type": "translucent",
   "textures": {
-    "2": "kaleidoscope_tavern:block/deco/yellow_pendant_lamp",
+    "2": {
+      "sprite": "kaleidoscope_tavern:block/deco/yellow_pendant_lamp",
+      "force_translucent": true
+    },
     "particle": "minecraft:block/iron_chain"
   },
   "elements": [

@@ -42,6 +42,18 @@ The build's JAR audit rejects embedded classes from these APIs.
 - License: GNU General Public License v3.0 (GPL-3.0)
 - Distribution: not bundled; installed separately when its integration is used
 
+## Design reference only
+
+### CustomFishing
+
+- Feature studied: bitmap-font bars, pointer layering, and offset glyphs used by
+  its accurate-click fishing games
+- Project: https://github.com/Xiao-MoMi/Custom-Fishing
+- License: GNU General Public License v3.0 (GPL-3.0)
+- Distribution: neither its classes nor its resources are bundled; the shaker
+  HUD is an independent implementation using Kaleidoscope Tavern's archived
+  artwork, timing, and outcome rules
+
 ## Build and test tools
 
 Gradle, the Foojay toolchain resolver, JUnit, and their transitive dependencies

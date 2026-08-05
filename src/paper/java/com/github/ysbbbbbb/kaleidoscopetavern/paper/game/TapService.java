@@ -27,12 +27,22 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Optional;
 
 /** Business layer for the CE tap block's source/destination pipeline. */
 public final class TapService implements TapBlockBehavior.Handler {
     private static final String PREFIX = "kaleidoscope_tavern:";
     private static final String EMPTY_BOTTLE = PREFIX + "empty_bottle";
+    // SIMPLE_BOTTLES have no CE item definition; they are placed from vanilla
+    // items.  Map furniture id -> vanilla material for tap output replacement.
+    private static final Map<String, Material> VANILLA_BOTTLE_MATERIALS = Map.of(
+            PREFIX + "water_bottle", Material.POTION,
+            PREFIX + "honey_bottle", Material.HONEY_BOTTLE,
+            PREFIX + "dragon_breath_bottle", Material.DRAGON_BREATH,
+            PREFIX + "potion_bottle", Material.POTION,
+            PREFIX + "xp_bottle", Material.EXPERIENCE_BOTTLE
+    );
     private final JavaPlugin plugin;
     private final StationService stations;
     private final ItemService items;
@@ -208,35 +218,41 @@ public final class TapService implements TapBlockBehavior.Handler {
             return false;
         }
         return stations.transferTapOutput(plan.barrel(), player,
-                output -> replaceBottle(plan.bottle(), plan.destination(), output));
+                output -> replaceBottle(plan.bottle(), plan.destination(), items.id(output), output));
     }
 
     private boolean replaceBottle(BottleCarrier bottle, Block destination, String resultId, Player player) {
         Optional<ItemStack> result = items.build(resultId, player);
-        return result.isPresent() && replaceBottle(bottle, destination, result.get());
+        if (result.isEmpty()) {
+            // SIMPLE_BOTTLES have no CE item definition; build from vanilla material.
+            Material material = VANILLA_BOTTLE_MATERIALS.get(resultId);
+            if (material != null) {
+                result = Optional.of(new ItemStack(material));
+            }
+        }
+        return result.isPresent() && replaceBottle(bottle, destination, resultId, result.get());
     }
 
-    private boolean replaceBottle(BottleCarrier bottle, Block destination, ItemStack result) {
+    private boolean replaceBottle(BottleCarrier bottle, Block destination, String furnitureId, ItemStack result) {
         if (bottle == null) {
             return false;
         }
         if (bottle.furniture() != null) {
-            return replacePlacedBottle(bottle.furniture(), result);
+            return replacePlacedBottle(bottle.furniture(), furnitureId, result);
         }
-        return replaceDroppedBottle(bottle.droppedItem(), destination, result);
+        return replaceDroppedBottle(bottle.droppedItem(), destination, furnitureId, result);
     }
 
-    private boolean replacePlacedBottle(BukkitFurniture bottle, ItemStack result) {
+    private boolean replacePlacedBottle(BukkitFurniture bottle, String furnitureId, ItemStack result) {
         if (bottle == null || !bottle.isValid()) {
             return false;
         }
-        String resultId = items.id(result);
-        if (CraftEngineFurniture.byId(Key.of(resultId)) == null) {
+        if (CraftEngineFurniture.byId(Key.of(furnitureId)) == null) {
             return false;
         }
         Location location = bottle.location().clone();
         CraftEngineFurniture.remove(bottle, false, false);
-        BukkitFurniture replacement = CraftEngineFurniture.place(location, Key.of(resultId), "ground", false);
+        BukkitFurniture replacement = CraftEngineFurniture.place(location, Key.of(furnitureId), "ground", false);
         if (replacement == null) {
             CraftEngineFurniture.place(location, Key.of(EMPTY_BOTTLE), "ground", false);
             return false;
@@ -247,7 +263,8 @@ public final class TapService implements TapBlockBehavior.Handler {
         return true;
     }
 
-    private boolean replaceDroppedBottle(org.bukkit.entity.Item bottle, Block destination, ItemStack result) {
+    private boolean replaceDroppedBottle(org.bukkit.entity.Item bottle, Block destination,
+                                         String furnitureId, ItemStack result) {
         if (bottle == null || !bottle.isValid() || bottle.getItemStack().isEmpty()
                 || !items.id(bottle.getItemStack()).equals(EMPTY_BOTTLE)) {
             return false;
@@ -255,16 +272,16 @@ public final class TapService implements TapBlockBehavior.Handler {
 
         ItemStack source = result.clone();
         source.setAmount(1);
-        Key furnitureId = Key.of(items.id(source));
+        Key furnitureKey = Key.of(furnitureId);
         boolean mayPlace = destination.getType() == Material.AIR
-                && CraftEngineFurniture.byId(furnitureId) != null;
+                && CraftEngineFurniture.byId(furnitureKey) != null;
 
         consumeDroppedBottle(bottle);
         if (mayPlace) {
             Location location = destination.getLocation().add(0.5, 0, 0.5);
             location.setPitch(0F);
             location.setYaw(0F);
-            BukkitFurniture replacement = CraftEngineFurniture.place(location, furnitureId, "ground", false);
+            BukkitFurniture replacement = CraftEngineFurniture.place(location, furnitureKey, "ground", false);
             if (replacement != null) {
                 try {
                     initializeBottle(replacement, source);

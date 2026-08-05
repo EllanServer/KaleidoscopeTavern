@@ -1,0 +1,54 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        "": 0.5,
+        "": -0.5,
+        "": 1.0,
+        "": -1.0,
+        "": 2.0,
+        "": -2.0,
+        "": 4.0,
+        "": -4.0,
+        "": 8.0,
+        "": -8.0,
+        "": 16.0,
+        "": -16.0,
+        "": 32.0,
+        "": -32.0,
+        "": 64.0,
+        "": -64.0,
+        "": 128.0,
+        "": -128.0
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/shaker/bar.png",
+      "ascent": 0,
+      "height": 9,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:font/shaker/pointer.png",
+      "ascent": 3,
+      "height": 7,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "kaleidoscope_tavern:gui/rhombus.png",
+      "ascent": 3,
+      "height": 8,
+      "chars": [
+        ""
+      ]
+    }
+  ]
+}

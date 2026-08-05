@@ -1,9 +1,11 @@
 {
   "format_version": "1.9.0",
   "credit": "Made with Blockbench",
-  "render_type": "cutout",
   "textures": {
-    "1": "kaleidoscope_tavern:block/mixology/brass_heart",
+    "1": {
+      "sprite": "kaleidoscope_tavern:block/mixology/brass_heart",
+      "force_translucent": true
+    },
     "particle": "block/glass"
   },
   "elements": [

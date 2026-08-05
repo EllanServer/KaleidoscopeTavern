@@ -431,6 +431,56 @@ def find_file(roots: Iterable[Path], relative: Path) -> Path | None:
     return None
 
 
+def translucent_texture(sprite: str) -> dict[str, Any]:
+    """Select Minecraft 26.1+'s translucent render pass for one texture slot."""
+    return {
+        "sprite": sprite,
+        "force_translucent": True,
+    }
+
+
+def migrate_translucent_model(model: dict[str, Any], owner: str) -> dict[str, Any]:
+    """Translate Forge's model-wide render type into vanilla texture slots.
+
+    ``render_type`` is a Forge model-loader extension and is ignored by the
+    vanilla 26.2 client.  Since 26.1, vanilla assigns render passes per texture
+    slot; an object with ``force_translucent`` preserves the source model's
+    explicit translucent pass even for opaque texels and their mipmaps.  Both
+    Forge ``cutout`` and ``translucent`` exports land here: cutout glasses and
+    liquids need the blended pass once they render as ItemDisplay furniture,
+    because the per-item alpha test would otherwise flatten their
+    semi-transparent texels into opaque ones.
+    """
+    render_type = model.pop("render_type", None)
+    if render_type not in {
+            "cutout", "minecraft:cutout", "translucent", "minecraft:translucent"}:
+        raise AssertionError(
+            f"{owner}: expected Forge cutout/translucent render_type, found {render_type!r}")
+
+    textures = model.get("textures")
+    if not isinstance(textures, dict):
+        raise AssertionError(f"{owner}: missing model textures")
+
+    rendered_slots = {
+        texture[1:]
+        for element in model.get("elements", [])
+        for face in element.get("faces", {}).values()
+        if isinstance(face, dict)
+        for texture in (face.get("texture"),)
+        if isinstance(texture, str) and texture.startswith("#")
+    }
+    if not rendered_slots:
+        raise AssertionError(f"{owner}: translucent model has no rendered texture slots")
+    for slot in sorted(rendered_slots):
+        sprite = textures.get(slot)
+        if not isinstance(sprite, str) or sprite.startswith("#"):
+            raise AssertionError(
+                f"{owner}: translucent texture slot {slot!r} must resolve directly, "
+                f"found {sprite!r}")
+        textures[slot] = translucent_texture(sprite)
+    return model
+
+
 def placed_drink_model(
     block_id: str,
     model: tuple[str, int, int, int, bool],
@@ -443,7 +493,10 @@ def placed_drink_model(
     the quad winding.  Its one-sided renderer consequently hides the near face
     and exposes the far face through the glass.  Forge's archived assets remain
     untouched; Paper furniture receives a private copy whose bounds are ordered
-    on every axis while retaining the exact positions, UVs and rotations.
+    on every axis while retaining the exact positions, UVs and rotations.  The
+    same copy also drops Forge's ``render_type``: the vanilla client ignores it,
+    so cutout/translucent glasses must migrate to the per-slot
+    ``force_translucent`` descriptor or they render opaque.
     """
     if block_id not in BOTTLE_AND_GLASS_ITEMS:
         return model
@@ -472,8 +525,12 @@ def placed_drink_model(
                 start[axis], end[axis] = end[axis], start[axis]
                 corrected = True
 
-    if not corrected:
+    needs_migration = "render_type" in copied
+    if not corrected and not needs_migration:
         return model
+
+    if needs_migration:
+        migrate_translucent_model(copied, resource_id)
 
     private_path = f"furniture/placed_drink/{namespace}/{resource_path}"
     write_json(
@@ -2084,15 +2141,17 @@ def create_pendant_lamp_models() -> None:
     target_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/block/deco"
     for block_id in sorted(PENDANT_LAMPS):
         for half in ("top", "bottom"):
-            model = read_json(source_root / block_id / f"{half}.json")
+            owner = f"{block_id}/{half}"
+            model = migrate_translucent_model(
+                read_json(source_root / block_id / f"{half}.json"), owner)
             textures = model.get("textures")
             if not isinstance(textures, dict):
-                raise AssertionError(f"{block_id}/{half}: missing model textures")
+                raise AssertionError(f"{owner}: missing model textures")
             particle = textures.get("particle")
             normalized = LEGACY_MODEL_TEXTURE_RENAMES.get(particle, particle)
             if normalized != "minecraft:block/iron_chain":
                 raise AssertionError(
-                    f"{block_id}/{half}: unexpected particle texture {particle!r}")
+                    f"{owner}: unexpected particle texture {particle!r}")
             textures["particle"] = normalized
             write_json(target_root / block_id / f"{half}.json", model)
 
@@ -2202,6 +2261,76 @@ def create_custom_effect_hud_assets() -> None:
             })
     write_json(
         ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/font/custom_effects_hud.json",
+        {"providers": providers},
+    )
+
+
+def create_shaker_hud_assets() -> None:
+    """Convert the archived shaker overlay into title-font HUD glyphs.
+
+    Minecraft renders subtitle glyphs at twice their bitmap-font size.  The
+    source overlay's 181x17 bar and 11x13 pointer are therefore reduced by
+    half with nearest-neighbour sampling; their final in-game geometry remains
+    the same while the font advances can layer the pointer over the bar.
+    """
+    try:
+        from PIL import Image
+    except ImportError as error:  # pragma: no cover - developer machine setup
+        raise AssertionError(
+            "Pillow is required to regenerate the shaker HUD assets (pip install pillow)"
+        ) from error
+
+    source_path = MAIN_RESOURCES / f"assets/{NAMESPACE}/textures/gui/shaker.png"
+    with Image.open(source_path) as source:
+        overlay = source.convert("RGBA")
+    if overlay.size != (256, 256):
+        raise AssertionError(
+            f"shaker overlay: expected a 256x256 texture, got {overlay.size}"
+        )
+
+    texture_root = (
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/textures/font/shaker"
+    )
+    texture_root.mkdir(parents=True, exist_ok=True)
+    overlay.crop((0, 0, 181, 17)).resize(
+        (90, 9), Image.Resampling.NEAREST
+    ).save(texture_root / "bar.png")
+    overlay.crop((181, 0, 192, 13)).resize(
+        (6, 7), Image.Resampling.NEAREST
+    ).save(texture_root / "pointer.png")
+
+    # Space advances are expressed in font units; subtitle rendering doubles
+    # them on screen.  Half-unit entries retain every one-pixel source offset.
+    advances: dict[str, float] = {}
+    for index, power in enumerate(HUD_OFFSET_POWERS):
+        advances[chr(0xE410 + index)] = power / 2
+        advances[chr(0xE420 + index)] = -power / 2
+    providers: list[dict[str, Any]] = [{"type": "space", "advances": advances}]
+    providers.extend((
+        {
+            "type": "bitmap",
+            "file": f"{NAMESPACE}:font/shaker/bar.png",
+            "ascent": 0,
+            "height": 9,
+            "chars": [chr(0xE400)],
+        },
+        {
+            "type": "bitmap",
+            "file": f"{NAMESPACE}:font/shaker/pointer.png",
+            "ascent": 3,
+            "height": 7,
+            "chars": [chr(0xE401)],
+        },
+        {
+            "type": "bitmap",
+            "file": f"{NAMESPACE}:gui/rhombus.png",
+            "ascent": 3,
+            "height": 8,
+            "chars": [chr(0xE402)],
+        },
+    ))
+    write_json(
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/font/shaker_hud.json",
         {"providers": providers},
     )
 
@@ -2637,8 +2766,10 @@ def create_pressing_fluid_models() -> None:
         texture = f"{NAMESPACE}:block/{fluid}_still"
         model = {
             "ambientocclusion": False,
-            "render_type": "translucent",
-            "textures": {"fluid": texture, "particle": texture},
+            "textures": {
+                "fluid": translucent_texture(texture),
+                "particle": texture,
+            },
             "elements": [{
                 # RenderUtils.renderFluid(..., 12, y) used a centred 12x12
                 # surface.  ItemDisplay/NONE centres model coordinates around
@@ -2665,8 +2796,10 @@ def create_barrel_fluid_models() -> None:
             face["tintindex"] = 0
         model = {
             "ambientocclusion": False,
-            "render_type": "translucent",
-            "textures": {"fluid": texture, "particle": texture},
+            "textures": {
+                "fluid": translucent_texture(texture),
+                "particle": texture,
+            },
             "elements": [{
                 "from": [0, 7.99, 0],
                 "to": [16, 8.01, 16],
@@ -2698,13 +2831,18 @@ def create_bar_stool_body_models() -> None:
         if key not in {"display", "gui_light"}
     }
     body["elements"] = deepcopy(source["elements"][3:])
+    # Forge's cutout render_type is ignored by the vanilla client.  The
+    # upholstered body renders as ItemDisplay furniture, so the concrete child
+    # models below carry the 26.1+ force_translucent descriptor on their
+    # texture slot instead.
+    body.pop("render_type", None)
     write_json(model_root / "bar_stool_body_base.json", body)
     for color in BAR_STOOL_COLORS:
         write_json(model_root / "bar_stool_body" / f"{color}.json", {
             "parent": f"{NAMESPACE}:furniture/bar_stool_body_base",
             "textures": {
                 "particle": f"minecraft:block/{color}_wool",
-                "texture": f"{NAMESPACE}:block/deco/bar_stool/{color}",
+                "texture": translucent_texture(f"{NAMESPACE}:block/deco/bar_stool/{color}"),
             },
         })
 
@@ -3612,12 +3750,13 @@ def build_items(
         if item_id in furniture_ids:
             if item_id == "shaker":
                 # Right-click air is owned by CE's existing item-use listener;
-                # the following sneak gate delegates block placement to CE.
+                # native furniture_item then owns ordinary block placement.
                 # Paper only observes release to finish the mix.
                 behaviors.append({"type": f"{NAMESPACE}:shaker_item"})
             furniture_behavior: dict[str, Any] = {
-                "type": (f"{NAMESPACE}:sneak_place_drink"
-                         if sneak_placeable_vessel else "furniture_item"),
+                "type": ("furniture_item" if item_id == "shaker"
+                         else (f"{NAMESPACE}:sneak_place_drink"
+                               if sneak_placeable_vessel else "furniture_item")),
                 "furniture": f"{NAMESPACE}:{item_id}",
                 "rules": furniture_placement[item_id],
             }
@@ -3794,6 +3933,7 @@ def main() -> None:
     create_pendant_lamp_models()
     create_custom_effect_font()
     create_custom_effect_hud_assets()
+    create_shaker_hud_assets()
     create_molotov_charging_model()
     create_worldgen_features()
     create_bar_stool_body_models()

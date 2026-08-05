@@ -4873,7 +4873,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/molotov"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/molotov"
       },
       "settings": {
         "tags": [
@@ -5098,7 +5098,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/potion_bottle",
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/potion_bottle",
         "tints": [
           {
             "type": "minecraft:potion",
@@ -5134,7 +5134,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/wine/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/wine/count1"
       },
       "settings": {
         "tags": [
@@ -5149,7 +5149,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/wine/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/wine/count2"
       },
       "settings": {
         "tags": [
@@ -5164,7 +5164,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/wine/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/wine/count3"
       },
       "settings": {
         "tags": [
@@ -5179,7 +5179,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/wine/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/wine/count4"
       },
       "settings": {
         "tags": [
@@ -5194,7 +5194,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/champagne/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/champagne/count1"
       },
       "settings": {
         "tags": [
@@ -5209,7 +5209,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/champagne/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/champagne/count2"
       },
       "settings": {
         "tags": [
@@ -5224,7 +5224,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/champagne/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/champagne/count3"
       },
       "settings": {
         "tags": [
@@ -5239,7 +5239,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/champagne/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/champagne/count4"
       },
       "settings": {
         "tags": [
@@ -5254,7 +5254,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/vodka/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/vodka/count1"
       },
       "settings": {
         "tags": [
@@ -5269,7 +5269,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/vodka/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/vodka/count2"
       },
       "settings": {
         "tags": [
@@ -5284,7 +5284,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/vodka/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/vodka/count3"
       },
       "settings": {
         "tags": [
@@ -5299,7 +5299,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/vodka/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/vodka/count4"
       },
       "settings": {
         "tags": [
@@ -5314,7 +5314,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/brandy/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/brandy/count1"
       },
       "settings": {
         "tags": [
@@ -5329,7 +5329,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/brandy/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/brandy/count2"
       },
       "settings": {
         "tags": [
@@ -5344,7 +5344,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/brandy/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/brandy/count3"
       },
       "settings": {
         "tags": [
@@ -5359,7 +5359,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/carignan/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/carignan/count1"
       },
       "settings": {
         "tags": [
@@ -5374,7 +5374,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/carignan/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/carignan/count2"
       },
       "settings": {
         "tags": [
@@ -5389,7 +5389,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/carignan/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/carignan/count3"
       },
       "settings": {
         "tags": [
@@ -5404,7 +5404,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sakura_wine/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sakura_wine/count1"
       },
       "settings": {
         "tags": [
@@ -5419,7 +5419,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sakura_wine/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sakura_wine/count2"
       },
       "settings": {
         "tags": [
@@ -5434,7 +5434,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sakura_wine/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sakura_wine/count3"
       },
       "settings": {
         "tags": [
@@ -5449,7 +5449,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sakura_wine/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sakura_wine/count4"
       },
       "settings": {
         "tags": [
@@ -5464,7 +5464,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/plum_wine/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/plum_wine/count1"
       },
       "settings": {
         "tags": [
@@ -5479,7 +5479,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/plum_wine/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/plum_wine/count2"
       },
       "settings": {
         "tags": [
@@ -5494,7 +5494,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/plum_wine/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/plum_wine/count3"
       },
       "settings": {
         "tags": [
@@ -5509,7 +5509,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/plum_wine/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/plum_wine/count4"
       },
       "settings": {
         "tags": [
@@ -5524,7 +5524,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/whiskey/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/whiskey/count1"
       },
       "settings": {
         "tags": [
@@ -5539,7 +5539,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/whiskey/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/whiskey/count2"
       },
       "settings": {
         "tags": [
@@ -5554,7 +5554,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/whiskey/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/whiskey/count3"
       },
       "settings": {
         "tags": [
@@ -5569,7 +5569,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/whiskey/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/whiskey/count4"
       },
       "settings": {
         "tags": [
@@ -5584,7 +5584,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/ice_wine/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/ice_wine/count1"
       },
       "settings": {
         "tags": [
@@ -5599,7 +5599,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/ice_wine/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/ice_wine/count2"
       },
       "settings": {
         "tags": [
@@ -5614,7 +5614,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/ice_wine/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/ice_wine/count3"
       },
       "settings": {
         "tags": [
@@ -5629,7 +5629,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/ice_wine/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/ice_wine/count4"
       },
       "settings": {
         "tags": [
@@ -5644,7 +5644,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/polaris_sweet_white/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/polaris_sweet_white/count1"
       },
       "settings": {
         "tags": [
@@ -5659,7 +5659,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/polaris_sweet_white/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/polaris_sweet_white/count2"
       },
       "settings": {
         "tags": [
@@ -5674,7 +5674,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/polaris_sweet_white/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/polaris_sweet_white/count3"
       },
       "settings": {
         "tags": [
@@ -5689,7 +5689,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/polaris_sweet_white/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/polaris_sweet_white/count4"
       },
       "settings": {
         "tags": [
@@ -5704,7 +5704,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/honey_wine/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/honey_wine/count1"
       },
       "settings": {
         "tags": [
@@ -5719,7 +5719,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/honey_wine/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/honey_wine/count2"
       },
       "settings": {
         "tags": [
@@ -5734,7 +5734,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/honey_wine/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/honey_wine/count3"
       },
       "settings": {
         "tags": [
@@ -5749,7 +5749,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/honey_wine/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/honey_wine/count4"
       },
       "settings": {
         "tags": [
@@ -5764,7 +5764,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/red_queen/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/red_queen/count1"
       },
       "settings": {
         "tags": [
@@ -5779,7 +5779,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/red_queen/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/red_queen/count2"
       },
       "settings": {
         "tags": [
@@ -5794,7 +5794,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/red_queen/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/red_queen/count3"
       },
       "settings": {
         "tags": [
@@ -5809,7 +5809,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/red_queen/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/red_queen/count4"
       },
       "settings": {
         "tags": [
@@ -5824,7 +5824,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/miners_star/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/miners_star/count1"
       },
       "settings": {
         "tags": [
@@ -5839,7 +5839,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/miners_star/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/miners_star/count2"
       },
       "settings": {
         "tags": [
@@ -5854,7 +5854,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/miners_star/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/miners_star/count3"
       },
       "settings": {
         "tags": [
@@ -5869,7 +5869,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/miners_star/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/miners_star/count4"
       },
       "settings": {
         "tags": [
@@ -5884,7 +5884,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/rum/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/rum/count1"
       },
       "settings": {
         "tags": [
@@ -5899,7 +5899,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/rum/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/rum/count2"
       },
       "settings": {
         "tags": [
@@ -5914,7 +5914,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/rum/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/rum/count3"
       },
       "settings": {
         "tags": [
@@ -5929,7 +5929,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/rum/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/rum/count4"
       },
       "settings": {
         "tags": [
@@ -5944,7 +5944,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/riesling_dry_white/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/riesling_dry_white/count1"
       },
       "settings": {
         "tags": [
@@ -5959,7 +5959,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/riesling_dry_white/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/riesling_dry_white/count2"
       },
       "settings": {
         "tags": [
@@ -5974,7 +5974,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/riesling_dry_white/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/riesling_dry_white/count3"
       },
       "settings": {
         "tags": [
@@ -5989,7 +5989,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/riesling_dry_white/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/riesling_dry_white/count4"
       },
       "settings": {
         "tags": [
@@ -6004,7 +6004,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sunset_glow/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sunset_glow/count1"
       },
       "settings": {
         "tags": [
@@ -6019,7 +6019,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sunset_glow/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sunset_glow/count2"
       },
       "settings": {
         "tags": [
@@ -6034,7 +6034,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sunset_glow/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sunset_glow/count3"
       },
       "settings": {
         "tags": [
@@ -6049,7 +6049,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/madame_shexiang/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/madame_shexiang/count1"
       },
       "settings": {
         "tags": [
@@ -6064,7 +6064,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/madame_shexiang/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/madame_shexiang/count2"
       },
       "settings": {
         "tags": [
@@ -6079,7 +6079,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/madame_shexiang/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/madame_shexiang/count3"
       },
       "settings": {
         "tags": [
@@ -6094,7 +6094,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/madame_shexiang/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/madame_shexiang/count4"
       },
       "settings": {
         "tags": [
@@ -6109,7 +6109,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sweet_berry_wine/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sweet_berry_wine/count1"
       },
       "settings": {
         "tags": [
@@ -6124,7 +6124,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sweet_berry_wine/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sweet_berry_wine/count2"
       },
       "settings": {
         "tags": [
@@ -6139,7 +6139,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sweet_berry_wine/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sweet_berry_wine/count3"
       },
       "settings": {
         "tags": [
@@ -6154,7 +6154,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sweet_berry_wine/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sweet_berry_wine/count4"
       },
       "settings": {
         "tags": [
@@ -6169,7 +6169,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sherry/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sherry/count1"
       },
       "settings": {
         "tags": [
@@ -6184,7 +6184,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sherry/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sherry/count2"
       },
       "settings": {
         "tags": [
@@ -6199,7 +6199,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sherry/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sherry/count3"
       },
       "settings": {
         "tags": [
@@ -6214,7 +6214,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sherry/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sherry/count4"
       },
       "settings": {
         "tags": [
@@ -6229,7 +6229,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/mother_snow/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/mother_snow/count1"
       },
       "settings": {
         "tags": [
@@ -6244,7 +6244,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/mother_snow/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/mother_snow/count2"
       },
       "settings": {
         "tags": [
@@ -6259,7 +6259,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/mother_snow/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/mother_snow/count3"
       },
       "settings": {
         "tags": [
@@ -6274,7 +6274,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/mother_snow/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/mother_snow/count4"
       },
       "settings": {
         "tags": [
@@ -6409,7 +6409,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sauvignon_blanc_dry_white/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sauvignon_blanc_dry_white/count1"
       },
       "settings": {
         "tags": [
@@ -6424,7 +6424,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sauvignon_blanc_dry_white/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sauvignon_blanc_dry_white/count2"
       },
       "settings": {
         "tags": [
@@ -6439,7 +6439,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sauvignon_blanc_dry_white/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sauvignon_blanc_dry_white/count3"
       },
       "settings": {
         "tags": [
@@ -6454,7 +6454,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sauvignon_blanc_dry_white/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sauvignon_blanc_dry_white/count4"
       },
       "settings": {
         "tags": [
@@ -6469,7 +6469,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/vinegar/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/vinegar/count1"
       },
       "settings": {
         "tags": [
@@ -6484,7 +6484,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/vinegar/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/vinegar/count2"
       },
       "settings": {
         "tags": [
@@ -6499,7 +6499,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/vinegar/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/vinegar/count3"
       },
       "settings": {
         "tags": [
@@ -6514,7 +6514,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/vinegar/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/vinegar/count4"
       },
       "settings": {
         "tags": [
@@ -6529,7 +6529,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/watermelon_juice/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/watermelon_juice/count1"
       },
       "settings": {
         "tags": [
@@ -6544,7 +6544,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/watermelon_juice/count2"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/watermelon_juice/count2"
       },
       "settings": {
         "tags": [
@@ -6559,7 +6559,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/watermelon_juice/count3"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/watermelon_juice/count3"
       },
       "settings": {
         "tags": [
@@ -6574,7 +6574,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/watermelon_juice/count4"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/watermelon_juice/count4"
       },
       "settings": {
         "tags": [
@@ -6589,7 +6589,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/brandy/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/brandy/count1"
       },
       "settings": {
         "tags": [
@@ -6604,7 +6604,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/carignan/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/carignan/count1"
       },
       "settings": {
         "tags": [
@@ -6619,7 +6619,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/champagne/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/champagne/count1"
       },
       "settings": {
         "tags": [
@@ -6709,7 +6709,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/honey_wine/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/honey_wine/count1"
       },
       "settings": {
         "tags": [
@@ -6724,7 +6724,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/ice_wine/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/ice_wine/count1"
       },
       "settings": {
         "tags": [
@@ -6754,7 +6754,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/madame_shexiang/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/madame_shexiang/count1"
       },
       "settings": {
         "tags": [
@@ -6769,7 +6769,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/miners_star/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/miners_star/count1"
       },
       "settings": {
         "tags": [
@@ -6784,7 +6784,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/molotov"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/molotov"
       },
       "settings": {
         "tags": [
@@ -6799,7 +6799,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/mother_snow/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/mother_snow/count1"
       },
       "settings": {
         "tags": [
@@ -6814,7 +6814,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/plum_wine/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/plum_wine/count1"
       },
       "settings": {
         "tags": [
@@ -6829,7 +6829,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/polaris_sweet_white/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/polaris_sweet_white/count1"
       },
       "settings": {
         "tags": [
@@ -6844,7 +6844,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/potion_bottle",
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/potion_bottle",
         "tints": [
           {
             "type": "minecraft:potion",
@@ -6865,7 +6865,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/red_queen/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/red_queen/count1"
       },
       "settings": {
         "tags": [
@@ -6880,7 +6880,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/riesling_dry_white/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/riesling_dry_white/count1"
       },
       "settings": {
         "tags": [
@@ -6895,7 +6895,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/rum/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/rum/count1"
       },
       "settings": {
         "tags": [
@@ -6910,7 +6910,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sakura_wine/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sakura_wine/count1"
       },
       "settings": {
         "tags": [
@@ -6925,7 +6925,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sauvignon_blanc_dry_white/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sauvignon_blanc_dry_white/count1"
       },
       "settings": {
         "tags": [
@@ -6940,7 +6940,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sherry/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sherry/count1"
       },
       "settings": {
         "tags": [
@@ -6955,7 +6955,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sunset_glow/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sunset_glow/count1"
       },
       "settings": {
         "tags": [
@@ -6970,7 +6970,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/sweet_berry_wine/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/sweet_berry_wine/count1"
       },
       "settings": {
         "tags": [
@@ -6985,7 +6985,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/vinegar/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/vinegar/count1"
       },
       "settings": {
         "tags": [
@@ -7000,7 +7000,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/vodka/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/vodka/count1"
       },
       "settings": {
         "tags": [
@@ -7030,7 +7030,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/watermelon_juice/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/watermelon_juice/count1"
       },
       "settings": {
         "tags": [
@@ -7045,7 +7045,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/whiskey/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/whiskey/count1"
       },
       "settings": {
         "tags": [
@@ -7060,7 +7060,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/drink/wine/count1"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/drink/wine/count1"
       },
       "settings": {
         "tags": [

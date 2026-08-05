@@ -5,9 +5,11 @@
     32,
     32
   ],
-  "render_type": "translucent",
   "textures": {
-    "2": "kaleidoscope_tavern:block/deco/bell_pendant_lamp",
+    "2": {
+      "sprite": "kaleidoscope_tavern:block/deco/bell_pendant_lamp",
+      "force_translucent": true
+    },
     "particle": "minecraft:block/iron_chain"
   },
   "elements": [

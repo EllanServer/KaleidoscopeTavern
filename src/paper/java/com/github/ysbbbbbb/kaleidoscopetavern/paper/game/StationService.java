@@ -162,6 +162,7 @@ public final class StationService implements Listener {
         }
         falling.clear();
         recentLandings.clear();
+        portableShakers.values().forEach(use -> shakerVisuals.endMix(use.player()));
         portableShakers.clear();
         pendingVanillaBucketEmpty.clear();
     }
@@ -391,7 +392,11 @@ public final class StationService implements Listener {
         falling.remove(event.getPlayer().getUniqueId());
         stopFallingCleanupTaskIfIdle();
         recentLandings.remove(event.getPlayer().getUniqueId());
-        portableShakers.remove(event.getPlayer().getUniqueId());
+        PortableShakerUse shakerUse = portableShakers.remove(
+                event.getPlayer().getUniqueId());
+        if (shakerUse != null) {
+            shakerVisuals.endMix(event.getPlayer());
+        }
         stopPortableShakerTaskIfIdle();
         pendingVanillaBucketEmpty.remove(event.getPlayer().getUniqueId());
     }
@@ -435,10 +440,8 @@ public final class StationService implements Listener {
         }
         int ingredientCount = items.shakerIngredients(shaker).size();
         if (ingredientCount != 3) {
-            if (ingredientCount > 0) {
-                player.sendActionBar(net.kyori.adventure.text.Component.translatable(
-                        "message.kaleidoscope_tavern.shaker.amount_too_low"));
-            }
+            player.sendActionBar(net.kyori.adventure.text.Component.translatable(
+                    "message.kaleidoscope_tavern.shaker.amount_too_low"));
             return InteractionResult.SUCCESS_AND_CANCEL;
         }
 
@@ -452,6 +455,7 @@ public final class StationService implements Listener {
             portableShakers.put(
                     player.getUniqueId(), new PortableShakerUse(player, hand, 0));
             ensurePortableShakerTask();
+            shakerVisuals.beginMix(player);
             player.startUsingItem(hand);
             player.setActiveItemRemainingTime(72_000);
         });
@@ -470,6 +474,7 @@ public final class StationService implements Listener {
     }
 
     private void finishPortableShaker(Player player, EquipmentSlot hand, int ticks) {
+        shakerVisuals.endMix(player);
         ItemStack shaker = handItem(player, hand);
         if (!items.id(shaker).equals(SHAKER) || items.shakerResult(shaker) != null) {
             return;
@@ -502,9 +507,11 @@ public final class StationService implements Listener {
             if (!player.isOnline()
                     || !player.isHandRaised() || !items.id(handItem(player, use.hand())).equals(SHAKER)) {
                 iterator.remove();
+                shakerVisuals.endMix(player);
                 continue;
             }
             int ticks = use.ticks();
+            shakerVisuals.updateMix(player, ticks);
             if (ShakerSemantics.playsShakeSound(ticks)) {
                 float volume = 0.75F + ThreadLocalRandom.current().nextFloat() * 0.2F;
                 float pitch = 0.8F + ThreadLocalRandom.current().nextFloat() * 0.2F;

@@ -2,6 +2,9 @@
   "parent": "kaleidoscope_tavern:furniture/bar_stool_body_base",
   "textures": {
     "particle": "minecraft:block/blue_wool",
-    "texture": "kaleidoscope_tavern:block/deco/bar_stool/blue"
+    "texture": {
+      "sprite": "kaleidoscope_tavern:block/deco/bar_stool/blue",
+      "force_translucent": true
+    }
   }
 }

@@ -6,7 +6,10 @@
     32
   ],
   "textures": {
-    "0": "kaleidoscope_tavern:block/mixology/mystery_cocktail",
+    "0": {
+      "sprite": "kaleidoscope_tavern:block/mixology/mystery_cocktail",
+      "force_translucent": true
+    },
     "particle": "minecraft:block/glass"
   },
   "elements": [
@@ -1062,6 +1065,5 @@
         2
       ]
     }
-  },
-  "render_type": "cutout"
+  }
 }

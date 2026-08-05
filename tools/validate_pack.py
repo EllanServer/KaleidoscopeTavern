@@ -170,6 +170,21 @@ ASSET_ROOTS = (
     ROOT / "src/main/resources/assets",
 )
 OBSOLETE_VANILLA_IDS = {"minecraft:chain", "minecraft:grass"}
+PENDANT_LAMPS = {"bell_pendant_lamp", "blue_pendant_lamp", "yellow_pendant_lamp"}
+PRESS_FLUIDS = {
+    "glow_berries_juice",
+    "gold_grape_juice",
+    "grape_juice",
+    "green_grape_juice",
+    "ice_grape_juice",
+    "sweet_berries_juice",
+}
+BARREL_FLUIDS = PRESS_FLUIDS | {"water", "lava"}
+BAR_STOOL_COLORS = (
+    "black", "blue", "brown", "cyan", "gray", "green", "light_blue",
+    "light_gray", "lime", "magenta", "orange", "pink", "purple", "red",
+    "white", "yellow",
+)
 
 # Every source blockstate property is intentionally assigned to either a CE
 # representation or a named Paper runtime owner.  Comparing this manifest to
@@ -530,6 +545,47 @@ def assert_ordered_model_bounds(resource_id: str, owner: str) -> None:
                     "bounds, which exposes its back face when rendered as furniture")
 
 
+def assert_forced_translucency(
+    resource_id: str,
+    texture_slots: set[str],
+    owner: str,
+) -> None:
+    """Require the Minecraft 26.1+ texture descriptor on translucent geometry."""
+    model = asset_json(resource_id, "models", roots=(ASSET_ROOTS[0],))
+    if model is None:
+        raise AssertionError(f"{owner}: missing generated translucent model {resource_id}")
+    if "render_type" in model:
+        raise AssertionError(
+            f"{owner}: Forge render_type is ignored by the vanilla 26.2 client")
+    textures = model.get("textures")
+    if not isinstance(textures, dict):
+        raise AssertionError(f"{owner}: generated translucent model has no textures")
+    for slot in sorted(texture_slots):
+        descriptor = textures.get(slot)
+        if (not isinstance(descriptor, dict)
+                or not isinstance(descriptor.get("sprite"), str)
+                or descriptor.get("force_translucent") is not True):
+            raise AssertionError(
+                f"{owner}: texture slot {slot!r} must use a sprite descriptor with "
+                "force_translucent=true")
+
+
+def assert_no_forge_render_type(resource_id: str, owner: str) -> None:
+    """Reject any Forge ``render_type`` left on a model the vanilla client loads.
+
+    The vanilla client ignores Forge's render_type extension, so migrated
+    furniture that kept it silently renders opaque instead of cutout or
+    translucent.
+    """
+    model = asset_json(resource_id, "models")
+    if model is None:
+        raise AssertionError(f"{owner}: missing displayed model {resource_id}")
+    if "render_type" in model:
+        raise AssertionError(
+            f"{owner}: {resource_id} keeps Forge render_type, which the vanilla "
+            "26.2 client ignores and renders opaque")
+
+
 def model_references(value: Any):
     if isinstance(value, dict):
         model = value.get("model")
@@ -674,6 +730,23 @@ def validate() -> dict[str, int]:
     if len(recipes) != 114:
         raise AssertionError(f"Expected 114 crafting recipes, found {len(recipes)}")
 
+    for lamp in sorted(PENDANT_LAMPS):
+        for half in ("top", "bottom"):
+            assert_forced_translucency(
+                f"{NAMESPACE}:block/deco/{lamp}/{half}", {"2"}, f"{lamp}/{half}")
+    for fluid in sorted(PRESS_FLUIDS):
+        assert_forced_translucency(
+            f"{NAMESPACE}:furniture/pressing_fluid/{fluid}",
+            {"fluid"},
+            f"pressing_fluid/{fluid}",
+        )
+    for fluid in sorted(BARREL_FLUIDS):
+        assert_forced_translucency(
+            f"{NAMESPACE}:furniture/barrel_fluid/{fluid}",
+            {"fluid"},
+            f"barrel_fluid/{fluid}",
+        )
+
     source_item_loot = {
         "pools": [{
             "rolls": 1,
@@ -712,6 +785,13 @@ def validate() -> dict[str, int]:
             placed_drink_models[model_path] = render_id
     for model_path, owner in placed_drink_models.items():
         assert_ordered_model_bounds(model_path, owner)
+        assert_no_forge_render_type(model_path, owner)
+
+    assert_no_forge_render_type(
+        f"{NAMESPACE}:furniture/bar_stool_body_base", "bar_stool_body_base")
+    for color in BAR_STOOL_COLORS:
+        assert_no_forge_render_type(
+            f"{NAMESPACE}:furniture/bar_stool_body/{color}", f"bar_stool_body/{color}")
 
     game_package = (
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game")
@@ -1612,6 +1692,35 @@ def validate() -> dict[str, int]:
             or "registerEvents(shakerVisuals, this)" in plugin_source):
         raise AssertionError(
             "Shaker visuals are CE lifecycle-driven and must not retain an empty Bukkit listener")
+    shaker_hud_source = (
+        game_package / "ShakerHudSemantics.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            'FONT_KEY = "kaleidoscope_tavern:shaker_hud"',
+            "BAR_GLYPH = '\\uE400'",
+            "POINTER_GLYPH = '\\uE401'",
+            "INGREDIENT_GLYPH = '\\uE402'",
+            "BAR_ADVANCE_PIXELS = 182",
+            "Math.round(Math.max(0, ticks) * 1.5F)",
+            "static Component ingredientSubtitle(List<Integer> colors)"):
+        if required_token not in shaker_hud_source:
+            raise AssertionError(
+                "Shaker HUD must retain the archived overlay geometry and tintable markers; "
+                f"missing token: {required_token}")
+    for required_token in (
+            "player.getTargetEntity(5)",
+            "CraftEngineFurniture.getLoadedFurnitureByCollider(target)",
+            "CraftEngineFurniture.getLoadedFurnitureByMetaEntity(target)",
+            "items.shakerIngredients(shaker)",
+            "ShakerSemantics.ingredientColor(",
+            "ShakerHudSemantics.progressSubtitle(ticks)",
+            "ShakerHudSemantics.ingredientSubtitle(colors)",
+            "ensureIngredientHudTask()",
+            "stopIngredientHudTaskIfIdle()"):
+        if required_token not in shaker_visual_service_source:
+            raise AssertionError(
+                "Loaded shakers must drive their source-compatible progress and ingredient HUD; "
+                f"missing token: {required_token}")
     bar_stool_visual_source = (
         game_package / "BarStoolVisualService.java"
     ).read_text(encoding="utf-8-sig")
@@ -1677,13 +1786,13 @@ def validate() -> dict[str, int]:
             "Portable shaker right-click must not retain a duplicate global Paper listener")
     shaker_behaviors = items[f"{NAMESPACE}:shaker"].get("behaviors", [])
     if ([behavior.get("type") for behavior in shaker_behaviors]
-            != [f"{NAMESPACE}:shaker_item", f"{NAMESPACE}:sneak_place_drink"]
+            != [f"{NAMESPACE}:shaker_item", "furniture_item"]
             or shaker_behaviors[1].get("furniture") != f"{NAMESPACE}:shaker"
             or shaker_behaviors[1].get("rules") != {
                 "ground": {"rotation": "four", "alignment": "center"}
             }):
         raise AssertionError(
-            "Shaker must run CE portable use before sneak-gated native furniture placement")
+            "Shaker must run portable air use before ordinary right-click furniture placement")
     for stale_token in (
             "bootstrapPressVisuals", "onEntitiesLoad(EntitiesLoadEvent event)",
             "pressingTubBelow", "getNearbyEntities(feet"):
@@ -1697,6 +1806,9 @@ def validate() -> dict[str, int]:
             "new PortableShakerUse(player, hand, 0)",
             "var iterator = portableShakers.entrySet().iterator()",
             "Player player = use.player()",
+            "shakerVisuals.beginMix(player)",
+            "shakerVisuals.updateMix(player, ticks)",
+            "shakerVisuals.endMix(player)",
             "private record PortableShakerUse(Player player, EquipmentSlot hand, int ticks)"):
         if required_token not in station_source:
             raise AssertionError(
@@ -3091,14 +3203,16 @@ def validate() -> dict[str, int]:
             behavior for behavior in item_behaviors
             if behavior.get("furniture") == item_id
         ]
+        placement_type = ("furniture_item" if item_id == f"{NAMESPACE}:shaker"
+                          else f"{NAMESPACE}:sneak_place_drink")
         if placement_behaviors != [{
-                "type": f"{NAMESPACE}:sneak_place_drink",
+                "type": placement_type,
                 "furniture": item_id,
                 "rules": expected_ground_rule,
                 }]:
             raise AssertionError(
-                f"{item_id}: every custom bottle, glass and shaker must place only through "
-                "sneak-gated native CE furniture placement")
+                f"{item_id}: shaker must use ordinary placement while custom bottles and "
+                "glasses remain sneak-gated")
 
     for item_id in EFFECTLESS_DRINKS:
         replacement = items[item_id].get("settings", {}).get("consume_replacement")
@@ -3325,6 +3439,46 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Shaker inventory model must remain vanilla-compatible instead of using Forge loaders")
     paper_asset_roots = (ROOT / "src/paper/pack/resourcepack/assets",)
+    hud_offset_powers = (1, 2, 4, 8, 16, 32, 64, 128, 256)
+    expected_shaker_hud_providers = [{
+        "type": "space",
+        "advances": {
+            **{chr(0xE410 + index): power / 2
+               for index, power in enumerate(hud_offset_powers)},
+            **{chr(0xE420 + index): -power / 2
+               for index, power in enumerate(hud_offset_powers)},
+        },
+    }, {
+        "type": "bitmap",
+        "file": f"{NAMESPACE}:font/shaker/bar.png",
+        "ascent": 0,
+        "height": 9,
+        "chars": [chr(0xE400)],
+    }, {
+        "type": "bitmap",
+        "file": f"{NAMESPACE}:font/shaker/pointer.png",
+        "ascent": 3,
+        "height": 7,
+        "chars": [chr(0xE401)],
+    }, {
+        "type": "bitmap",
+        "file": f"{NAMESPACE}:gui/rhombus.png",
+        "ascent": 3,
+        "height": 8,
+        "chars": [chr(0xE402)],
+    }]
+    shaker_hud_font = asset_json(
+        f"{NAMESPACE}:shaker_hud", "font", paper_asset_roots)
+    if (shaker_hud_font is None
+            or shaker_hud_font.get("providers") != expected_shaker_hud_providers):
+        raise AssertionError(
+            "Shaker HUD font must preserve the source bar, pointer and ingredient layout")
+    for shaker_texture in ("bar", "pointer"):
+        if not asset_exists(
+                f"{NAMESPACE}:font/shaker/{shaker_texture}", "textures", ".png"):
+            raise AssertionError(f"Missing generated shaker HUD texture: {shaker_texture}")
+    if not asset_exists(f"{NAMESPACE}:gui/rhombus", "textures", ".png"):
+        raise AssertionError("Missing archived tintable shaker ingredient rhombus")
     custom_effect_font = asset_json(
         f"{NAMESPACE}:custom_effects", "font", paper_asset_roots)
     expected_effect_providers = [{
@@ -3344,7 +3498,6 @@ def validate() -> dict[str, int]:
 
     # The corner HUD font must mirror tools/migrate_legacy.py and the glyph
     # tables hard-coded in CustomEffectHudSemantics exactly.
-    hud_offset_powers = (1, 2, 4, 8, 16, 32, 64, 128, 256)
     expected_hud_providers: list[dict] = [{
         "type": "space",
         "advances": {

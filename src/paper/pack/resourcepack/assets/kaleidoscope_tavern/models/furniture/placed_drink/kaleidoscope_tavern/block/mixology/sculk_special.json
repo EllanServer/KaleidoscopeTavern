@@ -6,7 +6,10 @@
     32
   ],
   "textures": {
-    "1": "kaleidoscope_tavern:block/mixology/sculk_special",
+    "1": {
+      "sprite": "kaleidoscope_tavern:block/mixology/sculk_special",
+      "force_translucent": true
+    },
     "particle": "minecraft:block/glass"
   },
   "elements": [
@@ -1137,6 +1140,5 @@
         1.7
       ]
     }
-  },
-  "render_type": "cutout"
+  }
 }
