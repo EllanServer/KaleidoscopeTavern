@@ -42,6 +42,16 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
     private static long nextSequence;
     private static boolean dispatchingDue;
 
+    /*
+     * 惰性失效的队列账本：取消/重新调度只把节点标记为 stale，
+     * 队头清理只负责连续的 stale 节点，剩余的在周期压缩时一并剔除。
+     */
+    private static int liveQueuedRuns;
+    private static int staleQueuedRuns;
+
+    private static final int COMPACT_MIN_QUEUE_SIZE = 512;
+    private static final int COMPACT_MIN_STALE_RUNS = 256;
+
     private final Channel channel;
     private final Schedule schedule;
 
@@ -88,9 +98,14 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         scheduledWakeTick = Long.MAX_VALUE;
         runtimePlugin = null;
         DUE.clear();
+        liveQueuedRuns = 0;
+        staleQueuedRuns = 0;
         for (Channel channel : Channel.values()) {
             for (Controller controller : channel.snapshot()) {
+                // 推进 generation，让已被 runDueControllers() 取出、
+                // 但尚未执行的旧任务也失效。
                 controller.scheduledRun = null;
+                controller.scheduleGeneration++;
             }
         }
         nextSequence = 0;
@@ -189,6 +204,7 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         private boolean active;
         private Handler deliveredHandler;
         private ScheduledRun scheduledRun;
+        private long scheduleGeneration;
 
         private Controller(BukkitFurniture furniture, Channel channel, Schedule schedule) {
             super(furniture);
@@ -280,92 +296,175 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
             schedule(schedule.firstDelay(bukkitFurniture));
         }
 
-        private void scheduleNext() {
-            schedule(schedule.nextDelay());
-        }
-
         private void schedule(int delay) {
             synchronized (RUNTIME_LOCK) {
                 if (!active || deliveredHandler == null || runtimePlugin == null) {
                     return;
                 }
-                if (scheduledRun != null) {
-                    DUE.remove(scheduledRun);
-                }
+                // 旧任务如果仍在队列，只标记为 stale，不做 O(n) 删除。
+                invalidateCurrentRunLocked();
                 ScheduledRun run = new ScheduledRun(this,
-                        currentServerTick() + Math.max(1, delay), nextSequence++);
+                        scheduleGeneration, currentServerTick() + Math.max(1, delay),
+                        nextSequence++);
                 scheduledRun = run;
                 DUE.add(run);
+                liveQueuedRuns++;
+                maybeCompactQueueLocked();
                 scheduleWakeLocked();
             }
         }
 
         private void cancelSchedule() {
             synchronized (RUNTIME_LOCK) {
-                if (scheduledRun != null) {
-                    DUE.remove(scheduledRun);
-                    scheduledRun = null;
-                    scheduleWakeLocked();
+                if (scheduledRun == null) {
+                    return;
                 }
+                invalidateCurrentRunLocked();
+                pruneStaleHeadLocked();
+                maybeCompactQueueLocked();
+                scheduleWakeLocked();
             }
         }
 
-        private void runScheduled() {
-            if (!active) {
+        /** 每次失效都推进 generation；仍在队列的旧节点只标记为 stale。 */
+        private void invalidateCurrentRunLocked() {
+            ScheduledRun oldRun = scheduledRun;
+            scheduleGeneration++;
+            scheduledRun = null;
+            if (oldRun != null && oldRun.queued && !oldRun.stale) {
+                oldRun.stale = true;
+                liveQueuedRuns--;
+                staleQueuedRuns++;
+            }
+        }
+
+        /** {@code run} 仍是该 Controller 当前持有的 live 任务才返回 true。 */
+        private boolean isCurrentRun(ScheduledRun run) {
+            synchronized (RUNTIME_LOCK) {
+                return active
+                        && runtimePlugin != null
+                        && scheduledRun == run
+                        && scheduleGeneration == run.generation;
+            }
+        }
+
+        private void runScheduled(ScheduledRun run) {
+            if (!isCurrentRun(run)) {
                 return;
             }
             Handler handler = channel.handler;
             if (handler == null) {
+                clearRunIfCurrent(run);
                 deliveredHandler = null;
                 return;
             }
             if (handler != deliveredHandler) {
+                // deliver() 内部会取消旧 run，并创建属于新 handler 的任务。
                 deliver(handler);
                 return;
             }
+            runHandlerAndComplete(run, handler);
+        }
+
+        private void clearRunIfCurrent(ScheduledRun run) {
+            finishRunIfCurrent(run, false, 0);
+        }
+
+        private void runHandlerAndComplete(ScheduledRun run, Handler handler) {
+            boolean scheduleAgain = false;
+            boolean schedulingDecisionCompleted = false;
             try {
                 handler.tick(bukkitFurniture);
             } finally {
-                if (active && deliveredHandler == handler) {
-                    if (handler.shouldSchedule(bukkitFurniture)) {
-                        scheduleNext();
-                    } else {
-                        cancelSchedule();
+                try {
+                    if (isCurrentRun(run) && active && deliveredHandler == handler) {
+                        scheduleAgain = handler.shouldSchedule(bukkitFurniture);
                     }
+                    schedulingDecisionCompleted = true;
+                } finally {
+                    // shouldSchedule 抛异常时也通过这一层 finally 清掉 in-flight run，
+                    // 否则 scheduledRun 会永远指向已执行结束的任务。
+                    int nextDelay = scheduleAgain ? schedule.nextDelay() : 0;
+                    finishRunIfCurrent(
+                            run,
+                            schedulingDecisionCompleted && scheduleAgain,
+                            nextDelay
+                    );
                 }
+            }
+        }
+
+        /**
+         * 只有当 Controller 当前仍指向刚执行的 {@code completedRun} 时，
+         * 才允许完成或重调度；handler.tick() 内部的重入调度不会被覆盖。
+         */
+        private void finishRunIfCurrent(
+                ScheduledRun completedRun,
+                boolean scheduleAgain,
+                int nextDelay
+        ) {
+            synchronized (RUNTIME_LOCK) {
+                if (scheduledRun != completedRun
+                        || scheduleGeneration != completedRun.generation) {
+                    // handler.tick() 期间已经取消或重新调度。
+                    return;
+                }
+                invalidateCurrentRunLocked();
+                if (scheduleAgain
+                        && active
+                        && deliveredHandler != null
+                        && runtimePlugin != null) {
+                    ScheduledRun nextRun = new ScheduledRun(this,
+                            scheduleGeneration,
+                            currentServerTick() + Math.max(1, nextDelay),
+                            nextSequence++);
+                    scheduledRun = nextRun;
+                    DUE.add(nextRun);
+                    liveQueuedRuns++;
+                }
+                maybeCompactQueueLocked();
+                // dispatchingDue=true 时这里不会立即创建 BukkitTask，
+                // 整批 due 执行完成后统一安排。
+                scheduleWakeLocked();
             }
         }
     }
 
     private static void runDueControllers() {
-        List<Controller> due = null;
+        List<ScheduledRun> due = null;
         synchronized (RUNTIME_LOCK) {
             schedulerTask = null;
             scheduledWakeTick = Long.MAX_VALUE;
             dispatchingDue = true;
             long currentTick = currentServerTick();
-            while (!DUE.isEmpty() && DUE.peek().dueTick <= currentTick) {
-                ScheduledRun run = DUE.poll();
-                if (run.controller.scheduledRun == run) {
-                    run.controller.scheduledRun = null;
-                    if (due == null) {
-                        due = new ArrayList<>();
-                    }
-                    due.add(run.controller);
+            while (true) {
+                ScheduledRun run = peekLiveRunLocked();
+                if (run == null || run.dueTick > currentTick) {
+                    break;
                 }
+                DUE.poll();
+                run.queued = false;
+                liveQueuedRuns--;
+                if (due == null) {
+                    due = new ArrayList<>();
+                }
+                // 保留 ScheduledRun，而不是只保留 Controller。
+                // scheduledRun 仍指向 run：它表示该任务已出队、正在等待执行，
+                // 执行前的 generation 复检与 compare-and-complete 都依赖它。
+                due.add(run);
             }
         }
         try {
             if (due != null) {
-                for (Controller controller : due) {
+                for (ScheduledRun run : due) {
                     try {
-                        controller.runScheduled();
+                        run.controller.runScheduled(run);
                     } catch (RuntimeException | LinkageError exception) {
                         JavaPlugin owner = runtimePlugin;
                         if (owner != null) {
                             owner.getLogger().log(Level.SEVERE,
                                     "Scheduled furniture tick failed for "
-                                            + controller.bukkitFurniture.id(), exception);
+                                            + run.controller.bukkitFurniture.id(), exception);
                         }
                     }
                 }
@@ -373,17 +472,19 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         } finally {
             synchronized (RUNTIME_LOCK) {
                 dispatchingDue = false;
+                pruneStaleHeadLocked();
+                maybeCompactQueueLocked();
                 scheduleWakeLocked();
             }
         }
     }
 
-    /** Schedules exactly one callback for the earliest live controller. */
+    /** 为最早的 live 任务安排恰好一个唤醒回调。 */
     private static void scheduleWakeLocked() {
         if (dispatchingDue || runtimePlugin == null) {
             return;
         }
-        ScheduledRun next = DUE.peek();
+        ScheduledRun next = peekLiveRunLocked();
         if (next == null) {
             if (schedulerTask != null) {
                 schedulerTask.cancel();
@@ -392,10 +493,15 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
             scheduledWakeTick = Long.MAX_VALUE;
             return;
         }
-        if (schedulerTask != null && scheduledWakeTick == next.dueTick) {
-            return;
-        }
         if (schedulerTask != null) {
+            /*
+             * 已有任务比新队头更早或相同：保留它即可，它不会让 live run 迟到。
+             * 旧任务可能提前唤醒一次，但避免每次取消队头都 cancel + runTaskLater。
+             */
+            if (scheduledWakeTick <= next.dueTick) {
+                return;
+            }
+            // 新任务更早，必须提前唤醒。
             schedulerTask.cancel();
         }
         long delay = Math.max(1L, next.dueTick - currentServerTick());
@@ -404,19 +510,108 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
                 runtimePlugin, TickingFurnitureBehavior::runDueControllers, delay);
     }
 
+    /** 先删除队头连续的 stale 节点，再返回真正的 live 队头。 */
+    private static ScheduledRun peekLiveRunLocked() {
+        pruneStaleHeadLocked();
+        return DUE.peek();
+    }
+
+    private static void pruneStaleHeadLocked() {
+        while (true) {
+            ScheduledRun run = DUE.peek();
+            if (run == null || run.isCurrent()) {
+                return;
+            }
+            DUE.poll();
+            run.queued = false;
+            if (run.stale) {
+                staleQueuedRuns--;
+            }
+        }
+    }
+
+    private static boolean shouldCompactQueueLocked() {
+        return DUE.size() >= COMPACT_MIN_QUEUE_SIZE
+                && staleQueuedRuns >= COMPACT_MIN_STALE_RUNS
+                && staleQueuedRuns > liveQueuedRuns;
+    }
+
+    /** stale 节点较多时做一次 O(n) 重建，成本被数百次 O(1) 取消摊销。 */
+    private static void maybeCompactQueueLocked() {
+        if (!shouldCompactQueueLocked()) {
+            return;
+        }
+        PriorityQueue<ScheduledRun> rebuilt =
+                new PriorityQueue<>(Math.max(11, liveQueuedRuns));
+        for (ScheduledRun run : DUE) {
+            if (run.isCurrent()) {
+                rebuilt.add(run);
+            } else {
+                run.queued = false;
+            }
+        }
+        DUE.clear();
+        DUE.addAll(rebuilt);
+        liveQueuedRuns = DUE.size();
+        staleQueuedRuns = 0;
+    }
+
+    /** 只读的调度器快照，主要用于测试与临时 debug 命令。 */
+    record SchedulerStats(
+            int queueSize,
+            int liveQueuedRuns,
+            int staleQueuedRuns,
+            long nextLiveDueTick,
+            long scheduledWakeTick,
+            boolean dispatching
+    ) {
+    }
+
+    static SchedulerStats schedulerStats() {
+        synchronized (RUNTIME_LOCK) {
+            ScheduledRun next = peekLiveRunLocked();
+            return new SchedulerStats(
+                    DUE.size(),
+                    liveQueuedRuns,
+                    staleQueuedRuns,
+                    next == null ? Long.MAX_VALUE : next.dueTick,
+                    scheduledWakeTick,
+                    dispatchingDue
+            );
+        }
+    }
+
     private static long currentServerTick() {
         return Integer.toUnsignedLong(Bukkit.getCurrentTick());
     }
 
     private static final class ScheduledRun implements Comparable<ScheduledRun> {
         private final Controller controller;
+        private final long generation;
         private final long dueTick;
         private final long sequence;
 
-        private ScheduledRun(Controller controller, long dueTick, long sequence) {
+        // 只允许在 RUNTIME_LOCK 内修改
+        private boolean queued = true;
+        private boolean stale;
+
+        private ScheduledRun(
+                Controller controller,
+                long generation,
+                long dueTick,
+                long sequence
+        ) {
             this.controller = controller;
+            this.generation = generation;
             this.dueTick = dueTick;
             this.sequence = sequence;
+        }
+
+        private boolean isCurrent() {
+            return queued
+                    && !stale
+                    && controller.scheduledRun == this
+                    && controller.scheduleGeneration == generation;
         }
 
         @Override
