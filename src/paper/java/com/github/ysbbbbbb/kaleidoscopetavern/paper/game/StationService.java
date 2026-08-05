@@ -85,6 +85,10 @@ public final class StationService implements Listener {
     private static final int BARREL_CAPACITY = 4_000;
     private static final int MAX_BARREL_SLOTS = 4;
     private static final int MAX_BARREL_STACK = 16;
+    // One logical ingredient pile is not shown as one display entity per item:
+    // a bounded visual pool keeps station refresh packets cheap at high counts.
+    private static final int MAX_STATION_ITEM_VISUALS = 16;
+    private static final int MAX_STATION_MATERIAL_VISUALS = 4;
 
     private final JavaPlugin plugin;
     private final ContentCatalog catalog;
@@ -1409,32 +1413,47 @@ public final class StationService implements Listener {
     }
 
     private List<StationVisualFurnitureBehavior.Visual> stationVisuals(
-            BukkitFurniture furniture) {
+            BukkitFurniture furniture, int limit) {
         if (furniture == null || !furniture.isValid()) {
             return List.of();
         }
         return switch (furniture.id().toString()) {
-            case PRESSING_TUB -> pressingTubVisuals(furniture);
-            case BARREL -> barrelVisuals(furniture);
+            case PRESSING_TUB -> pressingTubVisuals(furniture, limit);
+            case BARREL -> barrelVisuals(furniture, limit);
             default -> List.of();
         };
     }
 
     /** Mirrors BarrelBlockEntityRender's open-only fluid and ingredient layer. */
     private List<StationVisualFurnitureBehavior.Visual> barrelVisuals(
-            BukkitFurniture furniture) {
+            BukkitFurniture furniture, int limit) {
         if (!isBarrelOpen(furniture)) {
             return List.of();
         }
         FurnitureState state = new FurnitureState(furniture);
-        List<StationVisualFurnitureBehavior.Visual> result = new ArrayList<>();
+        int amount = Math.max(0, state.integer("barrel_amount"));
+        String fluid = state.string("barrel_fluid");
+        boolean hasFluid = amount > 0 && fluid != null;
+        int itemLimit = Math.max(0, limit - (hasFluid ? 1 : 0));
+        List<StationVisualFurnitureBehavior.Visual> result = new ArrayList<>(
+                Math.min(limit, MAX_STATION_ITEM_VISUALS + 1));
         long seed = blockPositionSeed(furniture.location());
         int globalIndex = 0;
         List<ItemStack> ingredients = barrelIngredients(state);
-        for (int slot = 0; slot < ingredients.size(); slot++) {
+        for (int slot = 0; slot < ingredients.size() && globalIndex < itemLimit; slot++) {
             ItemStack ingredient = ingredients.get(slot);
             int visualCount = ingredient.isEmpty() ? 0 : ingredient.getAmount() / 2 + 1;
-            for (int index = 0; index < visualCount; index++) {
+            if (visualCount == 0) {
+                continue;
+            }
+            int perMaterialLimit = Math.min(
+                    MAX_STATION_MATERIAL_VISUALS,
+                    Math.min(visualCount, itemLimit - globalIndex));
+            // Adapt each material once; every visual copy shares the same Item.
+            ItemStack shown = ingredient.clone();
+            shown.setAmount(1);
+            Item displayItem = BukkitAdaptor.adapt(shown);
+            for (int index = 0; index < perMaterialLimit; index++) {
                 float x = stableRandom(seed, globalIndex, slot + 1) * 0.4F;
                 float z = stableRandom(seed, globalIndex, slot + 2) * 0.4F;
                 float y = globalIndex / 4 * 0.025F
@@ -1445,11 +1464,9 @@ public final class StationService implements Listener {
                         .rotateX((float) Math.toRadians(-90))
                         .rotateY((float) Math.toRadians(-yRotation))
                         .rotateZ((float) Math.toRadians(-zRotation));
-                ItemStack shown = ingredient.clone();
-                shown.setAmount(1);
                 Location origin = furniture.location();
-                result.add(new StationVisualFurnitureBehavior.Visual(
-                        BukkitAdaptor.adapt(shown),
+                result.add(StationVisualFurnitureBehavior.Visual.of(
+                        displayItem,
                         origin.getX() + x, origin.getY() + 2.7 + y, origin.getZ() + z,
                         0, 0, 0.5F, rotation,
                         StationVisualFurnitureBehavior.ITEM_TRANSFORM_FIXED));
@@ -1457,14 +1474,12 @@ public final class StationService implements Listener {
             }
         }
 
-        int amount = Math.max(0, state.integer("barrel_amount"));
-        String fluid = state.string("barrel_fluid");
-        if (amount > 0 && fluid != null) {
+        if (hasFluid) {
             items.build(NAMESPACE + "_render/barrel_fluid/" + path(fluid), null)
                     .ifPresent(renderItem -> {
                         renderItem.setAmount(1);
                         Location origin = furniture.location();
-                        result.add(new StationVisualFurnitureBehavior.Visual(
+                        result.add(StationVisualFurnitureBehavior.Visual.of(
                                 BukkitAdaptor.adapt(renderItem),
                                 origin.getX(),
                                 origin.getY() + 2
@@ -1480,17 +1495,28 @@ public final class StationService implements Listener {
 
     /** Mirrors PressingTubBlockEntityRender's item pile and fluid plane. */
     private List<StationVisualFurnitureBehavior.Visual> pressingTubVisuals(
-            BukkitFurniture furniture) {
+            BukkitFurniture furniture, int limit) {
         FurnitureState state = new FurnitureState(furniture);
-        List<StationVisualFurnitureBehavior.Visual> result = new ArrayList<>();
+        int amount = Math.max(0, state.integer("press_amount"));
+        String fluid = state.string("press_fluid");
+        boolean hasFluid = amount > 0 && fluid != null;
+        int itemLimit = Math.max(0, limit - (hasFluid ? 1 : 0));
+        List<StationVisualFurnitureBehavior.Visual> result = new ArrayList<>(
+                Math.min(limit, MAX_STATION_ITEM_VISUALS + 1));
         ItemStack ingredient = pressingItem(state);
         int count = ingredient == null ? 0
                 : Math.min(64, Math.max(0, state.integer("press_count")));
-        if (ingredient != null && count > 0) {
+        int visualCount = Math.min(itemLimit,
+                Math.min(count, MAX_STATION_ITEM_VISUALS));
+        if (ingredient != null && visualCount > 0) {
             long seed = blockPositionSeed(furniture.location());
             boolean tilted = furniture.currentVariant().name().equals("wall");
             Location origin = furniture.location();
-            for (int index = 0; index < count; index++) {
+            // Adapt the pile material once; every visual copy shares the Item.
+            ItemStack shown = ingredient.clone();
+            shown.setAmount(1);
+            Item displayItem = BukkitAdaptor.adapt(shown);
+            for (int index = 0; index < visualCount; index++) {
                 float x = index % 4 % 2 == 0
                         ? -0.15F : 0.15F + stableRandom(seed, index, 1) * 0.0625F;
                 float z = index % 4 / 2 == 0
@@ -1533,18 +1559,14 @@ public final class StationService implements Listener {
                             .rotateY((float) Math.toRadians(-yRotation))
                             .rotateZ((float) Math.toRadians(-zRotation));
                 }
-                ItemStack shown = ingredient.clone();
-                shown.setAmount(1);
-                result.add(new StationVisualFurnitureBehavior.Visual(
-                        BukkitAdaptor.adapt(shown),
+                result.add(StationVisualFurnitureBehavior.Visual.of(
+                        displayItem,
                         displayX, displayY, displayZ, displayYaw, 0, 0.5F, rotation,
                         StationVisualFurnitureBehavior.ITEM_TRANSFORM_FIXED));
             }
         }
 
-        int amount = Math.max(0, state.integer("press_amount"));
-        String fluid = state.string("press_fluid");
-        if (amount > 0 && fluid != null) {
+        if (hasFluid) {
             items.build(NAMESPACE + "_render/pressing_fluid/" + path(fluid), null)
                     .ifPresent(renderItem -> {
                         renderItem.setAmount(1);
@@ -1563,7 +1585,7 @@ public final class StationService implements Listener {
                             displayY = origin.getY() - 0.5 + y;
                             displayZ = center.z;
                         }
-                        result.add(new StationVisualFurnitureBehavior.Visual(
+                        result.add(StationVisualFurnitureBehavior.Visual.of(
                                 BukkitAdaptor.adapt(renderItem),
                                 displayX, displayY, displayZ,
                                 0, 0, 1, new Quaternionf(),

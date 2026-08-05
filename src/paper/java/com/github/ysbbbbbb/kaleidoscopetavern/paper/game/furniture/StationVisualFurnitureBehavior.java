@@ -23,7 +23,10 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +43,14 @@ import java.util.function.Consumer;
  * runtime-sized list, so this behavior keeps CE responsible for tracking and
  * culling while Tavern supplies only the exact source transforms. No Bukkit
  * display entity or recovery PDC is created.</p>
+ *
+ * <p>Refreshes are differential: the packet-only entities keep their ids
+ * between versions, so a content change only re-sends changed metadata,
+ * moves moved entities, spawns new slots and removes dropped ones instead of
+ * destroying and recreating the whole pile for every tracking player. The
+ * operation list is computed by the pure {@link StationVisualDiff} state
+ * machine; packets are created lazily, once per snapshot, and shared across
+ * players. Only the first-time view-range metadata stays per-player.</p>
  */
 public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTemplate {
     public static final String TYPE = "kaleidoscope_tavern:station_visual_furniture";
@@ -100,25 +111,53 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
     @FunctionalInterface
     public interface Handler {
-        List<Visual> visuals(BukkitFurniture furniture);
+        /** Builds at most {@code limit} visuals (including the fluid slot). */
+        List<Visual> visuals(BukkitFurniture furniture, int limit);
     }
 
+    /**
+     * Immutable visual description. The left rotation is stored as four floats
+     * in JOML order (x, y, z, w) so snapshots can share one record across every
+     * tracking player without copying a mutable {@link Quaternionf} per visual
+     * per refresh. Empty items are rejected: a station visual must always carry
+     * a real display item, which keeps the diff state machine free of
+     * empty-slot transitions.
+     */
     public record Visual(Item item, double x, double y, double z,
                          float yRot, float xRot, float scale,
-                         Quaternionf leftRotation, byte itemTransform) {
+                         float rotX, float rotY, float rotZ, float rotW,
+                         byte itemTransform) {
         public Visual {
             Objects.requireNonNull(item, "item");
-            leftRotation = new Quaternionf(Objects.requireNonNull(
-                    leftRotation, "leftRotation"));
+            if (item.isEmpty()) {
+                throw new IllegalArgumentException("Visual item cannot be empty");
+            }
         }
+
+        public static Visual of(Item item, double x, double y, double z,
+                                float yRot, float xRot, float scale,
+                                Quaternionf leftRotation, byte itemTransform) {
+            return new Visual(item, x, y, z, yRot, xRot, scale,
+                    leftRotation.x, leftRotation.y, leftRotation.z, leftRotation.w,
+                    itemTransform);
+        }
+
+        public Quaternionf leftRotation() {
+            return new Quaternionf(rotX, rotY, rotZ, rotW);
+        }
+    }
+
+    private record VisualSnapshot(long generation, List<Visual> visuals) {
     }
 
     private static final class Controller extends FurnitureController {
         private final BukkitFurniture bukkitFurniture;
         private final int maxElements;
         private final float viewRange;
-        private List<Visual> cachedVisuals = List.of();
+        private VisualSnapshot previousSnapshot;
+        private VisualSnapshot currentSnapshot;
         private boolean visualsDirty = true;
+        private long generation;
 
         private Controller(BukkitFurniture furniture, int maxElements, float viewRange) {
             super(furniture);
@@ -160,19 +199,26 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         }
 
         private void invalidateVisuals() {
-            cachedVisuals = List.of();
+            previousSnapshot = currentSnapshot;
+            currentSnapshot = null;
             visualsDirty = true;
         }
 
-        private List<Visual> visuals() {
+        /** Lazily builds the current snapshot and returns it. */
+        private VisualSnapshot currentSnapshot() {
             if (visualsDirty) {
                 Handler currentHandler = handler;
-                cachedVisuals = currentHandler == null
+                List<Visual> visuals = currentHandler == null
                         ? List.of()
-                        : List.copyOf(currentHandler.visuals(bukkitFurniture));
+                        : List.copyOf(currentHandler.visuals(bukkitFurniture, maxElements));
+                currentSnapshot = new VisualSnapshot(++generation, visuals);
                 visualsDirty = false;
             }
-            return cachedVisuals;
+            return currentSnapshot;
+        }
+
+        private VisualSnapshot previousSnapshot() {
+            return previousSnapshot;
         }
     }
 
@@ -181,9 +227,13 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         private final BukkitFurniture furniture;
         private final int maxElements;
         private final float viewRange;
-        private final int[] entityIds;
-        private final UUID[] entityUuids;
-        private final Object removePacket;
+        private int[] entityIds = new int[8];
+        private UUID[] entityUuids = new UUID[8];
+        private int allocated;
+        private final Map<Player, Long> playerGenerations = new IdentityHashMap<>();
+        private final Map<Player, Integer> playerVisibleCount = new IdentityHashMap<>();
+        private long preparedGeneration = -1;
+        private PreparedVisual[] prepared = new PreparedVisual[0];
 
         private StationVisualElement(Controller controller, int maxElements,
                                      float viewRange) {
@@ -191,17 +241,95 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
             this.furniture = controller.bukkitFurniture;
             this.maxElements = maxElements;
             this.viewRange = viewRange;
-            this.entityIds = new int[maxElements];
-            this.entityUuids = new UUID[maxElements];
-            for (int index = 0; index < maxElements; index++) {
-                entityIds[index] = EntityUtils.ENTITY_COUNTER.incrementAndGet();
-                entityUuids[index] = VirtualEntityIdentity.fromEntityId(entityIds[index]);
-            }
-            this.removePacket = ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(
-                    new IntArrayList(entityIds));
         }
 
         private static void prewarm() {
+        }
+
+        private void ensureIdentityCapacity(int required) {
+            if (required > entityIds.length) {
+                int capacity = Math.max(required, entityIds.length << 1);
+                entityIds = Arrays.copyOf(entityIds, capacity);
+                entityUuids = Arrays.copyOf(entityUuids, capacity);
+            }
+            while (allocated < required) {
+                int id = EntityUtils.ENTITY_COUNTER.incrementAndGet();
+                entityIds[allocated] = id;
+                entityUuids[allocated] = VirtualEntityIdentity.fromEntityId(id);
+                allocated++;
+            }
+        }
+
+        /**
+         * Reserves identities and prepares the visual list for a snapshot. The
+         * actual packet objects are created lazily by {@link PreparedVisual},
+         * so an incremental refresh only allocates the packets it really sends;
+         * already-created packets are shared by every tracking player.
+         */
+        private PreparedVisual[] prepared(VisualSnapshot snapshot) {
+            if (preparedGeneration != snapshot.generation()) {
+                List<Visual> visuals = snapshot.visuals();
+                int count = Math.min(maxElements, visuals.size());
+                ensureIdentityCapacity(count);
+                PreparedVisual[] result = new PreparedVisual[count];
+                for (int index = 0; index < count; index++) {
+                    result[index] = new PreparedVisual(this, index, visuals.get(index));
+                }
+                prepared = result;
+                preparedGeneration = snapshot.generation();
+            }
+            return prepared;
+        }
+
+        private Object spawnPacket(int index, Visual visual) {
+            return ClientboundAddEntityPacketProxy.INSTANCE.newInstance(
+                    entityIds[index], entityUuids[index],
+                    visual.x(), visual.y(), visual.z(),
+                    visual.xRot(), visual.yRot(),
+                    EntityTypesProxy.ITEM_DISPLAY, 0, Vec3Proxy.ZERO, 0);
+        }
+
+        private Object staticMetadataPacket(int index, Visual visual) {
+            List<Object> metadata = new ArrayList<>(4);
+            DisplayData.ItemDisplayData.ItemStack.addEntityData(
+                    visual.item().minecraftItem(), metadata);
+            DisplayData.ItemDisplayData.ItemTransform.addEntityDataIfNotDefaultValue(
+                    visual.itemTransform(), metadata);
+            DisplayData.Scale.addEntityDataIfNotDefaultValue(
+                    new Vector3f(visual.scale()), metadata);
+            DisplayData.LeftRotation.addEntityDataIfNotDefaultValue(
+                    visual.leftRotation(), metadata);
+            return ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
+                    entityIds[index], metadata);
+        }
+
+        private Object positionPacket(int index, Visual visual) {
+            return EntityUtils.createUpdatePosPacket(
+                    entityIds[index],
+                    visual.x(), visual.y(), visual.z(),
+                    visual.yRot(), visual.xRot(), false);
+        }
+
+        private Object viewRangePacket(int index, Player player) {
+            List<Object> metadata = new ArrayList<>(1);
+            // ViewRange 只在首次 show / 新增实体时随玩家当前的
+            // displayEntityViewDistance() 一起烘焙发送，后续差量刷新不再重发。
+            // 这与 CraftEngine 原生元素（ItemDisplayFurnitureElementConfig 等）
+            // 的行为一致：setDisplayEntityViewDistanceScale 只更新字段与 PDC，
+            // 不会统一重发已存在实体的 ViewRange，玩家改设置后需重新 show 才生效。
+            DisplayData.ViewRange.addEntityDataIfNotDefaultValue(
+                    (float) (viewRange * player.displayEntityViewDistance()), metadata);
+            return metadata.isEmpty() ? null
+                    : ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
+                            entityIds[index], metadata);
+        }
+
+        private Object removePacket(int from, int to) {
+            IntArrayList ids = new IntArrayList(to - from);
+            for (int index = from; index < to; index++) {
+                ids.add(entityIds[index]);
+            }
+            return ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(ids);
         }
 
         @Override
@@ -210,61 +338,118 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
 
         @Override
         public void show(Player player) {
-            sendVisuals(player, false);
+            VisualSnapshot snapshot = controller.currentSnapshot();
+            PreparedVisual[] currentPrepared = prepared(snapshot);
+            sendOps(player, currentPrepared,
+                    StationVisualDiff.fullResync(0, currentPrepared.length),
+                    snapshot.generation(), currentPrepared.length);
         }
 
         @Override
         public void hide(Player player) {
-            player.sendPacket(removePacket, false);
+            Integer count = playerVisibleCount.remove(player);
+            if (count != null && count > 0) {
+                player.sendPacket(removePacket(0, count), false);
+            }
+            playerGenerations.remove(player);
         }
 
         @Override
         public void update(Player player) {
-            sendVisuals(player, true);
-        }
-
-        private void sendVisuals(Player player, boolean replace) {
-            List<Visual> current = controller.visuals();
-            int count = Math.min(maxElements, current.size());
-            if (count == 0) {
-                if (replace) {
-                    hide(player);
-                }
+            VisualSnapshot current = controller.currentSnapshot();
+            VisualSnapshot previous = controller.previousSnapshot();
+            Long lastGeneration = playerGenerations.get(player);
+            int lastCount = playerVisibleCount.getOrDefault(player, 0);
+            PreparedVisual[] currentPrepared = prepared(current);
+            if (lastGeneration == null || previous == null
+                    || previous.generation() != lastGeneration) {
+                // First sight or more than one version behind: the old entities
+                // must be dropped explicitly before respawning the new list.
+                sendOps(player, currentPrepared,
+                        StationVisualDiff.fullResync(lastCount, currentPrepared.length),
+                        current.generation(), currentPrepared.length);
                 return;
             }
+            sendOps(player, currentPrepared,
+                    StationVisualDiff.compute(previous.visuals(), current.visuals(),
+                            lastCount, currentPrepared.length),
+                    current.generation(), currentPrepared.length);
+        }
 
-            List<Object> packets = new ArrayList<>(count * 2 + (replace ? 1 : 0));
-            if (replace) {
-                packets.add(removePacket);
+        private void sendOps(Player player, PreparedVisual[] currentPrepared,
+                             List<StationVisualDiff.Op> ops,
+                             long generation, int visibleCount) {
+            playerGenerations.put(player, generation);
+            playerVisibleCount.put(player, visibleCount);
+            if (ops.isEmpty()) {
+                return;
             }
-            for (int index = 0; index < count; index++) {
-                Visual visual = current.get(index);
-                if (visual.item().isEmpty()) {
-                    continue;
+            List<Object> packets = new ArrayList<>(ops.size() * 2 + 1);
+            for (StationVisualDiff.Op op : ops) {
+                switch (op.type()) {
+                    case SPAWN -> {
+                        PreparedVisual entry = currentPrepared[op.index()];
+                        packets.add(entry.spawnPacket());
+                        packets.add(entry.metadataPacket());
+                        Object viewRange = viewRangePacket(op.index(), player);
+                        if (viewRange != null) {
+                            packets.add(viewRange);
+                        }
+                    }
+                    case METADATA -> packets.add(
+                            currentPrepared[op.index()].metadataPacket());
+                    case POSITION -> packets.add(
+                            currentPrepared[op.index()].positionPacket());
+                    case REMOVE -> packets.add(removePacket(op.index(), op.to()));
+                    default -> throw new AssertionError("unreachable op type");
                 }
-                packets.add(ClientboundAddEntityPacketProxy.INSTANCE.newInstance(
-                        entityIds[index], entityUuids[index],
-                        visual.x(), visual.y(), visual.z(),
-                        visual.xRot(), visual.yRot(),
-                        EntityTypesProxy.ITEM_DISPLAY, 0, Vec3Proxy.ZERO, 0));
+            }
+            player.sendPackets(packets, false);
+        }
+    }
 
-                List<Object> metadata = new ArrayList<>(5);
-                DisplayData.ItemDisplayData.ItemStack.addEntityData(
-                        visual.item().minecraftItem(), metadata);
-                DisplayData.ItemDisplayData.ItemTransform.addEntityDataIfNotDefaultValue(
-                        visual.itemTransform(), metadata);
-                DisplayData.Scale.addEntityDataIfNotDefaultValue(
-                        new Vector3f(visual.scale()), metadata);
-                DisplayData.LeftRotation.addEntityDataIfNotDefaultValue(
-                        visual.leftRotation(), metadata);
-                DisplayData.ViewRange.addEntityDataIfNotDefaultValue(
-                        (float) (viewRange * player.displayEntityViewDistance()), metadata);
-                packets.add(ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
-                        entityIds[index], metadata));
+    /**
+     * Viewer-independent packets are created on first use and then shared by
+     * every tracking player. A differential refresh therefore only allocates
+     * the packets it actually sends.
+     */
+    private static final class PreparedVisual {
+        private final StationVisualElement element;
+        private final int index;
+        private final Visual visual;
+        private Object spawnPacket;
+        private Object metadataPacket;
+        private Object positionPacket;
+
+        private PreparedVisual(StationVisualElement element, int index, Visual visual) {
+            this.element = element;
+            this.index = index;
+            this.visual = visual;
+        }
+
+        private Visual visual() {
+            return visual;
+        }
+
+        private Object spawnPacket() {
+            if (spawnPacket == null) {
+                spawnPacket = element.spawnPacket(index, visual);
             }
-            if (!packets.isEmpty()) {
-                player.sendPackets(packets, false);
+            return spawnPacket;
+        }
+
+        private Object metadataPacket() {
+            if (metadataPacket == null) {
+                metadataPacket = element.staticMetadataPacket(index, visual);
             }
+            return metadataPacket;
+        }
+
+        private Object positionPacket() {
+            if (positionPacket == null) {
+                positionPacket = element.positionPacket(index, visual);
+            }
+            return positionPacket;
         }
     }
 }

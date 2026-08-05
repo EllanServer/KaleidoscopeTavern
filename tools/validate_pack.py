@@ -1917,9 +1917,9 @@ def validate() -> dict[str, int]:
     for required_station_element_token in (
             "implements FurnitureElement",
             "public static void refresh(BukkitFurniture furniture)",
-            "private List<Visual> cachedVisuals = List.of()",
-            "List.copyOf(currentHandler.visuals(bukkitFurniture))",
-            "List<Visual> current = controller.visuals()",
+            "private VisualSnapshot currentSnapshot",
+            "currentHandler.visuals(bukkitFurniture, maxElements)",
+            "VisualSnapshot current = controller.currentSnapshot()",
             "DisplayData.ItemDisplayData.ItemStack.addEntityData",
             "DisplayData.LeftRotation.addEntityDataIfNotDefaultValue",
             "DisplayData.ItemDisplayData.ItemTransform.addEntityDataIfNotDefaultValue",
@@ -4419,12 +4419,12 @@ def validate() -> dict[str, int]:
     expected_station_visuals = {
         "pressing_tub": ({
             "type": f"{NAMESPACE}:station_visual_furniture",
-            "max_elements": 65,
+            "max_elements": 17,
             "view_range": 1.25,
         }, 2),
         "barrel": ({
             "type": f"{NAMESPACE}:station_visual_furniture",
-            "max_elements": 37,
+            "max_elements": 17,
             "view_range": 2.5,
         }, 2),
     }
