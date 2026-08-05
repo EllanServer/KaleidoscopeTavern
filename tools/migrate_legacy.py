@@ -3109,10 +3109,11 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         })
 
     station_visual = {
-        # One CE element owns a bounded set of packet entity ids. The first
-        # number covers every source-renderer item copy plus one fluid plane.
-        "pressing_tub": (65, 1.25),
-        "barrel": (37, 2.5),
+        # One CE element owns a bounded set of packet entity ids. Item piles
+        # are capped at 16 display entities plus one fluid plane; Tavern shows
+        # density through the bounded pile instead of one entity per item.
+        "pressing_tub": (17, 1.25),
+        "barrel": (17, 2.5),
     }.get(block_id)
     if station_visual is not None:
         max_elements, view_range = station_visual

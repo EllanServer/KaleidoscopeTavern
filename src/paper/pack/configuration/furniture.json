@@ -53072,7 +53072,7 @@
         },
         {
           "type": "kaleidoscope_tavern:station_visual_furniture",
-          "max_elements": 65,
+          "max_elements": 17,
           "view_range": 1.25
         },
         {
@@ -54563,7 +54563,7 @@
         },
         {
           "type": "kaleidoscope_tavern:station_visual_furniture",
-          "max_elements": 37,
+          "max_elements": 17,
           "view_range": 2.5
         },
         {
