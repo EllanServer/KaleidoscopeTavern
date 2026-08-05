@@ -2165,11 +2165,34 @@ def validate() -> dict[str, int]:
     ticking_behavior_source = (
         game_package / "furniture/TickingFurnitureBehavior.java"
     ).read_text(encoding="utf-8-sig")
+    ticking_scheduler_source = (
+        game_package / "furniture/TickingScheduler.java"
+    ).read_text(encoding="utf-8-sig")
+    # 纯调度内核持有唯一 due-time 队列；时钟与唤醒由外部注入，保持可单测。
     for required_token in (
             "PriorityQueue<ScheduledRun>",
-            "runDueControllers",
-            "runTaskLater",
+            "dispatchDue",
             "scheduleWakeLocked",
+            "finishRunIfCurrent",
+            "pruneStaleHeadLocked",
+            "maybeCompactQueueLocked",
+            "liveQueuedRuns",
+            "staleQueuedRuns",
+            "LongSupplier",
+            "WakeTarget"):
+        if required_token not in ticking_scheduler_source:
+            raise AssertionError(
+                "Sparse furniture ticks must be driven by one pure due-time queue "
+                f"in TickingScheduler; missing token: {required_token}")
+    for stale_token in ("org.bukkit", "BukkitTask", "Bukkit.getScheduler",
+                        "runTaskLater", "net.momirealms.craftengine"):
+        if stale_token in ticking_scheduler_source:
+            raise AssertionError(
+                "The TickingScheduler core must stay decoupled from the server "
+                f"(clock/wake injected); found {stale_token}")
+    for required_token in (
+            "implements TickingScheduler.Host",
+            "runTaskLater",
             "geometricDelay",
             "firstFutureDelay",
             "public void onLoad()",
@@ -2181,8 +2204,8 @@ def validate() -> dict[str, int]:
             "targetChannel.activeControllers.get(targetFurniture.uuid())"):
         if required_token not in ticking_behavior_source:
             raise AssertionError(
-                "Sparse furniture ticks must be driven by one CE lifecycle due-time queue; "
-                f"missing token: {required_token}")
+                "TickingFurnitureBehavior must stay a thin CE/Bukkit adapter over "
+                f"the TickingScheduler core; missing token: {required_token}")
     if "createFurnitureTicker" in ticking_behavior_source:
         raise AssertionError(
             "Sparse furniture must not retain one CraftEngine ticker callback per instance")

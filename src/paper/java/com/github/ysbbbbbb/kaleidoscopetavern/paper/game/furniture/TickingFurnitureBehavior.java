@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.PriorityQueue;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,19 +27,43 @@ import java.util.logging.Level;
 /**
  * Lets CraftEngine own loaded-furniture lifecycle while one due-time queue
  * drives sparse fixed and random gameplay ticks.
+ *
+ * <p>The queue state machine itself lives in the pure, testable
+ * {@link TickingScheduler}; this class only bridges it to Bukkit (current tick
+ * and wake tasks) and to the CraftEngine furniture lifecycle.</p>
  */
 public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
     public static final String TYPE = "kaleidoscope_tavern:ticking_furniture";
 
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static final Object RUNTIME_LOCK = new Object();
-    private static final PriorityQueue<ScheduledRun> DUE = new PriorityQueue<>();
 
     private static JavaPlugin runtimePlugin;
     private static BukkitTask schedulerTask;
-    private static long scheduledWakeTick = Long.MAX_VALUE;
-    private static long nextSequence;
-    private static boolean dispatchingDue;
+
+    private static final TickingScheduler SCHEDULER = new TickingScheduler(
+            TickingFurnitureBehavior::currentServerTick,
+            new TickingScheduler.WakeTarget() {
+                @Override
+                public void cancel() {
+                    if (schedulerTask != null) {
+                        schedulerTask.cancel();
+                        schedulerTask = null;
+                    }
+                }
+
+                @Override
+                public void schedule(long delayTicks, Runnable action) {
+                    JavaPlugin owner = runtimePlugin;
+                    if (owner == null) {
+                        return;
+                    }
+                    schedulerTask = Bukkit.getScheduler().runTaskLater(owner, () -> {
+                        schedulerTask = null;
+                        action.run();
+                    }, delayTicks);
+                }
+            });
 
     private final Channel channel;
     private final Schedule schedule;
@@ -66,6 +89,7 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
             }
             stopLocked();
             runtimePlugin = owner;
+            SCHEDULER.start();
             for (Channel channel : Channel.values()) {
                 for (Controller controller : channel.snapshot()) {
                     controller.restartSchedule();
@@ -81,20 +105,12 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
     }
 
     private static void stopLocked() {
+        SCHEDULER.stop();
+        runtimePlugin = null;
         if (schedulerTask != null) {
             schedulerTask.cancel();
             schedulerTask = null;
         }
-        scheduledWakeTick = Long.MAX_VALUE;
-        runtimePlugin = null;
-        DUE.clear();
-        for (Channel channel : Channel.values()) {
-            for (Controller controller : channel.snapshot()) {
-                controller.scheduledRun = null;
-            }
-        }
-        nextSequence = 0;
-        dispatchingDue = false;
     }
 
     public static void bind(Channel channel, Handler handler) {
@@ -181,20 +197,21 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
     }
 
-    private static final class Controller extends FurnitureController {
+    private static final class Controller extends FurnitureController implements TickingScheduler.Host {
         private final BukkitFurniture bukkitFurniture;
         private final Channel channel;
         private final Schedule schedule;
+        private final String schedulerId;
 
         private boolean active;
         private Handler deliveredHandler;
-        private ScheduledRun scheduledRun;
 
         private Controller(BukkitFurniture furniture, Channel channel, Schedule schedule) {
             super(furniture);
             this.bukkitFurniture = furniture;
             this.channel = channel;
             this.schedule = schedule;
+            this.schedulerId = furniture.uuid().toString();
         }
 
         @Override
@@ -229,6 +246,7 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
             if (!active) {
                 active = true;
                 channel.activeControllers.put(bukkitFurniture.uuid(), this);
+                SCHEDULER.activate(schedulerId, this);
             }
             deliver(channel.handler);
         }
@@ -239,7 +257,7 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
             }
             active = false;
             channel.activeControllers.remove(bukkitFurniture.uuid(), this);
-            cancelSchedule();
+            SCHEDULER.deactivate(schedulerId);
             deliveredHandler = null;
         }
 
@@ -247,16 +265,19 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
             if (!active || handler == null || handler == deliveredHandler) {
                 return;
             }
-            cancelSchedule();
+            // 使旧 run 失效，再交付新 handler。
+            SCHEDULER.cancel(schedulerId);
             handler.onReady(bukkitFurniture);
             deliveredHandler = handler;
+            SCHEDULER.setBound(schedulerId, true);
             refreshSchedule();
         }
 
         private void forget(Handler handler) {
             if (deliveredHandler == handler) {
-                cancelSchedule();
+                SCHEDULER.cancel(schedulerId);
                 deliveredHandler = null;
+                SCHEDULER.setBound(schedulerId, false);
             }
         }
 
@@ -266,164 +287,74 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
 
         private void refreshSchedule() {
             Handler handler = deliveredHandler;
-            if (!active || handler == null || runtimePlugin == null
+            if (!active || handler == null || !SCHEDULER.isStarted()
                     || !handler.shouldSchedule(bukkitFurniture)) {
-                cancelSchedule();
+                SCHEDULER.cancel(schedulerId);
                 return;
             }
-            if (scheduledRun == null) {
-                scheduleInitial();
+            if (!SCHEDULER.hasScheduledRun(schedulerId)) {
+                SCHEDULER.schedule(schedulerId, schedule.firstDelay(bukkitFurniture));
             }
         }
 
-        private void scheduleInitial() {
-            schedule(schedule.firstDelay(bukkitFurniture));
+        // ===== TickingScheduler.Host =====
+
+        @Override
+        public boolean isHandlerBound(String id) {
+            return channel.handler != null;
         }
 
-        private void scheduleNext() {
-            schedule(schedule.nextDelay());
+        @Override
+        public boolean isHandlerChanged(String id) {
+            return channel.handler != deliveredHandler;
         }
 
-        private void schedule(int delay) {
-            synchronized (RUNTIME_LOCK) {
-                if (!active || deliveredHandler == null || runtimePlugin == null) {
-                    return;
-                }
-                if (scheduledRun != null) {
-                    DUE.remove(scheduledRun);
-                }
-                ScheduledRun run = new ScheduledRun(this,
-                        currentServerTick() + Math.max(1, delay), nextSequence++);
-                scheduledRun = run;
-                DUE.add(run);
-                scheduleWakeLocked();
-            }
+        @Override
+        public boolean shouldSchedule(String id) {
+            Handler handler = deliveredHandler;
+            return handler != null && handler.shouldSchedule(bukkitFurniture);
         }
 
-        private void cancelSchedule() {
-            synchronized (RUNTIME_LOCK) {
-                if (scheduledRun != null) {
-                    DUE.remove(scheduledRun);
-                    scheduledRun = null;
-                    scheduleWakeLocked();
-                }
-            }
-        }
-
-        private void runScheduled() {
-            if (!active) {
-                return;
-            }
-            Handler handler = channel.handler;
-            if (handler == null) {
-                deliveredHandler = null;
-                return;
-            }
-            if (handler != deliveredHandler) {
-                deliver(handler);
-                return;
-            }
-            try {
+        @Override
+        public void tick(String id) {
+            Handler handler = deliveredHandler;
+            if (handler != null) {
                 handler.tick(bukkitFurniture);
-            } finally {
-                if (active && deliveredHandler == handler) {
-                    if (handler.shouldSchedule(bukkitFurniture)) {
-                        scheduleNext();
-                    } else {
-                        cancelSchedule();
-                    }
-                }
+            }
+        }
+
+        @Override
+        public void onHandlerMissing(String id) {
+            deliveredHandler = null;
+            SCHEDULER.setBound(id, false);
+        }
+
+        @Override
+        public void onHandlerChanged(String id) {
+            deliver(channel.handler);
+        }
+
+        @Override
+        public int nextDelay(String id) {
+            return schedule.nextDelay();
+        }
+
+        @Override
+        public void onRunFailure(String id, Throwable failure) {
+            JavaPlugin owner = runtimePlugin;
+            if (owner != null) {
+                owner.getLogger().log(Level.SEVERE,
+                        "Scheduled furniture tick failed for " + bukkitFurniture.id(), failure);
             }
         }
     }
 
-    private static void runDueControllers() {
-        List<Controller> due = null;
-        synchronized (RUNTIME_LOCK) {
-            schedulerTask = null;
-            scheduledWakeTick = Long.MAX_VALUE;
-            dispatchingDue = true;
-            long currentTick = currentServerTick();
-            while (!DUE.isEmpty() && DUE.peek().dueTick <= currentTick) {
-                ScheduledRun run = DUE.poll();
-                if (run.controller.scheduledRun == run) {
-                    run.controller.scheduledRun = null;
-                    if (due == null) {
-                        due = new ArrayList<>();
-                    }
-                    due.add(run.controller);
-                }
-            }
-        }
-        try {
-            if (due != null) {
-                for (Controller controller : due) {
-                    try {
-                        controller.runScheduled();
-                    } catch (RuntimeException | LinkageError exception) {
-                        JavaPlugin owner = runtimePlugin;
-                        if (owner != null) {
-                            owner.getLogger().log(Level.SEVERE,
-                                    "Scheduled furniture tick failed for "
-                                            + controller.bukkitFurniture.id(), exception);
-                        }
-                    }
-                }
-            }
-        } finally {
-            synchronized (RUNTIME_LOCK) {
-                dispatchingDue = false;
-                scheduleWakeLocked();
-            }
-        }
-    }
-
-    /** Schedules exactly one callback for the earliest live controller. */
-    private static void scheduleWakeLocked() {
-        if (dispatchingDue || runtimePlugin == null) {
-            return;
-        }
-        ScheduledRun next = DUE.peek();
-        if (next == null) {
-            if (schedulerTask != null) {
-                schedulerTask.cancel();
-                schedulerTask = null;
-            }
-            scheduledWakeTick = Long.MAX_VALUE;
-            return;
-        }
-        if (schedulerTask != null && scheduledWakeTick == next.dueTick) {
-            return;
-        }
-        if (schedulerTask != null) {
-            schedulerTask.cancel();
-        }
-        long delay = Math.max(1L, next.dueTick - currentServerTick());
-        scheduledWakeTick = next.dueTick;
-        schedulerTask = Bukkit.getScheduler().runTaskLater(
-                runtimePlugin, TickingFurnitureBehavior::runDueControllers, delay);
+    static TickingScheduler.SchedulerStats schedulerStats() {
+        return SCHEDULER.schedulerStats();
     }
 
     private static long currentServerTick() {
         return Integer.toUnsignedLong(Bukkit.getCurrentTick());
-    }
-
-    private static final class ScheduledRun implements Comparable<ScheduledRun> {
-        private final Controller controller;
-        private final long dueTick;
-        private final long sequence;
-
-        private ScheduledRun(Controller controller, long dueTick, long sequence) {
-            this.controller = controller;
-            this.dueTick = dueTick;
-            this.sequence = sequence;
-        }
-
-        @Override
-        public int compareTo(ScheduledRun other) {
-            int byTick = Long.compare(dueTick, other.dueTick);
-            return byTick != 0 ? byTick : Long.compare(sequence, other.sequence);
-        }
     }
 
     private static final class Schedule {
