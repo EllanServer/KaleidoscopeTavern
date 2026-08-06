@@ -39,6 +39,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -123,7 +124,8 @@ public final class EffectService implements Listener {
     private final Set<UUID> stealthHidden = new HashSet<>();
     private final Map<String, Color> effectColorCache = new HashMap<>();
     private final Map<String, Object> effectParticleOptionCache = new HashMap<>();
-    private final Map<UUID, List<Object>> effectParticleDataCache = new HashMap<>();
+    /** 每个有效果实体的「纯原版」粒子快照，合并 Tavern 粒子时必须基于它。 */
+    private final Map<UUID, EffectParticleState> particleStates = new HashMap<>();
     private final Set<UUID> pendingEffectParticleRefresh = new HashSet<>();
     private final Map<String, CompiledBlockTag> blockTagCache = new HashMap<>();
     private final Map<String, CompiledEntityTag> entityTagCache = new HashMap<>();
@@ -135,6 +137,19 @@ public final class EffectService implements Listener {
     private boolean upsideDownPacketsAvailable = true;
     private boolean particleMetadataAvailable = true;
     private boolean particlePacketsAvailable = true;
+    /** 唯一的 PlayerTrackEntityEvent 监听器：独立成类以便整体注册/注销。 */
+    private final TrackReplayListener trackReplayListener =
+            new TrackReplayListener(this);
+    private boolean trackReplayListenerRegistered;
+    private boolean trackReplayFlushScheduled;
+    /** 一个 tick 内所有追踪关系只入队，flush 时按目标实体分组处理。 */
+    private final Map<UUID, PendingTrackTarget> pendingTrackReplays = new HashMap<>();
+    // 性能计数器：trackEvents/Hits 反映事件成本，Flushes 反映批处理效果，
+    // metadataBuilds 必须与效果/药水状态变化次数接近而不是观察者数量。
+    private long trackEvents;
+    private long trackHits;
+    private long trackFlushes;
+    private long particleMetadataBuilds;
 
     public EffectService(JavaPlugin plugin, ContentCatalog catalog, ItemService items) {
         this.plugin = plugin;
@@ -217,8 +232,8 @@ public final class EffectService implements Listener {
         visionPacketExpiry.clear();
         restoreUpsideDownPackets();
         upsideDownPacketTargets.clear();
-        effectParticleDataCache.clear();
         pendingEffectParticleRefresh.clear();
+        stopTrackReplayListenerIfIdle();
         activeEntities.clear();
         active.clear();
     }
@@ -348,10 +363,11 @@ public final class EffectService implements Listener {
         privateTipsyRemaining.remove(event.getPlayer().getUniqueId());
         visionPacketExpiry.remove(event.getPlayer().getUniqueId());
         upsideDownPacketTargets.remove(event.getPlayer().getUniqueId());
-        effectParticleDataCache.remove(event.getPlayer().getUniqueId());
+        particleStates.remove(event.getPlayer().getUniqueId());
         pendingEffectParticleRefresh.remove(event.getPlayer().getUniqueId());
         activeEntities.remove(event.getPlayer().getUniqueId());
         active.remove(event.getPlayer().getUniqueId());
+        stopTrackReplayListenerIfIdle();
         stopTickTaskIfIdle();
     }
 
@@ -367,41 +383,95 @@ public final class EffectService implements Listener {
         scheduleEffectParticleRefresh(event.getPlayer());
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onTrack(PlayerTrackEntityEvent event) {
-        // PlayerTrackEntityEvent fires for every new (viewer, entity) pair at
-        // view-range borders, so this handler runs extremely often on busy
-        // servers. Bail out before touching any map when neither replay
-        // system has work to do.
-        if (upsideDownPacketTargets.isEmpty()
-                && (!particleMetadataAvailable || active.isEmpty())) {
+    /**
+     * PlayerTrackEntityEvent 的分发入口（由 {@link TrackReplayListener} 转发）。
+     * 效果粒子在 Phase 2 已写入实体真实 SynchedEntityData，新追踪者会从原版
+     * addPairing 初始 metadata 自动获得，因此这里只处理 viewer-specific 的
+     * upside_down：无状态时整体退出，命中时按目标实体合并到
+     * {@link #pendingTrackReplays}，由下一个 tick 的单次 flush 统一发送。
+     */
+    void onTrackReplay(PlayerTrackEntityEvent event) {
+        trackEvents++;
+        if (upsideDownPacketTargets.isEmpty()) {
             return;
         }
         Player viewer = event.getPlayer();
-        Entity target = event.getEntity();
-        Set<UUID> inverted = upsideDownPacketTargets.get(viewer.getUniqueId());
-        boolean replayUpsideDown = target instanceof Mob && inverted != null
-                && inverted.contains(target.getUniqueId());
-        boolean replayEffectParticles = particleMetadataAvailable
-                && target instanceof LivingEntity
-                && active.containsKey(target.getUniqueId());
-        if (!replayUpsideDown && !replayEffectParticles) {
+        Entity entity = event.getEntity();
+        if (!(entity instanceof Mob target)) {
             return;
         }
-        // The tracking event precedes the initial metadata packet. Replay one
-        // tick later so the viewer-only name and particle list win.
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            if (viewer.isOnline() && target.isValid() && target.isTrackedBy(viewer)) {
-                Set<UUID> currentInverted = upsideDownPacketTargets.get(viewer.getUniqueId());
-                if (target instanceof Mob && currentInverted != null
-                        && currentInverted.contains(target.getUniqueId())) {
-                    sendUpsideDownPacket(viewer, target);
-                }
-                if (target instanceof LivingEntity living) {
-                    sendEffectParticleMetadata(viewer, living);
+        Set<UUID> inverted = upsideDownPacketTargets.get(viewer.getUniqueId());
+        if (inverted == null || !inverted.contains(target.getUniqueId())) {
+            return;
+        }
+        trackHits++;
+        PendingTrackTarget pending = pendingTrackReplays.computeIfAbsent(
+                target.getUniqueId(), ignored -> new PendingTrackTarget(target));
+        pending.upsideDownViewers.add(viewer);
+        ensureTrackReplayFlush();
+    }
+
+    private void ensureTrackReplayFlush() {
+        if (trackReplayFlushScheduled) {
+            return;
+        }
+        trackReplayFlushScheduled = true;
+        Bukkit.getScheduler().runTask(plugin, this::flushTrackReplays);
+    }
+
+    /** 一个 tick 最多运行一次：按目标实体分组，逐个 viewer 校验。 */
+    private void flushTrackReplays() {
+        trackReplayFlushScheduled = false;
+        trackFlushes++;
+        if (pendingTrackReplays.isEmpty()) {
+            stopTrackReplayListenerIfIdle();
+            return;
+        }
+        Map<UUID, PendingTrackTarget> batch = new HashMap<>(pendingTrackReplays);
+        pendingTrackReplays.clear();
+        for (PendingTrackTarget pending : batch.values()) {
+            LivingEntity target = pending.target;
+            if (!target.isValid()) {
+                continue;
+            }
+            for (Player viewer : pending.upsideDownViewers) {
+                if (viewer.isOnline() && target.isTrackedBy(viewer)) {
+                    Set<UUID> currentInverted =
+                            upsideDownPacketTargets.get(viewer.getUniqueId());
+                    if (currentInverted != null
+                            && currentInverted.contains(target.getUniqueId())) {
+                        sendUpsideDownPacket(viewer, target);
+                    }
                 }
             }
-        });
+        }
+        stopTrackReplayListenerIfIdle();
+    }
+
+    /**
+     * 首次出现 upside_down 目标时注册 PlayerTrackEntityEvent 监听器；没有任何
+     * 目标后由 {@link #stopTrackReplayListenerIfIdle()} 注销，使该事件恢复
+     * Paper 的零监听器快速路径。
+     */
+    private void ensureTrackReplayListener() {
+        if (trackReplayListenerRegistered) {
+            return;
+        }
+        Bukkit.getPluginManager().registerEvents(trackReplayListener, plugin);
+        trackReplayListenerRegistered = true;
+    }
+
+    private void stopTrackReplayListenerIfIdle() {
+        if (!trackReplayListenerRegistered) {
+            return;
+        }
+        if (!upsideDownPacketTargets.isEmpty()) {
+            return;
+        }
+        HandlerList.unregisterAll(trackReplayListener);
+        trackReplayListenerRegistered = false;
+        pendingTrackReplays.clear();
+        trackReplayFlushScheduled = false;
     }
 
     @EventHandler
@@ -420,12 +490,15 @@ public final class EffectService implements Listener {
             if (entity instanceof LivingEntity living && active.containsKey(living.getUniqueId())) {
                 save(living);
                 restoreStealthVisibility(living);
-                effectParticleDataCache.remove(living.getUniqueId());
+                // 区块 unload 直接丢弃运行时快照：重载时 NMS 会根据存档里的
+                // 真实药水效果重新生成纯原版粒子，不需要（也不能）写回合并列表。
+                particleStates.remove(living.getUniqueId());
                 pendingEffectParticleRefresh.remove(living.getUniqueId());
                 activeEntities.remove(living.getUniqueId());
                 active.remove(living.getUniqueId());
             }
         }
+        stopTrackReplayListenerIfIdle();
         stopTickTaskIfIdle();
     }
 
@@ -441,7 +514,9 @@ public final class EffectService implements Listener {
                 || !active.containsKey(living.getUniqueId())) {
             return;
         }
-        effectParticleDataCache.remove(living.getUniqueId());
+        // 永久移除：丢弃快照，clearEffects 里 restoreVanillaParticleState 会
+        // 因快照已不存在而安全跳过，不会对已移除的 NMS handle 写 metadata。
+        particleStates.remove(living.getUniqueId());
         pendingEffectParticleRefresh.remove(living.getUniqueId());
         clearEffects(living);
     }
@@ -449,11 +524,11 @@ public final class EffectService implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDeath(EntityDeathEvent event) {
         LivingEntity target = event.getEntity();
-        effectParticleDataCache.remove(target.getUniqueId());
         pendingEffectParticleRefresh.remove(target.getUniqueId());
         for (Set<UUID> inverted : upsideDownPacketTargets.values()) {
             inverted.remove(target.getUniqueId());
         }
+        stopTrackReplayListenerIfIdle();
         // Resolving Paper's DamageSource is unnecessary for nearly every
         // death on a normal server. Keep the exact Forge kill-heal behavior,
         // but only enter that bridge while Bloody Mary exists anywhere.
@@ -808,6 +883,11 @@ public final class EffectService implements Listener {
         scheduleEffectParticleRefresh(living, 1L);
     }
 
+    /**
+     * 原版药水变化（或实体加载）后延迟两 tick 刷新粒子：NMS 会先根据真实
+     * PotionEffect 重新生成 DATA_EFFECT_PARTICLES（覆盖我们写入的合并列表），
+     * 此时重新捕获纯原版快照再合并，才不会把 Tavern 粒子重复叠加。
+     */
     private void scheduleEffectParticleRefresh(LivingEntity living, long delay) {
         UUID uuid = living.getUniqueId();
         if (!particleMetadataAvailable || !active.containsKey(uuid)
@@ -817,11 +897,24 @@ public final class EffectService implements Listener {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             pendingEffectParticleRefresh.remove(uuid);
             LivingEntity current = activeEntities.get(uuid);
-            Map<String, ActiveEffect> effects = active.get(uuid);
-            if (current != null && effects != null && !effects.isEmpty()) {
-                syncEffectParticleMetadata(current, effects);
+            if (current != null) {
+                refreshAfterVanillaPotionChange(current);
             }
         }, delay);
+    }
+
+    private void refreshAfterVanillaPotionChange(LivingEntity living) {
+        Map<String, ActiveEffect> effects = active.get(living.getUniqueId());
+        if (effects == null || effects.isEmpty()) {
+            particleStates.remove(living.getUniqueId());
+            return;
+        }
+        // NMS 已把 DATA_EFFECT_PARTICLES 恢复为纯原版粒子：重捕快照后合并。
+        EffectParticleState vanilla = new EffectParticleState(
+                ViewerEffectPackets.readEffectParticles(living),
+                ViewerEffectPackets.readEffectAmbience(living));
+        particleStates.put(living.getUniqueId(), vanilla);
+        syncEffectParticleMetadata(living, effects);
     }
 
     private void syncEffectParticleMetadata(LivingEntity living,
@@ -830,48 +923,41 @@ public final class EffectService implements Listener {
             return;
         }
         if (effects.isEmpty()) {
-            restoreEffectParticleMetadata(living);
+            restoreVanillaParticleState(living);
             return;
         }
         try {
-            List<Object> metadata = buildEffectParticleMetadata(living, effects);
-            effectParticleDataCache.put(living.getUniqueId(), metadata);
-            sendEffectParticleMetadata(living, metadata);
+            applyMergedParticleState(living, effects);
         } catch (RuntimeException | LinkageError error) {
             disableEffectParticleMetadata(error);
         }
     }
 
-    private void sendEffectParticleMetadata(Player viewer, LivingEntity living) {
-        if (!particleMetadataAvailable) {
-            return;
-        }
-        // Track replay hits repeatedly for entities oscillating at view-range
-        // borders. The cache is refreshed on every effect change
-        // (syncEffectParticleMetadata), so reuse it instead of rebuilding the
-        // particle list for every track event.
-        List<Object> cached = effectParticleDataCache.get(living.getUniqueId());
-        if (cached != null) {
-            ViewerEffectPackets.sendEffectParticleMetadata(viewer, living, cached);
-            return;
-        }
-        Map<String, ActiveEffect> effects = active.get(living.getUniqueId());
-        if (effects == null || effects.isEmpty()) {
-            return;
-        }
-        try {
-            // Tracking can begin after NBT load without a Bukkit potion event;
-            // rebuild only when no cached vanilla list exists yet.
-            List<Object> metadata = buildEffectParticleMetadata(living, effects);
-            effectParticleDataCache.put(living.getUniqueId(), metadata);
-            ViewerEffectPackets.sendEffectParticleMetadata(viewer, living, metadata);
-        } catch (RuntimeException | LinkageError error) {
-            disableEffectParticleMetadata(error);
-        }
+    /**
+     * 首次出现 Tavern 效果时捕获实体的纯原版粒子状态；之后每次合并都基于该
+     * 快照，避免把已经写入真实字段的合并列表再次叠加（原版+Tavern+Tavern...）。
+     */
+    private EffectParticleState getOrCaptureVanillaState(LivingEntity living) {
+        return particleStates.computeIfAbsent(living.getUniqueId(),
+                ignored -> new EffectParticleState(
+                        ViewerEffectPackets.readEffectParticles(living),
+                        ViewerEffectPackets.readEffectAmbience(living)));
     }
 
-    private List<Object> buildEffectParticleMetadata(LivingEntity living,
-                                                     Map<String, ActiveEffect> effects) {
+    private void applyMergedParticleState(LivingEntity living,
+                                          Map<String, ActiveEffect> effects) {
+        EffectParticleState state = getOrCaptureVanillaState(living);
+        List<Object> custom = buildCustomParticleOptions(effects);
+        List<Object> merged = new ArrayList<>(
+                state.vanillaParticles().size() + custom.size());
+        merged.addAll(state.vanillaParticles());
+        merged.addAll(custom);
+        particleMetadataBuilds++;
+        ViewerEffectPackets.setEffectParticleMetadata(living, merged, false);
+    }
+
+    /** 只根据 effect id 读取已缓存的粒子选项，不调用 packAll。 */
+    private List<Object> buildCustomParticleOptions(Map<String, ActiveEffect> effects) {
         List<Object> particles = new ArrayList<>(effects.size());
         for (String effect : effects.keySet()) {
             Integer rgb = CustomEffectHudSemantics.color(effect);
@@ -890,46 +976,42 @@ public final class EffectService implements Listener {
             }
             particles.add(particle);
         }
-        return ViewerEffectPackets.effectParticleMetadata(living, particles);
+        return particles;
     }
 
-    private static void sendEffectParticleMetadata(LivingEntity living, List<Object> metadata) {
-        Set<Player> viewers = living.getTrackedBy();
-        Player self = living instanceof Player player ? player : null;
-        if (!viewers.isEmpty() || self != null) {
-            ViewerEffectPackets.sendEffectParticleMetadata(viewers, self, living, metadata);
-        }
-    }
-
-    private void restoreEffectParticleMetadata(LivingEntity living) {
+    /** 最后一个 Tavern 效果到期/清除时恢复纯原版粒子 metadata。 */
+    private void restoreVanillaParticleState(LivingEntity living) {
         pendingEffectParticleRefresh.remove(living.getUniqueId());
-        if (!particleMetadataAvailable
-                || effectParticleDataCache.remove(living.getUniqueId()) == null) {
+        EffectParticleState state = particleStates.remove(living.getUniqueId());
+        if (!particleMetadataAvailable || state == null) {
             return;
         }
+        particleMetadataBuilds++;
         try {
-            sendEffectParticleMetadata(living,
-                    ViewerEffectPackets.effectParticleMetadata(living, List.of()));
+            ViewerEffectPackets.setEffectParticleMetadata(
+                    living, state.vanillaParticles(), state.vanillaAmbient());
         } catch (RuntimeException | LinkageError error) {
             disableEffectParticleMetadata(error);
         }
     }
 
     private void restoreAllEffectParticleMetadata() {
-        if (!particleMetadataAvailable || effectParticleDataCache.isEmpty()) {
+        if (!particleMetadataAvailable || particleStates.isEmpty()) {
             return;
         }
         Throwable firstFailure = null;
-        for (UUID uuid : new ArrayList<>(effectParticleDataCache.keySet())) {
+        for (UUID uuid : new ArrayList<>(particleStates.keySet())) {
             LivingEntity living = activeEntities.get(uuid);
-            if (living != null) {
-                try {
-                    sendEffectParticleMetadata(living,
-                            ViewerEffectPackets.effectParticleMetadata(living, List.of()));
-                } catch (RuntimeException | LinkageError error) {
-                    if (firstFailure == null) {
-                        firstFailure = error;
-                    }
+            if (living == null) {
+                continue;
+            }
+            try {
+                EffectParticleState state = particleStates.get(uuid);
+                ViewerEffectPackets.setEffectParticleMetadata(
+                        living, state.vanillaParticles(), state.vanillaAmbient());
+            } catch (RuntimeException | LinkageError error) {
+                if (firstFailure == null) {
+                    firstFailure = error;
                 }
             }
         }
@@ -937,7 +1019,7 @@ public final class EffectService implements Listener {
             plugin.getLogger().log(java.util.logging.Level.WARNING,
                     "无法恢复部分实体的客户端原版药水粒子 metadata", firstFailure);
         }
-        effectParticleDataCache.clear();
+        particleStates.clear();
         pendingEffectParticleRefresh.clear();
     }
 
@@ -947,21 +1029,22 @@ public final class EffectService implements Listener {
         }
         particleMetadataAvailable = false;
         // A late bridge failure may occur after other entities already received
-        // custom metadata. Best-effort restoration prevents fallback packets
+        // merged metadata. Best-effort restoration prevents fallback packets
         // from being rendered together with stale client-generated swirls.
-        for (UUID uuid : new ArrayList<>(effectParticleDataCache.keySet())) {
+        for (UUID uuid : new ArrayList<>(particleStates.keySet())) {
             LivingEntity living = activeEntities.get(uuid);
             if (living == null) {
                 continue;
             }
             try {
-                sendEffectParticleMetadata(living,
-                        ViewerEffectPackets.effectParticleMetadata(living, List.of()));
+                EffectParticleState state = particleStates.get(uuid);
+                ViewerEffectPackets.setEffectParticleMetadata(
+                        living, state.vanillaParticles(), state.vanillaAmbient());
             } catch (RuntimeException | LinkageError ignored) {
                 // The original bridge failure is logged below.
             }
         }
-        effectParticleDataCache.clear();
+        particleStates.clear();
         pendingEffectParticleRefresh.clear();
         plugin.getLogger().log(java.util.logging.Level.WARNING,
                 "无法使用 Paper 26.2 效果粒子 metadata 桥接，将回退到服务端粒子包", error);
@@ -1293,6 +1376,8 @@ public final class EffectService implements Listener {
                         }
                     }
                 }
+                // 新的倒置目标需要追踪重放：确保 PlayerTrackEntityEvent 监听器在线。
+                ensureTrackReplayListener();
             }
             case PREFIX + "zenith" -> {
                 Location current = user.getLocation();
@@ -1478,14 +1563,16 @@ public final class EffectService implements Listener {
     private void load(LivingEntity living) {
         Map<String, ActiveEffect> effects = read(living);
         if (effects.isEmpty()) {
-            restoreEffectParticleMetadata(living);
+            restoreVanillaParticleState(living);
             activeEntities.remove(living.getUniqueId());
             active.remove(living.getUniqueId());
         } else {
             active.put(living.getUniqueId(), effects);
             activeEntities.put(living.getUniqueId(), living);
             ensureTickTask();
-            syncEffectParticleMetadata(living, effects);
+            // 实体加载后不立即读取可能尚未稳定的 metadata：等两 tick 让 NMS
+            // 根据存档里的真实药水效果恢复纯原版粒子，再合并写入。代价只是
+            // 加载后约 0.1 秒内 Tavern 粒子暂不可见，比读取错误/重复粒子安全。
             scheduleEffectParticleRefresh(living, 2L);
         }
         reconcileAttributes(living, effects);
@@ -1684,7 +1771,7 @@ public final class EffectService implements Listener {
     }
 
     private void clearEffects(LivingEntity living) {
-        restoreEffectParticleMetadata(living);
+        restoreVanillaParticleState(living);
         activeEntities.remove(living.getUniqueId());
         active.remove(living.getUniqueId());
         visionPacketExpiry.remove(living.getUniqueId());
@@ -1695,7 +1782,33 @@ public final class EffectService implements Listener {
             hideEffectHud(player);
             restorePrivateTipsyVisual(player);
         }
+        stopTrackReplayListenerIfIdle();
         stopTickTaskIfIdle();
+    }
+
+    /** 只读的追踪重放与粒子构建统计，供 /kt status 与排障使用。 */
+    public record EffectStats(long trackEvents, long trackHits, long trackFlushes,
+                              long metadataBuilds) {
+    }
+
+    public EffectStats effectStats() {
+        return new EffectStats(trackEvents, trackHits, trackFlushes,
+                particleMetadataBuilds);
+    }
+
+    /** 纯原版粒子快照：写入合并列表后必须基于它，不能二次读取真实字段。 */
+    private record EffectParticleState(List<Object> vanillaParticles,
+                                       boolean vanillaAmbient) {
+    }
+
+    /** 一个 tick 内同一目标实体的 upside_down 追踪重放，按 viewer 分组。 */
+    private static final class PendingTrackTarget {
+        private final LivingEntity target;
+        private final List<Player> upsideDownViewers = new ArrayList<>();
+
+        private PendingTrackTarget(LivingEntity target) {
+            this.target = target;
+        }
     }
 
     private enum TickKind {

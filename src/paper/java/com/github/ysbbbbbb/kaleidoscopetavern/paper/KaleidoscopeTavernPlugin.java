@@ -690,6 +690,11 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
                 + "，酒桶 " + catalog.barrelRecipes().size()
                 + "，摇壶 " + catalog.shakerRecipes().size()
                 + "，饮用效果 " + catalog.effectEntryCount()));
+        EffectService.EffectStats effectStats = effects.effectStats();
+        sender.sendMessage(Component.text("效果追踪：事件 " + effectStats.trackEvents()
+                + "，命中 " + effectStats.trackHits()
+                + "，批处理 " + effectStats.trackFlushes()
+                + "，metadata 构建 " + effectStats.metadataBuilds()));
         LegacyPressingTubMigrationFurnitureBehavior.MigrationStats migration =
                 LegacyPressingTubMigrationFurnitureBehavior.stats();
         if (migration.loaded() > 0 || migration.migrated() > 0

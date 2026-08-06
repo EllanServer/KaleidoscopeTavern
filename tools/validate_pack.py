@@ -2515,12 +2515,13 @@ def validate() -> dict[str, int]:
                 "Paper entity lifecycle events must keep custom-effect ticks free of repeated "
                 f"validity/UUID probes; found {stale_effect_entity_probe}")
     for event_particle_token in (
-            "private final Map<UUID, List<Object>> effectParticleDataCache",
+            "private final Map<UUID, EffectParticleState> particleStates",
             "private final Set<UUID> pendingEffectParticleRefresh",
             "scheduleEffectParticleRefresh(event.getEntity(), 2L)",
             "syncEffectParticleMetadata(target, effects)",
             "syncEffectParticleMetadata(living, effects)",
-            "sendEffectParticleMetadata(viewer, living)",
+            "refreshAfterVanillaPotionChange(",
+            "restoreVanillaParticleState(living)",
             "restoreAllEffectParticleMetadata()",
             "if (!particleMetadataAvailable) {\n                spawnEffectParticles(living, effects);",
             "effect.tickKind() != TickKind.NONE",
@@ -2529,22 +2530,44 @@ def validate() -> dict[str, int]:
             "living.isInvisible() && elapsedTicks % 15L != 0"):
         if event_particle_token not in effect_service_source:
             raise AssertionError(
-                "Custom effect particles must use event-driven client metadata and keep the "
+                "Custom effect particles must live in the real SynchedEntityData and keep the "
                 f"legacy tick path as failure-only fallback; missing {event_particle_token}")
+    for stale_particle_replay in (
+            "sendEffectParticleMetadata(",
+            "effectParticleDataCache",
+            "buildEffectParticleMetadata"):
+        if stale_particle_replay in effect_service_source:
+            raise AssertionError(
+                "Custom effect particles must not be replayed through PlayerTrackEntityEvent "
+                f"or per-viewer packet sends; stale token: {stale_particle_replay}")
+    for real_metadata_token in (
+            "readEffectParticles(",
+            "readEffectAmbience(",
+            "setEffectParticleMetadata(",
+            "LivingEntityData.EffectParticles.entityDataAccessor()",
+            "LivingEntityData.EffectAmbience.entityDataAccessor()",
+            "SynchedEntityDataProxy.INSTANCE.set("):
+        if real_metadata_token not in viewer_packet_source:
+            raise AssertionError(
+                "Custom effect particles must write the real SynchedEntityData through CE's "
+                f"LivingEntityData accessors; missing {real_metadata_token}")
+    for stale_packall_bridge in ("findDataValueBySerializer(", "EntityDataSerializersProxy.PARTICLES"):
+        if stale_packall_bridge in viewer_packet_source:
+            raise AssertionError(
+                "Custom effect particles must not scan packed metadata for serializer ids; "
+                f"stale token: {stale_packall_bridge}")
+    for track_listener_token in (
+            "private final TrackReplayListener trackReplayListener",
+            "HandlerList.unregisterAll(trackReplayListener)",
+            "ensureTrackReplayListener()",
+            "stopTrackReplayListenerIfIdle()"):
+        if track_listener_token not in effect_service_source:
+            raise AssertionError(
+                "Track replay must live in a dynamically registered listener that only "
+                f"handles upside_down; missing {track_listener_token}")
     if "living.getWorld().spawnParticle(Particle.ENTITY_EFFECT,\n                box." in effect_service_source:
         raise AssertionError(
             "Custom effect particles must not scan every player in the world")
-    for metadata_bridge_token in (
-            "EntityDataSerializersProxy.PARTICLES",
-            "findDataValueBySerializer(",
-            "mergedParticles.addAll(vanillaParticles)",
-            "mergedParticles.addAll(customParticles)",
-            "EntityDataSerializersProxy.BOOLEAN, false",
-            "sendEffectParticleMetadata(Collection<Player> viewers"):
-        if metadata_bridge_token not in viewer_packet_source:
-            raise AssertionError(
-                "Custom effect particles must merge Paper's real potion metadata and let "
-                f"clients render it; missing {metadata_bridge_token}")
     for fallback_particle_bridge_token in (
             "Set<Player> trackedBy = living.getTrackedBy()",
             "effectParticleOptionCache.get(chosen)",
