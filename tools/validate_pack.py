@@ -1921,8 +1921,9 @@ def validate() -> dict[str, int]:
             "currentHandler.visuals(bukkitFurniture, maxElements)",
             "VisualSnapshot current = controller.currentSnapshot()",
             "DisplayData.ItemDisplayData.ItemStack.addEntityData",
-            "DisplayData.LeftRotation.addEntityDataIfNotDefaultValue",
-            "DisplayData.ItemDisplayData.ItemTransform.addEntityDataIfNotDefaultValue",
+            "DisplayData.ItemDisplayData.ItemTransform.addEntityData(",
+            "DisplayData.Scale.addEntityData(",
+            "DisplayData.LeftRotation.addEntityData(",
             "ClientboundAddEntityPacketProxy.INSTANCE.newInstance",
             "ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance",
             "player.sendPackets",
@@ -1937,6 +1938,15 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "station_visual_furniture must never create persistent Bukkit entities; "
                 f"stale token: {stale_station_element_token}")
+    for stale_station_metadata_token in (
+            "ItemTransform.addEntityDataIfNotDefaultValue",
+            "Scale.addEntityDataIfNotDefaultValue",
+            "LeftRotation.addEntityDataIfNotDefaultValue"):
+        if stale_station_metadata_token in station_visual_source:
+            raise AssertionError(
+                "Reused station visual slots must write transform/scale/rotation "
+                "unconditionally so clients reset to defaults; stale token: "
+                f"{stale_station_metadata_token}")
     tap_source = (game_package / "TapService.java").read_text(
         encoding="utf-8-sig")
     tap_block_source = (game_package / "block/TapBlockBehavior.java").read_text(

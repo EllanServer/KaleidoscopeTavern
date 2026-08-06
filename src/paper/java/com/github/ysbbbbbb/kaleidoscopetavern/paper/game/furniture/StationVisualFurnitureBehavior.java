@@ -300,11 +300,14 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
             List<Object> metadata = new ArrayList<>(4);
             DisplayData.ItemDisplayData.ItemStack.addEntityData(
                     visual.item().minecraftItem(), metadata);
-            DisplayData.ItemDisplayData.ItemTransform.addEntityDataIfNotDefaultValue(
+            // 实体 ID 会在代间复用（原料视觉可能变为液体视觉），差量更新时
+            // 必须无条件写回变换字段：FIXED/NONE、scale、四元数一旦等于客户端
+            // 默认值，IfNotDefaultValue 会省略，客户端会残留上一状态的旧变换。
+            DisplayData.ItemDisplayData.ItemTransform.addEntityData(
                     visual.itemTransform(), metadata);
-            DisplayData.Scale.addEntityDataIfNotDefaultValue(
+            DisplayData.Scale.addEntityData(
                     new Vector3f(visual.scale()), metadata);
-            DisplayData.LeftRotation.addEntityDataIfNotDefaultValue(
+            DisplayData.LeftRotation.addEntityData(
                     visual.leftRotation(), metadata);
             return ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
                     entityIds[index], metadata);
