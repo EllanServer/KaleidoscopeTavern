@@ -22,14 +22,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Apply queued CE-configuration refactor
-        if: github.event_name == 'pull_request' && hashFiles('.github/ce-config-refactor.patch.gz.b64') != ''
+        if: github.event_name == 'pull_request' && hashFiles('.github/ce-config-refactor.patch.gz.b64.part00') != ''
         env:
           HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
         shell: bash
         run: |
-          base64 --decode .github/ce-config-refactor.patch.gz.b64 | gzip --decompress > /tmp/ce-config-refactor.patch
+          cat .github/ce-config-refactor.patch.gz.b64.part* | base64 --decode | gzip --decompress > /tmp/ce-config-refactor.patch
           git apply --whitespace=nowarn /tmp/ce-config-refactor.patch
-          rm .github/ce-config-refactor.patch.gz.b64
+          rm .github/ce-config-refactor.patch.gz.b64.part*
           git fetch origin main --depth=1
           git checkout FETCH_HEAD -- .github/workflows/paper-26.2.yml
           git config user.name "github-actions[bot]"
