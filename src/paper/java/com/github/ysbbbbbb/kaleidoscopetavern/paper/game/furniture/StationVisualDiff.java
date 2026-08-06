@@ -92,13 +92,15 @@ final class StationVisualDiff {
     }
 
     static boolean metadataChanged(Visual oldVisual, Visual newVisual) {
-        return itemChanged(oldVisual.item(), newVisual.item())
-                || oldVisual.itemTransform() != newVisual.itemTransform()
+        // 先比较便宜的 float/byte 字段；旋转稳定后这些字段大多数情况下不变，
+        // 能短路跳过昂贵的 Item.isSimilar 内容比较。
+        return oldVisual.itemTransform() != newVisual.itemTransform()
                 || oldVisual.scale() != newVisual.scale()
                 || oldVisual.rotX() != newVisual.rotX()
                 || oldVisual.rotY() != newVisual.rotY()
                 || oldVisual.rotZ() != newVisual.rotZ()
-                || oldVisual.rotW() != newVisual.rotW();
+                || oldVisual.rotW() != newVisual.rotW()
+                || itemChanged(oldVisual.item(), newVisual.item());
     }
 
     /**

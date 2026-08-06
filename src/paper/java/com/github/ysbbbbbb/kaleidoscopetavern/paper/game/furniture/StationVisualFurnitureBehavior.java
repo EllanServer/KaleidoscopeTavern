@@ -150,6 +150,9 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
     private record VisualSnapshot(long generation, List<Visual> visuals) {
     }
 
+    private record ViewerState(long generation, int visibleCount) {
+    }
+
     private static final class Controller extends FurnitureController {
         private final BukkitFurniture bukkitFurniture;
         private final int maxElements;
@@ -230,10 +233,14 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         private int[] entityIds = new int[8];
         private UUID[] entityUuids = new UUID[8];
         private int allocated;
-        private final Map<Player, Long> playerGenerations = new IdentityHashMap<>();
-        private final Map<Player, Integer> playerVisibleCount = new IdentityHashMap<>();
+        private final Map<Player, ViewerState> viewerStates = new IdentityHashMap<>();
         private long preparedGeneration = -1;
         private PreparedVisual[] prepared = new PreparedVisual[0];
+        // 每代只计算一次的增量 diff；本代无 SPAWN 时 sharedPackets 为整代共享的
+        // packet 列表（null 表示含 SPAWN，需按玩家构建以附加 ViewRange）。
+        private long opsGeneration = -1;
+        private List<StationVisualDiff.Op> incrementalOps;
+        private List<Object> sharedPackets;
 
         private StationVisualElement(Controller controller, int maxElements,
                                      float viewRange) {
@@ -340,47 +347,106 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         public void show(Player player) {
             VisualSnapshot snapshot = controller.currentSnapshot();
             PreparedVisual[] currentPrepared = prepared(snapshot);
-            sendOps(player, currentPrepared,
-                    StationVisualDiff.fullResync(0, currentPrepared.length),
-                    snapshot.generation(), currentPrepared.length);
+            sendFullResync(player, currentPrepared, null, snapshot.generation());
         }
 
         @Override
         public void hide(Player player) {
-            Integer count = playerVisibleCount.remove(player);
-            if (count != null && count > 0) {
-                player.sendPacket(removePacket(0, count), false);
+            ViewerState state = viewerStates.remove(player);
+            if (state != null && state.visibleCount > 0) {
+                player.sendPacket(removePacket(0, state.visibleCount), false);
             }
-            playerGenerations.remove(player);
         }
 
         @Override
         public void update(Player player) {
             VisualSnapshot current = controller.currentSnapshot();
             VisualSnapshot previous = controller.previousSnapshot();
-            Long lastGeneration = playerGenerations.get(player);
-            int lastCount = playerVisibleCount.getOrDefault(player, 0);
             PreparedVisual[] currentPrepared = prepared(current);
-            if (lastGeneration == null || previous == null
-                    || previous.generation() != lastGeneration) {
+            ViewerState state = viewerStates.get(player);
+            if (state == null || previous == null
+                    || previous.generation() != state.generation) {
                 // First sight or more than one version behind: the old entities
                 // must be dropped explicitly before respawning the new list.
-                sendOps(player, currentPrepared,
-                        StationVisualDiff.fullResync(lastCount, currentPrepared.length),
-                        current.generation(), currentPrepared.length);
+                sendFullResync(player, currentPrepared, state, current.generation());
                 return;
             }
+            sendIncremental(player, current, previous, currentPrepared);
+        }
+
+        /** 落后一代以上或首次：按玩家单独 full resync。 */
+        private void sendFullResync(Player player, PreparedVisual[] currentPrepared,
+                                    ViewerState state, long generation) {
+            int lastCount = state == null ? 0 : state.visibleCount;
             sendOps(player, currentPrepared,
-                    StationVisualDiff.compute(previous.visuals(), current.visuals(),
-                            lastCount, currentPrepared.length),
+                    StationVisualDiff.fullResync(lastCount, currentPrepared.length),
+                    generation, currentPrepared.length);
+        }
+
+        /**
+         * 跟上版本的观察者共享同一份增量 diff；本代无 SPAWN 时连 packet 列表
+         * 也整代共享，只有含 SPAWN 的代才退回按玩家构建（需逐玩家 ViewRange）。
+         */
+        private void sendIncremental(Player player, VisualSnapshot current,
+                                     VisualSnapshot previous,
+                                     PreparedVisual[] currentPrepared) {
+            prepareIncrementalOps(current, previous, currentPrepared);
+            viewerStates.put(player, new ViewerState(
+                    current.generation(), currentPrepared.length));
+            if (incrementalOps.isEmpty()) {
+                return;
+            }
+            if (sharedPackets != null) {
+                player.sendPackets(sharedPackets, false);
+                return;
+            }
+            sendOps(player, currentPrepared, incrementalOps,
                     current.generation(), currentPrepared.length);
+        }
+
+        private void prepareIncrementalOps(VisualSnapshot current,
+                                           VisualSnapshot previous,
+                                           PreparedVisual[] currentPrepared) {
+            if (opsGeneration == current.generation()) {
+                return;
+            }
+            opsGeneration = current.generation();
+            // 跟上版本的观察者 visibleCount 都等于上一代的 prepared 长度。
+            int previousCount = Math.min(maxElements, previous.visuals().size());
+            incrementalOps = StationVisualDiff.compute(
+                    previous.visuals(), current.visuals(),
+                    previousCount, currentPrepared.length);
+            if (incrementalOps.isEmpty()) {
+                sharedPackets = List.of();
+                return;
+            }
+            List<Object> packets = new ArrayList<>(incrementalOps.size() * 2 + 1);
+            for (StationVisualDiff.Op op : incrementalOps) {
+                if (op.type() == StationVisualDiff.OpType.SPAWN) {
+                    // SPAWN 需要逐玩家的 ViewRange，本代退回 per-player 构建。
+                    sharedPackets = null;
+                    return;
+                }
+                packets.add(packetFor(currentPrepared, op));
+            }
+            sharedPackets = packets;
+        }
+
+        private Object packetFor(PreparedVisual[] currentPrepared,
+                                 StationVisualDiff.Op op) {
+            return switch (op.type()) {
+                case METADATA -> currentPrepared[op.index()].metadataPacket();
+                case POSITION -> currentPrepared[op.index()].positionPacket();
+                case REMOVE -> removePacket(op.index(), op.to());
+                case SPAWN -> throw new AssertionError(
+                        "SPAWN packets are built per player for ViewRange");
+            };
         }
 
         private void sendOps(Player player, PreparedVisual[] currentPrepared,
                              List<StationVisualDiff.Op> ops,
                              long generation, int visibleCount) {
-            playerGenerations.put(player, generation);
-            playerVisibleCount.put(player, visibleCount);
+            viewerStates.put(player, new ViewerState(generation, visibleCount));
             if (ops.isEmpty()) {
                 return;
             }
