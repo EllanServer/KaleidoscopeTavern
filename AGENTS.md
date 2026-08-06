@@ -56,3 +56,5 @@
   必须删除该临时映射。
 - 正式服升级前需备份世界。Forge 方块实体 NBT 与 CraftEngine 家具/PDC 不同，旧世界中已放置的设备
   不会自动原地转换。
+
+<!-- snapshot-trigger -->
