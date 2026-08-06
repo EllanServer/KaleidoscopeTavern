@@ -100,17 +100,30 @@ class StationVisualDiffTest {
     }
 
     @Test
-    void fluidSlotShiftOnlyTouchesTheBoundarySlot() {
-        // 16 items + fluid (17 slots) -> fluid disappears, only slot 16 goes.
-        List<StationVisualFurnitureBehavior.Visual> withFluid = items(17);
-        List<StationVisualFurnitureBehavior.Visual> withoutFluid = items(16);
-        assertEquals(List.of(new StationVisualDiff.Op(
-                        StationVisualDiff.OpType.REMOVE, 16, 17)),
-                StationVisualDiff.compute(withFluid, withoutFluid, 17, 16));
-        // Fluid appears, only slot 16 is spawned.
-        assertEquals(List.of(new StationVisualDiff.Op(
-                        StationVisualDiff.OpType.SPAWN, 16)),
-                StationVisualDiff.compute(withoutFluid, withFluid, 16, 17));
+    void shrinkingPileMovesFluidIntoFormerItemSlot() {
+        // 液体视觉追加在原料之后：16 原料 + 1 液体 → 15 原料 + 1 液体时，
+        // 液体从槽位 16 滑入槽位 15，槽位 15 由原料变为液体，
+        // 真实 diff 是 POSITION 15 + METADATA 15 + REMOVE 16。
+        List<StationVisualFurnitureBehavior.Visual> before = itemsWithFluid(16);
+        List<StationVisualFurnitureBehavior.Visual> after = itemsWithFluid(15);
+        assertEquals(List.of(
+                        new StationVisualDiff.Op(StationVisualDiff.OpType.POSITION, 15),
+                        new StationVisualDiff.Op(StationVisualDiff.OpType.METADATA, 15),
+                        new StationVisualDiff.Op(StationVisualDiff.OpType.REMOVE, 16, 17)),
+                StationVisualDiff.compute(before, after, 17, 16));
+    }
+
+    @Test
+    void growingPileMovesFluidIntoNewSlot() {
+        // 15 原料 + 1 液体 → 16 原料 + 1 液体：槽位 15 由液体变回原料，
+        // 液体出现在新的槽位 16。
+        List<StationVisualFurnitureBehavior.Visual> before = itemsWithFluid(15);
+        List<StationVisualFurnitureBehavior.Visual> after = itemsWithFluid(16);
+        assertEquals(List.of(
+                        new StationVisualDiff.Op(StationVisualDiff.OpType.POSITION, 15),
+                        new StationVisualDiff.Op(StationVisualDiff.OpType.METADATA, 15),
+                        new StationVisualDiff.Op(StationVisualDiff.OpType.SPAWN, 16)),
+                StationVisualDiff.compute(before, after, 16, 17));
     }
 
     @Test
@@ -146,6 +159,26 @@ class StationVisualDiffTest {
             result.add(visual(itemA()));
         }
         return result;
+    }
+
+    /**
+     * {@code itemCount} 个原料视觉 + 末尾 1 个液体视觉，模拟压榨桶的真实
+     * 槽位布局：液体追加在原料之后，随原料数量增减在槽位间滑动。
+     */
+    private static List<StationVisualFurnitureBehavior.Visual> itemsWithFluid(int itemCount) {
+        List<StationVisualFurnitureBehavior.Visual> result = new ArrayList<>(itemCount + 1);
+        for (int index = 0; index < itemCount; index++) {
+            result.add(visual(itemA()));
+        }
+        result.add(fluidVisual());
+        return result;
+    }
+
+    private static StationVisualFurnitureBehavior.Visual fluidVisual() {
+        // 液体与原料在位置与 metadata 上都不同：y 抬高、NONE 变换。
+        return StationVisualFurnitureBehavior.Visual.of(
+                itemB(), 0, 0, 0.5, 0, 0, 1, new Quaternionf(),
+                StationVisualFurnitureBehavior.ITEM_TRANSFORM_NONE);
     }
 
     private static StationVisualFurnitureBehavior.Visual visual(Item item) {

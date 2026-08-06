@@ -236,11 +236,10 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         private final Map<Player, ViewerState> viewerStates = new IdentityHashMap<>();
         private long preparedGeneration = -1;
         private PreparedVisual[] prepared = new PreparedVisual[0];
-        // 每代只计算一次的增量 diff；本代无 SPAWN 时 sharedPackets 为整代共享的
-        // packet 列表（null 表示含 SPAWN，需按玩家构建以附加 ViewRange）。
-        private long opsGeneration = -1;
-        private List<StationVisualDiff.Op> incrementalOps;
+        private final StationGenerationDiff generationDiff = new StationGenerationDiff();
+        // 本代无 SPAWN 时整代共享的 packet 列表（null 表示含 SPAWN，需按玩家构建）。
         private List<Object> sharedPackets;
+        private long sharedPacketsGeneration = -1;
 
         private StationVisualElement(Controller controller, int maxElements,
                                      float viewRange) {
@@ -393,46 +392,53 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         private void sendIncremental(Player player, VisualSnapshot current,
                                      VisualSnapshot previous,
                                      PreparedVisual[] currentPrepared) {
-            prepareIncrementalOps(current, previous, currentPrepared);
+            List<StationVisualDiff.Op> ops =
+                    prepareIncrementalOps(current, previous, currentPrepared);
             viewerStates.put(player, new ViewerState(
                     current.generation(), currentPrepared.length));
-            if (incrementalOps.isEmpty()) {
+            if (ops.isEmpty()) {
                 return;
             }
             if (sharedPackets != null) {
                 player.sendPackets(sharedPackets, false);
                 return;
             }
-            sendOps(player, currentPrepared, incrementalOps,
+            sendOps(player, currentPrepared, ops,
                     current.generation(), currentPrepared.length);
         }
 
-        private void prepareIncrementalOps(VisualSnapshot current,
-                                           VisualSnapshot previous,
-                                           PreparedVisual[] currentPrepared) {
-            if (opsGeneration == current.generation()) {
-                return;
+        /**
+         * 返回本代增量 diff（按 generation 缓存，所有跟上版本观察者共享同一
+         * 实例），并预构建无 SPAWN 时整代共享的 packet 列表。
+         */
+        private List<StationVisualDiff.Op> prepareIncrementalOps(
+                VisualSnapshot current, VisualSnapshot previous,
+                PreparedVisual[] currentPrepared) {
+            List<StationVisualDiff.Op> ops = generationDiff.forGeneration(
+                    current.generation(), previous.visuals(), current.visuals(),
+                    maxElements, currentPrepared.length);
+            if (!generationDiff.isSharedEligible()) {
+                // 含 SPAWN：需逐玩家 ViewRange，退回 per-player 构建。
+                sharedPackets = null;
+                return ops;
             }
-            opsGeneration = current.generation();
-            // 跟上版本的观察者 visibleCount 都等于上一代的 prepared 长度。
-            int previousCount = Math.min(maxElements, previous.visuals().size());
-            incrementalOps = StationVisualDiff.compute(
-                    previous.visuals(), current.visuals(),
-                    previousCount, currentPrepared.length);
-            if (incrementalOps.isEmpty()) {
-                sharedPackets = List.of();
-                return;
+            if (sharedPacketsGeneration != current.generation()) {
+                sharedPacketsGeneration = current.generation();
+                sharedPackets = buildSharedPackets(currentPrepared, ops);
             }
-            List<Object> packets = new ArrayList<>(incrementalOps.size() * 2 + 1);
-            for (StationVisualDiff.Op op : incrementalOps) {
-                if (op.type() == StationVisualDiff.OpType.SPAWN) {
-                    // SPAWN 需要逐玩家的 ViewRange，本代退回 per-player 构建。
-                    sharedPackets = null;
-                    return;
-                }
+            return ops;
+        }
+
+        private List<Object> buildSharedPackets(PreparedVisual[] currentPrepared,
+                                                List<StationVisualDiff.Op> ops) {
+            if (ops.isEmpty()) {
+                return List.of();
+            }
+            List<Object> packets = new ArrayList<>(ops.size() * 2 + 1);
+            for (StationVisualDiff.Op op : ops) {
                 packets.add(packetFor(currentPrepared, op));
             }
-            sharedPackets = packets;
+            return packets;
         }
 
         private Object packetFor(PreparedVisual[] currentPrepared,

@@ -92,8 +92,8 @@ final class StationVisualDiff {
     }
 
     static boolean metadataChanged(Visual oldVisual, Visual newVisual) {
-        // 先比较便宜的 float/byte 字段；旋转稳定后这些字段大多数情况下不变，
-        // 能短路跳过昂贵的 Item.isSimilar 内容比较。
+        // 变换字段已经变化时，metadata packet 必然需要重发，无需再比较 Item 内容；
+        // 变换字段不变时，才需要继续比较 Item（Item.isSimilar）判断内容是否变化。
         return oldVisual.itemTransform() != newVisual.itemTransform()
                 || oldVisual.scale() != newVisual.scale()
                 || oldVisual.rotX() != newVisual.rotX()
