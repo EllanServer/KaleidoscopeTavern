@@ -29,6 +29,7 @@ jobs:
         run: |
           base64 --decode .github/table-connection-fix.patch.gz.b64 | gzip --decompress > /tmp/table-connection-fix.patch
           git apply --whitespace=nowarn /tmp/table-connection-fix.patch
+          python tools/migrate_legacy.py
           rm .github/table-connection-fix.patch.gz.b64
           git fetch origin main --depth=1
           git checkout FETCH_HEAD -- .github/workflows/paper-26.2.yml
