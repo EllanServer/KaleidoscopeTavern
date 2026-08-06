@@ -4,6 +4,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.FurnitureSpatialSemanti
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.furniture.Furniture;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureDefinition;
+import net.momirealms.craftengine.core.entity.furniture.FurnitureVariant;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehaviorTemplate;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehaviors;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureController;
@@ -239,12 +240,7 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
                 Location location = bukkitFurniture.location();
                 worldId = location.getWorld().getUID();
                 column = packColumn(location.getBlockX(), location.getBlockZ());
-                Map<UUID, WorldIndex> channelWorlds = SPATIAL.computeIfAbsent(
-                        channel, ignored -> new HashMap<>());
-                WorldIndex worldIndex = channelWorlds.computeIfAbsent(
-                        worldId, ignored -> new WorldIndex());
-                worldIndex.columns.computeIfAbsent(column,
-                        ignored -> new HashSet<>()).add(this);
+                addToSpatialIndex();
             }
             readyReason = reason;
             READY.computeIfAbsent(channel,
@@ -263,25 +259,7 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
                     READY.remove(channel, controllers);
                 }
             }
-            Map<UUID, WorldIndex> channelWorlds = SPATIAL.get(channel);
-            if (channelWorlds != null) {
-                WorldIndex worldIndex = channelWorlds.get(worldId);
-                if (worldIndex != null) {
-                    Set<Controller> columnControllers = worldIndex.columns.get(column);
-                    if (columnControllers != null) {
-                        columnControllers.remove(this);
-                        if (columnControllers.isEmpty()) {
-                            worldIndex.columns.remove(column, columnControllers);
-                        }
-                    }
-                    if (worldIndex.columns.isEmpty()) {
-                        channelWorlds.remove(worldId, worldIndex);
-                    }
-                }
-                if (channelWorlds.isEmpty()) {
-                    SPATIAL.remove(channel, channelWorlds);
-                }
-            }
+            removeFromSpatialIndex();
             Handler currentHandler = HANDLERS.get(channel);
             if (currentHandler != null && currentHandler == deliveredHandler) {
                 currentHandler.onUnavailable(bukkitFurniture, removed, stopping);
@@ -289,6 +267,64 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
             readyReason = null;
             deliveredHandler = null;
             deliveredReason = null;
+        }
+
+        /**
+         * CraftEngine 的 {@code moveTo} 只更新 location 并重建变体，不触发
+         * onLoad/onUnload；这里在 onVariantChange 中按新位置重索引，否则
+         * {@link #atBlock} 的精确列查询会在家具移动后查不到它。
+         */
+        @Override
+        public void onVariantChange(FurnitureVariant previousVariant) {
+            reindexIfMoved();
+        }
+
+        private void reindexIfMoved() {
+            if (readyReason == null) {
+                return;
+            }
+            Location location = bukkitFurniture.location();
+            UUID newWorldId = location.getWorld().getUID();
+            long newColumn = packColumn(location.getBlockX(), location.getBlockZ());
+            if (newWorldId.equals(worldId) && newColumn == column) {
+                return;
+            }
+            removeFromSpatialIndex();
+            worldId = newWorldId;
+            column = newColumn;
+            addToSpatialIndex();
+        }
+
+        private void addToSpatialIndex() {
+            Map<UUID, WorldIndex> channelWorlds = SPATIAL.computeIfAbsent(
+                    channel, ignored -> new HashMap<>());
+            WorldIndex worldIndex = channelWorlds.computeIfAbsent(
+                    worldId, ignored -> new WorldIndex());
+            worldIndex.columns.computeIfAbsent(column,
+                    ignored -> new HashSet<>()).add(this);
+        }
+
+        private void removeFromSpatialIndex() {
+            Map<UUID, WorldIndex> channelWorlds = SPATIAL.get(channel);
+            if (channelWorlds == null) {
+                return;
+            }
+            WorldIndex worldIndex = channelWorlds.get(worldId);
+            if (worldIndex != null) {
+                Set<Controller> columnControllers = worldIndex.columns.get(column);
+                if (columnControllers != null) {
+                    columnControllers.remove(this);
+                    if (columnControllers.isEmpty()) {
+                        worldIndex.columns.remove(column, columnControllers);
+                    }
+                }
+                if (worldIndex.columns.isEmpty()) {
+                    channelWorlds.remove(worldId, worldIndex);
+                }
+            }
+            if (channelWorlds.isEmpty()) {
+                SPATIAL.remove(channel, channelWorlds);
+            }
         }
 
         private void deliver(Handler handler) {
