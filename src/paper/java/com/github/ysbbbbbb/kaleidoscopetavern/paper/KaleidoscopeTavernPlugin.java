@@ -403,9 +403,14 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
                                 + " tilt=" + tilt + " waterlogged=" + waterlogged);
                         return false;
                     }
-                    BlockStateWrapper visual = state.customBlockState();
-                    if (visual == null || visual.minecraftState() == null) {
-                        getLogger().severe("压榨桶状态缺少 visual carrier：facing="
+                    // visualBlockState 才是真正的 vanilla 视觉宿主（released
+                    // cut_copper_slab）；customBlockState 返回的是 CE 逻辑状态
+                    // 字符串（kaleidoscope_tavern:pressing_tub[...]），不能用于
+                    // carrier 校验。宿主还必须是非自定义的 vanilla 状态。
+                    BlockStateWrapper visual = state.visualBlockState();
+                    if (visual == null || visual.minecraftState() == null
+                            || visual.isCustom()) {
+                        getLogger().severe("压榨桶状态缺少 vanilla visual carrier：facing="
                                 + facing + " tilt=" + tilt
                                 + " waterlogged=" + waterlogged);
                         return false;
