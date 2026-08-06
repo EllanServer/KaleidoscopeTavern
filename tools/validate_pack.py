@@ -75,6 +75,9 @@ EXPECTED_STATE_FURNITURE = {
     "sweet_berry_wine", "sherry", "mother_snow", "luminous_bride",
     "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
     "watermelon_juice",
+    # Migration-only legacy pressing-tub furniture keeps state_furniture so
+    # old saves load their press_* data for the block conversion.
+    "pressing_tub",
 }
 EXPECTED_BOTTLE_FURNITURE = {
     "empty_bottle", "empty_glassware",
@@ -223,7 +226,7 @@ RENDERER_COVERAGE = {
     "CircularRackBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
     "GlasswareHolderBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
     "HolderBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
-    "PressingTubBlockEntityRender.java": ("StationService.java", "pressingTubVisuals"),
+    "PressingTubBlockEntityRender.java": ("PressingTubVisualFactory.java", "visuals"),
     "SandwichBlockEntityRender.java": ("BoardTextService.java", "sandwich"),
     "ShakerBlockEntityRender.java": ("ShakerVisualService.java", "ShakerAnimationSemantics"),
     "StorageBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
@@ -330,8 +333,8 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     "PressingTubBlock.java": (
         ("block/PressingTubBlockBehavior.java", "void fallOn(Object thisBlock, Object[] args)"),
         ("block/PressingTubBlockBehavior.java", "updateStateForPlacement"),
-        ("StationService.java", "interactPress"),
-        ("StationService.java", "pressOne"),
+        ("PressingTubService.java", "interactPress"),
+        ("PressingTubService.java", "boolean press"),
     ),
     "SandwichBoardBlock.java": (("BoardTextService.java", "transformSandwichBoard"),),
     "ShakerBlock.java": (("StationService.java", "interactShaker"),),
@@ -445,7 +448,11 @@ BLOCK_ENTITY_COVERAGE = {
     "CellarCabinetBlockEntity.java": (("DisplayStorageService.java", "CELLAR_CABINET"),),
     "DrinkBlockEntity.java": (("BottleFurnitureService.java", "storedItems"),),
     "PotionBottleBlockEntity.java": (("BottleFurnitureService.java", "sourceItem"),),
-    "PressingTubBlockEntity.java": (("StationService.java", "pressCount"),),
+    "PressingTubBlockEntity.java": (
+        ("block/PressingTubBlockBehavior.java",
+         'private static final String DATA_KEY = "kaleidoscope_tavern:press"'),
+        ("furniture/LegacyPressingTubMigrationFurnitureBehavior.java", "press_count"),
+    ),
     "TapBlockEntity.java": (
         ("block/TapBlockBehavior.java", "private Cycle cycle"),
         ("block/TapBlockBehavior.java", "DRIP_LIFETIME_TICKS = 18"),
@@ -725,8 +732,10 @@ def validate() -> dict[str, int]:
         raise AssertionError(f"Expected 157 public items, found {len(items)}")
     if len(blocks) != 39:
         raise AssertionError(f"Expected 39 grid/state blocks, found {len(blocks)}")
-    if len(furniture) != 135:
-        raise AssertionError(f"Expected 135 furniture definitions, found {len(furniture)}")
+    if len(furniture) != 136:
+        raise AssertionError(
+            f"Expected 136 furniture definitions (incl. the migration-only "
+            f"legacy pressing tub), found {len(furniture)}")
     if len(render_items) != 503:
         raise AssertionError(f"Expected 503 private render items, found {len(render_items)}")
     if len(recipes) != 114:
@@ -1175,7 +1184,10 @@ def validate() -> dict[str, int]:
         unexpected = sorted(set(blocks) - expected_grid_blocks)
         missing = sorted(expected_grid_blocks - set(blocks))
         raise AssertionError(f"Grid/furniture classification drift: unexpected={unexpected}, missing={missing}")
-    if set(blocks) & set(furniture):
+    # The pressing tub is the sole dual entry: it is a CE block, and a
+    # migration-only furniture definition keeps old saves loadable until the
+    # legacy tubs are converted and removed.
+    if set(blocks) & set(furniture) - {f"{NAMESPACE}:pressing_tub"}:
         raise AssertionError("A placeable definition cannot be both a CE block and CE furniture")
 
     for wild_id in ("wild_grapevine", "wild_grapevine_plant"):
@@ -1483,9 +1495,11 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "pressing_tub block must keep the CE fallOn intercept and "
                 f"source placement semantics; missing token: {required_token}")
+    # 冗余的 updateEntityMovementAfterFallOn override 已按 P7 删除，父类
+    # BukkitBlockBehavior 提供实现；热路径截止到下一个方法 useOnBlock。
     fall_on_hot_path = pressing_behavior_source.partition(
         "public void fallOn(Object thisBlock, Object[] args) {")[2].partition(
-        "public void updateEntityMovementAfterFallOn(")[0]
+        "public InteractionResult useOnBlock(")[0]
     for stale_token in ("getBukkitEntity", "PressingTubSemantics",
                         "hasPotentialBelow", "findBelow", "pressLandingTracker",
                         "EntityMoveEvent", "PlayerMoveEvent", "onFallDamage"):
@@ -1493,6 +1507,37 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "pressing_tub fallOn must stay proxy-level without Bukkit entity "
                 f"or landing-index machinery; stale token: {stale_token}")
+
+    migration_behavior_source = (
+        game_package / "furniture" / "LegacyPressingTubMigrationFurnitureBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "FurnitureBehaviors.register(Key.of(TYPE), LegacyPressingTubMigrationFurnitureBehavior::new)",
+            "public void onLoad()",
+            "public void onPlace(Player player)",
+            "public void onUnload(boolean isStopping)",
+            "Bukkit.getScheduler().runTask(owner,",
+            "CraftEngineBlocks.place(",
+            "PressingTubBlockBehavior.BLOCK_ID",
+            "PressingTubBlockBehavior.findController(",
+            "CraftEngineFurniture.remove(furniture, false, false)",
+            "sameState(current, oldState)",
+            "isEmpty(current)",
+            "CONFLICTS.incrementAndGet()",
+            "press_item", "press_count", "press_fluid", "press_amount",
+            "facingFromYaw(origin.getYaw())",
+            "LOADED_TUBS.incrementAndGet()",
+            "MIGRATED.incrementAndGet()"):
+        if required_token not in migration_behavior_source:
+            raise AssertionError(
+                "legacy_pressing_tub_migration must lazily convert old furniture "
+                f"to the CE block with idempotent state hand-over; missing token: {required_token}")
+    for stale_token in ("furniture_item", "setVariant(", "onPlayerHit(",
+                        "useOnFurniture(", "gatherElements(", "gatherHitboxes("):
+        if stale_token in migration_behavior_source:
+            raise AssertionError(
+                "Legacy pressing-tub furniture must carry no interaction, visual "
+                f"or placement behavior of its own; stale token: {stale_token}")
 
     lifecycle_behavior_source = (
         game_package / "furniture" / "LifecycleFurnitureBehavior.java"
@@ -1853,17 +1898,10 @@ def validate() -> dict[str, int]:
             "BarrelSemantics.needsTick(false,",
             "LifecycleFurnitureBehavior.Channel.BARREL, center, 3.0, 3.0",
             'open ? "ground" : "ground_closed"',
-            'currentVariant().name().equals("ground")',
-            "PressingTubBlockBehavior.bind(pressingTubHandler)",
-            "PressingTubBlockBehavior.unbind(pressingTubHandler)",
-            "private boolean interactPress(",
-            "private boolean pressOne(",
-            "PRESS_MIN_FALL_DISTANCE = 0.5",
-            "tiltNorth(",
-            "facingYaw("):
+            'currentVariant().name().equals("ground")'):
         if required_token not in station_source:
             raise AssertionError(
-                "StationService must bridge the CE pressing-tub block handler; "
+                "StationService must keep the barrel/shaker furniture bridge; "
                 f"missing token: {required_token}")
     for stale_token in (
             "PressLandingTracker", "PressingTubFurnitureBehavior",
@@ -1887,6 +1925,43 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "StationService must not retain a global Paper furniture interaction listener; "
                 f"found {stale_token}")
+    # 压榨桶玩法已拆到独立服务：StationService 不再绑定 PressingTubBlockBehavior
+    # 或维护压榨配方/视觉布局。
+    pressing_service_source = (
+        game_package / "PressingTubService.java").read_text(encoding="utf-8-sig")
+    for required_token in (
+            "implements PressingTubBlockBehavior.Handler",
+            "PressingTubBlockBehavior.bind(this)",
+            "PressingTubBlockBehavior.unbind(this)",
+            "private InteractionResult interactPress(",
+            "PRESS_MIN_FALL_DISTANCE = 0.5",
+            "PlayerProxy.CLASS.isInstance(nmsEntity)",
+            "BukkitCraftEngine.instance().antiGriefProvider()",
+            "GameRule.MOB_GRIEFING",
+            "ejectInvalidPressContents(controller"):
+        if required_token not in pressing_service_source:
+            raise AssertionError(
+                "PressingTubService must own the press gameplay, permissions and "
+                f"eject rules; missing token: {required_token}")
+    for stale_token in (
+            "EntityMoveEvent", "PlayerMoveEvent", "PressLandingTracker",
+            "PressingTubLandingIndex", "hasPotentialBelow", "onFallDamage"):
+        if stale_token in pressing_service_source:
+            raise AssertionError(
+                "PressingTubService must stay free of Bukkit landing-index "
+                f"machinery; stale token: {stale_token}")
+    visual_factory_source = (
+        game_package / "PressingTubVisualFactory.java").read_text(encoding="utf-8-sig")
+    for required_token in (
+            "tiltDisplayPosition(",
+            "tiltNorth(",
+            "facingYaw(",
+            "DisplayVisual.of(",
+            "originX + Math.cos(radians) * dx + Math.sin(radians) * dz"):
+        if required_token not in visual_factory_source:
+            raise AssertionError(
+                "PressingTubVisualFactory must own the pure display layout without "
+                f"the wall +0.5 drift; missing token: {required_token}")
     for required_token in (
             "extends FurnitureBehaviorTemplate",
             "FurnitureBehaviors.register(Key.of(TYPE)",
@@ -4218,8 +4293,25 @@ def validate() -> dict[str, int]:
                 raise AssertionError(
                     f"{pendant_id}/{half}: Paper 26.2 requires the iron_chain particle texture")
     pressing_tub_id = f"{NAMESPACE}:pressing_tub"
-    if pressing_tub_id in furniture:
-        raise AssertionError("Pressing tub must not remain CE furniture")
+    legacy_tub = furniture.get(pressing_tub_id)
+    if legacy_tub is None:
+        raise AssertionError(
+            "One migration-only legacy pressing-tub furniture definition must "
+            "remain so old saves still load")
+    if "item" in legacy_tub.get("settings", {}):
+        raise AssertionError(
+            "Legacy pressing-tub furniture must not map an item: the tub item "
+            "is a block_item and must place the CE block")
+    if "loot" in legacy_tub:
+        raise AssertionError(
+            "Legacy pressing-tub furniture must not carry loot: the CE block "
+            "owns the drops")
+    if legacy_tub.get("behaviors") != [
+            {"type": f"{NAMESPACE}:state_furniture"},
+            {"type": f"{NAMESPACE}:legacy_pressing_tub_migration"}]:
+        raise AssertionError(
+            "Legacy pressing-tub furniture must keep only state storage plus "
+            "the lazy migration behavior")
     pressing_block = blocks[pressing_tub_id]
     pressing_states = pressing_block.get("states", {})
     expected_pressing_properties = {
@@ -4294,7 +4386,7 @@ def validate() -> dict[str, int]:
     if (pressing_settings.get("item") != pressing_tub_id
             or pressing_settings.get("hardness") != 0.8
             or pressing_settings.get("resistance") != 0.8
-            or pressing_settings.get("push_reaction") != "NORMAL"
+            or pressing_settings.get("push_reaction") != "BLOCK"
             or pressing_settings.get("tags") != ["minecraft:mineable/axe"]
             or pressing_settings.get("destroy_stages")
             != {"template": "internal:destroy_stages"}
@@ -4309,12 +4401,12 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Pressing tub placement must use CE's native block_item")
     for token in (
-            "facingYaw(controller.facing()) + 180.0",
+            "facingYaw(facing) + 180.0",
             "tiltNorth(0.5 + x, 0.2 + y, 0.5 + z)",
             "TILT_X_DEGREES",
             "ITEM_X_DEGREES",
-            "displayYaw = facingYaw(controller.facing())"):
-        if token not in station_source:
+            "displayYaw = facingYaw(facing)"):
+        if token not in visual_factory_source:
             raise AssertionError(
                 "Tilted pressing-tub contents must follow the block-state yaw "
                 f"plus the ItemDisplay +180-degree turn; missing {token}")
@@ -4812,7 +4904,7 @@ def validate() -> dict[str, int]:
     for expected_token in (
             "EXPECTED_ITEMS = 660",
             "EXPECTED_BLOCKS = 39",
-            "EXPECTED_FURNITURE = 135"):
+            "EXPECTED_FURNITURE = 136"):
         if expected_token not in plugin_source:
             raise AssertionError(
                 f"Runtime CE content count guard is stale: {expected_token}")
