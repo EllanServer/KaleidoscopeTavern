@@ -369,6 +369,14 @@ public final class EffectService implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onTrack(PlayerTrackEntityEvent event) {
+        // PlayerTrackEntityEvent fires for every new (viewer, entity) pair at
+        // view-range borders, so this handler runs extremely often on busy
+        // servers. Bail out before touching any map when neither replay
+        // system has work to do.
+        if (upsideDownPacketTargets.isEmpty()
+                && (!particleMetadataAvailable || active.isEmpty())) {
+            return;
+        }
         Player viewer = event.getPlayer();
         Entity target = event.getEntity();
         Set<UUID> inverted = upsideDownPacketTargets.get(viewer.getUniqueId());
@@ -838,13 +846,22 @@ public final class EffectService implements Listener {
         if (!particleMetadataAvailable) {
             return;
         }
+        // Track replay hits repeatedly for entities oscillating at view-range
+        // borders. The cache is refreshed on every effect change
+        // (syncEffectParticleMetadata), so reuse it instead of rebuilding the
+        // particle list for every track event.
+        List<Object> cached = effectParticleDataCache.get(living.getUniqueId());
+        if (cached != null) {
+            ViewerEffectPackets.sendEffectParticleMetadata(viewer, living, cached);
+            return;
+        }
         Map<String, ActiveEffect> effects = active.get(living.getUniqueId());
         if (effects == null || effects.isEmpty()) {
             return;
         }
         try {
             // Tracking can begin after NBT load without a Bukkit potion event;
-            // rebuild here so the cached vanilla list can never be stale.
+            // rebuild only when no cached vanilla list exists yet.
             List<Object> metadata = buildEffectParticleMetadata(living, effects);
             effectParticleDataCache.put(living.getUniqueId(), metadata);
             ViewerEffectPackets.sendEffectParticleMetadata(viewer, living, metadata);
