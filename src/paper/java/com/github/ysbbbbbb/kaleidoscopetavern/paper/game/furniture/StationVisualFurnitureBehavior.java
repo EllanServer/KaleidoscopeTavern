@@ -1,5 +1,7 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture;
 
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.visual.DisplayVisual;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.visual.DisplayVisualDiff;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.momirealms.craftengine.bukkit.entity.data.DisplayData;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
@@ -11,7 +13,6 @@ import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehavi
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureController;
 import net.momirealms.craftengine.core.entity.furniture.element.FurnitureElement;
 import net.momirealms.craftengine.core.entity.player.Player;
-import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.ClientboundAddEntityPacketProxy;
@@ -19,7 +20,6 @@ import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.Clientbo
 import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.ClientboundSetEntityDataPacketProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.entity.EntityTypesProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.phys.Vec3Proxy;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -48,14 +48,12 @@ import java.util.function.Consumer;
  * between versions, so a content change only re-sends changed metadata,
  * moves moved entities, spawns new slots and removes dropped ones instead of
  * destroying and recreating the whole pile for every tracking player. The
- * operation list is computed by the pure {@link StationVisualDiff} state
+ * operation list is computed by the pure {@link DisplayVisualDiff} state
  * machine; packets are created lazily, once per snapshot, and shared across
  * players. Only the first-time view-range metadata stays per-player.</p>
  */
 public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTemplate {
     public static final String TYPE = "kaleidoscope_tavern:station_visual_furniture";
-    public static final byte ITEM_TRANSFORM_NONE = 0;
-    public static final byte ITEM_TRANSFORM_FIXED = 8;
 
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static final ConcurrentMap<UUID, Controller> LOADED = new ConcurrentHashMap<>();
@@ -112,42 +110,10 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
     @FunctionalInterface
     public interface Handler {
         /** Builds at most {@code limit} visuals (including the fluid slot). */
-        List<Visual> visuals(BukkitFurniture furniture, int limit);
+        List<DisplayVisual> visuals(BukkitFurniture furniture, int limit);
     }
 
-    /**
-     * Immutable visual description. The left rotation is stored as four floats
-     * in JOML order (x, y, z, w) so snapshots can share one record across every
-     * tracking player without copying a mutable {@link Quaternionf} per visual
-     * per refresh. Empty items are rejected: a station visual must always carry
-     * a real display item, which keeps the diff state machine free of
-     * empty-slot transitions.
-     */
-    public record Visual(Item item, double x, double y, double z,
-                         float yRot, float xRot, float scale,
-                         float rotX, float rotY, float rotZ, float rotW,
-                         byte itemTransform) {
-        public Visual {
-            Objects.requireNonNull(item, "item");
-            if (item.isEmpty()) {
-                throw new IllegalArgumentException("Visual item cannot be empty");
-            }
-        }
-
-        public static Visual of(Item item, double x, double y, double z,
-                                float yRot, float xRot, float scale,
-                                Quaternionf leftRotation, byte itemTransform) {
-            return new Visual(item, x, y, z, yRot, xRot, scale,
-                    leftRotation.x, leftRotation.y, leftRotation.z, leftRotation.w,
-                    itemTransform);
-        }
-
-        public Quaternionf leftRotation() {
-            return new Quaternionf(rotX, rotY, rotZ, rotW);
-        }
-    }
-
-    private record VisualSnapshot(long generation, List<Visual> visuals) {
+    private record VisualSnapshot(long generation, List<DisplayVisual> visuals) {
     }
 
     private record ViewerState(long generation, int visibleCount) {
@@ -211,7 +177,7 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         private VisualSnapshot currentSnapshot() {
             if (visualsDirty) {
                 Handler currentHandler = handler;
-                List<Visual> visuals = currentHandler == null
+                List<DisplayVisual> visuals = currentHandler == null
                         ? List.of()
                         : List.copyOf(currentHandler.visuals(bukkitFurniture, maxElements));
                 currentSnapshot = new VisualSnapshot(++generation, visuals);
@@ -236,7 +202,8 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         private final Map<Player, ViewerState> viewerStates = new IdentityHashMap<>();
         private long preparedGeneration = -1;
         private PreparedVisual[] prepared = new PreparedVisual[0];
-        private final StationGenerationDiff generationDiff = new StationGenerationDiff();
+        private final DisplayVisualDiff.GenerationDiff generationDiff =
+                new DisplayVisualDiff.GenerationDiff();
         // 本代无 SPAWN 时整代共享的 packet 列表（null 表示含 SPAWN，需按玩家构建）。
         private List<Object> sharedPackets;
         private long sharedPacketsGeneration = -1;
@@ -274,7 +241,7 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
          */
         private PreparedVisual[] prepared(VisualSnapshot snapshot) {
             if (preparedGeneration != snapshot.generation()) {
-                List<Visual> visuals = snapshot.visuals();
+                List<DisplayVisual> visuals = snapshot.visuals();
                 int count = Math.min(maxElements, visuals.size());
                 ensureIdentityCapacity(count);
                 PreparedVisual[] result = new PreparedVisual[count];
@@ -287,7 +254,7 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
             return prepared;
         }
 
-        private Object spawnPacket(int index, Visual visual) {
+        private Object spawnPacket(int index, DisplayVisual visual) {
             return ClientboundAddEntityPacketProxy.INSTANCE.newInstance(
                     entityIds[index], entityUuids[index],
                     visual.x(), visual.y(), visual.z(),
@@ -295,7 +262,7 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
                     EntityTypesProxy.ITEM_DISPLAY, 0, Vec3Proxy.ZERO, 0);
         }
 
-        private Object staticMetadataPacket(int index, Visual visual) {
+        private Object staticMetadataPacket(int index, DisplayVisual visual) {
             List<Object> metadata = new ArrayList<>(4);
             DisplayData.ItemDisplayData.ItemStack.addEntityData(
                     visual.item().minecraftItem(), metadata);
@@ -312,7 +279,7 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
                     entityIds[index], metadata);
         }
 
-        private Object positionPacket(int index, Visual visual) {
+        private Object positionPacket(int index, DisplayVisual visual) {
             return EntityUtils.createUpdatePosPacket(
                     entityIds[index],
                     visual.x(), visual.y(), visual.z(),
@@ -381,7 +348,7 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
                                     ViewerState state, long generation) {
             int lastCount = state == null ? 0 : state.visibleCount;
             sendOps(player, currentPrepared,
-                    StationVisualDiff.fullResync(lastCount, currentPrepared.length),
+                    DisplayVisualDiff.fullResync(lastCount, currentPrepared.length),
                     generation, currentPrepared.length);
         }
 
@@ -392,7 +359,7 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         private void sendIncremental(Player player, VisualSnapshot current,
                                      VisualSnapshot previous,
                                      PreparedVisual[] currentPrepared) {
-            List<StationVisualDiff.Op> ops =
+            List<DisplayVisualDiff.Op> ops =
                     prepareIncrementalOps(current, previous, currentPrepared);
             viewerStates.put(player, new ViewerState(
                     current.generation(), currentPrepared.length));
@@ -411,10 +378,10 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
          * 返回本代增量 diff（按 generation 缓存，所有跟上版本观察者共享同一
          * 实例），并预构建无 SPAWN 时整代共享的 packet 列表。
          */
-        private List<StationVisualDiff.Op> prepareIncrementalOps(
+        private List<DisplayVisualDiff.Op> prepareIncrementalOps(
                 VisualSnapshot current, VisualSnapshot previous,
                 PreparedVisual[] currentPrepared) {
-            List<StationVisualDiff.Op> ops = generationDiff.forGeneration(
+            List<DisplayVisualDiff.Op> ops = generationDiff.forGeneration(
                     current.generation(), previous.visuals(), current.visuals(),
                     maxElements, currentPrepared.length);
             if (!generationDiff.isSharedEligible()) {
@@ -430,19 +397,19 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         }
 
         private List<Object> buildSharedPackets(PreparedVisual[] currentPrepared,
-                                                List<StationVisualDiff.Op> ops) {
+                                                List<DisplayVisualDiff.Op> ops) {
             if (ops.isEmpty()) {
                 return List.of();
             }
             List<Object> packets = new ArrayList<>(ops.size() * 2 + 1);
-            for (StationVisualDiff.Op op : ops) {
+            for (DisplayVisualDiff.Op op : ops) {
                 packets.add(packetFor(currentPrepared, op));
             }
             return packets;
         }
 
         private Object packetFor(PreparedVisual[] currentPrepared,
-                                 StationVisualDiff.Op op) {
+                                 DisplayVisualDiff.Op op) {
             return switch (op.type()) {
                 case METADATA -> currentPrepared[op.index()].metadataPacket();
                 case POSITION -> currentPrepared[op.index()].positionPacket();
@@ -453,14 +420,14 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         }
 
         private void sendOps(Player player, PreparedVisual[] currentPrepared,
-                             List<StationVisualDiff.Op> ops,
+                             List<DisplayVisualDiff.Op> ops,
                              long generation, int visibleCount) {
             viewerStates.put(player, new ViewerState(generation, visibleCount));
             if (ops.isEmpty()) {
                 return;
             }
             List<Object> packets = new ArrayList<>(ops.size() * 2 + 1);
-            for (StationVisualDiff.Op op : ops) {
+            for (DisplayVisualDiff.Op op : ops) {
                 switch (op.type()) {
                     case SPAWN -> {
                         PreparedVisual entry = currentPrepared[op.index()];
@@ -491,18 +458,18 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
     private static final class PreparedVisual {
         private final StationVisualElement element;
         private final int index;
-        private final Visual visual;
+        private final DisplayVisual visual;
         private Object spawnPacket;
         private Object metadataPacket;
         private Object positionPacket;
 
-        private PreparedVisual(StationVisualElement element, int index, Visual visual) {
+        private PreparedVisual(StationVisualElement element, int index, DisplayVisual visual) {
             this.element = element;
             this.index = index;
             this.visual = visual;
         }
 
-        private Visual visual() {
+        private DisplayVisual visual() {
             return visual;
         }
 
