@@ -48,6 +48,37 @@ class FurnitureConnectionServiceTest {
     }
 
     @Test
+    void middleSegmentsKeepTheWorldAxisForEveryPlacementFacing() {
+        int middle = FurnitureConnectionService.tableSourcePosition(true, true);
+
+        assertEquals(2, middle);
+        assertEquals(
+                "ground_axis_x_position_2",
+                FurnitureConnectionService.tableVariantName(
+                        BlockFace.SOUTH,
+                        FurnitureConnectionService.HorizontalAxis.X,
+                        middle));
+        assertEquals(
+                "ground_axis_x_position_2_facing_north",
+                FurnitureConnectionService.tableVariantName(
+                        BlockFace.NORTH,
+                        FurnitureConnectionService.HorizontalAxis.X,
+                        middle));
+        assertEquals(
+                "ground_axis_z_position_2_facing_west",
+                FurnitureConnectionService.tableVariantName(
+                        BlockFace.WEST,
+                        FurnitureConnectionService.HorizontalAxis.Z,
+                        middle));
+        assertEquals(
+                "ground_axis_z_position_2_facing_east",
+                FurnitureConnectionService.tableVariantName(
+                        BlockFace.EAST,
+                        FurnitureConnectionService.HorizontalAxis.Z,
+                        middle));
+    }
+
+    @Test
     void directionalSingleVariantsNormalizeEveryFurnitureYaw() {
         assertEquals("ground",
                 FurnitureConnectionService.tableVariantName(BlockFace.SOUTH, null, 0));
@@ -61,7 +92,6 @@ class FurnitureConnectionServiceTest {
 
     @Test
     void sourcePositionRequiresAtLeastOneNeighbour() {
-        assertEquals(2, FurnitureConnectionService.tableSourcePosition(true, true));
         assertThrows(IllegalArgumentException.class,
                 () -> FurnitureConnectionService.tableSourcePosition(false, false));
     }
