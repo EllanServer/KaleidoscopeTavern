@@ -26,8 +26,12 @@ import org.bukkit.block.data.Waterlogged;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -59,6 +63,9 @@ public final class LegacyPressingTubMigrationFurnitureBehavior extends Furniture
 
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static volatile JavaPlugin runtimePlugin;
+    /** Controllers alive right now; bind() replays them when it runs late. */
+    private static final Set<Controller> LOADED_CONTROLLERS =
+            Collections.newSetFromMap(new IdentityHashMap<>());
     private static final AtomicLong LOADED_TUBS = new AtomicLong();
     private static final AtomicLong MIGRATED = new AtomicLong();
     private static final AtomicLong CONFLICTS = new AtomicLong();
@@ -77,6 +84,14 @@ public final class LegacyPressingTubMigrationFurnitureBehavior extends Furniture
 
     public static void bind(JavaPlugin plugin) {
         runtimePlugin = Objects.requireNonNull(plugin, "plugin");
+        // Furniture controllers can be created before this behavior is bound
+        // (CraftEngine loads spawn chunks and their furniture during its own
+        // onEnable, before Tavern's onEnable runs). Catch those up so an old
+        // tub in a preloaded chunk still migrates without waiting for an
+        // unload/reload cycle.
+        for (Controller controller : List.copyOf(LOADED_CONTROLLERS)) {
+            controller.schedule();
+        }
     }
 
     public static void unbind(JavaPlugin plugin) {
@@ -115,6 +130,7 @@ public final class LegacyPressingTubMigrationFurnitureBehavior extends Furniture
 
         @Override
         public void onLoad() {
+            LOADED_CONTROLLERS.add(this);
             if (!counted) {
                 counted = true;
                 LOADED_TUBS.incrementAndGet();
@@ -124,6 +140,7 @@ public final class LegacyPressingTubMigrationFurnitureBehavior extends Furniture
 
         @Override
         public void onPlace(Player player) {
+            LOADED_CONTROLLERS.add(this);
             if (!counted) {
                 counted = true;
                 LOADED_TUBS.incrementAndGet();
@@ -133,6 +150,7 @@ public final class LegacyPressingTubMigrationFurnitureBehavior extends Furniture
 
         @Override
         public void onUnload(boolean isStopping) {
+            LOADED_CONTROLLERS.remove(this);
             // A task already dispatched still validates the furniture and chunk;
             // this flag only prevents double scheduling while still loaded.
             migrationScheduled = false;
@@ -158,7 +176,10 @@ public final class LegacyPressingTubMigrationFurnitureBehavior extends Furniture
                 return;
             }
             Location origin = bukkitFurniture.location();
-            if (origin == null || origin.getWorld() == null || !origin.getChunk().isLoaded()) {
+            // 用 world.isChunkLoaded 判断：取得 Chunk 对象本身可能触发加载。
+            if (origin == null || origin.getWorld() == null
+                    || !origin.getWorld().isChunkLoaded(
+                    origin.getBlockX() >> 4, origin.getBlockZ() >> 4)) {
                 // Chunk unloaded before the task ran; the next onLoad retries.
                 return;
             }
@@ -221,23 +242,23 @@ public final class LegacyPressingTubMigrationFurnitureBehavior extends Furniture
             }
 
             PressingTubState current = controller.snapshot();
-            if (sameState(current, oldState)) {
-                removeLegacy();
-                MIGRATED.incrementAndGet();
-                return;
-            }
-            if (isEmpty(current)) {
-                boolean applied = controller.updateState(ignored -> oldState);
-                if (!applied && !sameState(controller.snapshot(), oldState)) {
-                    FAILURES.incrementAndGet();
-                    return;
+            switch (decideMigration(oldState, tilted, facing,
+                    current, controller.isTilted(), controller.facing())) {
+                case DELETE_LEGACY -> {
+                    removeLegacy();
+                    MIGRATED.incrementAndGet();
                 }
-                removeLegacy();
-                MIGRATED.incrementAndGet();
-                return;
+                case TRANSFER_AND_DELETE -> {
+                    boolean applied = controller.updateState(ignored -> oldState);
+                    if (!applied && !sameState(controller.snapshot(), oldState)) {
+                        FAILURES.incrementAndGet();
+                        return;
+                    }
+                    removeLegacy();
+                    MIGRATED.incrementAndGet();
+                }
+                case CONFLICT -> CONFLICTS.incrementAndGet();
             }
-            // Different non-empty content: keep both, record the conflict.
-            CONFLICTS.incrementAndGet();
         }
 
         private void removeLegacy() {
@@ -245,6 +266,41 @@ public final class LegacyPressingTubMigrationFurnitureBehavior extends Furniture
             // item; the new block owns its own loot.
             CraftEngineFurniture.remove(furniture, false, false);
         }
+    }
+
+    /** 迁移决策结果（纯函数，便于单元测试）。 */
+    enum MigrationAction {
+        /** 目标状态与旧家具完全一致：删除旧家具即可。 */
+        DELETE_LEGACY,
+        /** 目标为空桶且方向/墙面一致：写入旧状态后删除旧家具。 */
+        TRANSFER_AND_DELETE,
+        /** 方向/墙面不一致或内容冲突：保留旧家具，记录冲突。 */
+        CONFLICT
+    }
+
+    /**
+     * 纯迁移决策，不执行任何副作用。
+     *
+     * <p>「相同内容、不同数量 / facing / tilt」都必须落入 CONFLICT，而不是被
+     * 误判为已完成迁移后删除旧家具：isSimilar() 忽略 count，64 个葡萄与 1 个
+     * 葡萄元数据相同；目标位置已有一个方向/墙面不同的空桶也不能当作迁移完成。
+     * 因此这里同时比较 ingredient 数量与目标方块的 facing / tilt。</p>
+     */
+    static MigrationAction decideMigration(
+            PressingTubState oldState, boolean oldTilted, Direction oldFacing,
+            PressingTubState current, boolean currentTilted, Direction currentFacing) {
+        if (sameState(current, oldState)
+                && currentTilted == oldTilted
+                && currentFacing == oldFacing) {
+            return MigrationAction.DELETE_LEGACY;
+        }
+        if (isEmpty(current)) {
+            if (currentTilted != oldTilted || currentFacing != oldFacing) {
+                return MigrationAction.CONFLICT;
+            }
+            return MigrationAction.TRANSFER_AND_DELETE;
+        }
+        return MigrationAction.CONFLICT;
     }
 
     private static PressingTubState readState(CompoundTag data) {
@@ -330,12 +386,16 @@ public final class LegacyPressingTubMigrationFurnitureBehavior extends Furniture
         if (!sameKey(left.fluid(), right.fluid())) {
             return false;
         }
-        Item leftItem = left.ingredient();
-        Item rightItem = right.ingredient();
-        if (leftItem == null || rightItem == null) {
-            return leftItem == null && rightItem == null;
+        return sameItem(left.ingredient(), right.ingredient());
+    }
+
+    /** 迁移必须比较数量：isSimilar() 忽略 count，否则 64 个葡萄会与 1 个
+     *  葡萄判为相同，删除旧家具时吞掉剩余 63 个。 */
+    private static boolean sameItem(Item left, Item right) {
+        if (left == null || right == null) {
+            return left == null && right == null;
         }
-        return leftItem.isSimilar(rightItem);
+        return left.count() == right.count() && left.isSimilar(right);
     }
 
     private static boolean sameKey(Key left, Key right) {

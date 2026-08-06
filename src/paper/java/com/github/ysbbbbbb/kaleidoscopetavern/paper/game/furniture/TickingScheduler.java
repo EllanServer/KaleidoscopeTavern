@@ -395,8 +395,10 @@ final class TickingScheduler {
             primaryFailure = failure;
         }
 
-        // 无论 tick() 是否抛异常，都必须完成调度决策并清理 in-flight run；
-        // shouldSchedule() 再抛异常时作为 suppressed 附加到主异常，避免覆盖。
+        // 无论 tick()/shouldSchedule()/nextDelay() 是否抛异常，都必须完成
+        // 调度决策并清理 in-flight run：nextDelay() 失败时按「不重调度」处理，
+        // 让 finishRunIfCurrent 清除 scheduledRun，reconcile 才能重建任务，
+        // 否则该任务已出队却仍指向 scheduledRun，永远不再 tick。
         try {
             if (isCurrentRun(run)
                     && host.isHandlerBound(run.id)
@@ -411,8 +413,21 @@ final class TickingScheduler {
                 primaryFailure = decisionFailure;
             }
         } finally {
-            int nextDelay = scheduleAgain ? host.nextDelay(run.id) : 0;
-            finishRunIfCurrent(run, schedulingDecisionCompleted && scheduleAgain, nextDelay);
+            int nextDelay = 0;
+            boolean reschedule = schedulingDecisionCompleted && scheduleAgain;
+            if (reschedule) {
+                try {
+                    nextDelay = host.nextDelay(run.id);
+                } catch (Throwable delayFailure) {
+                    reschedule = false;
+                    if (primaryFailure != null) {
+                        primaryFailure.addSuppressed(delayFailure);
+                    } else {
+                        primaryFailure = delayFailure;
+                    }
+                }
+            }
+            finishRunIfCurrent(run, reschedule, nextDelay);
         }
 
         if (primaryFailure != null) {

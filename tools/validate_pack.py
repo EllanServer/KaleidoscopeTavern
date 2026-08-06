@@ -1953,11 +1953,10 @@ def validate() -> dict[str, int]:
     visual_factory_source = (
         game_package / "PressingTubVisualFactory.java").read_text(encoding="utf-8-sig")
     for required_token in (
-            "tiltDisplayPosition(",
-            "tiltNorth(",
+            "static double[] tiltDisplay(",
             "facingYaw(",
             "DisplayVisual.of(",
-            "originX + Math.cos(radians) * dx + Math.sin(radians) * dz"):
+            "rotateX((float) Math.toRadians(tiltDegrees))"):
         if required_token not in visual_factory_source:
             raise AssertionError(
                 "PressingTubVisualFactory must own the pure display layout without "
@@ -4402,11 +4401,10 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Pressing tub placement must use CE's native block_item")
     for token in (
-            "facingYaw(facing) + 180.0",
-            "tiltNorth(0.5 + x, 0.2 + y, 0.5 + z)",
-            "TILT_X_DEGREES",
-            "ITEM_X_DEGREES",
-            "displayYaw = facingYaw(facing)"):
+            "displayYaw = facingYaw(facing)",
+            "tiltDisplay(facing, x, y, z)",
+            "tiltDegrees = (facing == Direction.EAST",
+            "ITEM_X_DEGREES"):
         if token not in visual_factory_source:
             raise AssertionError(
                 "Tilted pressing-tub contents must follow the block-state yaw "

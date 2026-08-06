@@ -192,6 +192,19 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
     }
 
     @Override
+    public void affectNeighborsAfterRemoval(Object thisBlock, Object[] args) {
+        super.affectNeighborsAfterRemoval(thisBlock, args);
+        // args: BlockState, Level, BlockPos — a removed tub must drop the
+        // comparator signal to 0 immediately, not on the next random update.
+        try {
+            LevelProxy.INSTANCE.updateNeighbourForOutputSignal(
+                    args[1], args[2], BlockStateUtils.getBlockOwner(args[0]));
+        } catch (RuntimeException | LinkageError ignored) {
+            // Best-effort refresh during block removal.
+        }
+    }
+
+    @Override
     public Object playerWillDestroy(Object thisBlock, Object[] args) {
         // Mirrors the furniture-break contract: creative players must not
         // receive the pressed ingredient pile when they delete the block.
@@ -243,7 +256,7 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
         return controller(world, pos);
     }
 
-    /** Gameplay bridge implemented by StationService. */
+    /** Gameplay bridge implemented by PressingTubService. */
     public interface Handler {
         /**
          * Handles a right-click on the tub. The full CE use-on context is
@@ -310,22 +323,55 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
         /**
          * Applies a state mutation and notifies CE (dirty marker) plus the
          * block-entity renderer's tracked players when something changed.
+         * A comparator signal change also refreshes neighbouring redstone.
          *
          * @param mutation maps the current snapshot to the desired next state
          * @return whether the stored state actually changed
          */
         public boolean updateState(UnaryOperator<PressingTubState> mutation) {
             PressingTubState next = mutation.apply(snapshot());
-            if (next.ingredient() == ingredient && next.fluid() == fluid
+            if (sameItem(next.ingredient(), ingredient)
+                    && Objects.equals(next.fluid(), fluid)
                     && next.fluidAmount() == fluidAmount) {
                 return false;
             }
+            int oldSignal = PressingTubState.comparatorSignal(fluidAmount);
             ingredient = next.ingredient();
             fluid = next.fluid();
             fluidAmount = next.fluidAmount();
             markChanged();
             updateTrackedPlayers();
+            notifyComparator(oldSignal);
             return true;
+        }
+
+        /** CE's blockEntityChanged only marks the chunk dirty; a comparator
+         *  needs an explicit neighbour update or its signal stays stale. */
+        private void notifyComparator(int oldSignal) {
+            int newSignal = PressingTubState.comparatorSignal(fluidAmount);
+            if (oldSignal == newSignal || blockEntity.world == null) {
+                return;
+            }
+            try {
+                LevelProxy.INSTANCE.updateNeighbourForOutputSignal(
+                        blockEntity.world.world().minecraftWorld(),
+                        LocationUtils.toBlockPos(blockEntity.pos),
+                        BlockStateUtils.getBlockOwner(
+                                blockEntity.blockState.customBlockState()
+                                        .minecraftState()));
+            } catch (RuntimeException | LinkageError ignored) {
+                // Best-effort refresh; the stored state itself is already
+                // durable via markChanged().
+            }
+        }
+
+        private static boolean sameItem(Item left, Item right) {
+            if (left == null || right == null) {
+                return left == null && right == null;
+            }
+            // snapshot() copies the ingredient, so identity comparison would
+            // report every no-op mutation as a change.
+            return left.count() == right.count() && left.isSimilar(right);
         }
 
         /** 墙面（tilt=true）压榨桶不能压榨、交互取放。 */
@@ -441,9 +487,10 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
             // finished tank fluid is deliberately lost on break. This is the
             // sanctioned thin fallback until the CE loot pipeline replaces it:
             // the block's own drop is owned by CE's block loot, and content
-            // drops are suppressed for creative breaks, explosions and when
-            // DO_TILE_DROPS is off, so a damaged save can never loop-spawn
-            // items on break.
+            // drops are suppressed only for creative breaks (playerWillDestroy)
+            // and when DO_TILE_DROPS is off, so a damaged save can never
+            // loop-spawn items on break. Explosions intentionally keep the
+            // ingredient drop, mirroring the source getDrops behaviour.
             if (dropContents && ingredient != null && blockEntity.world != null) {
                 World bukkitWorld = (World) blockEntity.world.world().platformWorld();
                 if (bukkitWorld != null

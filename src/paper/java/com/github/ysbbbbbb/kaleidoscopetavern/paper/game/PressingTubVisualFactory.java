@@ -28,7 +28,6 @@ public final class PressingTubVisualFactory {
     private static final int MAX_STATION_ITEM_VISUALS = 16;
     private static final int PRESS_CAPACITY = 1_000;
     // PressingTubBlockEntityRender's PoseStack tilt and item flattening.
-    private static final double TILT_X_DEGREES = -45;
     private static final double ITEM_X_DEGREES = -90;
 
     private final ItemService items;
@@ -79,22 +78,21 @@ public final class PressingTubVisualFactory {
                 float displayYaw;
                 Quaternionf rotation;
                 if (tilted) {
-                    // The source renderer applied its Rx(-45) pose and the
-                    // blockstate model carries the same tilt; rotate the local
-                    // point around the cell centre by the model's effective yaw
-                    // (CE's configured facing rotation plus the ItemDisplay
-                    // renderer's intrinsic +180-degree turn) so the pile follows
-                    // the wall-mounted tub like the old furniture transform.
-                    double[] point = tiltNorth(0.5 + x, 0.2 + y, 0.5 + z);
-                    double[] display = tiltDisplayPosition(
-                            facing, point[0], point[1], point[2],
-                            origin.getX(), origin.getY(), origin.getZ());
-                    displayX = display[0];
-                    displayY = display[1];
-                    displayZ = display[2];
+                    // 完全按源 PressingTubBlockEntityRender 的 PoseStack 顺序：
+                    // X 轴方向（EAST/WEST）Rx(+45°) + translate(0,+0.5,-0.5)，
+                    // Z 轴方向（NORTH/SOUTH）Rx(-45°) + translate(0,-0.25,+0.25)，
+                    // 随后绕方块中心绕 Y 轴旋转 θ=180-facingIndex*90。实体 yaw
+                    // 承担该 YN(θ) 旋转，leftRotation 承担剩余 Rx(±45)·Rx(-90)
+                    // ·YN(yRot)·ZN(zRot)，与显示实体叠加后等于源矩阵。
+                    double[] display = tiltDisplay(facing, x, y, z);
+                    displayX = origin.getX() + display[0];
+                    displayY = origin.getY() + display[1];
+                    displayZ = origin.getZ() + display[2];
                     displayYaw = facingYaw(facing);
+                    float tiltDegrees = (facing == Direction.EAST
+                            || facing == Direction.WEST) ? 45 : -45;
                     rotation = new Quaternionf()
-                            .rotateX((float) Math.toRadians(TILT_X_DEGREES))
+                            .rotateX((float) Math.toRadians(tiltDegrees))
                             .rotateX((float) Math.toRadians(ITEM_X_DEGREES))
                             .rotateY((float) Math.toRadians(-yRotation))
                             .rotateZ((float) Math.toRadians(-zRotation));
@@ -133,37 +131,37 @@ public final class PressingTubVisualFactory {
         return result;
     }
 
-    /** The source renderer's facing=NORTH tilt pose for one local point. */
-    private static double[] tiltNorth(double x, double y, double z) {
-        double translatedY = y - 0.25;
-        double translatedZ = z + 0.25;
-        double radians = Math.toRadians(TILT_X_DEGREES);
-        double cos = Math.cos(radians);
-        double sin = Math.sin(radians);
-        return new double[]{
-                x,
-                cos * translatedY - sin * translatedZ,
-                sin * translatedY + cos * translatedZ,
-        };
-    }
-
     /**
-     * 把经过 {@link #tiltNorth} 旋转后的局部点投影到世界坐标。
+     * 源 PressingTubBlockEntityRender 的四方向 tilt 矩阵闭式解。
      *
-     * <p>origin 已是单元中心（blockX+0.5 / blockZ+0.5），因此这里绝不能再次
-     * +0.5，否则墙面原料会整体偏移半个方块。</p>
+     * <p>输入为物品在方块局部坐标中的偏移 (x, y, z)，物品中心局部点为
+     * (0.5+x, 0.2+y, 0.5+z)。输出为相对单元中心（origin）的世界偏移，绕方块
+     * 中心的 Y 旋转（θ=180-facingIndex*90）已包含在内，因此调用方无需再做
+     * 额外旋转，也不能再加任何 +0.5。</p>
      */
-    static double[] tiltDisplayPosition(Direction facing,
-                                        double pointX, double pointY, double pointZ,
-                                        double originX, double originY, double originZ) {
-        double radians = Math.toRadians(facingYaw(facing) + 180.0);
-        double dx = pointX - 0.5;
-        double dz = pointZ - 0.5;
-        return new double[]{
-                originX + Math.cos(radians) * dx + Math.sin(radians) * dz,
-                originY + pointY,
-                originZ - Math.sin(radians) * dx + Math.cos(radians) * dz,
-        };
+    static double[] tiltDisplay(Direction facing, double x, double y, double z) {
+        double c = Math.cos(Math.toRadians(45));
+        double s = Math.sin(Math.toRadians(45));
+        if (facing == Direction.EAST || facing == Direction.WEST) {
+            // X 轴：Rx(+45°) 后 translate(0, +0.5, -0.5)。
+            double tY = y + 0.7;
+            double tZ = z;
+            double p2y = c * tY - s * tZ;
+            double p2z = s * tY + c * tZ;
+            // EAST θ=90（rotY(-90)），WEST θ=270（rotY(90)）。
+            return facing == Direction.EAST
+                    ? new double[]{-p2z + 0.5, p2y, x}
+                    : new double[]{p2z - 0.5, p2y, -x};
+        }
+        // Z 轴：Rx(-45°) 后 translate(0, -0.25, +0.25)。
+        double tY = y - 0.05;
+        double tZ = z + 0.75;
+        double p2y = c * tY + s * tZ;
+        double p2z = -s * tY + c * tZ;
+        // NORTH θ=180（rotY(-180)），SOUTH θ=0。
+        return facing == Direction.NORTH
+                ? new double[]{-x, p2y, -p2z + 0.5}
+                : new double[]{x, p2y, p2z - 0.5};
     }
 
     /** Matches the entity_renderer rotation the block config bakes per facing. */

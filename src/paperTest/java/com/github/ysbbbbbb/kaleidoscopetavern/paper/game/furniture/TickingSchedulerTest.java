@@ -347,6 +347,29 @@ class TickingSchedulerTest {
         assertInvariant();
     }
 
+    // ===== 审查补充 4: nextDelay() 抛异常 =====
+
+    @Test
+    void nextDelayFailureStillCompletesTheRunAndAllowsRecovery() {
+        FakeHost a = host("A");
+        a.nextDelayFailure = new IllegalStateException("nextDelay boom");
+
+        core.schedule("A", 10);
+        advanceTo(10);
+
+        // 任务已出队执行，但延迟计算失败：不得按重调度处理。
+        assertEquals(1, a.tickCount);
+        assertEquals(1, a.failures.size());
+        assertEquals(0, core.schedulerStats().liveQueuedRuns());
+
+        // scheduledRun 已被 finishRunIfCurrent 清除，reconcile 可以重建任务。
+        a.nextDelayFailure = null;
+        core.schedule("A", 10);
+        advanceTo(20);
+        assertEquals(2, a.tickCount);
+        assertInvariant();
+    }
+
     // ===== 审查补充 8: 取消最早任务不延迟后续 live 任务 =====
 
     @Test
@@ -557,6 +580,7 @@ class TickingSchedulerTest {
         };
         RuntimeException tickFailure;
         RuntimeException shouldScheduleFailure;
+        RuntimeException nextDelayFailure;
 
         FakeHost(String id) {
             this.id = id;
@@ -602,6 +626,9 @@ class TickingSchedulerTest {
 
         @Override
         public int nextDelay(String id) {
+            if (nextDelayFailure != null) {
+                throw nextDelayFailure;
+            }
             return nextDelay;
         }
 
