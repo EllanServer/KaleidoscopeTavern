@@ -114,17 +114,34 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
         return result;
     }
 
-    /** Returns loaded furniture in this channel whose CE origin occupies the block. */
+    /**
+     * Returns loaded furniture in this channel whose CE origin occupies the block.
+     * The block already pins the exact column, so no nearby box scan is needed.
+     */
     public static Optional<BukkitFurniture> atBlock(Channel channel, Block block) {
-        Location center = block.getLocation().add(0.5, 0.5, 0.5);
-        return nearby(channel, center, 1.0, 1.0).stream()
-                .filter(furniture -> {
-                    Location location = furniture.location();
-                    return FurnitureSpatialSemantics.insideBlock(
-                            location.getX(), location.getY(), location.getZ(),
-                            block.getX(), block.getY(), block.getZ());
-                })
-                .findFirst();
+        Map<UUID, WorldIndex> channelWorlds = SPATIAL.get(channel);
+        if (channelWorlds == null) {
+            return Optional.empty();
+        }
+        WorldIndex index = channelWorlds.get(block.getWorld().getUID());
+        if (index == null) {
+            return Optional.empty();
+        }
+        Set<Controller> controllers =
+                index.columns.get(packColumn(block.getX(), block.getZ()));
+        if (controllers == null) {
+            return Optional.empty();
+        }
+        for (Controller controller : controllers) {
+            BukkitFurniture furniture = controller.bukkitFurniture;
+            Location location = furniture.location();
+            if (FurnitureSpatialSemantics.insideBlock(
+                    location.getX(), location.getY(), location.getZ(),
+                    block.getX(), block.getY(), block.getZ())) {
+                return Optional.of(furniture);
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
