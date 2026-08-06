@@ -6960,6 +6960,302 @@
         "type": "kaleidoscope_tavern:hanging_grape_crop"
       }
     },
+    "kaleidoscope_tavern:pressing_tub": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          },
+          "tilt": {
+            "type": "boolean",
+            "default": "false"
+          },
+          "waterlogged": {
+            "type": "boolean",
+            "default": "false"
+          }
+        },
+        "appearances": {
+          "ground_north_false": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "ground_north_true": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "tilted_north_false": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/61ee42afd0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "tilted_north_true": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/61ee42afd0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "ground_east_false": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "ground_east_true": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "tilted_east_false": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/61ee42afd0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "tilted_east_true": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/61ee42afd0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "ground_south_false": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "ground_south_true": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "tilted_south_false": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/61ee42afd0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "tilted_south_true": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/61ee42afd0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "ground_west_false": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "ground_west_true": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "tilted_west_false": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/61ee42afd0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "tilted_west_true": {
+            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/61ee42afd0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north,tilt=false,waterlogged=false": {
+            "appearance": "ground_north_false"
+          },
+          "facing=north,tilt=false,waterlogged=true": {
+            "appearance": "ground_north_true"
+          },
+          "facing=north,tilt=true,waterlogged=false": {
+            "appearance": "tilted_north_false"
+          },
+          "facing=north,tilt=true,waterlogged=true": {
+            "appearance": "tilted_north_true"
+          },
+          "facing=east,tilt=false,waterlogged=false": {
+            "appearance": "ground_east_false"
+          },
+          "facing=east,tilt=false,waterlogged=true": {
+            "appearance": "ground_east_true"
+          },
+          "facing=east,tilt=true,waterlogged=false": {
+            "appearance": "tilted_east_false"
+          },
+          "facing=east,tilt=true,waterlogged=true": {
+            "appearance": "tilted_east_true"
+          },
+          "facing=south,tilt=false,waterlogged=false": {
+            "appearance": "ground_south_false"
+          },
+          "facing=south,tilt=false,waterlogged=true": {
+            "appearance": "ground_south_true"
+          },
+          "facing=south,tilt=true,waterlogged=false": {
+            "appearance": "tilted_south_false"
+          },
+          "facing=south,tilt=true,waterlogged=true": {
+            "appearance": "tilted_south_true"
+          },
+          "facing=west,tilt=false,waterlogged=false": {
+            "appearance": "ground_west_false"
+          },
+          "facing=west,tilt=false,waterlogged=true": {
+            "appearance": "ground_west_true"
+          },
+          "facing=west,tilt=true,waterlogged=false": {
+            "appearance": "tilted_west_false"
+          },
+          "facing=west,tilt=true,waterlogged=true": {
+            "appearance": "tilted_west_true"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wood.break",
+          "step": "minecraft:block.wood.step",
+          "place": "minecraft:block.wood.place",
+          "hit": "minecraft:block.wood.hit",
+          "fall": "minecraft:block.wood.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "destroy_stages": {
+          "template": "internal:destroy_stages"
+        },
+        "map_color": 13,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "item": "kaleidoscope_tavern:pressing_tub"
+      },
+      "behaviors": {
+        "type": "kaleidoscope_tavern:pressing_tub_block"
+      }
+    },
     "kaleidoscope_tavern:tap": {
       "states": {
         "properties": {

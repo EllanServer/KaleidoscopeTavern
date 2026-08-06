@@ -183,7 +183,7 @@ def is_grid_block(block_id: str) -> bool:
     return (
         block_id in INCENSE_BLOCKS
         or block_id in STORAGE_BLOCKS
-        or block_id in {"tap", "chalkboard"}
+        or block_id in {"tap", "chalkboard", "pressing_tub"}
         or block_id in {
             "wild_grapevine", "wild_grapevine_plant", "trellis",
             "grapevine_trellis", "grape_crop",
@@ -831,6 +831,10 @@ def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | li
         ]
     if block_id == "tap":
         return {"type": f"{NAMESPACE}:tap"}
+    if block_id == "pressing_tub":
+        # CE owns the NMS Block.fallOn interception; Tavern only adds the
+        # press gameplay, interaction and block-entity persistence.
+        return {"type": f"{NAMESPACE}:pressing_tub_block"}
     if block_id == "chalkboard":
         # CE owns the two-block lifecycle. Tavern only adds the source's
         # three-wide blank-board merge and persistent editable text.
@@ -902,7 +906,8 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
     is_crop = block_id.endswith("_grape_crop") or block_id == "grape_crop"
     is_storage = block_id in STORAGE_BLOCKS
     is_sofa = block_id.endswith("_sofa")
-    sturdy = block_id in STURDY_BLOCKS or is_storage or is_sofa or block_id == "chalkboard"
+    sturdy = (block_id in STURDY_BLOCKS or is_storage or is_sofa
+              or block_id in {"chalkboard", "pressing_tub"})
     if is_wild_vine:
         sound_type = {
             action: f"minecraft:block.cave_vines.{action}"
@@ -942,12 +947,13 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
                  else [] if is_wild_vine or is_crop or block_id in INCENSE_BLOCKS
                  else ["minecraft:mineable/axe"]),
     }
-    if is_storage or block_id == "chalkboard":
-        # Storage racks and the chalkboard are rendered by ItemDisplays.
-        # Without CE's native destroy-stage display, survival mining has no
-        # visible progress because the transparent carrier cannot show cracks.
+    if is_storage or block_id == "chalkboard" or block_id == "pressing_tub":
+        # Storage racks, the chalkboard and the pressing tub are rendered by
+        # ItemDisplays. Without CE's native destroy-stage display, survival
+        # mining has no visible progress because the transparent carrier
+        # cannot show cracks.
         settings["destroy_stages"] = {"template": "internal:destroy_stages"}
-    if block_id == "chalkboard":
+    if block_id == "chalkboard" or block_id == "pressing_tub":
         settings.update({
             "map_color": 13,
             "instrument": "guitar",
@@ -1148,6 +1154,84 @@ def build_chalkboard_block(
     return config, render_items, len(appearances)
 
 
+# CraftEngine 26.7.4 releases the legacy petrified-oak-slab states (mapping
+# them to the regular oak slab on the client). Its bottom-half state supplies
+# the real 8/16 full-footprint collision that routes NMS Block.fallOn into the
+# Tavern block behavior, while transparent:true hides only the unobtainable
+# petrified slab — no common vanilla slab is affected.
+PRESSING_TUB_CARRIER_STATE = "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]"
+PRESSING_TUB_CARRIER_WATER_STATE = "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]"
+
+
+def build_pressing_tub_block(
+    has_item: bool,
+) -> tuple[dict[str, Any], dict[str, Any], int]:
+    """Build the ground/wall pressing tub on a released bottom-slab carrier."""
+
+    ground_model = ("kaleidoscope_tavern:block/brew/pressing_tub", 0, 0, 0, False)
+    tilted_model = ("kaleidoscope_tavern:block/brew/tilt_pressing_tub", 0, 0, 0, False)
+    render_items: dict[str, Any] = {}
+    ground_render = ensure_render_item(
+        render_items, "pressing_tub", "ground", ground_model)
+    tilted_render = ensure_render_item(
+        render_items, "pressing_tub", "tilted", tilted_model)
+
+    # The baked north model fills the cell and the ItemDisplayRenderer adds an
+    # intrinsic +180-degree Y turn after CE's display transformation. Counter
+    # that turn and then apply the vanilla facing rotation (same rule as the
+    # chalkboard panels).
+    facing_yaw = {"north": 180, "east": 90, "south": 0, "west": 270}
+    appearances: dict[str, Any] = {}
+    variants: dict[str, Any] = {}
+    for facing in ("north", "east", "south", "west"):
+        for tilt in ("false", "true"):
+            render_id = ground_render if tilt == "false" else tilted_render
+            for waterlogged, carrier in (
+                ("false", PRESSING_TUB_CARRIER_STATE),
+                ("true", PRESSING_TUB_CARRIER_WATER_STATE),
+            ):
+                appearance_name = (
+                    f"{'ground' if tilt == 'false' else 'tilted'}_{facing}_{waterlogged}")
+                renderer: dict[str, Any] = {
+                    "type": "item_display",
+                    "item": render_id,
+                    "display_transform": "none",
+                    "shadow_radius": 0,
+                    "view_range": 1.25,
+                }
+                yaw = facing_yaw[facing]
+                if yaw:
+                    renderer["rotation"] = f"0,{yaw},0"
+                appearances[appearance_name] = {
+                    "state": carrier,
+                    "transparent": True,
+                    "entity_renderer": renderer,
+                }
+                variants[f"facing={facing},tilt={tilt},waterlogged={waterlogged}"] = {
+                    "appearance": appearance_name,
+                }
+
+    config: dict[str, Any] = {
+        "states": {
+            "properties": {
+                "facing": {
+                    "type": "horizontal_direction",
+                    "default": "north",
+                    "values": ["north", "east", "south", "west"],
+                },
+                "tilt": {"type": "boolean", "default": "false"},
+                "waterlogged": {"type": "boolean", "default": "false"},
+            },
+            "appearances": appearances,
+            "variants": variants,
+        },
+        "settings": block_settings("pressing_tub", has_item),
+        "behaviors": behavior_for(
+            "pressing_tub", {"facing", "tilt", "waterlogged"}),
+    }
+    return config, render_items, len(appearances)
+
+
 def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, Any], dict[str, Any], dict[str, int]]:
     blocks: dict[str, Any] = {}
     render_items: dict[str, Any] = {}
@@ -1160,6 +1244,14 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             )
             blocks[f"{NAMESPACE}:{block_id}"] = config
             render_items.update(chalkboard_render_items)
+            metrics["appearances"] += appearance_count
+            continue
+        if block_id == "pressing_tub":
+            config, tub_render_items, appearance_count = (
+                build_pressing_tub_block(block_id in item_ids)
+            )
+            blocks[f"{NAMESPACE}:{block_id}"] = config
+            render_items.update(tub_render_items)
             metrics["appearances"] += appearance_count
             continue
         state_path = find_file(BLOCKSTATES, Path(f"{block_id}.json"))
@@ -1642,22 +1734,6 @@ def source_boxes(block_id: str, anchor: str, properties: dict[str, str]) -> list
             "wall": [(1, 1, 0, 15, 15, 1)],
             "ceiling": [(1, 15, 1, 15, 16, 15)],
         }[anchor]
-    if block_id == "pressing_tub":
-        if anchor == "ground":
-            # SHAPE is a half-block tub with a four-pixel floor and walls.
-            return [
-                (0, 0, 0, 16, 4, 16),
-                (0, 4, 0, 16, 8, 2),
-                (0, 4, 14, 16, 8, 16),
-                (0, 4, 2, 2, 8, 14),
-                (14, 4, 2, 16, 8, 14),
-            ]
-        # The wall rule selects Forge's facing=south tilted state.
-        return [
-            (0, 0, 8, 16, 8, 16),
-            (0, 4, 4, 16, 12, 12),
-            (0, 8, 0, 16, 16, 8),
-        ]
     if block_id == "glassware_holder":
         return [(0, 11, 1, 16, 16, 15)]
     if block_id in COCKTAILS:
@@ -2019,17 +2095,6 @@ def furniture_hitboxes(
             interaction_box(aggregate, anchor),
             shulker_box((0, 0, 0), 0.75, peek_for(0.75, 1.375)),
         ]
-    if block_id == "pressing_tub" and anchor == "ground":
-        edge = (-0.375, -0.125, 0.125, 0.375)
-        walls = [shulker_box((x, 0, z), 0.25, 100) for x in edge for z in (-0.375, 0.375)]
-        walls.extend(shulker_box((x, 0, z), 0.25, 100)
-                     for x in (-0.375, 0.375) for z in (-0.125, 0.125))
-        floor = [
-            shulker_box((x, 0, z), 0.25)
-            for x in (-0.125, 0.125)
-            for z in (-0.125, 0.125)
-        ]
-        return [interaction_box(aggregate, anchor), *walls, *floor]
     if block_id in PENDANT_LAMPS:
         # Forge explicitly used noCollission() for pendant lamps.
         return [interaction_box(aggregate, anchor)]
@@ -2062,11 +2127,6 @@ def furniture_hitboxes(
         return [interaction_box(aggregate, anchor), *physical_box(aggregate, anchor)]
     if block_id in SMALL_FURNITURE:
         return [interaction_box(aggregate, anchor), *(hitbox for box in boxes for hitbox in physical_box(box, anchor))]
-    if block_id == "pressing_tub":
-        return [
-            interaction_box(aggregate, anchor),
-            *(hitbox for box in boxes for hitbox in physical_box(box, anchor, tile_limit=8)),
-        ]
     return [shulker_box(hitbox_position(anchor, 8, 0, 8))]
 
 
@@ -2983,18 +3043,13 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         # CE sourceItem is the complete state for a single placed bottle.
         # Only count variants can contain additional, non-identical bottles.
         (block_id in BOTTLE_AND_GLASS_ITEMS and "ground_count_2" in variants)
-        or block_id in {"pressing_tub", "barrel"}
+        or block_id == "barrel"
         or block_id.endswith("_sandwich_board")
     )
     if uses_tavern_state:
         # Index zero is intentional: the remaining custom-data consumers
         # resolve this controller directly instead of allocating Bukkit PDC.
         behaviors.append({"type": f"{NAMESPACE}:state_furniture"})
-
-    if block_id == "pressing_tub":
-        # CE owns loaded/unloaded furniture discovery and the spatial index;
-        # Paper only supplies the block-style fallOn event CE does not expose.
-        behaviors.append({"type": f"{NAMESPACE}:pressing_tub_furniture"})
 
     lifecycle_channels: list[str] = []
     if block_id.endswith("_sandwich_board"):
@@ -3112,7 +3167,6 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
         # One CE element owns a bounded set of packet entity ids. Item piles
         # are capped at 16 display entities plus one fluid plane; Tavern shows
         # density through the bounded pile instead of one entity per item.
-        "pressing_tub": (17, 1.25),
         "barrel": (17, 2.5),
     }.get(block_id)
     if station_visual is not None:
@@ -3123,7 +3177,7 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
             "view_range": view_range,
         })
 
-    if block_id in {"pressing_tub", "barrel", "shaker", "empty_glassware"}:
+    if block_id in {"barrel", "shaker", "empty_glassware"}:
         behaviors.append({"type": f"{NAMESPACE}:station_interaction_furniture"})
 
     if block_id.startswith("string_lights_"):
@@ -3255,25 +3309,6 @@ def build_furniture(
                     furniture_element(render_items, block_id, "lower", lower, "ceiling", "0,-1,0"),
                 ],
                 "hitboxes": furniture_hitboxes(block_id, "ceiling"),
-            }
-        elif block_id == "pressing_tub":
-            normal = select_record(records, {
-                "facing": "north", "tilt": "false", "waterlogged": "false",
-            })[1]
-            tilted = select_record(records, {
-                # CE's wall yaw already supplies PressingTubBlock.FACING from
-                # the clicked face. Use the source north state as the canonical
-                # model just like other wall furniture; selecting south would
-                # bake in a second 180-degree turn.
-                "facing": "north", "tilt": "true", "waterlogged": "false",
-            })[1]
-            variants["ground"] = {
-                "elements": [furniture_element(render_items, block_id, "ground", normal, "ground")],
-                "hitboxes": furniture_hitboxes(block_id, "ground"),
-            }
-            variants["wall"] = {
-                "elements": [furniture_element(render_items, block_id, "wall", tilted, "wall")],
-                "hitboxes": furniture_hitboxes(block_id, "wall"),
             }
         elif block_id == "table":
             # TableBlock can acquire either horizontal AXIS after placement;

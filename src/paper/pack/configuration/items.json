@@ -2141,18 +2141,8 @@
         "path": "kaleidoscope_tavern:item/pressing_tub"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:pressing_tub",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          },
-          "wall": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:pressing_tub"
       }
     },
     "kaleidoscope_tavern:grape_bucket": {

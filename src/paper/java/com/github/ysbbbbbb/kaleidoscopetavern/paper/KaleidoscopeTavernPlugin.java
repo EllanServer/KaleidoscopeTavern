@@ -23,6 +23,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.ChalkboardBlockBe
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.GrapeSeasonGate;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.IncenseBlockBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.PressingTubBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.StorageBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TapBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
@@ -32,7 +33,6 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.AnimatedItemF
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BoardTextFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BottleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.PressingTubFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StateFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
@@ -77,8 +77,8 @@ import java.util.logging.Level;
 public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listener, TabExecutor {
     private static final String NAMESPACE = "kaleidoscope_tavern";
     private static final int EXPECTED_ITEMS = 660; // 157 public items + 503 private render helpers
-    private static final int EXPECTED_BLOCKS = 38;
-    private static final int EXPECTED_FURNITURE = 136;
+    private static final int EXPECTED_BLOCKS = 39;
+    private static final int EXPECTED_FURNITURE = 135;
 
     private PackInstaller.Result packResult;
     private CustomCropsInstaller.Result customCropsResult;
@@ -108,13 +108,13 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             IncenseBlockBehavior.register();
             ChalkboardBlockBehavior.register();
             StorageBlockBehavior.register();
+            PressingTubBlockBehavior.register();
             TapBlockBehavior.register();
             StateFurnitureBehavior.register();
             AnimatedItemFurnitureBehavior.register();
             BoardTextFurnitureBehavior.register();
             BottleFurnitureBehavior.register();
             LifecycleFurnitureBehavior.register();
-            PressingTubFurnitureBehavior.register();
             TickingFurnitureBehavior.register();
             StationInteractionFurnitureBehavior.register();
             StationVisualFurnitureBehavior.register();

@@ -67,7 +67,7 @@ EXPECTED_STATE_FURNITURE = {
     "poppy_sandwich_board", "sunflower_sandwich_board",
     "torchflower_sandwich_board", "tulip_sandwich_board",
     "wither_rose_sandwich_board",
-    "pressing_tub", "barrel",
+    "barrel",
     "wine", "champagne", "vodka", "brandy", "carignan", "sakura_wine",
     "plum_wine", "whiskey", "ice_wine", "polaris_sweet_white",
     "honey_wine", "red_queen", "miners_star", "rum",
@@ -99,7 +99,7 @@ EXPECTED_STORAGE_INTERACTION_FURNITURE = {
     "bar_cabinet", "glass_bar_cabinet", "glassware_holder",
 }
 EXPECTED_STATION_INTERACTION_FURNITURE = {
-    "pressing_tub", "barrel", "shaker", "empty_glassware",
+    "barrel", "shaker", "empty_glassware",
 }
 FURNITURE_COLORS = {
     "black", "blue", "brown", "cyan", "gray", "green", "light_blue",
@@ -328,6 +328,8 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("furniture/TickingFurnitureBehavior.java", "MYSTERY_PARTICLE"),
     ),
     "PressingTubBlock.java": (
+        ("block/PressingTubBlockBehavior.java", "void fallOn(Object thisBlock, Object[] args)"),
+        ("block/PressingTubBlockBehavior.java", "updateStateForPlacement"),
         ("StationService.java", "interactPress"),
         ("StationService.java", "pressOne"),
     ),
@@ -443,7 +445,7 @@ BLOCK_ENTITY_COVERAGE = {
     "CellarCabinetBlockEntity.java": (("DisplayStorageService.java", "CELLAR_CABINET"),),
     "DrinkBlockEntity.java": (("BottleFurnitureService.java", "storedItems"),),
     "PotionBottleBlockEntity.java": (("BottleFurnitureService.java", "sourceItem"),),
-    "PressingTubBlockEntity.java": (("StationService.java", "press_count"),),
+    "PressingTubBlockEntity.java": (("StationService.java", "pressCount"),),
     "TapBlockEntity.java": (
         ("block/TapBlockBehavior.java", "private Cycle cycle"),
         ("block/TapBlockBehavior.java", "DRIP_LIFETIME_TICKS = 18"),
@@ -721,10 +723,10 @@ def validate() -> dict[str, int]:
 
     if len(items) != 157:
         raise AssertionError(f"Expected 157 public items, found {len(items)}")
-    if len(blocks) != 38:
-        raise AssertionError(f"Expected 38 grid/state blocks, found {len(blocks)}")
-    if len(furniture) != 136:
-        raise AssertionError(f"Expected 136 furniture definitions, found {len(furniture)}")
+    if len(blocks) != 39:
+        raise AssertionError(f"Expected 39 grid/state blocks, found {len(blocks)}")
+    if len(furniture) != 135:
+        raise AssertionError(f"Expected 135 furniture definitions, found {len(furniture)}")
     if len(render_items) != 503:
         raise AssertionError(f"Expected 503 private render items, found {len(render_items)}")
     if len(recipes) != 114:
@@ -1162,6 +1164,7 @@ def validate() -> dict[str, int]:
         f"{NAMESPACE}:ice_grape_crop",
         f"{NAMESPACE}:gold_grape_crop",
         f"{NAMESPACE}:tap",
+        f"{NAMESPACE}:pressing_tub",
         *(f"{NAMESPACE}:_crop/{crop}/stage_{point}"
           for crop in ("grape_crop", "ice_grape_crop", "gold_grape_crop")
           for point in range(1, 6)),
@@ -1310,9 +1313,9 @@ def validate() -> dict[str, int]:
     if "LifecycleFurnitureBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register lifecycle_furniture before pack loading")
-    if "PressingTubFurnitureBehavior.register()" not in plugin_source:
+    if "PressingTubBlockBehavior.register()" not in plugin_source:
         raise AssertionError(
-            "KaleidoscopeTavernPlugin must register pressing_tub_furniture before pack loading")
+            "KaleidoscopeTavernPlugin must register the CE pressing-tub block behavior before pack loading")
     if "IncenseBlockBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register the CE incense block behavior before pack loading")
@@ -1459,33 +1462,37 @@ def validate() -> dict[str, int]:
                 f"missing token: {required_token}")
 
     pressing_behavior_source = (
-        game_package / "furniture" / "PressingTubFurnitureBehavior.java"
+        game_package / "block" / "PressingTubBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
-            "public void onPlace(Player player)",
-            "public void onLoad()",
-            "public void preRemove(Player player)",
-            "public void postRemove(Player player)",
-            "public void onUnload(boolean isStopping)",
-            "PressingTubSemantics.nearestLanding",
-            "PressingTubSemantics.isAboveColumn",
-            "public static void bindAvailability",
-            "public static void unbindAvailability",
-            "handler.accept(available)"):
+            "implements EntityBlock, PrioritizedFallOnHandler",
+            "BlockBehaviors.register(TYPE, PressingTubBlockBehavior::new)",
+            "BlockStateUtils.getOptionalCustomBlockState(args[1])",
+            "super.fallOn(thisBlock, args)",
+            "LivingEntityProxy.CLASS.isInstance(args[3])",
+            "((Number) args[4]).doubleValue()",
+            "updateStateForPlacement(",
+            "clickedFace.axis().isHorizontal()",
+            "context.getHorizontalDirection().opposite()",
+            "public static void bind(Handler value)",
+            "public static void unbind(Handler value)",
+            "public Object playerWillDestroy(",
+            "public void onRemove()",
+            "suppressContentDrops()"):
         if required_token not in pressing_behavior_source:
             raise AssertionError(
-                "pressing_tub_furniture must own CE lifecycle and indexed lookup; "
-                f"missing token: {required_token}")
-    for stale_token in ("static volatile Handler", "LOADED"):
-        if stale_token in pressing_behavior_source:
+                "pressing_tub block must keep the CE fallOn intercept and "
+                f"source placement semantics; missing token: {required_token}")
+    fall_on_hot_path = pressing_behavior_source.partition(
+        "public void fallOn(Object thisBlock, Object[] args) {")[2].partition(
+        "public void updateEntityMovementAfterFallOn(")[0]
+    for stale_token in ("getBukkitEntity", "PressingTubSemantics",
+                        "hasPotentialBelow", "findBelow", "pressLandingTracker",
+                        "EntityMoveEvent", "PlayerMoveEvent", "onFallDamage"):
+        if stale_token in fall_on_hot_path:
             raise AssertionError(
-                "pressing_tub_furniture must own only its CE spatial index and "
-                f"availability signal; stale token: {stale_token}")
-    for hot_path_token in ("furniture.isValid()", "ConcurrentHashMap", "ConcurrentMap"):
-        if hot_path_token in pressing_behavior_source:
-            raise AssertionError(
-                "CE lifecycle must keep pressing-tub movement lookups free of redundant "
-                f"validity/concurrent-map overhead; found {hot_path_token}")
+                "pressing_tub fallOn must stay proxy-level without Bukkit entity "
+                f"or landing-index machinery; stale token: {stale_token}")
 
     lifecycle_behavior_source = (
         game_package / "furniture" / "LifecycleFurnitureBehavior.java"
@@ -1844,33 +1851,32 @@ def validate() -> dict[str, int]:
             "TickingFurnitureBehavior.refreshSchedule(",
             "private boolean shouldTickBarrel(",
             "BarrelSemantics.needsTick(false,",
-            "new PressLandingTracker(",
-            "PressingTubFurnitureBehavior::hasPotentialBelow",
-            "PressingTubFurnitureBehavior.findBelow(worldId, x, y, z)",
-            "pressLandingTracker.onMove(",
-            "pressLandingTracker.onFallDamage(",
-            "PressingTubFurnitureBehavior.hasGroundTubInWorld(",
-            "PressingTubFurnitureBehavior.occupiesBlock(block)",
             "LifecycleFurnitureBehavior.Channel.BARREL, center, 3.0, 3.0",
-            "PressingTubFurnitureBehavior.bindAvailability(",
-            "PressingTubFurnitureBehavior.unbindAvailability(",
-            "Bukkit.getPluginManager().registerEvents(pressLandingListener, plugin)",
-            "HandlerList.unregisterAll(pressLandingListener)",
-            "this::ensureFallingCleanupTask",
-            "this::stopFallingCleanupTaskIfIdle",
             'open ? "ground" : "ground_closed"',
-            'currentVariant().name().equals("ground")'):
+            'currentVariant().name().equals("ground")',
+            "PressingTubBlockBehavior.bind(pressingTubHandler)",
+            "PressingTubBlockBehavior.unbind(pressingTubHandler)",
+            "private boolean interactPress(",
+            "private boolean pressOne(",
+            "PRESS_MIN_FALL_DISTANCE = 0.5",
+            "tiltNorth(",
+            "facingYaw("):
         if required_token not in station_source:
             raise AssertionError(
-                "StationService must retain only the source-compatible fallOn bridge; "
+                "StationService must bridge the CE pressing-tub block handler; "
                 f"missing token: {required_token}")
-    press_landing_listener_source = station_source.partition(
-        "private final class PressLandingListener")[2].partition(
-        "private void tickBarrel")[0]
-    if "PressingTubFurnitureBehavior.hasLoadedInWorld(" in press_landing_listener_source:
-        raise AssertionError(
-            "The movement hot path must rely on CE's indexed hasPotentialBelow/findBelow "
-            "lookups only after observing an actual fall")
+    for stale_token in (
+            "PressLandingTracker", "PressingTubFurnitureBehavior",
+            "pressLandingTracker", "pressLandingListener", "onFallDamage",
+            "EntityMoveEvent", "PlayerMoveEvent", "fallingCleanupTask",
+            "ensureFallingCleanupTask", "stopFallingCleanupTaskIfIdle",
+            "hasPotentialBelow", "hasGroundTubInWorld", "occupiesBlock(",
+            "bindAvailability", "unbindAvailability", "registerEvents(",
+            "HandlerList.unregisterAll"):
+        if stale_token in station_source:
+            raise AssertionError(
+                "Movement/landing-index machinery must stay deleted from "
+                f"StationService; stale token: {stale_token}")
     for stale_token in (
             "FurnitureInteractEvent", "public void onFurnitureInteract(",
             "FurniturePlaceEvent", "public void onFurniturePlace(",
@@ -4211,22 +4217,107 @@ def validate() -> dict[str, int]:
             if particle != "minecraft:block/iron_chain":
                 raise AssertionError(
                     f"{pendant_id}/{half}: Paper 26.2 requires the iron_chain particle texture")
-    pressing_tub_wall = furniture[
-        f"{NAMESPACE}:pressing_tub"]["variants"]["wall"]["elements"][0]
-    if (pressing_tub_wall.get("position") != "0,0,0.01"
-            or pressing_tub_wall.get("translation") != "0,0,0.49"
-            or pressing_tub_wall.get("rotation") is not None):
+    pressing_tub_id = f"{NAMESPACE}:pressing_tub"
+    if pressing_tub_id in furniture:
+        raise AssertionError("Pressing tub must not remain CE furniture")
+    pressing_block = blocks[pressing_tub_id]
+    pressing_states = pressing_block.get("states", {})
+    expected_pressing_properties = {
+        "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": ["north", "east", "south", "west"],
+        },
+        "tilt": {"type": "boolean", "default": "false"},
+        "waterlogged": {"type": "boolean", "default": "false"},
+    }
+    if pressing_states.get("properties") != expected_pressing_properties:
+        raise AssertionError("Pressing-tub CE state schema drifted")
+    pressing_variants = pressing_states.get("variants", {})
+    expected_pressing_variant_keys = {
+        f"facing={facing},tilt={tilt},waterlogged={waterlogged}"
+        for facing in ("north", "east", "south", "west")
+        for tilt in ("false", "true")
+        for waterlogged in ("false", "true")
+    }
+    if set(pressing_variants) != expected_pressing_variant_keys:
         raise AssertionError(
-            "Tilted pressing tub must use CE's clicked-face yaw exactly once "
-            "and occupy the target cell in front of its support")
+            "Pressing tub must expose all 16 facing/tilt/fluid states")
+    pressing_appearances = pressing_states.get("appearances", {})
+    pressing_yaw = {"north": 180, "east": 90, "south": None, "west": 270}
+    pressing_render_model = {"false": "ff80d8a10a", "true": "61ee42afd0"}
+    referenced_pressing_appearances: set[str] = set()
+    for variant_key, variant in pressing_variants.items():
+        properties = dict(part.split("=", 1) for part in variant_key.split(","))
+        appearance_name = (
+            f"{'tilted' if properties['tilt'] == 'true' else 'ground'}_"
+            f"{properties['facing']}_{properties['waterlogged']}"
+        )
+        if variant.get("appearance") != appearance_name:
+            raise AssertionError(
+                f"Pressing tub {variant_key} maps to the wrong renderer")
+        appearance = pressing_appearances.get(appearance_name, {})
+        referenced_pressing_appearances.add(appearance_name)
+        expected_carrier = (
+            "minecraft:petrified_oak_slab"
+            f"[type=bottom,waterlogged={properties['waterlogged']}]"
+        )
+        if (appearance.get("state") != expected_carrier
+                or appearance.get("transparent") is not True):
+            raise AssertionError(
+                f"Pressing tub {variant_key} must use its released bottom-slab carrier")
+        renderer = appearance.get("entity_renderer")
+        expected_renderer = {
+            "type": "item_display",
+            "item": (
+                f"{NAMESPACE}:_render/pressing_tub/"
+                f"{pressing_render_model[properties['tilt']]}"),
+            "display_transform": "none",
+            "shadow_radius": 0,
+            "view_range": 1.25,
+        }
+        yaw = pressing_yaw[properties["facing"]]
+        if yaw is not None:
+            expected_renderer["rotation"] = f"0,{yaw},0"
+        if renderer != expected_renderer:
+            raise AssertionError(
+                f"Pressing tub {variant_key} model renderer drifted: {renderer}")
+    if (referenced_pressing_appearances != set(pressing_appearances)
+            or len(pressing_appearances) != 16):
+        raise AssertionError(
+            "Pressing-tub appearance set contains stale or missing states")
+    if pressing_block.get("behaviors") != {
+            "type": f"{NAMESPACE}:pressing_tub_block"}:
+        raise AssertionError(
+            "Pressing tub must route fallOn through the CE block behavior")
+    pressing_settings = pressing_block.get("settings", {})
+    if (pressing_settings.get("item") != pressing_tub_id
+            or pressing_settings.get("hardness") != 0.8
+            or pressing_settings.get("resistance") != 0.8
+            or pressing_settings.get("push_reaction") != "NORMAL"
+            or pressing_settings.get("tags") != ["minecraft:mineable/axe"]
+            or pressing_settings.get("destroy_stages")
+            != {"template": "internal:destroy_stages"}
+            or pressing_settings.get("map_color") != 13
+            or pressing_settings.get("instrument") != "guitar"
+            or pressing_settings.get("burnable") is not True
+            or pressing_settings.get("burn_chance") != 5
+            or pressing_settings.get("fire_spread_chance") != 20):
+        raise AssertionError("Pressing-tub survival mining settings drifted")
+    if items[pressing_tub_id].get("behavior") != {
+            "type": "block_item", "block": pressing_tub_id}:
+        raise AssertionError(
+            "Pressing tub placement must use CE's native block_item")
     for token in (
-            "PressingTubSemantics.tiltNorth(",
-            "PressingTubSemantics.toWallFurnitureOffset(point)",
-            "displayYaw = origin.getYaw();",
-            "new Vector3f(0, 0, 0.5F)"):
+            "facingYaw(controller.facing()) + 180.0",
+            "tiltNorth(0.5 + x, 0.2 + y, 0.5 + z)",
+            "TILT_X_DEGREES",
+            "ITEM_X_DEGREES",
+            "displayYaw = facingYaw(controller.facing())"):
         if token not in station_source:
             raise AssertionError(
-                "Tilted pressing-tub contents must use CE's outward wall basis")
+                "Tilted pressing-tub contents must follow the block-state yaw "
+                f"plus the ItemDisplay +180-degree turn; missing {token}")
 
     paintings = [item_id for item_id in items if item_id.endswith("_painting")]
     if len(paintings) != 14:
@@ -4438,22 +4529,7 @@ def validate() -> dict[str, int]:
                 f"{furniture_id}: bottle_furniture order/config drifted: "
                 f"index={index}, behavior={behavior}")
 
-    pressing_id = f"{NAMESPACE}:pressing_tub"
-    pressing_behaviors = list(furniture[pressing_id].get("behaviors", []))
-    pressing_single_behavior = furniture[pressing_id].get("behavior")
-    if pressing_single_behavior is not None:
-        pressing_behaviors.append(pressing_single_behavior)
-    expected_pressing_behavior = {"type": f"{NAMESPACE}:pressing_tub_furniture"}
-    if len(pressing_behaviors) != 4 or pressing_behaviors[1] != expected_pressing_behavior:
-        raise AssertionError(
-            "pressing_tub must put pressing_tub_furniture after its index-zero state controller")
-
     expected_station_visuals = {
-        "pressing_tub": ({
-            "type": f"{NAMESPACE}:station_visual_furniture",
-            "max_elements": 17,
-            "view_range": 1.25,
-        }, 2),
         "barrel": ({
             "type": f"{NAMESPACE}:station_visual_furniture",
             "max_elements": 17,
@@ -4506,7 +4582,6 @@ def validate() -> dict[str, int]:
             "Station CE interaction coverage drift: "
             f"missing={missing}, unexpected={unexpected}")
     expected_station_interaction_indices = {
-        "pressing_tub": 3,
         "barrel": 3,
         "shaker": 2,
         "empty_glassware": 1,
@@ -4736,8 +4811,8 @@ def validate() -> dict[str, int]:
 
     for expected_token in (
             "EXPECTED_ITEMS = 660",
-            "EXPECTED_BLOCKS = 38",
-            "EXPECTED_FURNITURE = 136"):
+            "EXPECTED_BLOCKS = 39",
+            "EXPECTED_FURNITURE = 135"):
         if expected_token not in plugin_source:
             raise AssertionError(
                 f"Runtime CE content count guard is stale: {expected_token}")
