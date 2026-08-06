@@ -287,14 +287,14 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
 
         private void refreshSchedule() {
             Handler handler = deliveredHandler;
-            if (!active || handler == null || !SCHEDULER.isStarted()
-                    || !handler.shouldSchedule(bukkitFurniture)) {
-                SCHEDULER.cancel(schedulerId);
-                return;
-            }
-            if (!SCHEDULER.hasScheduledRun(schedulerId)) {
-                SCHEDULER.schedule(schedulerId, schedule.firstDelay(bukkitFurniture));
-            }
+            boolean desired = active
+                    && handler != null
+                    && handler.shouldSchedule(bukkitFurniture);
+            int firstDelay = desired
+                    ? schedule.firstDelay(bukkitFurniture)
+                    : 0;
+            // shouldSchedule / firstDelay 在锁外决策；取消或调度在一次 reconcile 内完成。
+            SCHEDULER.reconcile(schedulerId, desired, firstDelay);
         }
 
         // ===== TickingScheduler.Host =====

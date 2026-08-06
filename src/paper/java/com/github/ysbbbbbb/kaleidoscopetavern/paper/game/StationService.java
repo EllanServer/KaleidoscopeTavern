@@ -95,8 +95,7 @@ public final class StationService implements Listener {
     private final ItemService items;
     private final Messages messages;
     private final ShakerVisualService shakerVisuals;
-    private final Map<UUID, Float> falling = new HashMap<>();
-    private final Map<UUID, Boolean> recentLandings = new HashMap<>();
+    private final PressLandingTracker pressLandingTracker;
     private final Map<UUID, PortableShakerUse> portableShakers = new HashMap<>();
     private final Set<UUID> pendingVanillaBucketEmpty = new HashSet<>();
     private BukkitTask portableShakerTask;
@@ -136,6 +135,14 @@ public final class StationService implements Listener {
         this.items = items;
         this.messages = messages;
         this.shakerVisuals = shakerVisuals;
+        this.pressLandingTracker = new PressLandingTracker(
+                () -> Integer.toUnsignedLong(Bukkit.getCurrentTick()),
+                PressingTubFurnitureBehavior::hasPotentialBelow,
+                (worldId, x, y, z) -> PressingTubFurnitureBehavior.findBelow(worldId, x, y, z)
+                        .map(this::pressOne)
+                        .orElse(false),
+                this::ensureFallingCleanupTask,
+                this::stopFallingCleanupTaskIfIdle);
     }
 
     public void start() {
@@ -164,8 +171,7 @@ public final class StationService implements Listener {
             fallingCleanupTask.cancel();
             fallingCleanupTask = null;
         }
-        falling.clear();
-        recentLandings.clear();
+        pressLandingTracker.clear();
         portableShakers.values().forEach(use -> shakerVisuals.endMix(use.player()));
         portableShakers.clear();
         pendingVanillaBucketEmpty.clear();
@@ -317,19 +323,17 @@ public final class StationService implements Listener {
                 || !(event.getEntity() instanceof LivingEntity living)) {
             return;
         }
-        if (!PressingTubFurnitureBehavior.hasLoadedInWorld(living.getWorld())) {
-            falling.remove(living.getUniqueId());
-            stopFallingCleanupTaskIfIdle();
+        // 墙面桶不会让无关摔落事件继续进入处理。
+        if (!PressingTubFurnitureBehavior.hasGroundTubInWorld(living.getWorld())) {
+            pressLandingTracker.untrack(living.getUniqueId());
             return;
         }
-        UUID id = living.getUniqueId();
-        Float tracked = falling.remove(id);
-        stopFallingCleanupTaskIfIdle();
-        float fallDistance = tracked == null
-                ? living.getFallDistance()
-                : Math.max(living.getFallDistance(), tracked);
-        if (fallDistance >= PressingTubSemantics.MIN_FALL_DISTANCE
-                && handlePressLanding(living, living.getLocation())) {
+        Location location = living.getLocation();
+        if (pressLandingTracker.onFallDamage(
+                living.getUniqueId(),
+                location.getWorld().getUID(),
+                location.getX(), location.getY(), location.getZ(),
+                living.getFallDistance())) {
             event.setCancelled(true);
         }
     }
@@ -393,9 +397,8 @@ public final class StationService implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        falling.remove(event.getPlayer().getUniqueId());
-        stopFallingCleanupTaskIfIdle();
-        recentLandings.remove(event.getPlayer().getUniqueId());
+        pressLandingTracker.untrack(event.getPlayer().getUniqueId());
+        pressLandingTracker.forgetLanding(event.getPlayer().getUniqueId());
         PortableShakerUse shakerUse = portableShakers.remove(
                 event.getPlayer().getUniqueId());
         if (shakerUse != null) {
@@ -737,41 +740,16 @@ public final class StationService implements Listener {
         }
     }
 
-    private void trackPressLanding(LivingEntity living, Location feet,
-                                   float currentFallDistance) {
-        if (currentFallDistance > 0) {
-            if (PressingTubFurnitureBehavior.hasPotentialBelow(feet)) {
-                falling.merge(living.getUniqueId(), currentFallDistance, Math::max);
-                ensureFallingCleanupTask();
-            }
-            return;
-        }
-        // The listener already filters untracked ground movement. Retain this
-        // guard for lifecycle races that clear the map between that filter and
-        // the landing edge.
-        if (falling.isEmpty()) {
-            return;
-        }
-        Float trackedFallDistance = falling.remove(living.getUniqueId());
-        stopFallingCleanupTaskIfIdle();
-        if (trackedFallDistance != null
-                && trackedFallDistance >= PressingTubSemantics.MIN_FALL_DISTANCE) {
-            handlePressLanding(living, feet);
-        }
-    }
-
-    private boolean handlePressLanding(LivingEntity living, Location feet) {
-        UUID id = living.getUniqueId();
-        Boolean recent = recentLandings.get(id);
-        if (recent != null) {
-            return recent;
-        }
-        boolean pressed = PressingTubFurnitureBehavior.findBelow(feet)
-                .map(this::pressOne)
-                .orElse(false);
-        recentLandings.put(id, pressed);
-        Bukkit.getScheduler().runTaskLater(plugin, () -> recentLandings.remove(id), 2L);
-        return pressed;
+    /**
+     * 移动事件入口：候选过滤先于 {@code getFallDistance()}，已追踪实体不再
+     * 重复查询空间索引。绝大多数无关实体在读取 fallDistance 之前就返回。
+     */
+    private void inspectPressLanding(LivingEntity living, Location feet) {
+        pressLandingTracker.onMove(
+                living.getUniqueId(),
+                feet.getWorld().getUID(),
+                feet.getX(), feet.getY(), feet.getZ(),
+                living::getFallDistance);
     }
 
     private boolean interactBarrel(Player player, BukkitFurniture furniture, Location interactionPoint) {
@@ -796,7 +774,7 @@ public final class StationService implements Listener {
                 messages.send(player, "barrel-brewing-cannot-open");
                 return false;
             }
-            setBarrelOpen(furniture, true, true);
+            setBarrelOpen(furniture, true, true, true);
             return true;
         }
 
@@ -805,7 +783,7 @@ public final class StationService implements Listener {
         // recipe can start; the CE furniture ticker deliberately preserves that delay.
         if (hit == BarrelSemantics.Hit.TOP_RIM) {
             if (hand.isEmpty()) {
-                setBarrelOpen(furniture, false, true);
+                setBarrelOpen(furniture, false, true, true);
                 return true;
             }
             return false;
@@ -815,7 +793,7 @@ public final class StationService implements Listener {
             // This only repairs legacy/corrupt state where a brewing barrel
             // was persisted open; normal gameplay is caught by the branch
             // above and can never reach this combination.
-            setBarrelOpen(furniture, false, false);
+            setBarrelOpen(furniture, false, false, true);
             messages.send(player, "barrel-brewing-cannot-open");
             return true;
         }
@@ -972,20 +950,27 @@ public final class StationService implements Listener {
         if (furniture == null || !furniture.isValid() || furniture.bukkitEntity() == null) {
             return;
         }
+        // 绝大多数关闭桶直接返回，不访问 StateController / CompoundTag。
+        if (!isBarrelOpen(furniture)) {
+            return;
+        }
         FurnitureState state = new FurnitureState(furniture);
-        if (isBarrelBrewing(state) && isBarrelOpen(furniture)) {
-            setBarrelOpen(furniture, false, false);
+        if (isBarrelBrewing(state)) {
+            setBarrelOpen(furniture, false, false, false);
         }
     }
 
-    private void setBarrelOpen(BukkitFurniture furniture, boolean open, boolean playSound) {
+    private void setBarrelOpen(BukkitFurniture furniture, boolean open, boolean playSound,
+                               boolean refreshTickSchedule) {
         if (furniture == null || !furniture.isValid() || furniture.bukkitEntity() == null) {
             return;
         }
         boolean variantChanged = furniture.setVariant(
                 open ? "ground" : "ground_closed", true);
-        TickingFurnitureBehavior.refreshSchedule(
-                TickingFurnitureBehavior.Channel.BARREL, furniture);
+        if (refreshTickSchedule) {
+            TickingFurnitureBehavior.refreshSchedule(
+                    TickingFurnitureBehavior.Channel.BARREL, furniture);
+        }
         if (playSound) {
             // The Forge implementation intentionally uses BARREL_OPEN for
             // both transitions and plays it at the lid, two blocks above.
@@ -1306,19 +1291,19 @@ public final class StationService implements Listener {
     private void cleanupFalling() {
         // Entities despawned mid-air never fire a landing; this low-frequency
         // cleanup is unrelated to furniture ticking and prevents stale UUIDs.
-        falling.keySet().removeIf(id -> Bukkit.getEntity(id) == null);
+        pressLandingTracker.removeTrackedIf(id -> Bukkit.getEntity(id) == null);
         stopFallingCleanupTaskIfIdle();
     }
 
     private void ensureFallingCleanupTask() {
-        if (fallingCleanupTask == null && !falling.isEmpty()) {
+        if (fallingCleanupTask == null && !pressLandingTracker.isEmpty()) {
             fallingCleanupTask = Bukkit.getScheduler().runTaskTimer(
                     plugin, this::cleanupFalling, 600L, 600L);
         }
     }
 
     private void stopFallingCleanupTaskIfIdle() {
-        if (fallingCleanupTask != null && falling.isEmpty()) {
+        if (fallingCleanupTask != null && pressLandingTracker.isEmpty()) {
             fallingCleanupTask.cancel();
             fallingCleanupTask = null;
         }
@@ -1334,53 +1319,44 @@ public final class StationService implements Listener {
             return;
         }
         HandlerList.unregisterAll(pressLandingListener);
-        falling.clear();
-        recentLandings.clear();
+        pressLandingTracker.clear();
         stopFallingCleanupTaskIfIdle();
     }
 
     private final class PressLandingListener implements Listener {
         @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
         public void onMove(PlayerMoveEvent event) {
-            Player player = event.getPlayer();
-            float fallDistance = player.getFallDistance();
-            boolean trackingPlayer = fallDistance <= 0 && !falling.isEmpty()
-                    && falling.containsKey(player.getUniqueId());
-            if (!PressingTubSemantics.needsMovementInspection(
-                    fallDistance, trackingPlayer)) {
-                return;
-            }
             Location to = event.getTo();
-            if (to == null || (event.getFrom().getX() == to.getX()
-                    && event.getFrom().getY() == to.getY()
-                    && event.getFrom().getZ() == to.getZ())) {
+            if (to == null) {
                 return;
             }
-            trackPressLanding(player, to, fallDistance);
+            Location from = event.getFrom();
+            if (from.getX() == to.getX()
+                    && from.getY() == to.getY()
+                    && from.getZ() == to.getZ()) {
+                return;
+            }
+            inspectPressLanding(event.getPlayer(), to);
         }
 
         @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
         public void onEntityMove(EntityMoveEvent event) {
+            if (!event.hasExplicitlyChangedPosition()) {
+                return;
+            }
             LivingEntity living = event.getEntity();
-            if (living instanceof Player || !event.hasExplicitlyChangedPosition()) {
+            if (living instanceof Player) {
                 return;
             }
-            float fallDistance = living.getFallDistance();
-            boolean trackingEntity = fallDistance <= 0 && !falling.isEmpty()
-                    && falling.containsKey(living.getUniqueId());
-            if (!PressingTubSemantics.needsMovementInspection(
-                    fallDistance, trackingEntity)) {
-                return;
-            }
-            trackPressLanding(living, event.getTo(), fallDistance);
+            inspectPressLanding(living, event.getTo());
         }
     }
 
     private void tickBarrel(BukkitFurniture furniture) {
-        FurnitureState state = new FurnitureState(furniture);
         if (isBarrelOpen(furniture)) {
             return;
         }
+        FurnitureState state = new FurnitureState(furniture);
         int level = state.integer("barrel_level");
         if (level >= 6) {
             return;

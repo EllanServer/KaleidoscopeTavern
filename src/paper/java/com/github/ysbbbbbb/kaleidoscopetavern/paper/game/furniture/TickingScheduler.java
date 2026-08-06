@@ -99,12 +99,6 @@ final class TickingScheduler {
         }
     }
 
-    boolean isStarted() {
-        synchronized (lock) {
-            return started;
-        }
-    }
-
     // ===== 注册与状态推送 =====
 
     void activate(String id, Host host) {
@@ -139,13 +133,6 @@ final class TickingScheduler {
         }
     }
 
-    boolean hasScheduledRun(String id) {
-        synchronized (lock) {
-            IdentityState state = states.get(id);
-            return state != null && state.scheduledRun != null;
-        }
-    }
-
     // ===== 调度 =====
 
     void schedule(String id, int delay) {
@@ -174,6 +161,41 @@ final class TickingScheduler {
             }
             invalidateLocked(state);
             pruneStaleHeadLocked();
+            maybeCompactQueueLocked();
+            scheduleWakeLocked();
+        }
+    }
+
+    /**
+     * 一次锁内完成「取消或调度」决策，合并原先 refreshSchedule 里
+     * isStarted/cancel/hasScheduledRun/schedule 的多次锁进入与重复队头检查。
+     *
+     * <p>host 的 shouldSchedule / firstDelay 决策必须仍在锁外完成（Bukkit、NBT
+     * 或家具逻辑不能进入全局调度锁），这里只接收决策结果。</p>
+     */
+    void reconcile(String id, boolean desired, int firstDelay) {
+        synchronized (lock) {
+            IdentityState state = states.get(id);
+            if (state == null) {
+                return;
+            }
+            if (!started || !state.active || !state.bound || !desired) {
+                if (state.scheduledRun != null) {
+                    invalidateLocked(state);
+                    pruneStaleHeadLocked();
+                    maybeCompactQueueLocked();
+                }
+                scheduleWakeLocked();
+                return;
+            }
+            if (state.scheduledRun != null) {
+                return;
+            }
+            ScheduledRun run = new ScheduledRun(id, state.scheduleGeneration,
+                    tickSource.getAsLong() + Math.max(1, firstDelay), nextSequence++);
+            state.scheduledRun = run;
+            queue.add(run);
+            liveQueuedRuns++;
             maybeCompactQueueLocked();
             scheduleWakeLocked();
         }

@@ -1,10 +1,13 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.FurnitureSpatialSemantics;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.PressingTubLandingIndex;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.PressingTubSemantics;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.furniture.Furniture;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureDefinition;
+import net.momirealms.craftengine.core.entity.furniture.FurnitureVariant;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehaviorTemplate;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehaviors;
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureController;
@@ -15,12 +18,12 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -32,12 +35,17 @@ import java.util.function.Consumer;
  * landing event remains in StationService. The expensive furniture discovery
  * does not: controllers register their stationary columns when CE loads or
  * places them and unregister on removal or chunk unload.</p>
+ *
+ * <p>实体移动事件热路径只查地面桶的落脚单元反向索引（一次 primitive long
+ * 查询），不再对四列逐个扫描；墙面桶不登记落脚单元，也不启用全局落地监听器。</p>
  */
 public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplate {
     public static final String TYPE = "kaleidoscope_tavern:pressing_tub_furniture";
 
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
-    private static final Map<UUID, WorldIndex> WORLD_INDEX = new HashMap<>();
+    private static final Map<UUID, PressingTubLandingIndex<Controller>> WORLD_INDEX =
+            new HashMap<>();
+    private static int loadedGroundTubCount;
     private static boolean available;
     private static Consumer<Boolean> availabilityHandler;
 
@@ -51,15 +59,16 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
         }
     }
 
-    public static boolean hasLoadedInWorld(World world) {
-        WorldIndex index = WORLD_INDEX.get(world.getUID());
-        return index != null && !index.columns.isEmpty();
+    /** 该世界是否已加载地面版压榨桶（墙面版不会让摔落处理继续进入）。 */
+    public static boolean hasGroundTubInWorld(World world) {
+        PressingTubLandingIndex<Controller> index = WORLD_INDEX.get(world.getUID());
+        return index != null && index.hasGroundTubs();
     }
 
-    /** Lets CE-loaded tubs enable the otherwise-global Paper fall bridge on demand. */
+    /** Lets CE-loaded ground tubs enable the otherwise-global Paper fall bridge on demand. */
     public static void bindAvailability(Consumer<Boolean> handler) {
         availabilityHandler = Objects.requireNonNull(handler, "handler");
-        available = !WORLD_INDEX.isEmpty();
+        available = loadedGroundTubCount > 0;
         handler.accept(available);
     }
 
@@ -71,20 +80,18 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
 
     /** Whether a loaded pressing-tub origin occupies this exact block. */
     public static boolean occupiesBlock(Block block) {
-        WorldIndex index = WORLD_INDEX.get(block.getWorld().getUID());
+        PressingTubLandingIndex<Controller> index = WORLD_INDEX.get(block.getWorld().getUID());
         if (index == null) {
             return false;
         }
-        Set<Controller> controllers = index.columns.get(
-                packColumn(block.getX(), block.getZ()));
+        ReferenceOpenHashSet<Controller> controllers =
+                index.originCandidatesAt(block.getX(), block.getZ());
         if (controllers == null) {
             return false;
         }
         for (Controller controller : controllers) {
-            BukkitFurniture furniture = controller.bukkitFurniture;
-            Location location = furniture.location();
             if (FurnitureSpatialSemantics.insideBlock(
-                    location.getX(), location.getY(), location.getZ(),
+                    controller.baseX, controller.baseY, controller.baseZ,
                     block.getX(), block.getY(), block.getZ())) {
                 return true;
             }
@@ -92,80 +99,53 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
         return false;
     }
 
-    /** Whether a falling entity is horizontally above any loaded ground tub. */
-    public static boolean hasPotentialBelow(Location feet) {
-        WorldIndex index = WORLD_INDEX.get(feet.getWorld().getUID());
-        if (index == null) {
+    /** 移动事件热路径：单个落脚单元查询，不做四列扫描。 */
+    public static boolean hasPotentialBelow(UUID worldId,
+                                            double feetX, double feetY, double feetZ) {
+        PressingTubLandingIndex<Controller> index = WORLD_INDEX.get(worldId);
+        if (index == null || !index.hasGroundTubs()) {
             return false;
         }
-        int minX = floor(feet.getX() - 0.5);
-        int maxX = floor(feet.getX() + 0.5);
-        int minZ = floor(feet.getZ() - 0.5);
-        int maxZ = floor(feet.getZ() + 0.5);
-        for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                Set<Controller> controllers = index.columns.get(packColumn(x, z));
-                if (controllers == null) {
-                    continue;
-                }
-                for (Controller controller : controllers) {
-                    BukkitFurniture furniture = controller.bukkitFurniture;
-                    if (!isGround(furniture)) {
-                        continue;
-                    }
-                    Location base = furniture.location();
-                    if (PressingTubSemantics.isAboveColumn(
-                            feet.getX(), feet.getY(), feet.getZ(),
-                            base.getX(), base.getY(), base.getZ())) {
-                        return true;
-                    }
-                }
+        ReferenceOpenHashSet<Controller> candidates = index.landingCandidatesAt(
+                (int) Math.floor(feetX), (int) Math.floor(feetZ));
+        if (candidates == null) {
+            return false;
+        }
+        for (Controller controller : candidates) {
+            if (PressingTubSemantics.isAboveColumn(
+                    feetX, feetY, feetZ,
+                    controller.baseX, controller.baseY, controller.baseZ)) {
+                return true;
             }
         }
         return false;
     }
 
     /** Finds the closest ground tub whose source block owns this landing. */
-    public static Optional<BukkitFurniture> findBelow(Location feet) {
-        WorldIndex index = WORLD_INDEX.get(feet.getWorld().getUID());
-        if (index == null) {
+    public static Optional<BukkitFurniture> findBelow(UUID worldId,
+                                                      double feetX, double feetY, double feetZ) {
+        PressingTubLandingIndex<Controller> index = WORLD_INDEX.get(worldId);
+        if (index == null || !index.hasGroundTubs()) {
             return Optional.empty();
         }
-        BukkitFurniture closest = null;
-        double closestDistance = Double.POSITIVE_INFINITY;
-        int minX = floor(feet.getX() - 0.5);
-        int maxX = floor(feet.getX() + 0.5);
-        int minZ = floor(feet.getZ() - 0.5);
-        int maxZ = floor(feet.getZ() + 0.5);
-        for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                Set<Controller> controllers = index.columns.get(packColumn(x, z));
-                if (controllers == null) {
-                    continue;
-                }
-                for (Controller controller : controllers) {
-                    BukkitFurniture furniture = controller.bukkitFurniture;
-                    if (!isGround(furniture)) {
-                        continue;
-                    }
-                    Location base = furniture.location();
-                    if (!PressingTubSemantics.isLandingPosition(
-                            feet.getX(), feet.getY(), feet.getZ(),
-                            base.getX(), base.getY(), base.getZ())) {
-                        continue;
-                    }
-                    double dx = feet.getX() - base.getX();
-                    double dy = feet.getY() - base.getY();
-                    double dz = feet.getZ() - base.getZ();
-                    double distance = dx * dx + dy * dy + dz * dz;
-                    if (distance < closestDistance) {
-                        closest = furniture;
-                        closestDistance = distance;
-                    }
-                }
-            }
+        ReferenceOpenHashSet<Controller> candidates = index.landingCandidatesAt(
+                (int) Math.floor(feetX), (int) Math.floor(feetZ));
+        if (candidates == null) {
+            return Optional.empty();
         }
-        return Optional.ofNullable(closest);
+        List<PressingTubSemantics.LandingTarget> targets =
+                new ArrayList<>(candidates.size());
+        List<Controller> ordered = new ArrayList<>(candidates.size());
+        for (Controller controller : candidates) {
+            ordered.add(controller);
+            targets.add(new PressingTubSemantics.LandingTarget(
+                    controller.baseX, controller.baseY, controller.baseZ));
+        }
+        int best = PressingTubSemantics.nearestLanding(feetX, feetY, feetZ, targets);
+        if (best < 0) {
+            return Optional.empty();
+        }
+        return Optional.of(ordered.get(best).bukkitFurniture);
     }
 
     @Override
@@ -176,22 +156,19 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
         return new Controller(bukkitFurniture);
     }
 
-    private static boolean isGround(BukkitFurniture furniture) {
-        return furniture.currentVariant().name().equals("ground");
-    }
-
-    private static int floor(double coordinate) {
-        return (int) Math.floor(coordinate);
-    }
-
-    private static long packColumn(int x, int z) {
-        return ((long) x << 32) ^ (z & 0xffffffffL);
-    }
-
     private static final class Controller extends FurnitureController {
         private final BukkitFurniture bukkitFurniture;
         private UUID worldId;
-        private long column;
+        private double baseX;
+        private double baseY;
+        private double baseZ;
+        private int originBlockX;
+        private int originBlockZ;
+        private int landingMinX;
+        private int landingMaxX;
+        private int landingMinZ;
+        private int landingMaxZ;
+        private boolean ground;
         private boolean indexed;
 
         private Controller(BukkitFurniture furniture) {
@@ -224,18 +201,27 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
             unindex();
         }
 
+        @Override
+        public void onVariantChange(FurnitureVariant previousVariant) {
+            if (!indexed) {
+                return;
+            }
+            /*
+             * CE 的 moveTo / 变体切换只更新 location 并重建变体，不触发
+             * onLoad/onUnload；这里直接重索引。不要分别调用 unindex/index：
+             * 那样可能瞬间把 loadedGroundTubCount 降为 0，触发监听器注销并
+             * 清空 falling。
+             */
+            removeFromSpatialIndex();
+            addToSpatialIndex();
+            updateAvailability();
+        }
+
         private void index() {
             if (indexed) {
                 return;
             }
-            Location location = bukkitFurniture.location();
-            worldId = location.getWorld().getUID();
-            column = packColumn(location.getBlockX(), location.getBlockZ());
-            WorldIndex worldIndex = WORLD_INDEX.computeIfAbsent(worldId,
-                    ignored -> new WorldIndex());
-            worldIndex.columns.computeIfAbsent(column,
-                    ignored -> new HashSet<>()).add(this);
-            indexed = true;
+            addToSpatialIndex();
             updateAvailability();
         }
 
@@ -243,35 +229,62 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
             if (!indexed) {
                 return;
             }
-            WorldIndex worldIndex = WORLD_INDEX.get(worldId);
-            if (worldIndex != null) {
-                Set<Controller> controllers = worldIndex.columns.get(column);
-                if (controllers != null) {
-                    controllers.remove(this);
-                    if (controllers.isEmpty()) {
-                        worldIndex.columns.remove(column, controllers);
-                    }
+            removeFromSpatialIndex();
+            updateAvailability();
+        }
+
+        private void addToSpatialIndex() {
+            Location location = bukkitFurniture.location();
+            worldId = location.getWorld().getUID();
+            baseX = location.getX();
+            baseY = location.getY();
+            baseZ = location.getZ();
+            originBlockX = location.getBlockX();
+            originBlockZ = location.getBlockZ();
+            ground = bukkitFurniture.currentVariant().name().equals("ground");
+            landingMinX = FurnitureSpatialSemantics.minimumColumn(baseX, 0.5);
+            landingMaxX = FurnitureSpatialSemantics.maximumColumn(baseX, 0.5);
+            landingMinZ = FurnitureSpatialSemantics.minimumColumn(baseZ, 0.5);
+            landingMaxZ = FurnitureSpatialSemantics.maximumColumn(baseZ, 0.5);
+
+            PressingTubLandingIndex<Controller> index =
+                    WORLD_INDEX.computeIfAbsent(worldId, ignored -> new PressingTubLandingIndex<>());
+            index.add(this, ground,
+                    originBlockX, originBlockZ,
+                    landingMinX, landingMaxX,
+                    landingMinZ, landingMaxZ);
+            if (ground) {
+                loadedGroundTubCount++;
+            }
+            indexed = true;
+        }
+
+        private void removeFromSpatialIndex() {
+            PressingTubLandingIndex<Controller> index = WORLD_INDEX.get(worldId);
+            if (index != null) {
+                // 移除时使用缓存的边界与列，不需要重新计算。
+                index.remove(this, ground,
+                        originBlockX, originBlockZ,
+                        landingMinX, landingMaxX,
+                        landingMinZ, landingMaxZ);
+                if (ground) {
+                    loadedGroundTubCount--;
                 }
-                if (worldIndex.columns.isEmpty()) {
-                    WORLD_INDEX.remove(worldId, worldIndex);
+                if (index.isEmpty()) {
+                    WORLD_INDEX.remove(worldId, index);
                 }
             }
             indexed = false;
-            updateAvailability();
         }
     }
 
     private static void updateAvailability() {
-        boolean current = !WORLD_INDEX.isEmpty();
+        boolean current = loadedGroundTubCount > 0;
         boolean previous = available;
         available = current;
         Consumer<Boolean> handler = availabilityHandler;
         if (previous != current && handler != null) {
             handler.accept(current);
         }
-    }
-
-    private static final class WorldIndex {
-        private final Map<Long, Set<Controller>> columns = new HashMap<>();
     }
 }

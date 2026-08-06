@@ -1,5 +1,7 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
+import java.util.List;
+
 /** Source-compatible pressing-tub geometry and fall thresholds. */
 public final class PressingTubSemantics {
     public static final float MIN_FALL_DISTANCE = 0.5F;
@@ -9,12 +11,31 @@ public final class PressingTubSemantics {
     private PressingTubSemantics() {
     }
 
-    /**
-     * Movement events only matter while this entity is falling or while its
-     * own earlier fall still needs the landing edge observed.
-     */
-    static boolean needsMovementInspection(float fallDistance, boolean trackingEntity) {
-        return fallDistance > 0 || trackingEntity;
+    /** 一个地面桶的几何目标（纯数据，用于最近落点选择）。 */
+    public record LandingTarget(double baseX, double baseY, double baseZ) {
+    }
+
+    /** 返回离落脚点最近且符合落地条件的桶目标下标；无则 -1。 */
+    public static int nearestLanding(double feetX, double feetY, double feetZ,
+                                     List<LandingTarget> targets) {
+        int best = -1;
+        double bestDistance = Double.POSITIVE_INFINITY;
+        for (int index = 0; index < targets.size(); index++) {
+            LandingTarget target = targets.get(index);
+            if (!isLandingPosition(feetX, feetY, feetZ,
+                    target.baseX(), target.baseY(), target.baseZ())) {
+                continue;
+            }
+            double dx = feetX - target.baseX();
+            double dy = feetY - target.baseY();
+            double dz = feetZ - target.baseZ();
+            double distance = dx * dx + dy * dy + dz * dz;
+            if (distance < bestDistance) {
+                best = index;
+                bestDistance = distance;
+            }
+        }
+        return best;
     }
 
     /** Horizontal ownership plus the source ground-tub landing height. */

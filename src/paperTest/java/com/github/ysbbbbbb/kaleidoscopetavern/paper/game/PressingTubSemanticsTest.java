@@ -2,20 +2,14 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PressingTubSemanticsTest {
     private static final double EPSILON = 1.0E-9;
-
-    @Test
-    void ignoresGroundMovementWhenNoFallIsBeingTracked() {
-        assertFalse(PressingTubSemantics.needsMovementInspection(0, false));
-        assertFalse(PressingTubSemantics.needsMovementInspection(-0.1F, false));
-        assertTrue(PressingTubSemantics.needsMovementInspection(0.5F, false));
-        assertTrue(PressingTubSemantics.needsMovementInspection(0, true));
-    }
 
     @Test
     void reproducesTheForgeFacingNorthTiltMatrix() {
@@ -63,5 +57,27 @@ class PressingTubSemanticsTest {
                 10.51, 80, -2, 10, 64, -2));
         assertFalse(PressingTubSemantics.isAboveColumn(
                 10, 64.34, -2, 10, 64, -2));
+    }
+
+    @Test
+    void picksTheNearestTubAmongSameColumnDifferentHeights() {
+        List<PressingTubSemantics.LandingTarget> targets = List.of(
+                new PressingTubSemantics.LandingTarget(10, 60, -2),
+                new PressingTubSemantics.LandingTarget(10, 64, -2),
+                new PressingTubSemantics.LandingTarget(10, 68, -2));
+
+        // 同一 X/Z、不同 Y：只有相对高度在 [0.35, 1.25] 的桶符合落地条件。
+        assertEquals(1, PressingTubSemantics.nearestLanding(10, 64.5, -2, targets));
+        assertEquals(2, PressingTubSemantics.nearestLanding(10, 68.5, -2, targets));
+        // 距地面 68 的桶更远，但 64 高度的桶已不符合落地高度窗口。
+        assertEquals(0, PressingTubSemantics.nearestLanding(10, 60.5, -2, targets));
+        // 高度差超过窗口：没有可落地的桶。
+        assertEquals(-1, PressingTubSemantics.nearestLanding(10, 70, -2, targets));
+        assertEquals(-1, PressingTubSemantics.nearestLanding(10, 60, -2, targets));
+        // 同一高度下选择水平距离更近的桶。
+        List<PressingTubSemantics.LandingTarget> horizontal = List.of(
+                new PressingTubSemantics.LandingTarget(9.9, 0, -2),
+                new PressingTubSemantics.LandingTarget(10.4, 0, -2));
+        assertEquals(1, PressingTubSemantics.nearestLanding(10.3, 0.6, -2, horizontal));
     }
 }
