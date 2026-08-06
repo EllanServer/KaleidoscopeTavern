@@ -6984,7 +6984,7 @@
         },
         "appearances": {
           "ground_north_false": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -6996,7 +6996,7 @@
             }
           },
           "ground_north_true": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7008,7 +7008,7 @@
             }
           },
           "tilted_north_false": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7020,7 +7020,7 @@
             }
           },
           "tilted_north_true": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7032,7 +7032,7 @@
             }
           },
           "ground_east_false": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7044,7 +7044,7 @@
             }
           },
           "ground_east_true": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7056,7 +7056,7 @@
             }
           },
           "tilted_east_false": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7068,7 +7068,7 @@
             }
           },
           "tilted_east_true": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7080,7 +7080,7 @@
             }
           },
           "ground_south_false": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7091,7 +7091,7 @@
             }
           },
           "ground_south_true": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7102,7 +7102,7 @@
             }
           },
           "tilted_south_false": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7113,7 +7113,7 @@
             }
           },
           "tilted_south_true": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7124,7 +7124,7 @@
             }
           },
           "ground_west_false": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7136,7 +7136,7 @@
             }
           },
           "ground_west_true": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7148,7 +7148,7 @@
             }
           },
           "tilted_west_false": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7160,7 +7160,7 @@
             }
           },
           "tilted_west_true": {
-            "state": "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]",
+            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",

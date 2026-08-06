@@ -51,12 +51,12 @@ import java.util.function.UnaryOperator;
 /**
  * CE server-side custom block for the pressing tub.
  *
- * <p>The tub is no longer a furniture: the released {@code petrified_oak_slab}
- * bottom-half state carries the client collision, the {@code transparent} flag
- * hides it, and an ItemDisplay renderer draws the authored tub model. Landings
- * arrive through {@link PrioritizedFallOnHandler#fallOn} from CraftEngine's
- * NMS interceptor, so the previous global move-event bridge and its
- * reverse spatial index are gone entirely.</p>
+ * <p>The tub is no longer a furniture: a released {@code copper_slab} bottom
+ * state (fresh, unwaxed) carries the client collision, the {@code transparent}
+ * flag hides it, and an ItemDisplay renderer draws the authored tub model.
+ * Landings arrive through {@link PrioritizedFallOnHandler#fallOn} from
+ * CraftEngine's NMS interceptor, so the previous global move-event bridge and
+ * its reverse spatial index are gone entirely.</p>
  *
  * <p>State (ingredient pile, pressed fluid) lives in the CE block entity and
  * drives a packet-only item-pile/fluid-plane visual ({@link DifferentialItemDisplayElement})

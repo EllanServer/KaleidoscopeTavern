@@ -4351,13 +4351,14 @@ def validate() -> dict[str, int]:
         appearance = pressing_appearances.get(appearance_name, {})
         referenced_pressing_appearances.add(appearance_name)
         expected_carrier = (
-            "minecraft:petrified_oak_slab"
-            f"[type=bottom,waterlogged={properties['waterlogged']}]"
+            "minecraft:copper_slab"
+            f"[type=bottom,waterlogged={properties['waterlogged']},"
+            "oxidation=none,waxed=false]"
         )
         if (appearance.get("state") != expected_carrier
                 or appearance.get("transparent") is not True):
             raise AssertionError(
-                f"Pressing tub {variant_key} must use its released bottom-slab carrier")
+                f"Pressing tub {variant_key} must use its released copper-slab carrier")
         renderer = appearance.get("entity_renderer")
         expected_renderer = {
             "type": "item_display",

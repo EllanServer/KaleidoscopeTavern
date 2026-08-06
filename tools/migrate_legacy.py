@@ -1158,13 +1158,15 @@ def build_chalkboard_block(
     return config, render_items, len(appearances)
 
 
-# CraftEngine 26.7.4 releases the legacy petrified-oak-slab states (mapping
-# them to the regular oak slab on the client). Its bottom-half state supplies
-# the real 8/16 full-footprint collision that routes NMS Block.fallOn into the
-# Tavern block behavior, while transparent:true hides only the unobtainable
-# petrified slab — no common vanilla slab is affected.
-PRESSING_TUB_CARRIER_STATE = "minecraft:petrified_oak_slab[type=bottom,waterlogged=false]"
-PRESSING_TUB_CARRIER_WATER_STATE = "minecraft:petrified_oak_slab[type=bottom,waterlogged=true]"
+# CraftEngine 26.7.4 ships a built-in palm_slab that already claims the
+# released petrified-oak-slab bottom state, so that host is taken. The pressed
+# tub instead rides two unused copper-slab states (bottom, fresh, unwaxed);
+# the remaining 30 copper-slab states (oxidation/waxed/type) stay untouched for
+# vanilla building. transparent:true hides the carrier, the ItemDisplay
+# renderer draws the authored tub model, and the full-footprint collision still
+# routes NMS Block.fallOn into the Tavern block behavior.
+PRESSING_TUB_CARRIER_STATE = "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]"
+PRESSING_TUB_CARRIER_WATER_STATE = "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]"
 
 
 def build_pressing_tub_block(
