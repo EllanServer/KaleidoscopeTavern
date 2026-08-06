@@ -47,3 +47,19 @@ jobs:
             !build/libs/*-sources.jar
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: KaleidoscopeTavern-current-source
+          path: |
+            src
+            tools
+            build.gradle.kts
+            settings.gradle.kts
+            gradle.properties
+            gradlew
+            gradle
+            AGENTS.md
+          if-no-files-found: error
+          retention-days: 1
