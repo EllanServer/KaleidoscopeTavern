@@ -4612,7 +4612,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/empty_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/empty_bottle"
       },
       "settings": {
         "tags": [
@@ -4873,7 +4873,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/molotov"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/molotov"
       },
       "settings": {
         "tags": [
@@ -5053,7 +5053,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/water_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/water_bottle"
       },
       "settings": {
         "tags": [
@@ -5068,7 +5068,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/honey_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/honey_bottle"
       },
       "settings": {
         "tags": [
@@ -5083,7 +5083,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/dragon_breath_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/dragon_breath_bottle"
       },
       "settings": {
         "tags": [
@@ -5098,7 +5098,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/potion_bottle",
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/potion_bottle",
         "tints": [
           {
             "type": "minecraft:potion",
@@ -5119,7 +5119,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/xp_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/xp_bottle"
       },
       "settings": {
         "tags": [
@@ -6634,7 +6634,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/dragon_breath_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/dragon_breath_bottle"
       },
       "settings": {
         "tags": [
@@ -6649,7 +6649,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/empty_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/empty_bottle"
       },
       "settings": {
         "tags": [
@@ -6694,7 +6694,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/honey_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/honey_bottle"
       },
       "settings": {
         "tags": [
@@ -6784,7 +6784,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/molotov"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/molotov"
       },
       "settings": {
         "tags": [
@@ -6844,7 +6844,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/potion_bottle",
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/potion_bottle",
         "tints": [
           {
             "type": "minecraft:potion",
@@ -7015,7 +7015,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/water_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/water_bottle"
       },
       "settings": {
         "tags": [
@@ -7075,7 +7075,7 @@
       },
       "model": {
         "type": "minecraft:model",
-        "path": "kaleidoscope_tavern:block/brew/xp_bottle"
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/brew/xp_bottle"
       },
       "settings": {
         "tags": [

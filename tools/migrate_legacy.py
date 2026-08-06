@@ -526,12 +526,13 @@ def placed_drink_model(
                 corrected = True
 
     needs_migration = "render_type" in copied
-    if not corrected and not needs_migration:
-        return model
-
     if needs_migration:
         migrate_translucent_model(copied, resource_id)
 
+    # Bottle/glass models always receive a private pack copy.  Forge's
+    # original lives under src/main and is never packaged, so the CE render
+    # item must resolve from the runtime resource pack even when the source
+    # no longer needs axis correction or render_type migration.
     private_path = f"furniture/placed_drink/{namespace}/{resource_path}"
     write_json(
         ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/{private_path}.json",
