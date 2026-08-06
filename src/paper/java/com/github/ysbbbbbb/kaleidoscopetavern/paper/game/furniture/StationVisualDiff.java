@@ -92,13 +92,15 @@ final class StationVisualDiff {
     }
 
     static boolean metadataChanged(Visual oldVisual, Visual newVisual) {
-        return itemChanged(oldVisual.item(), newVisual.item())
-                || oldVisual.itemTransform() != newVisual.itemTransform()
+        // 变换字段已经变化时，metadata packet 必然需要重发，无需再比较 Item 内容；
+        // 变换字段不变时，才需要继续比较 Item（Item.isSimilar）判断内容是否变化。
+        return oldVisual.itemTransform() != newVisual.itemTransform()
                 || oldVisual.scale() != newVisual.scale()
                 || oldVisual.rotX() != newVisual.rotX()
                 || oldVisual.rotY() != newVisual.rotY()
                 || oldVisual.rotZ() != newVisual.rotZ()
-                || oldVisual.rotW() != newVisual.rotW();
+                || oldVisual.rotW() != newVisual.rotW()
+                || itemChanged(oldVisual.item(), newVisual.item());
     }
 
     /**
