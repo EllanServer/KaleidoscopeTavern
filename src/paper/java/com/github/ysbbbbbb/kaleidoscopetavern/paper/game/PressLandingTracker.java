@@ -14,7 +14,8 @@ import java.util.function.Predicate;
  * <p>移动事件先按「是否已追踪 / 脚下是否有地面桶」过滤：绝大多数无关实体在
  * 读取 fallDistance 之前就返回；已追踪实体不再重复查询空间索引，只更新最大
  * 下落距离。真实落地点再交给 {@link LandingAction} 做实际压榨，并在两 tick
- * 内缓存结果避免重复压榨。</p>
+ * 内缓存结果避免重复压榨；冷却记录通过 {@link ExpiryScheduler} 主动过期，
+ * 不会随运行时间增长。</p>
  */
 public final class PressLandingTracker {
     public static final int LANDING_COOLDOWN_TICKS = 2;
@@ -25,6 +26,7 @@ public final class PressLandingTracker {
     private final LongSupplier tickSource;
     private final LandingProbe probe;
     private final LandingAction action;
+    private final ExpiryScheduler expiryScheduler;
     private final Runnable onTracked;
     private final Runnable onUntracked;
 
@@ -49,14 +51,22 @@ public final class PressLandingTracker {
         float get();
     }
 
+    /** 冷却缓存过期调度：由宿主桥接到 Bukkit 或测试中的假调度器。 */
+    @FunctionalInterface
+    public interface ExpiryScheduler {
+        void schedule(int delayTicks, Runnable action);
+    }
+
     public PressLandingTracker(LongSupplier tickSource,
                                LandingProbe probe,
                                LandingAction action,
+                               ExpiryScheduler expiryScheduler,
                                Runnable onTracked,
                                Runnable onUntracked) {
         this.tickSource = Objects.requireNonNull(tickSource, "tickSource");
         this.probe = Objects.requireNonNull(probe, "probe");
         this.action = Objects.requireNonNull(action, "action");
+        this.expiryScheduler = Objects.requireNonNull(expiryScheduler, "expiryScheduler");
         this.onTracked = Objects.requireNonNull(onTracked, "onTracked");
         this.onUntracked = Objects.requireNonNull(onUntracked, "onUntracked");
         falling.defaultReturnValue(Float.NaN);
@@ -94,15 +104,24 @@ public final class PressLandingTracker {
         }
     }
 
-    /** 原版摔落伤害兜底：共享落地冷却与压榨动作，返回是否应取消伤害。 */
+    /**
+     * 原版摔落伤害兜底：共享落地冷却与压榨动作，返回是否应取消伤害。
+     * 未追踪实体在远离压榨桶处摔落时直接返回，不写入冷却缓存。
+     */
     public boolean onFallDamage(UUID entityId, UUID worldId,
                                 double feetX, double feetY, double feetZ,
                                 float fallDistance) {
         float tracked = falling.removeFloat(entityId);
-        onUntracked.run();
-        float effective = Float.isNaN(tracked)
-                ? fallDistance
-                : Math.max(fallDistance, tracked);
+        boolean wasTracked = !Float.isNaN(tracked);
+        if (wasTracked) {
+            onUntracked.run();
+        }
+        if (!wasTracked && !probe.hasPotentialBelow(worldId, feetX, feetY, feetZ)) {
+            return false;
+        }
+        float effective = wasTracked
+                ? Math.max(fallDistance, tracked)
+                : fallDistance;
         if (effective < PressingTubSemantics.MIN_FALL_DISTANCE) {
             return false;
         }
@@ -141,16 +160,27 @@ public final class PressLandingTracker {
         recentLandings.clear();
     }
 
+    /** 当前冷却缓存中的落地记录数（测试观察用）。 */
+    int landingCooldownCount() {
+        return recentLandings.size();
+    }
+
     private boolean handleLanding(UUID entityId, UUID worldId,
                                   double feetX, double feetY, double feetZ) {
         long now = tickSource.getAsLong();
-        LandingStamp stamp = recentLandings.get(entityId);
-        if (stamp != null && now - stamp.tick < LANDING_COOLDOWN_TICKS) {
-            return stamp.pressed;
+        LandingStamp existing = recentLandings.get(entityId);
+        if (existing != null && now - existing.tick() < LANDING_COOLDOWN_TICKS) {
+            return existing.pressed();
         }
-        recentLandings.remove(entityId);
         boolean pressed = action.tryPress(worldId, feetX, feetY, feetZ);
-        recentLandings.put(entityId, new LandingStamp(now, pressed));
+        LandingStamp stamp = new LandingStamp(now, pressed);
+        recentLandings.put(entityId, stamp);
+        // 主动过期：比较 stamp 引用，避免旧任务误删后来更新的记录。
+        expiryScheduler.schedule(LANDING_COOLDOWN_TICKS, () -> {
+            if (recentLandings.get(entityId) == stamp) {
+                recentLandings.remove(entityId);
+            }
+        });
         return pressed;
     }
 

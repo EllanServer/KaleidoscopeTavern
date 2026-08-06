@@ -123,4 +123,26 @@ class PressingTubLandingIndexTest {
         assertTrue(index.isEmpty());
         assertEquals(0, index.groundTubCount());
     }
+
+    @Test
+    void duplicateAddAndRemoveStayIdempotent() {
+        PressingTubLandingIndex<Object> index = new PressingTubLandingIndex<>();
+        Object tub = new Object();
+
+        assertTrue(index.add(tub, true, 1, 1, 0, 2, 0, 2));
+        // 重复登记同一 entry：计数不增加。
+        assertFalse(index.add(tub, true, 1, 1, 0, 2, 0, 2));
+        assertEquals(1, index.groundTubCount());
+
+        assertTrue(index.remove(tub, true, 1, 1, 0, 2, 0, 2));
+        // 重复移除同一 entry：计数不减少。
+        assertFalse(index.remove(tub, true, 1, 1, 0, 2, 0, 2));
+        assertEquals(0, index.groundTubCount());
+
+        // 墙面桶不改变地面计数。
+        Object wallTub = new Object();
+        assertFalse(index.add(wallTub, false, 5, 5, 4, 6, 4, 6));
+        assertEquals(0, index.groundTubCount());
+        assertFalse(index.remove(wallTub, false, 5, 5, 4, 6, 4, 6));
+    }
 }

@@ -23,36 +23,54 @@ public final class PressingTubLandingIndex<E> {
             new Long2ObjectOpenHashMap<>();
     private int groundTubCount;
 
-    /** 登记条目；ground 为 true 时同时登记其落脚单元并计入地面桶数。 */
-    public void add(E entry, boolean ground,
-                    int originBlockX, int originBlockZ,
-                    int landingMinX, int landingMaxX,
-                    int landingMinZ, int landingMaxZ) {
-        addController(originColumns, packColumn(originBlockX, originBlockZ), entry);
-        if (ground) {
-            for (int x = landingMinX; x <= landingMaxX; x++) {
-                for (int z = landingMinZ; z <= landingMaxZ; z++) {
-                    addController(landingCells, packColumn(x, z), entry);
-                }
-            }
-            groundTubCount++;
-        }
-    }
-
-    /** 与 {@link #add} 使用相同参数移除条目。 */
-    public void remove(E entry, boolean ground,
+    /**
+     * 登记条目；ground 为 true 时同时登记其落脚单元并计入地面桶数。
+     * 返回地面桶计数是否变化（重复登记同一 entry 返回 false）。
+     */
+    public boolean add(E entry, boolean ground,
                        int originBlockX, int originBlockZ,
                        int landingMinX, int landingMaxX,
                        int landingMinZ, int landingMaxZ) {
-        removeController(originColumns, packColumn(originBlockX, originBlockZ), entry);
-        if (ground) {
-            for (int x = landingMinX; x <= landingMaxX; x++) {
-                for (int z = landingMinZ; z <= landingMaxZ; z++) {
-                    removeController(landingCells, packColumn(x, z), entry);
-                }
-            }
-            groundTubCount--;
+        addController(originColumns, packColumn(originBlockX, originBlockZ), entry);
+        if (!ground) {
+            return false;
         }
+        boolean added = false;
+        for (int x = landingMinX; x <= landingMaxX; x++) {
+            for (int z = landingMinZ; z <= landingMaxZ; z++) {
+                added |= addController(landingCells, packColumn(x, z), entry);
+            }
+        }
+        if (added) {
+            groundTubCount++;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 与 {@link #add} 使用相同参数移除条目。
+     * 返回地面桶计数是否变化（重复移除同一 entry 返回 false）。
+     */
+    public boolean remove(E entry, boolean ground,
+                          int originBlockX, int originBlockZ,
+                          int landingMinX, int landingMaxX,
+                          int landingMinZ, int landingMaxZ) {
+        removeController(originColumns, packColumn(originBlockX, originBlockZ), entry);
+        if (!ground) {
+            return false;
+        }
+        boolean removedAny = false;
+        for (int x = landingMinX; x <= landingMaxX; x++) {
+            for (int z = landingMinZ; z <= landingMaxZ; z++) {
+                removedAny |= removeController(landingCells, packColumn(x, z), entry);
+            }
+        }
+        if (removedAny) {
+            groundTubCount--;
+            return true;
+        }
+        return false;
     }
 
     public boolean hasGroundTubs() {
@@ -78,23 +96,27 @@ public final class PressingTubLandingIndex<E> {
         return originColumns.get(packColumn(blockX, blockZ));
     }
 
-    private static <E> void addController(
+    /** 返回集合是否真实新增了该 entry。 */
+    private static <E> boolean addController(
             Long2ObjectOpenHashMap<ReferenceOpenHashSet<E>> map,
             long key, E entry) {
-        map.computeIfAbsent(key, ignored -> new ReferenceOpenHashSet<>()).add(entry);
+        return map.computeIfAbsent(
+                key, ignored -> new ReferenceOpenHashSet<>()).add(entry);
     }
 
-    private static <E> void removeController(
+    /** 返回集合是否真实移除了该 entry。 */
+    private static <E> boolean removeController(
             Long2ObjectOpenHashMap<ReferenceOpenHashSet<E>> map,
             long key, E entry) {
         ReferenceOpenHashSet<E> entries = map.get(key);
         if (entries == null) {
-            return;
+            return false;
         }
-        entries.remove(entry);
+        boolean removed = entries.remove(entry);
         if (entries.isEmpty()) {
             map.remove(key);
         }
+        return removed;
     }
 
     private static long packColumn(int x, int z) {

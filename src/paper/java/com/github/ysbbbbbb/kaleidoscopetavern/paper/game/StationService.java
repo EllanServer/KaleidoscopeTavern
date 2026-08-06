@@ -141,6 +141,7 @@ public final class StationService implements Listener {
                 (worldId, x, y, z) -> PressingTubFurnitureBehavior.findBelow(worldId, x, y, z)
                         .map(this::pressOne)
                         .orElse(false),
+                (delay, action) -> Bukkit.getScheduler().runTaskLater(plugin, action, delay),
                 this::ensureFallingCleanupTask,
                 this::stopFallingCleanupTaskIfIdle);
     }

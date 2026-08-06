@@ -290,11 +290,14 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
             boolean desired = active
                     && handler != null
                     && handler.shouldSchedule(bukkitFurniture);
-            int firstDelay = desired
-                    ? schedule.firstDelay(bukkitFurniture)
-                    : 0;
-            // shouldSchedule / firstDelay 在锁外决策；取消或调度在一次 reconcile 内完成。
-            SCHEDULER.reconcile(schedulerId, desired, firstDelay);
+            // shouldSchedule 在锁外决策；只有确实缺少任务时才计算昂贵的 firstDelay。
+            TickingScheduler.ReconcileResult result =
+                    SCHEDULER.reconcile(schedulerId, desired);
+            if (result == TickingScheduler.ReconcileResult.NEEDS_SCHEDULE) {
+                SCHEDULER.scheduleIfAbsent(
+                        schedulerId,
+                        schedule.firstDelay(bukkitFurniture));
+            }
         }
 
         // ===== TickingScheduler.Host =====

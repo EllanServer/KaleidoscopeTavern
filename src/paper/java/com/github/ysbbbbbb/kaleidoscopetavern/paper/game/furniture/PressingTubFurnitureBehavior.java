@@ -249,11 +249,10 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
 
             PressingTubLandingIndex<Controller> index =
                     WORLD_INDEX.computeIfAbsent(worldId, ignored -> new PressingTubLandingIndex<>());
-            index.add(this, ground,
+            if (index.add(this, ground,
                     originBlockX, originBlockZ,
                     landingMinX, landingMaxX,
-                    landingMinZ, landingMaxZ);
-            if (ground) {
+                    landingMinZ, landingMaxZ)) {
                 loadedGroundTubCount++;
             }
             indexed = true;
@@ -263,11 +262,10 @@ public final class PressingTubFurnitureBehavior extends FurnitureBehaviorTemplat
             PressingTubLandingIndex<Controller> index = WORLD_INDEX.get(worldId);
             if (index != null) {
                 // 移除时使用缓存的边界与列，不需要重新计算。
-                index.remove(this, ground,
+                if (index.remove(this, ground,
                         originBlockX, originBlockZ,
                         landingMinX, landingMaxX,
-                        landingMinZ, landingMaxZ);
-                if (ground) {
+                        landingMinZ, landingMaxZ)) {
                     loadedGroundTubCount--;
                 }
                 if (index.isEmpty()) {

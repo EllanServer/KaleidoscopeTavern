@@ -402,6 +402,75 @@ class TickingSchedulerTest {
         assertInvariant();
     }
 
+    // ===== 14. reconcile 两段式调度 =====
+
+    @Test
+    void reconcileFalseWithoutRunDoesNotTouchWakeOrQueue() {
+        FakeHost a = host("A");
+        a.shouldScheduleResult = false;   // desired=false
+
+        int wakeSchedulesBefore = wake.scheduleCount;
+        int queueSizeBefore = core.schedulerStats().queueSize();
+
+        assertEquals(TickingScheduler.ReconcileResult.UNCHANGED,
+                core.reconcile("A", false));
+
+        assertEquals(wakeSchedulesBefore, wake.scheduleCount);
+        assertEquals(queueSizeBefore, core.schedulerStats().queueSize());
+        assertInvariant();
+    }
+
+    @Test
+    void reconcileTrueWithExistingRunKeepsTheDueTickAndAddsNothing() {
+        FakeHost a = host("A");
+
+        core.schedule("A", 100);
+        long dueBefore = core.schedulerStats().nextLiveDueTick();
+
+        assertEquals(TickingScheduler.ReconcileResult.UNCHANGED,
+                core.reconcile("A", true));
+
+        assertEquals(dueBefore, core.schedulerStats().nextLiveDueTick());
+        assertEquals(1, core.schedulerStats().liveQueuedRuns());
+        assertInvariant();
+    }
+
+    @Test
+    void needsScheduleThenScheduleIfAbsentCreatesExactlyOneRun() {
+        FakeHost a = host("A");
+
+        assertEquals(TickingScheduler.ReconcileResult.NEEDS_SCHEDULE,
+                core.reconcile("A", true));
+        core.scheduleIfAbsent("A", 100);
+        core.scheduleIfAbsent("A", 50);   // 已有任务：忽略
+
+        assertEquals(1, core.schedulerStats().liveQueuedRuns());
+        assertEquals(100, core.schedulerStats().nextLiveDueTick());
+
+        advanceTo(100);
+        assertEquals(1, a.tickCount);
+        assertInvariant();
+    }
+
+    @Test
+    void reconcileFalseInvalidatesInFlightRunSoItNeverDispatches() {
+        FakeHost a = host("A");
+        a.shouldScheduleResult = false;
+
+        core.schedule("A", 50);
+        clock.tick = 50;
+        List<TickingScheduler.ScheduledRun> due = core.collectDue();   // 已出队 in-flight
+
+        assertEquals(TickingScheduler.ReconcileResult.CANCELLED,
+                core.reconcile("A", false));
+
+        core.dispatchCollected(due);
+        core.finishDispatch();
+
+        assertEquals(0, a.tickCount);
+        assertInvariant();
+    }
+
     // ===== 工具 =====
 
     private void advanceTo(long tick) {

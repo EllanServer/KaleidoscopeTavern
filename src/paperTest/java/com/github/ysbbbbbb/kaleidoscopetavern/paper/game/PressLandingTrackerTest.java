@@ -3,6 +3,8 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -11,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * 压榨桶落地追踪状态机的纯逻辑测试：候选过滤先于 fallDistance、已追踪实体
- * 跳过空间查询、0.5 格阈值、跨桶下落、摔落伤害兜底与两 tick 落地冷却。
+ * 跳过空间查询、0.5 格阈值、跨桶下落、摔落伤害兜底与两 tick 落地冷却过期。
  */
 class PressLandingTrackerTest {
     private static final UUID WORLD = UUID.randomUUID();
@@ -19,6 +21,7 @@ class PressLandingTrackerTest {
     private FakeClock clock;
     private FakeProbe probe;
     private FakeAction action;
+    private FakeExpiry expiry;
     private PressLandingTracker tracker;
     private int trackedNotifications;
     private int untrackedNotifications;
@@ -28,12 +31,14 @@ class PressLandingTrackerTest {
         clock = new FakeClock();
         probe = new FakeProbe();
         action = new FakeAction();
+        expiry = new FakeExpiry();
         trackedNotifications = 0;
         untrackedNotifications = 0;
         tracker = new PressLandingTracker(
                 clock::get,
                 probe::hasPotentialBelow,
                 action::tryPress,
+                expiry::schedule,
                 () -> trackedNotifications++,
                 () -> untrackedNotifications++);
     }
@@ -168,6 +173,55 @@ class PressLandingTrackerTest {
         assertFalse(tracker.onFallDamage(id, WORLD, 10, 64, -2, 0.1F));
         assertEquals(0, action.pressCount);
         assertFalse(tracker.isTracked(id));
+        // 未追踪实体不触发 untracked 回调。
+        assertEquals(0, untrackedNotifications);
+    }
+
+    @Test
+    void distantFallDamageWritesNoCooldownRecord() {
+        // 世界中有桶，但实体落点附近没有（probe 返回 false）。
+        UUID id = UUID.randomUUID();
+        probe.covered = false;
+        assertFalse(tracker.onFallDamage(id, WORLD, 100, 64, 100, 0.8F));
+        assertEquals(0, action.pressCount);
+        assertEquals(0, tracker.landingCooldownCount());
+        assertEquals(0, untrackedNotifications);
+    }
+
+    @Test
+    void cooldownRecordsExpireAfterTheScheduledDelay() {
+        UUID a = UUID.randomUUID();
+        UUID b = UUID.randomUUID();
+        probe.covered = true;
+        move(a, 0.6F);
+        move(a, 0F);   // 落地 → 冷却记录
+        move(b, 0.7F);
+        move(b, 0F);   // 落地 → 冷却记录
+        assertEquals(2, tracker.landingCooldownCount());
+
+        clock.tick = 200;   // 超过两 tick
+        expiry.fireAll();
+        assertEquals(0, tracker.landingCooldownCount());
+    }
+
+    @Test
+    void duplicateLandingDoesNotDoubleWriteCooldownRecords() {
+        UUID id = UUID.randomUUID();
+        probe.covered = true;
+        clock.tick = 100;
+        move(id, 0.7F);
+        move(id, 0F);   // 第一次落地
+        assertEquals(1, tracker.landingCooldownCount());
+
+        // 两 tick 内再次落地：走冷却分支，不写入新记录。
+        move(id, 0.8F);
+        clock.tick = 101;
+        move(id, 0F);
+        assertEquals(1, tracker.landingCooldownCount());
+
+        // 过期任务执行后缓存清空。
+        expiry.fireAll();
+        assertEquals(0, tracker.landingCooldownCount());
     }
 
     @Test
@@ -241,6 +295,23 @@ class PressLandingTrackerTest {
             lastY = feetY;
             lastZ = feetZ;
             return pressed;
+        }
+    }
+
+    private static final class FakeExpiry implements PressLandingTracker.ExpiryScheduler {
+        private final List<Runnable> pending = new ArrayList<>();
+
+        @Override
+        public void schedule(int delayTicks, Runnable action) {
+            pending.add(action);
+        }
+
+        private void fireAll() {
+            List<Runnable> tasks = new ArrayList<>(pending);
+            pending.clear();
+            for (Runnable task : tasks) {
+                task.run();
+            }
         }
     }
 }

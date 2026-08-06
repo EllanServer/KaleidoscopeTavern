@@ -170,35 +170,64 @@ final class TickingScheduler {
      * 一次锁内完成「取消或调度」决策，合并原先 refreshSchedule 里
      * isStarted/cancel/hasScheduledRun/schedule 的多次锁进入与重复队头检查。
      *
-     * <p>host 的 shouldSchedule / firstDelay 决策必须仍在锁外完成（Bukkit、NBT
-     * 或家具逻辑不能进入全局调度锁），这里只接收决策结果。</p>
+     * <p>这是两段式调度的第一步：只返回状态，不在锁内计算延迟。调用方在
+     * 结果仍为 {@link ReconcileResult#NEEDS_SCHEDULE} 时，用
+     * {@link #scheduleIfAbsent} 补充延迟参数——这样已存在任务的常见路径
+     * 不会在锁外无条件执行昂贵的 firstDelay（随机采样 / gameTime / hash）。
+     * host 的 shouldSchedule 决策必须在锁外完成（Bukkit、NBT 或家具逻辑
+     * 不能进入全局调度锁）。</p>
      */
-    void reconcile(String id, boolean desired, int firstDelay) {
+    ReconcileResult reconcile(String id, boolean desired) {
         synchronized (lock) {
             IdentityState state = states.get(id);
             if (state == null) {
-                return;
+                return ReconcileResult.UNCHANGED;
             }
             if (!started || !state.active || !state.bound || !desired) {
-                if (state.scheduledRun != null) {
-                    invalidateLocked(state);
-                    pruneStaleHeadLocked();
-                    maybeCompactQueueLocked();
+                if (state.scheduledRun == null) {
+                    return ReconcileResult.UNCHANGED;
                 }
+                invalidateLocked(state);
+                pruneStaleHeadLocked();
+                maybeCompactQueueLocked();
                 scheduleWakeLocked();
+                return ReconcileResult.CANCELLED;
+            }
+            if (state.scheduledRun != null) {
+                return ReconcileResult.UNCHANGED;
+            }
+            return ReconcileResult.NEEDS_SCHEDULE;
+        }
+    }
+
+    /** 两段式调度的第二步：仅在仍无任务时创建，避免重复排队。 */
+    void scheduleIfAbsent(String id, int delay) {
+        synchronized (lock) {
+            IdentityState state = states.get(id);
+            if (state == null || !state.active || !state.bound || !started) {
                 return;
             }
             if (state.scheduledRun != null) {
                 return;
             }
             ScheduledRun run = new ScheduledRun(id, state.scheduleGeneration,
-                    tickSource.getAsLong() + Math.max(1, firstDelay), nextSequence++);
+                    tickSource.getAsLong() + Math.max(1, delay), nextSequence++);
             state.scheduledRun = run;
             queue.add(run);
             liveQueuedRuns++;
             maybeCompactQueueLocked();
             scheduleWakeLocked();
         }
+    }
+
+    /** reconcile 的决策结果：调用方据此决定是否补充 firstDelay。 */
+    enum ReconcileResult {
+        /** 状态未变化（已有任务或无需取消）。 */
+        UNCHANGED,
+        /** 已有任务被取消。 */
+        CANCELLED,
+        /** 缺少任务，需要调用方以 {@link #scheduleIfAbsent} 补建。 */
+        NEEDS_SCHEDULE
     }
 
     /** 每次失效都推进 generation；仍在队列的旧节点只标记为 stale。 */
