@@ -171,6 +171,12 @@ STORAGE_BLOCK_SPECS: dict[str, tuple[int, str]] = {
 }
 STORAGE_BLOCKS = frozenset(STORAGE_BLOCK_SPECS)
 
+# One public item selects between the ground CE block and this private wall-only
+# CE furniture definition.  Keeping the active wall definition separate from
+# the legacy ``pressing_tub`` furniture prevents a failed ground-block placement
+# from falling through into the retained legacy ground furniture variant.
+WALL_PRESSING_TUB_ID = f"{NAMESPACE}:_internal/wall_pressing_tub"
+
 
 def is_grid_block(block_id: str) -> bool:
     """Content that benefits from real block state/physics stays a block.
@@ -1173,50 +1179,50 @@ PRESSING_TUB_CARRIER_WATER_STATE = "minecraft:cut_copper_slab[type=bottom,waterl
 def build_pressing_tub_block(
     has_item: bool,
 ) -> tuple[dict[str, Any], dict[str, Any], int]:
-    """Build the ground/wall pressing tub on a released bottom-slab carrier."""
+    """Build only the ground pressing tub on a released bottom-slab carrier.
+
+    Wall placement is a native CE furniture variant.  The block therefore needs
+    only ``facing`` and ``waterlogged``; CraftEngine automatically attaches its
+    hard-coded horizontal-direction and waterlogged behaviors from those two
+    properties.  Java owns only the NMS ``fallOn`` hook and the custom content
+    state machine.
+    """
 
     ground_model = ("kaleidoscope_tavern:block/brew/pressing_tub", 0, 0, 0, False)
-    tilted_model = ("kaleidoscope_tavern:block/brew/tilt_pressing_tub", 0, 0, 0, False)
     render_items: dict[str, Any] = {}
     ground_render = ensure_render_item(
         render_items, "pressing_tub", "ground", ground_model)
-    tilted_render = ensure_render_item(
-        render_items, "pressing_tub", "tilted", tilted_model)
 
     # The baked north model fills the cell and the ItemDisplayRenderer adds an
     # intrinsic +180-degree Y turn after CE's display transformation. Counter
-    # that turn and then apply the vanilla facing rotation (same rule as the
-    # chalkboard panels).
+    # that turn and then apply the vanilla facing rotation.
     facing_yaw = {"north": 180, "east": 90, "south": 0, "west": 270}
     appearances: dict[str, Any] = {}
     variants: dict[str, Any] = {}
     for facing in ("north", "east", "south", "west"):
-        for tilt in ("false", "true"):
-            render_id = ground_render if tilt == "false" else tilted_render
-            for waterlogged, carrier in (
-                ("false", PRESSING_TUB_CARRIER_STATE),
-                ("true", PRESSING_TUB_CARRIER_WATER_STATE),
-            ):
-                appearance_name = (
-                    f"{'ground' if tilt == 'false' else 'tilted'}_{facing}_{waterlogged}")
-                renderer: dict[str, Any] = {
-                    "type": "item_display",
-                    "item": render_id,
-                    "display_transform": "none",
-                    "shadow_radius": 0,
-                    "view_range": 1.25,
-                }
-                yaw = facing_yaw[facing]
-                if yaw:
-                    renderer["rotation"] = f"0,{yaw},0"
-                appearances[appearance_name] = {
-                    "state": carrier,
-                    "transparent": True,
-                    "entity_renderer": renderer,
-                }
-                variants[f"facing={facing},tilt={tilt},waterlogged={waterlogged}"] = {
-                    "appearance": appearance_name,
-                }
+        for waterlogged, carrier in (
+            ("false", PRESSING_TUB_CARRIER_STATE),
+            ("true", PRESSING_TUB_CARRIER_WATER_STATE),
+        ):
+            appearance_name = f"ground_{facing}_{waterlogged}"
+            renderer: dict[str, Any] = {
+                "type": "item_display",
+                "item": ground_render,
+                "display_transform": "none",
+                "shadow_radius": 0,
+                "view_range": 1.25,
+            }
+            yaw = facing_yaw[facing]
+            if yaw:
+                renderer["rotation"] = f"0,{yaw},0"
+            appearances[appearance_name] = {
+                "state": carrier,
+                "transparent": True,
+                "entity_renderer": renderer,
+            }
+            variants[f"facing={facing},waterlogged={waterlogged}"] = {
+                "appearance": appearance_name,
+            }
 
     config: dict[str, Any] = {
         "states": {
@@ -1226,7 +1232,6 @@ def build_pressing_tub_block(
                     "default": "north",
                     "values": ["north", "east", "south", "west"],
                 },
-                "tilt": {"type": "boolean", "default": "false"},
                 "waterlogged": {"type": "boolean", "default": "false"},
             },
             "appearances": appearances,
@@ -1234,7 +1239,7 @@ def build_pressing_tub_block(
         },
         "settings": block_settings("pressing_tub", has_item),
         "behaviors": behavior_for(
-            "pressing_tub", {"facing", "tilt", "waterlogged"}),
+            "pressing_tub", {"facing", "waterlogged"}),
     }
     return config, render_items, len(appearances)
 
@@ -1242,15 +1247,12 @@ def build_pressing_tub_block(
 def build_legacy_pressing_tub_furniture(
     render_items: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
-    """Keep the pre-migration furniture definition for online world migration.
+    """Keep the old furniture id solely for online migration.
 
-    The pressing tub became a CE server-side custom block, so this furniture
-    entry exists only so already-placed furniture from old saves can still
-    load. No item maps to it (the tub item is a ``block_item``), it carries no
-    loot (the block owns the drops) and it is not registered for placement.
-    Its two behaviors are state storage plus the lazy migration that converts
-    it to the block and copies the old ``press_*`` state into the block
-    entity.
+    Existing ``ground`` furniture migrates to the CE block and existing
+    ``wall`` furniture migrates to the active private wall definition.  No item
+    can place this definition and it carries no loot, so native placement can
+    never fall back to the obsolete ground variant.
     """
     ground_model = (f"{NAMESPACE}:block/brew/pressing_tub", 0, 0, 0, False)
     tilted_model = (f"{NAMESPACE}:block/brew/tilt_pressing_tub", 0, 0, 0, False)
@@ -1276,6 +1278,65 @@ def build_legacy_pressing_tub_furniture(
         ],
     }
     return config, 2
+
+
+def pressing_tub_wall_hitboxes() -> list[dict[str, Any]]:
+    """Exact CE-configured selection and shell collision for the wall tub."""
+    return [
+        interaction_box((0, 0, 0, 16, 16, 16), "wall"),
+        shulker_box((-0.25, -0.5, 0.75), 0.5),
+        shulker_box((0.25, -0.5, 0.75), 0.5),
+        shulker_box((-0.25, -0.25, 0.5), 0.5),
+        shulker_box((0.25, -0.25, 0.5), 0.5),
+        shulker_box((-0.25, 0, 0.25), 0.5),
+        shulker_box((0.25, 0, 0.25), 0.5),
+    ]
+
+
+def build_wall_pressing_tub_furniture(
+    render_items: dict[str, Any],
+) -> tuple[dict[str, Any], int]:
+    """Build the active wall tub through native CE furniture configuration.
+
+    CraftEngine owns anchoring, placement collision/protection checks, source
+    item persistence, loot and tracking.  Tavern retains only generic dynamic
+    state/visual/interaction adapters because the runtime-sized ingredient pile
+    and fluid plane cannot be expressed by a static furniture variant.
+    """
+    public_item = f"{NAMESPACE}:pressing_tub"
+    tilted_model = (f"{NAMESPACE}:block/brew/tilt_pressing_tub", 0, 0, 0, False)
+    settings = furniture_settings("pressing_tub")
+    settings["item"] = public_item
+    config: dict[str, Any] = {
+        "settings": settings,
+        "variants": {
+            "wall": {
+                "elements": [furniture_element(
+                    render_items, "pressing_tub", "active_wall",
+                    tilted_model, "wall")],
+                "hitboxes": pressing_tub_wall_hitboxes(),
+            },
+        },
+        "loot": {
+            "pools": [{
+                "rolls": 1,
+                "entries": [{
+                    "type": "furniture_item",
+                    "item": public_item,
+                }],
+            }],
+        },
+        "behaviors": [
+            {"type": f"{NAMESPACE}:state_furniture"},
+            {
+                "type": f"{NAMESPACE}:station_visual_furniture",
+                "max_elements": 17,
+                "view_range": 1.25,
+            },
+            {"type": f"{NAMESPACE}:station_interaction_furniture"},
+        ],
+    }
+    return config, 1
 
 
 def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, Any], dict[str, Any], dict[str, int]]:
@@ -3502,12 +3563,18 @@ def build_furniture(
         furniture[full_id] = config
         metrics["furniture_variants"] += len(variants)
 
-    # The pressing tub is a CE block now, but old worlds can still contain it
-    # as furniture. Keep a migration-only furniture definition so those saves
-    # load and convert online instead of vanishing.
-    legacy_config, legacy_variant_count = build_legacy_pressing_tub_furniture(render_items)
+    # The old public furniture id is migration-only.  New wall placements use
+    # a separate private definition so native item-behavior fallthrough can
+    # never resurrect the obsolete ground furniture variant.
+    legacy_config, legacy_variant_count = build_legacy_pressing_tub_furniture(
+        render_items)
     furniture[f"{NAMESPACE}:pressing_tub"] = legacy_config
     metrics["furniture_variants"] += legacy_variant_count
+
+    wall_config, wall_variant_count = build_wall_pressing_tub_furniture(
+        render_items)
+    furniture[WALL_PRESSING_TUB_ID] = wall_config
+    metrics["furniture_variants"] += wall_variant_count
 
     return furniture, render_items, placement, metrics
 
@@ -3838,14 +3905,13 @@ def build_items(
             }
         if item_id in furniture_ids:
             if item_id == "shaker":
-                # Right-click air is owned by CE's existing item-use listener;
-                # native furniture_item then owns ordinary block placement.
-                # Paper only observes release to finish the mix.
+                # Portable use remains a minimal CE callback.  The following
+                # generic sneak-placement adapter delegates actual placement to
+                # CE's native furniture_item implementation.
                 behaviors.append({"type": f"{NAMESPACE}:shaker_item"})
             furniture_behavior: dict[str, Any] = {
-                "type": ("furniture_item" if item_id == "shaker"
-                         else (f"{NAMESPACE}:sneak_place_drink"
-                               if sneak_placeable_vessel else "furniture_item")),
+                "type": (f"{NAMESPACE}:sneak_place_drink"
+                         if sneak_placeable_vessel else "furniture_item"),
                 "furniture": f"{NAMESPACE}:{item_id}",
                 "rules": furniture_placement[item_id],
             }
@@ -3860,6 +3926,26 @@ def build_items(
                 # standing close enough to click the support block.
                 furniture_behavior["ignore_placer"] = True
             behaviors.append(furniture_behavior)
+        elif item_id == "pressing_tub":
+            # Native CE routing: upward/downward support faces place the
+            # upright block, while a horizontal face falls through to the wall
+            # furniture. No Tavern placement behavior or hand-written
+            # facing/waterlogging bridge.
+            behaviors.append({
+                "type": "ground_block_item",
+                "block": f"{NAMESPACE}:pressing_tub",
+            })
+            behaviors.append({
+                "type": "ceiling_block_item",
+                "block": f"{NAMESPACE}:pressing_tub",
+            })
+            behaviors.append({
+                "type": "furniture_item",
+                "furniture": WALL_PRESSING_TUB_ID,
+                "rules": {
+                    "wall": {"rotation": "four", "alignment": "center"},
+                },
+            })
         elif item_id == "chalkboard":
             # CE's dedicated item behavior validates/reverts the upper cell and
             # preserves its fluid before double_high_block installs the pair.

@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
-import net.momirealms.craftengine.bukkit.block.behavior.WaterloggedBlockBehavior;
+import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
 import net.momirealms.craftengine.bukkit.entity.data.DisplayData;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
@@ -44,12 +44,9 @@ import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.Clientbo
 import net.momirealms.craftengine.proxy.minecraft.server.level.ServerPlayerProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.entity.EntityTypesProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.BlockGetterProxy;
-import net.momirealms.craftengine.proxy.minecraft.world.level.LevelAccessorProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelWriterProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.block.BlocksProxy;
-import net.momirealms.craftengine.proxy.minecraft.world.level.material.FluidStateProxy;
-import net.momirealms.craftengine.proxy.minecraft.world.level.material.FluidsProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.phys.Vec3Proxy;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -74,7 +71,7 @@ import java.util.function.Consumer;
  * text. The client-facing collision and aim target come from released closed
  * iron-door states configured by the migration.</p>
  */
-public final class ChalkboardBlockBehavior extends WaterloggedBlockBehavior
+public final class ChalkboardBlockBehavior extends BukkitBlockBehavior
         implements EntityBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "chalkboard");
 
@@ -93,16 +90,18 @@ public final class ChalkboardBlockBehavior extends WaterloggedBlockBehavior
     private final Property<Direction> facingProperty;
     private final Property<DoubleBlockHalf> halfProperty;
     private final Property<String> positionProperty;
+    private final Property<Boolean> waterloggedProperty;
 
     private ChalkboardBlockBehavior(BlockDefinition block, ConfigSection section) {
-        super(block, BlockBehaviorFactory.getProperty(
-                section.path(), block, "waterlogged", Boolean.class));
+        super(block);
         this.facingProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "facing", Direction.class);
         this.halfProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "half", DoubleBlockHalf.class);
         this.positionProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "position", String.class);
+        this.waterloggedProperty = BlockBehaviorFactory.getProperty(
+                section.path(), block, "waterlogged", Boolean.class);
     }
 
     public static void register() {
@@ -139,29 +138,14 @@ public final class ChalkboardBlockBehavior extends WaterloggedBlockBehavior
     @Override
     public ImmutableBlockState updateStateForPlacement(
             BlockPlaceContext context, ImmutableBlockState state) {
+        // CE owns the double-high pair, the default `position=single` state and
+        // waterlogging. Its generic `facing` placement follows player yaw,
+        // whereas the source board follows a horizontal clicked face first.
+        // Keep only that unconfigurable orientation difference here.
         Direction clickedFace = context.getClickedFace();
         Direction facing = clickedFace.axis().isHorizontal()
                 ? clickedFace : context.getHorizontalDirection().opposite();
-        Object minecraftPos = LocationUtils.toBlockPos(context.getClickedPos());
-        Object fluidState = BlockGetterProxy.INSTANCE.getFluidState(
-                context.getLevel().minecraftWorld(), minecraftPos);
-        boolean waterlogged =
-                FluidStateProxy.INSTANCE.getType(fluidState) == FluidsProxy.WATER;
-        return state.with(facingProperty, facing)
-                .with(positionProperty, "single")
-                .with(waterloggedProperty, waterlogged);
-    }
-
-    @Override
-    public Object updateShape(Object thisBlock, Object[] args) {
-        BlockStateUtils.getOptionalCustomBlockState(args[0]).ifPresent(state -> {
-            if (state.get(waterloggedProperty)) {
-                LevelAccessorProxy.INSTANCE.scheduleTick$1(
-                        args[updateShape$level], args[updateShape$blockPos],
-                        FluidsProxy.WATER, 5);
-            }
-        });
-        return args[0];
+        return state.with(facingProperty, facing);
     }
 
     @Override

@@ -29,7 +29,6 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.chunk.CEChunk;
-import net.momirealms.craftengine.core.world.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.world.context.UseOnContext;
 import net.momirealms.craftengine.libraries.nbt.ByteArrayTag;
 import net.momirealms.craftengine.libraries.nbt.CompoundTag;
@@ -51,10 +50,13 @@ import java.util.function.UnaryOperator;
 /**
  * CE server-side custom block for the pressing tub.
  *
- * <p>The tub is no longer a furniture: it hosts on a released vanilla
- * state (cut_copper_slab bottom half, see CraftEngine's mappings.yml), so the
- * client still renders vanilla cut-copper slabs and no hand-picked host can
- * collide with built-in content. The 8px bottom-half collision routes
+ * <p>The ground tub hosts on a released vanilla state (cut_copper_slab
+ * bottom half, see CraftEngine's mappings.yml), while the non-pressable wall
+ * variant remains native CE furniture. The block therefore declares only
+ * facing/waterlogged properties and lets CraftEngine attach their standard
+ * placement and fluid behaviors. The client still renders vanilla
+ * cut-copper slabs, so no hand-picked host can collide with built-in content.
+ * The 8px bottom-half collision routes
  * {@link PrioritizedFallOnHandler#fallOn} from CraftEngine's NMS interceptor
  * and {@code waterlogged=true} mirrors the Forge block's
  * SimpleWaterloggedBlock support, so the previous global move-event bridge
@@ -80,17 +82,11 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
     private static volatile Handler handler;
 
     private final Property<Direction> facingProperty;
-    private final Property<Boolean> tiltProperty;
-    private final Property<Boolean> waterloggedProperty;
 
     private PressingTubBlockBehavior(BlockDefinition block, ConfigSection section) {
         super(block);
         this.facingProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "facing", Direction.class);
-        this.tiltProperty = BlockBehaviorFactory.getProperty(
-                section.path(), block, "tilt", Boolean.class);
-        this.waterloggedProperty = BlockBehaviorFactory.getOptionalProperty(
-                block, "waterlogged", Boolean.class);
     }
 
     public static void register() {
@@ -111,37 +107,8 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
     }
 
     @Override
-    public ImmutableBlockState updateStateForPlacement(
-            BlockPlaceContext context, ImmutableBlockState state) {
-        // Mirrors PressingTubBlock#getStateForPlacement: a horizontal clicked
-        // face hangs the tub tilted on that face, otherwise it stands upright
-        // facing away from the player.
-        Direction clickedFace = context.getClickedFace();
-        boolean tilt = clickedFace.axis().isHorizontal();
-        ImmutableBlockState next = state.with(tiltProperty, tilt)
-                .with(facingProperty, tilt ? clickedFace
-                        : context.getHorizontalDirection().opposite());
-        if (waterloggedProperty != null && context.isWaterSource()) {
-            next = next.with(waterloggedProperty, true);
-        }
-        return next;
-    }
-
-    @Override
     public void fallOn(Object thisBlock, Object[] args) {
         // args: Level, BlockState, BlockPos, Entity, double fallDistance
-        ImmutableBlockState state = BlockStateUtils.getOptionalCustomBlockState(args[1])
-                .orElse(null);
-        if (state == null) {
-            super.fallOn(thisBlock, args);
-            return;
-        }
-        // Tilted tubs cannot be pressed; the source PressingTubBlock delegates
-        // the fall straight to normal fall damage.
-        if (tiltProperty != null && state.get(tiltProperty)) {
-            super.fallOn(thisBlock, args);
-            return;
-        }
         Controller controller = controller(args[0], args[2]);
         Handler current = handler;
         if (controller != null
@@ -372,16 +339,6 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
             // snapshot() copies the ingredient, so identity comparison would
             // report every no-op mutation as a change.
             return left.count() == right.count() && left.isSimilar(right);
-        }
-
-        /** 墙面（tilt=true）压榨桶不能压榨、交互取放。 */
-        public boolean isTilted() {
-            try {
-                return behavior.tiltProperty != null
-                        && blockEntity.blockState.get(behavior.tiltProperty);
-            } catch (IllegalArgumentException e) {
-                return false;
-            }
         }
 
         public Direction facing() {

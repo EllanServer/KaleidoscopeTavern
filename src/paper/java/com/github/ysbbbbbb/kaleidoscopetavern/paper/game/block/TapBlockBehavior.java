@@ -27,12 +27,8 @@ import net.momirealms.craftengine.core.world.context.UseOnContext;
 import net.momirealms.craftengine.libraries.antigrieflib.Flag;
 import net.momirealms.craftengine.proxy.bukkit.craftbukkit.block.CraftBlockProxy;
 import net.momirealms.craftengine.proxy.minecraft.server.level.ServerLevelProxy;
-import net.momirealms.craftengine.proxy.minecraft.world.level.BlockGetterProxy;
-import net.momirealms.craftengine.proxy.minecraft.world.level.LevelAccessorProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelWriterProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.SignalGetterProxy;
-import net.momirealms.craftengine.proxy.minecraft.world.level.material.FluidStateProxy;
-import net.momirealms.craftengine.proxy.minecraft.world.level.material.FluidsProxy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -67,7 +63,6 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
     private final Property<Direction> facingProperty;
     private final Property<Boolean> openProperty;
     private final Property<Boolean> triggeredProperty;
-    private final Property<Boolean> waterloggedProperty;
 
     private TapBlockBehavior(BlockDefinition block, ConfigSection section) {
         super(block);
@@ -77,8 +72,6 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
                 section.path(), block, "open", Boolean.class);
         this.triggeredProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "triggered", Boolean.class);
-        this.waterloggedProperty = BlockBehaviorFactory.getProperty(
-                section.path(), block, "waterlogged", Boolean.class);
     }
 
     public static void register() {
@@ -100,17 +93,15 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
     @Override
     public ImmutableBlockState updateStateForPlacement(
             BlockPlaceContext context, ImmutableBlockState state) {
+        // CE's generic `facing` property follows the player's horizontal
+        // direction. The source tap instead follows a horizontal clicked face,
+        // falling back to player-facing only for floor/ceiling clicks. Keep
+        // only this API-gap adapter; open/triggered defaults and waterlogging
+        // remain declared in the CE block definition.
         Direction clickedFace = context.getClickedFace();
         Direction facing = clickedFace.axis().isHorizontal()
                 ? clickedFace : context.getHorizontalDirection().opposite();
-        Object pos = LocationUtils.toBlockPos(context.getClickedPos());
-        Object fluid = BlockGetterProxy.INSTANCE.getFluidState(
-                context.getLevel().minecraftWorld(), pos);
-        boolean waterlogged = FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER;
-        return state.with(facingProperty, facing)
-                .with(openProperty, false)
-                .with(triggeredProperty, false)
-                .with(waterloggedProperty, waterlogged);
+        return state.with(facingProperty, facing);
     }
 
     @Override
@@ -168,18 +159,6 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
         }
         BlockStateUtils.getOptionalCustomBlockState(args[0])
                 .ifPresent(state -> handlePower(args[1], args[2], state));
-    }
-
-    @Override
-    public Object updateShape(Object thisBlock, Object[] args) {
-        BlockStateUtils.getOptionalCustomBlockState(args[0]).ifPresent(state -> {
-            if (state.get(waterloggedProperty)) {
-                LevelAccessorProxy.INSTANCE.scheduleTick$1(
-                        args[updateShape$level], args[updateShape$blockPos],
-                        FluidsProxy.WATER, 5);
-            }
-        });
-        return args[0];
     }
 
     private void handlePower(Object level, Object minecraftPos, ImmutableBlockState state) {

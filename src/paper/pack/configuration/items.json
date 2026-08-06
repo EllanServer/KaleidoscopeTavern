@@ -2140,10 +2140,26 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/pressing_tub"
       },
-      "behavior": {
-        "type": "block_item",
-        "block": "kaleidoscope_tavern:pressing_tub"
-      }
+      "behaviors": [
+        {
+          "type": "ground_block_item",
+          "block": "kaleidoscope_tavern:pressing_tub"
+        },
+        {
+          "type": "ceiling_block_item",
+          "block": "kaleidoscope_tavern:pressing_tub"
+        },
+        {
+          "type": "furniture_item",
+          "furniture": "kaleidoscope_tavern:_internal/wall_pressing_tub",
+          "rules": {
+            "wall": {
+              "rotation": "four",
+              "alignment": "center"
+            }
+          }
+        }
+      ]
     },
     "kaleidoscope_tavern:grape_bucket": {
       "material": "milk_bucket",
@@ -2987,7 +3003,7 @@
           "type": "kaleidoscope_tavern:shaker_item"
         },
         {
-          "type": "furniture_item",
+          "type": "kaleidoscope_tavern:sneak_place_drink",
           "furniture": "kaleidoscope_tavern:shaker",
           "rules": {
             "ground": {

@@ -16,6 +16,8 @@ CATALOG = ROOT / "src/paper/resources/catalog"
 CUSTOM_CROPS = ROOT / "src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml"
 PLUGIN_CONFIG = ROOT / "src/paper/resources/config.yml"
 NAMESPACE = "kaleidoscope_tavern"
+WALL_PRESSING_TUB = "_internal/wall_pressing_tub"
+WALL_PRESSING_TUB_ID = f"{NAMESPACE}:{WALL_PRESSING_TUB}"
 EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
 COPPER_LANTERN_CARRIER_STATE = (
     "minecraft:copper_lantern[hanging=false,waterlogged=false]"
@@ -75,9 +77,8 @@ EXPECTED_STATE_FURNITURE = {
     "sweet_berry_wine", "sherry", "mother_snow", "luminous_bride",
     "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
     "watermelon_juice",
-    # Migration-only legacy pressing-tub furniture keeps state_furniture so
-    # old saves load their press_* data for the block conversion.
-    "pressing_tub",
+    # Migration-only legacy state plus the active wall-only representation.
+    "pressing_tub", WALL_PRESSING_TUB,
 }
 EXPECTED_BOTTLE_FURNITURE = {
     "empty_bottle", "empty_glassware",
@@ -102,7 +103,7 @@ EXPECTED_STORAGE_INTERACTION_FURNITURE = {
     "bar_cabinet", "glass_bar_cabinet", "glassware_holder",
 }
 EXPECTED_STATION_INTERACTION_FURNITURE = {
-    "barrel", "shaker", "empty_glassware",
+    "barrel", "shaker", "empty_glassware", WALL_PRESSING_TUB,
 }
 FURNITURE_COLORS = {
     "black", "blue", "brown", "cyan", "gray", "green", "light_blue",
@@ -332,7 +333,8 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "PressingTubBlock.java": (
         ("block/PressingTubBlockBehavior.java", "void fallOn(Object thisBlock, Object[] args)"),
-        ("block/PressingTubBlockBehavior.java", "updateStateForPlacement"),
+        ("tools/migrate_legacy.py", '"type": "ground_block_item"'),
+        ("tools/migrate_legacy.py", "WALL_PRESSING_TUB_ID"),
         ("PressingTubService.java", "interactPress"),
         ("PressingTubService.java", "boolean press"),
     ),
@@ -732,10 +734,10 @@ def validate() -> dict[str, int]:
         raise AssertionError(f"Expected 157 public items, found {len(items)}")
     if len(blocks) != 39:
         raise AssertionError(f"Expected 39 grid/state blocks, found {len(blocks)}")
-    if len(furniture) != 136:
+    if len(furniture) != 137:
         raise AssertionError(
-            f"Expected 136 furniture definitions (incl. the migration-only "
-            f"legacy pressing tub), found {len(furniture)}")
+            f"Expected 137 furniture definitions (legacy pressing tub plus "
+            f"the private active wall tub), found {len(furniture)}")
     if len(render_items) != 503:
         raise AssertionError(f"Expected 503 private render items, found {len(render_items)}")
     if len(recipes) != 114:
@@ -844,20 +846,23 @@ def validate() -> dict[str, int]:
     for required_token in (
             "extends BukkitBlockBehavior",
             "private final Property<Direction.Axis> axisProperty",
-            "private final Property<Boolean> waterloggedProperty",
             'block, "axis", Direction.Axis.class',
             "state.get(axisProperty)",
             "TrellisConnectionSemantics.typeFor(",
             'copyNamed(targetState, grown, "axis")',
-            "FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER",
-            "LevelAccessorProxy.INSTANCE.scheduleTick$1("):
+            'copyNamed(targetState, grown, "waterlogged")'):
         if required_token not in trellis_behavior_source:
             raise AssertionError(
                 "TrellisBehavior must consume CE's native axis and supplement its bucket "
                 f"behavior with connection/water state; missing {required_token}")
-    if "extends WaterloggedBlockBehavior" in trellis_behavior_source:
-        raise AssertionError(
-            "TrellisBehavior must not duplicate CE's automatically attached bucket behavior")
+    for stale_token in (
+            "extends WaterloggedBlockBehavior", "waterloggedProperty",
+            "FluidStateProxy", "FluidsProxy",
+            "LevelAccessorProxy.INSTANCE.scheduleTick$1("):
+        if stale_token in trellis_behavior_source:
+            raise AssertionError(
+                "Trellis waterlogging must be owned by CE's automatically attached "
+                f"WaterloggedBlockBehavior; stale Java token: {stale_token}")
     for duplicate_token in (
             "context.getClickedFace().axis()",
             "typeForPlacement(",
@@ -1130,7 +1135,7 @@ def validate() -> dict[str, int]:
                 "Chalkboard block text lifecycle is incomplete; "
                 f"missing token: {required_token}")
     for required_token in (
-            "extends WaterloggedBlockBehavior",
+            "extends BukkitBlockBehavior",
             "implements EntityBlock",
             "private void tryMerge(",
             "resetMergedData(world,",
@@ -1143,6 +1148,22 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Chalkboard must keep only its source-specific horizontal merge and "
                 f"block-entity text bridge; missing token: {required_token}")
+    for stale_token in (
+            "extends WaterloggedBlockBehavior", "FluidStateProxy",
+            "FluidsProxy", "LevelAccessorProxy.INSTANCE.scheduleTick$1(",
+            "public Object updateShape("):
+        if stale_token in chalkboard_behavior_source:
+            raise AssertionError(
+                "Chalkboard waterlogging must be owned by CE's automatically attached "
+                f"WaterloggedBlockBehavior; stale Java token: {stale_token}")
+    chalkboard_placement_source = chalkboard_behavior_source.partition(
+        "public ImmutableBlockState updateStateForPlacement(")[2].partition(
+        "public InteractionResult useOnBlock(")[0]
+    for configured_default_token in ("positionProperty", "halfProperty", "waterloggedProperty"):
+        if configured_default_token in chalkboard_placement_source:
+            raise AssertionError(
+                "Chalkboard placement Java may bridge clicked-face orientation only; CE config "
+                f"must own pair/default/waterlogging, found {configured_default_token}")
     for stale_token in (
             "tryMergeChalkboards(", "nearbyFurniture(",
             "chalkboardMergeOrigin(", 'currentVariant().name() + "_large"'):
@@ -1205,7 +1226,11 @@ def validate() -> dict[str, int]:
         block_id for block_id in blocks
         if block_id.startswith(f"{NAMESPACE}:_crop/")
     }
-    represented_placeables = (set(blocks) - derived_crop_stages) | set(furniture)
+    private_furniture = {WALL_PRESSING_TUB_ID}
+    represented_placeables = (
+        (set(blocks) - derived_crop_stages)
+        | (set(furniture) - private_furniture)
+    )
     if represented_placeables != source_placeables:
         missing = sorted(source_placeables - represented_placeables)
         unexpected = sorted(represented_placeables - source_placeables)
@@ -1479,13 +1504,11 @@ def validate() -> dict[str, int]:
     for required_token in (
             "implements EntityBlock, PrioritizedFallOnHandler",
             "BlockBehaviors.register(TYPE, PressingTubBlockBehavior::new)",
-            "BlockStateUtils.getOptionalCustomBlockState(args[1])",
             "super.fallOn(thisBlock, args)",
             "LivingEntityProxy.CLASS.isInstance(args[3])",
             "((Number) args[4]).doubleValue()",
-            "updateStateForPlacement(",
-            "clickedFace.axis().isHorizontal()",
-            "context.getHorizontalDirection().opposite()",
+            "BlockBehaviorFactory.getProperty(",
+            'block, "facing", Direction.class',
             "public static void bind(Handler value)",
             "public static void unbind(Handler value)",
             "public Object playerWillDestroy(",
@@ -1493,8 +1516,16 @@ def validate() -> dict[str, int]:
             "suppressContentDrops()"):
         if required_token not in pressing_behavior_source:
             raise AssertionError(
-                "pressing_tub block must keep the CE fallOn intercept and "
-                f"source placement semantics; missing token: {required_token}")
+                "pressing_tub Java behavior must keep only the CE API gaps "
+                f"(fallOn, business state, comparator and drops); missing {required_token}")
+    for configured_placement_token in (
+            "updateStateForPlacement(", "BlockPlaceContext",
+            "waterloggedProperty", "clickedFace.axis()"):
+        if configured_placement_token in pressing_behavior_source:
+            raise AssertionError(
+                "Pressing-tub placement/facing/waterlogging must remain CE-configured; "
+                f"stale Java token: {configured_placement_token}")
+
     # 冗余的 updateEntityMovementAfterFallOn override 已按 P7 删除，父类
     # BukkitBlockBehavior 提供实现；热路径截止到下一个方法 useOnBlock。
     fall_on_hot_path = pressing_behavior_source.partition(
@@ -1512,14 +1543,20 @@ def validate() -> dict[str, int]:
         game_package / "furniture" / "LegacyPressingTubMigrationFurnitureBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
-            "FurnitureBehaviors.register(Key.of(TYPE), LegacyPressingTubMigrationFurnitureBehavior::new)",
+            "FurnitureBehaviors.register(",
             "public void onLoad()",
             "public void onPlace(Player player)",
             "public void onUnload(boolean isStopping)",
             "Bukkit.getScheduler().runTask(owner,",
+            "migrateGround(origin, oldState)",
+            "migrateWall(origin, oldState)",
             "CraftEngineBlocks.place(",
             "PressingTubBlockBehavior.BLOCK_ID",
             "PressingTubBlockBehavior.findController(",
+            "PressingTubService.WALL_FURNITURE_ID",
+            "CraftEngineFurniture.place(",
+            "StateFurnitureBehavior.state(replacement)",
+            "writeState(targetController, oldState)",
             "CraftEngineFurniture.remove(furniture, false, false)",
             "sameState(current, oldState)",
             "isEmpty(current)",
@@ -1530,14 +1567,15 @@ def validate() -> dict[str, int]:
             "MIGRATED.incrementAndGet()"):
         if required_token not in migration_behavior_source:
             raise AssertionError(
-                "legacy_pressing_tub_migration must lazily convert old furniture "
-                f"to the CE block with idempotent state hand-over; missing token: {required_token}")
-    for stale_token in ("furniture_item", "setVariant(", "onPlayerHit(",
-                        "useOnFurniture(", "gatherElements(", "gatherHitboxes("):
+                "legacy_pressing_tub_migration must split old ground/wall furniture "
+                f"into the configured targets; missing token: {required_token}")
+    for stale_token in ("setVariant(", "onPlayerHit(",
+                        "useOnFurniture(", "gatherElements(", "gatherHitboxes(",
+                        'properties.putBoolean("tilt"'):
         if stale_token in migration_behavior_source:
             raise AssertionError(
-                "Legacy pressing-tub furniture must carry no interaction, visual "
-                f"or placement behavior of its own; stale token: {stale_token}")
+                "Legacy pressing-tub migration must not restore placement/visual "
+                f"behavior or the removed tilt block state; stale token: {stale_token}")
 
     lifecycle_behavior_source = (
         game_package / "furniture" / "LifecycleFurnitureBehavior.java"
@@ -1819,6 +1857,8 @@ def validate() -> dict[str, int]:
             'TYPE = Key.of("kaleidoscope_tavern", "shaker_item")',
             "ItemBehaviors.register(TYPE",
             "InteractionResult use(World world",
+            "InteractionResult useOnBlock(UseOnContext context)",
+            "shouldUsePortableOnBlock(context.isSecondaryUseActive())",
             "current.use(player, hand)"):
         if required_token not in shaker_item_behavior_source:
             raise AssertionError(
@@ -1838,13 +1878,14 @@ def validate() -> dict[str, int]:
             "Portable shaker right-click must not retain a duplicate global Paper listener")
     shaker_behaviors = items[f"{NAMESPACE}:shaker"].get("behaviors", [])
     if ([behavior.get("type") for behavior in shaker_behaviors]
-            != [f"{NAMESPACE}:shaker_item", "furniture_item"]
+            != [f"{NAMESPACE}:shaker_item", f"{NAMESPACE}:sneak_place_drink"]
             or shaker_behaviors[1].get("furniture") != f"{NAMESPACE}:shaker"
             or shaker_behaviors[1].get("rules") != {
                 "ground": {"rotation": "four", "alignment": "center"}
             }):
         raise AssertionError(
-            "Shaker must run portable air use before ordinary right-click furniture placement")
+            "Shaker must keep only its portable-use callback and delegate "
+            "sneak placement through the generic CE furniture adapter")
     for stale_token in (
             "bootstrapPressVisuals", "onEntitiesLoad(EntitiesLoadEvent event)",
             "pressingTubBelow", "getNearbyEntities(feet"):
@@ -1931,14 +1972,19 @@ def validate() -> dict[str, int]:
         game_package / "PressingTubService.java").read_text(encoding="utf-8-sig")
     for required_token in (
             "implements PressingTubBlockBehavior.Handler",
+            "WALL_FURNITURE_ID",
             "PressingTubBlockBehavior.bind(this)",
             "PressingTubBlockBehavior.unbind(this)",
+            "List<DisplayVisual> furnitureVisuals(",
+            "InteractionResult interactFurniture(",
+            "Optional<ItemStack> furnitureIngredientDrop(",
             "private InteractionResult interactPress(",
+            "private static final class FurnitureTub implements TubAccess",
             "PRESS_MIN_FALL_DISTANCE = 0.5",
             "PlayerProxy.CLASS.isInstance(nmsEntity)",
             "BukkitCraftEngine.instance().antiGriefProvider()",
             "GameRule.MOB_GRIEFING",
-            "ejectInvalidPressContents(controller"):
+            "ejectInvalidPressContents(tub"):
         if required_token not in pressing_service_source:
             raise AssertionError(
                 "PressingTubService must own the press gameplay, permissions and "
@@ -2169,12 +2215,9 @@ def validate() -> dict[str, int]:
     for required_token in (
             "extends BukkitBlockBehavior",
             "implements EntityBlock",
-            "private final Property<Boolean> waterloggedProperty",
             "BlockBehaviors.register(TYPE, TapBlockBehavior::new)",
             "context.getHand() != InteractionHand.MAIN_HAND",
             "clickedFace.axis().isHorizontal()",
-            "FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER",
-            "LevelAccessorProxy.INSTANCE.scheduleTick$1(",
             "SignalGetterProxy.INSTANCE.hasNeighborSignal(level, minecraftPos)",
             "LocationUtils.above(minecraftPos)",
             "powered && !triggered",
@@ -2193,9 +2236,23 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "TapBlockBehavior must own source-equivalent state, redstone and timing; "
                 f"missing token: {required_token}")
-    if "extends WaterloggedBlockBehavior" in tap_block_source:
-        raise AssertionError(
-            "TapBlockBehavior must not duplicate CE's automatically attached bucket behavior")
+    for stale_token in (
+            "extends WaterloggedBlockBehavior", "waterloggedProperty",
+            "FluidStateProxy", "FluidsProxy",
+            "LevelAccessorProxy.INSTANCE.scheduleTick$1(",
+            "public Object updateShape("):
+        if stale_token in tap_block_source:
+            raise AssertionError(
+                "Tap waterlogging must be owned by CE's automatically attached "
+                f"WaterloggedBlockBehavior; stale Java token: {stale_token}")
+    tap_placement_source = tap_block_source.partition(
+        "public ImmutableBlockState updateStateForPlacement(")[2].partition(
+        "public InteractionResult useOnBlock(")[0]
+    for configured_default_token in ("openProperty", "triggeredProperty", "waterlogged"):
+        if configured_default_token in tap_placement_source:
+            raise AssertionError(
+                "Tap placement Java may bridge clicked-face orientation only; CE config must "
+                f"own defaults/waterlogging, found {configured_default_token}")
     if "if (!state.get(behavior.openProperty))" in tap_block_source:
         raise AssertionError(
             "TapBlockBehavior must cache its open state instead of resolving the CE "
@@ -3342,16 +3399,15 @@ def validate() -> dict[str, int]:
             behavior for behavior in item_behaviors
             if behavior.get("furniture") == item_id
         ]
-        placement_type = ("furniture_item" if item_id == f"{NAMESPACE}:shaker"
-                          else f"{NAMESPACE}:sneak_place_drink")
+        placement_type = f"{NAMESPACE}:sneak_place_drink"
         if placement_behaviors != [{
                 "type": placement_type,
                 "furniture": item_id,
                 "rules": expected_ground_rule,
                 }]:
             raise AssertionError(
-                f"{item_id}: shaker must use ordinary placement while custom bottles and "
-                "glasses remain sneak-gated")
+                f"{item_id}: portable vessels must delegate sneak placement through "
+                "the generic native-CE furniture adapter")
 
     for item_id in EFFECTLESS_DRINKS:
         replacement = items[item_id].get("settings", {}).get("consume_replacement")
@@ -4318,22 +4374,91 @@ def validate() -> dict[str, int]:
     legacy_tub = furniture.get(pressing_tub_id)
     if legacy_tub is None:
         raise AssertionError(
-            "One migration-only legacy pressing-tub furniture definition must "
-            "remain so old saves still load")
-    if "item" in legacy_tub.get("settings", {}):
+            "The old pressing-tub furniture id must remain migration-only so "
+            "existing ground and wall saves can be split safely")
+    if "item" in legacy_tub.get("settings", {}) or "loot" in legacy_tub:
         raise AssertionError(
-            "Legacy pressing-tub furniture must not map an item: the tub item "
-            "is a block_item and must place the CE block")
-    if "loot" in legacy_tub:
+            "Legacy pressing-tub furniture must be unreachable from native "
+            "placement and must not duplicate target loot")
+    if set(legacy_tub.get("variants", {})) != {"ground", "wall"}:
         raise AssertionError(
-            "Legacy pressing-tub furniture must not carry loot: the CE block "
-            "owns the drops")
+            "Legacy pressing-tub migration must retain both old anchor variants")
     if legacy_tub.get("behaviors") != [
             {"type": f"{NAMESPACE}:state_furniture"},
             {"type": f"{NAMESPACE}:legacy_pressing_tub_migration"}]:
         raise AssertionError(
             "Legacy pressing-tub furniture must keep only state storage plus "
-            "the lazy migration behavior")
+            "the split migration behavior")
+
+    wall_tub = furniture.get(WALL_PRESSING_TUB_ID)
+    if wall_tub is None:
+        raise AssertionError(
+            "The non-pressable wall tub must be a private native CE furniture")
+    if wall_tub.get("settings", {}).get("item") != pressing_tub_id:
+        raise AssertionError(
+            "Wall pressing-tub furniture must map back to the public tub item")
+    if set(wall_tub.get("variants", {})) != {"wall"}:
+        raise AssertionError(
+            "The active wall tub must expose no ground fallback variant")
+    expected_wall_loot = {
+        "pools": [{
+            "rolls": 1,
+            "entries": [{
+                "type": "furniture_item",
+                "item": pressing_tub_id,
+            }],
+        }],
+    }
+    if wall_tub.get("loot") != expected_wall_loot:
+        raise AssertionError(
+            "Wall pressing-tub item drops must be CE-configured")
+    expected_wall_behaviors = [
+        {"type": f"{NAMESPACE}:state_furniture"},
+        {
+            "type": f"{NAMESPACE}:station_visual_furniture",
+            "max_elements": 17,
+            "view_range": 1.25,
+        },
+        {"type": f"{NAMESPACE}:station_interaction_furniture"},
+    ]
+    if wall_tub.get("behaviors") != expected_wall_behaviors:
+        raise AssertionError(
+            "Wall pressing-tub runtime-sized state must use the shared generic "
+            "furniture adapters, not a dedicated placement/lifecycle behavior")
+    wall_variant = wall_tub["variants"]["wall"]
+    if (wall_variant.get("elements")
+            != legacy_tub["variants"]["wall"].get("elements")):
+        raise AssertionError(
+            "Active and legacy wall tubs must preserve the same authored model")
+    expected_wall_hitboxes = [{
+        "type": "interaction",
+        "position": "0,-0.5,0.5",
+        "width": 1.0,
+        "height": 1.0,
+        "can_use_item_on": True,
+        "can_be_hit_by_projectile": True,
+        "interactive": True,
+        "blocks_building": True,
+    }]
+    for position in (
+            "-0.25,-0.5,0.75", "0.25,-0.5,0.75",
+            "-0.25,-0.25,0.5", "0.25,-0.25,0.5",
+            "-0.25,0,0.25", "0.25,0,0.25"):
+        expected_wall_hitboxes.append({
+            "type": "shulker",
+            "position": position,
+            "peek": 0,
+            "interaction_entity": False,
+            "can_use_item_on": True,
+            "can_be_hit_by_projectile": True,
+            "interactive": False,
+            "blocks_building": True,
+            "scale": 0.5,
+        })
+    if wall_variant.get("hitboxes") != expected_wall_hitboxes:
+        raise AssertionError(
+            "Wall pressing-tub selection and tilted-shell collision must be CE-configured")
+
     pressing_block = blocks[pressing_tub_id]
     pressing_states = pressing_block.get("states", {})
     expected_pressing_properties = {
@@ -4342,31 +4467,28 @@ def validate() -> dict[str, int]:
             "default": "north",
             "values": ["north", "east", "south", "west"],
         },
-        "tilt": {"type": "boolean", "default": "false"},
         "waterlogged": {"type": "boolean", "default": "false"},
     }
     if pressing_states.get("properties") != expected_pressing_properties:
-        raise AssertionError("Pressing-tub CE state schema drifted")
+        raise AssertionError(
+            "Ground pressing-tub state must leave facing/waterlogging to CE's "
+            "hard-coded property behaviors and contain no wall-only tilt state")
     pressing_variants = pressing_states.get("variants", {})
     expected_pressing_variant_keys = {
-        f"facing={facing},tilt={tilt},waterlogged={waterlogged}"
+        f"facing={facing},waterlogged={waterlogged}"
         for facing in ("north", "east", "south", "west")
-        for tilt in ("false", "true")
         for waterlogged in ("false", "true")
     }
     if set(pressing_variants) != expected_pressing_variant_keys:
         raise AssertionError(
-            "Pressing tub must expose all 16 facing/tilt/fluid states")
+            "Ground pressing tub must expose exactly 8 facing/fluid states")
     pressing_appearances = pressing_states.get("appearances", {})
     pressing_yaw = {"north": 180, "east": 90, "south": None, "west": 270}
-    pressing_render_model = {"false": "ff80d8a10a", "true": "61ee42afd0"}
     referenced_pressing_appearances: set[str] = set()
     for variant_key, variant in pressing_variants.items():
         properties = dict(part.split("=", 1) for part in variant_key.split(","))
         appearance_name = (
-            f"{'tilted' if properties['tilt'] == 'true' else 'ground'}_"
-            f"{properties['facing']}_{properties['waterlogged']}"
-        )
+            f"ground_{properties['facing']}_{properties['waterlogged']}")
         if variant.get("appearance") != appearance_name:
             raise AssertionError(
                 f"Pressing tub {variant_key} maps to the wrong renderer")
@@ -4381,12 +4503,9 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"Pressing tub {variant_key} must use its released "
                 "bottom cut-copper-slab carrier")
-        renderer = appearance.get("entity_renderer")
         expected_renderer = {
             "type": "item_display",
-            "item": (
-                f"{NAMESPACE}:_render/pressing_tub/"
-                f"{pressing_render_model[properties['tilt']]}"),
+            "item": f"{NAMESPACE}:_render/pressing_tub/ff80d8a10a",
             "display_transform": "none",
             "shadow_radius": 0,
             "view_range": 1.25,
@@ -4394,17 +4513,17 @@ def validate() -> dict[str, int]:
         yaw = pressing_yaw[properties["facing"]]
         if yaw is not None:
             expected_renderer["rotation"] = f"0,{yaw},0"
-        if renderer != expected_renderer:
+        if appearance.get("entity_renderer") != expected_renderer:
             raise AssertionError(
-                f"Pressing tub {variant_key} model renderer drifted: {renderer}")
+                f"Pressing tub {variant_key} model renderer drifted")
     if (referenced_pressing_appearances != set(pressing_appearances)
-            or len(pressing_appearances) != 16):
+            or len(pressing_appearances) != 8):
         raise AssertionError(
-            "Pressing-tub appearance set contains stale or missing states")
+            "Ground pressing-tub appearance set contains stale wall states")
     if pressing_block.get("behaviors") != {
             "type": f"{NAMESPACE}:pressing_tub_block"}:
         raise AssertionError(
-            "Pressing tub must route fallOn through the CE block behavior")
+            "Pressing tub must route only the fallOn/state API gap through Java")
     pressing_settings = pressing_block.get("settings", {})
     if (pressing_settings.get("item") != pressing_tub_id
             or pressing_settings.get("hardness") != 0.8
@@ -4419,10 +4538,26 @@ def validate() -> dict[str, int]:
             or pressing_settings.get("burn_chance") != 5
             or pressing_settings.get("fire_spread_chance") != 20):
         raise AssertionError("Pressing-tub survival mining settings drifted")
-    if items[pressing_tub_id].get("behavior") != {
-            "type": "block_item", "block": pressing_tub_id}:
+    if items[pressing_tub_id].get("behaviors") != [
+            {
+                "type": "ground_block_item",
+                "block": pressing_tub_id,
+            },
+            {
+                "type": "ceiling_block_item",
+                "block": pressing_tub_id,
+            },
+            {
+                "type": "furniture_item",
+                "furniture": WALL_PRESSING_TUB_ID,
+                "rules": {
+                    "wall": {"rotation": "four", "alignment": "center"},
+                },
+            },
+            ]:
         raise AssertionError(
-            "Pressing tub placement must use CE's native block_item")
+            "Pressing-tub upright/wall routing must be an ordered native CE "
+            "item-behavior chain")
     for token in (
             "displayYaw = facingYaw(facing)",
             "tiltDisplay(facing, x, y, z)",
@@ -4430,8 +4565,8 @@ def validate() -> dict[str, int]:
             "ITEM_X_DEGREES"):
         if token not in visual_factory_source:
             raise AssertionError(
-                "Tilted pressing-tub contents must follow the block-state yaw "
-                f"plus the ItemDisplay +180-degree turn; missing {token}")
+                "Wall pressing-tub furniture contents must retain the authored "
+                f"four-direction transform; missing {token}")
 
     paintings = [item_id for item_id in items if item_id.endswith("_painting")]
     if len(paintings) != 14:
@@ -4649,6 +4784,11 @@ def validate() -> dict[str, int]:
             "max_elements": 17,
             "view_range": 2.5,
         }, 2),
+        WALL_PRESSING_TUB: ({
+            "type": f"{NAMESPACE}:station_visual_furniture",
+            "max_elements": 17,
+            "view_range": 1.25,
+        }, 1),
     }
     for block_id, (expected_visual, expected_index) in expected_station_visuals.items():
         configured_behaviors = list(
@@ -4699,6 +4839,7 @@ def validate() -> dict[str, int]:
         "barrel": 3,
         "shaker": 2,
         "empty_glassware": 1,
+        WALL_PRESSING_TUB: 2,
     }
     for block_id, expected_index in expected_station_interaction_indices.items():
         furniture_id = f"{NAMESPACE}:{block_id}"
@@ -4926,7 +5067,7 @@ def validate() -> dict[str, int]:
     for expected_token in (
             "EXPECTED_ITEMS = 660",
             "EXPECTED_BLOCKS = 39",
-            "EXPECTED_FURNITURE = 136"):
+            "EXPECTED_FURNITURE = 137"):
         if expected_token not in plugin_source:
             raise AssertionError(
                 f"Runtime CE content count guard is stale: {expected_token}")

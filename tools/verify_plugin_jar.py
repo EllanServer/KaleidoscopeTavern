@@ -119,10 +119,10 @@ def main() -> int:
         furniture_document = json.loads(
             archive.read("tavern-pack/configuration/furniture.json").decode("utf-8-sig")
         )
-        if len(furniture_document.get("furniture", {})) != 136:
+        if len(furniture_document.get("furniture", {})) != 137:
             raise SystemExit(
-                "Embedded CraftEngine project must contain 136 furniture ids "
-                "(incl. the migration-only legacy pressing tub)")
+                "Embedded CraftEngine project must contain 137 furniture ids "
+                "(legacy pressing tub plus private active wall tub)")
 
         items_document = json.loads(
             archive.read("tavern-pack/configuration/items.json").decode("utf-8-sig")

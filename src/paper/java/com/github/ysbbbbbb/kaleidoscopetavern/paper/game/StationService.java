@@ -87,6 +87,7 @@ public final class StationService implements Listener {
     private final ItemService items;
     private final Messages messages;
     private final ShakerVisualService shakerVisuals;
+    private final PressingTubService pressingTubs;
     private final Map<UUID, PortableShakerUse> portableShakers = new HashMap<>();
     private final Set<UUID> pendingVanillaBucketEmpty = new HashSet<>();
     private BukkitTask portableShakerTask;
@@ -115,12 +116,14 @@ public final class StationService implements Listener {
             };
 
     public StationService(JavaPlugin plugin, ContentCatalog catalog, ItemService items,
-                          Messages messages, ShakerVisualService shakerVisuals) {
+                          Messages messages, ShakerVisualService shakerVisuals,
+                          PressingTubService pressingTubs) {
         this.plugin = plugin;
         this.catalog = catalog;
         this.items = items;
         this.messages = messages;
         this.shakerVisuals = shakerVisuals;
+        this.pressingTubs = pressingTubs;
     }
 
     public void start() {
@@ -149,6 +152,9 @@ public final class StationService implements Listener {
     private InteractionResult interactStation(BukkitFurniture furniture,
                                               InteractEntityContext context) {
         String id = furniture.id().toString();
+        if (PressingTubService.WALL_FURNITURE_ID.equals(furniture.id())) {
+            return pressingTubs.interactFurniture(furniture, context);
+        }
         if (!id.equals(EMPTY_GLASSWARE)
                 && context.getHand() != InteractionHand.MAIN_HAND) {
             return InteractionResult.PASS;
@@ -236,6 +242,15 @@ public final class StationService implements Listener {
         BukkitFurniture furniture = event.furniture();
         String id = furniture.id().toString();
         Location dropLocation = event.location().clone();
+        if (PressingTubService.WALL_FURNITURE_ID.equals(furniture.id())) {
+            pressingTubs.furnitureIngredientDrop(furniture)
+                    .ifPresent(drop -> deferFurnitureBreak(event, () -> {
+                        if (event.dropItems()) {
+                            dropLocation.getWorld().dropItemNaturally(dropLocation, drop);
+                        }
+                    }));
+            return;
+        }
         switch (id) {
             // Forge only drops the barrel itself. Its internal ingredients,
             // fluid and finished output are deliberately lost on destruction;
@@ -1060,10 +1075,11 @@ public final class StationService implements Listener {
         if (furniture == null || !furniture.isValid()) {
             return List.of();
         }
-        return switch (furniture.id().toString()) {
-            case BARREL -> barrelVisuals(furniture, limit);
-            default -> List.of();
-        };
+        if (PressingTubService.WALL_FURNITURE_ID.equals(furniture.id())) {
+            return pressingTubs.furnitureVisuals(furniture, limit);
+        }
+        return BARREL.equals(furniture.id().toString())
+                ? barrelVisuals(furniture, limit) : List.of();
     }
 
     /** Mirrors BarrelBlockEntityRender's open-only fluid and ingredient layer. */
