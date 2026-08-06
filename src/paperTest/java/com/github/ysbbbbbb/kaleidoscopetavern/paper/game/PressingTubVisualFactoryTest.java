@@ -88,6 +88,22 @@ class PressingTubVisualFactoryTest {
         assertTiltDirection(Direction.SOUTH, 0.7071068f, -0.7071068f);
     }
 
+    @Test
+    void facingYawPointsContentAlongTheTubFacing() {
+        // 实体 yaw 顺时针（0=南 90=西 180=北 270=东）：方向向量
+        // (dirX, dirZ) = (-sin(yaw), cos(yaw)) 必须等于 facing 指向。
+        assertFacingYaw(Direction.NORTH, 0, -1);
+        assertFacingYaw(Direction.EAST, 1, 0);
+        assertFacingYaw(Direction.SOUTH, 0, 1);
+        assertFacingYaw(Direction.WEST, -1, 0);
+    }
+
+    private static void assertFacingYaw(Direction facing, double dx, double dz) {
+        double radians = Math.toRadians(PressingTubVisualFactory.facingYaw(facing));
+        assertEquals(dx, -Math.sin(radians), 1e-6, "facing=" + facing);
+        assertEquals(dz, Math.cos(radians), 1e-6, "facing=" + facing);
+    }
+
     private static void assertTiltDirection(Direction facing, float y, float z) {
         float tilt = (facing == Direction.EAST || facing == Direction.WEST) ? 45 : -45;
         Quaternionf rotation = new Quaternionf()

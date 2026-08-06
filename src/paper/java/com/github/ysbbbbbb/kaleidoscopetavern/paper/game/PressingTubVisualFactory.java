@@ -164,13 +164,19 @@ public final class PressingTubVisualFactory {
                 : new double[]{x, p2y, p2z - 0.5};
     }
 
-    /** Matches the entity_renderer rotation the block config bakes per facing. */
-    private static float facingYaw(Direction facing) {
+    /**
+     * 把源 PoseStack 的 YN(θ) 翻译成 Minecraft 实体 yaw。源模组用 JOML
+     * rotateY（逆时针，θ=NORTH=180 / EAST=90 / SOUTH=0 / WEST=-90），而
+     * 实体 yaw 是顺时针（0=南 90=西 180=北 270=东）。EAST/WEST 一旦写反，
+     * 内容物朝向就会与果盆 facing 相差 180°。位置的 YN(θ) 已由
+     * {@link #tiltDisplay} 硬编码，因此这里只负责物品朝向。
+     */
+    static float facingYaw(Direction facing) {
         return switch (facing) {
             case NORTH -> 180;
-            case EAST -> 90;
+            case EAST -> 270;
             case SOUTH -> 0;
-            case WEST -> 270;
+            case WEST -> 90;
             default -> 0;
         };
     }
