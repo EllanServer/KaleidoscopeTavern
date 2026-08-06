@@ -1158,21 +1158,22 @@ def build_chalkboard_block(
     return config, render_items, len(appearances)
 
 
-# CraftEngine 26.7.4 ships a built-in palm_slab that already claims the
-# released petrified-oak-slab bottom state, so hand-picking a host always
-# risks colliding with built-in/other packs. Instead of hardcoding a carrier
-# state, let CraftEngine assign one: auto_state picks an unused visual state
-# from the group, and appearances sharing the same id share that state. The
-# dry tub rides the solid group, the waterlogged variant the
-# waterlogged-leaves group.
-PRESSING_TUB_DRY_AUTO_STATE_ID = "kaleidoscope-tavern-pressing-tub"
-PRESSING_TUB_WATER_AUTO_STATE_ID = "kaleidoscope-tavern-pressing-tub-water"
+# CraftEngine 26.7.4 releases a set of vanilla states for custom blocks to
+# host on (see resources/internal/configuration/mappings.yml). The released
+# bottom-half slabs are petrified_oak_slab - whose bottom,waterlogged=false
+# state the built-in palm_slab already claims - and the cut_copper_slab
+# family. The pressed tub rides the released cut_copper_slab bottom-half
+# states: the client still renders vanilla cut-copper slabs, the tub keeps the
+# 8px collision that routes NMS fallOn, and waterlogged=true mirrors the Forge
+# block's SimpleWaterloggedBlock support.
+PRESSING_TUB_CARRIER_STATE = "minecraft:cut_copper_slab[type=bottom,waterlogged=false]"
+PRESSING_TUB_CARRIER_WATER_STATE = "minecraft:cut_copper_slab[type=bottom,waterlogged=true]"
 
 
 def build_pressing_tub_block(
     has_item: bool,
 ) -> tuple[dict[str, Any], dict[str, Any], int]:
-    """Build the ground/wall pressing tub on auto-assigned visual states."""
+    """Build the ground/wall pressing tub on a released bottom-slab carrier."""
 
     ground_model = ("kaleidoscope_tavern:block/brew/pressing_tub", 0, 0, 0, False)
     tilted_model = ("kaleidoscope_tavern:block/brew/tilt_pressing_tub", 0, 0, 0, False)
@@ -1192,10 +1193,9 @@ def build_pressing_tub_block(
     for facing in ("north", "east", "south", "west"):
         for tilt in ("false", "true"):
             render_id = ground_render if tilt == "false" else tilted_render
-            for waterlogged, auto_type, auto_id in (
-                ("false", "solid", PRESSING_TUB_DRY_AUTO_STATE_ID),
-                ("true", "waterlogged_leaves",
-                 PRESSING_TUB_WATER_AUTO_STATE_ID),
+            for waterlogged, carrier in (
+                ("false", PRESSING_TUB_CARRIER_STATE),
+                ("true", PRESSING_TUB_CARRIER_WATER_STATE),
             ):
                 appearance_name = (
                     f"{'ground' if tilt == 'false' else 'tilted'}_{facing}_{waterlogged}")
@@ -1210,7 +1210,7 @@ def build_pressing_tub_block(
                 if yaw:
                     renderer["rotation"] = f"0,{yaw},0"
                 appearances[appearance_name] = {
-                    "auto_state": {"type": auto_type, "id": auto_id},
+                    "state": carrier,
                     "transparent": True,
                     "entity_renderer": renderer,
                 }

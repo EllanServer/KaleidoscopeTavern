@@ -4350,20 +4350,15 @@ def validate() -> dict[str, int]:
                 f"Pressing tub {variant_key} maps to the wrong renderer")
         appearance = pressing_appearances.get(appearance_name, {})
         referenced_pressing_appearances.add(appearance_name)
-        expected_auto = (
-            ("solid", "kaleidoscope-tavern-pressing-tub")
-            if properties['waterlogged'] == 'false'
-            else ("waterlogged_leaves",
-                  "kaleidoscope-tavern-pressing-tub-water")
+        expected_carrier = (
+            "minecraft:cut_copper_slab"
+            f"[type=bottom,waterlogged={properties['waterlogged']}]"
         )
-        auto_state = appearance.get("auto_state")
-        if (not isinstance(auto_state, dict)
-                or auto_state.get("type") != expected_auto[0]
-                or auto_state.get("id") != expected_auto[1]
+        if (appearance.get("state") != expected_carrier
                 or appearance.get("transparent") is not True):
             raise AssertionError(
-                f"Pressing tub {variant_key} must use auto-assigned "
-                f"{expected_auto[0]} visual state")
+                f"Pressing tub {variant_key} must use its released "
+                "bottom cut-copper-slab carrier")
         renderer = appearance.get("entity_renderer")
         expected_renderer = {
             "type": "item_display",

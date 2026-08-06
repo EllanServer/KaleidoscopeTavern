@@ -51,14 +51,14 @@ import java.util.function.UnaryOperator;
 /**
  * CE server-side custom block for the pressing tub.
  *
- * <p>The tub is no longer a furniture: CraftEngine assigns its visual states
- * automatically via {@code auto_state} (solid group dry, waterlogged-leaves
- * group when submerged), so no hand-picked host can collide with built-in
- * content. The {@code transparent} flag hides the carrier and an ItemDisplay
- * renderer draws the authored tub model. Landings arrive through
- * {@link PrioritizedFallOnHandler#fallOn} from CraftEngine's NMS interceptor,
- * so the previous global move-event bridge and its reverse spatial index are
- * gone entirely.</p>
+ * <p>The tub is no longer a furniture: it hosts on a released vanilla
+ * state (cut_copper_slab bottom half, see CraftEngine's mappings.yml), so the
+ * client still renders vanilla cut-copper slabs and no hand-picked host can
+ * collide with built-in content. The 8px bottom-half collision routes
+ * {@link PrioritizedFallOnHandler#fallOn} from CraftEngine's NMS interceptor
+ * and {@code waterlogged=true} mirrors the Forge block's
+ * SimpleWaterloggedBlock support, so the previous global move-event bridge
+ * and its reverse spatial index are gone entirely.</p>
  *
  * <p>State (ingredient pile, pressed fluid) lives in the CE block entity and
  * drives a packet-only item-pile/fluid-plane visual ({@link DifferentialItemDisplayElement})
