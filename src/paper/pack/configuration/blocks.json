@@ -6984,7 +6984,10 @@
         },
         "appearances": {
           "ground_north_false": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "solid",
+              "id": "kaleidoscope-tavern-pressing-tub"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -6996,7 +6999,10 @@
             }
           },
           "ground_north_true": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "waterlogged_leaves",
+              "id": "kaleidoscope-tavern-pressing-tub-water"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7008,7 +7014,10 @@
             }
           },
           "tilted_north_false": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "solid",
+              "id": "kaleidoscope-tavern-pressing-tub"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7020,7 +7029,10 @@
             }
           },
           "tilted_north_true": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "waterlogged_leaves",
+              "id": "kaleidoscope-tavern-pressing-tub-water"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7032,7 +7044,10 @@
             }
           },
           "ground_east_false": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "solid",
+              "id": "kaleidoscope-tavern-pressing-tub"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7044,7 +7059,10 @@
             }
           },
           "ground_east_true": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "waterlogged_leaves",
+              "id": "kaleidoscope-tavern-pressing-tub-water"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7056,7 +7074,10 @@
             }
           },
           "tilted_east_false": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "solid",
+              "id": "kaleidoscope-tavern-pressing-tub"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7068,7 +7089,10 @@
             }
           },
           "tilted_east_true": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "waterlogged_leaves",
+              "id": "kaleidoscope-tavern-pressing-tub-water"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7080,7 +7104,10 @@
             }
           },
           "ground_south_false": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "solid",
+              "id": "kaleidoscope-tavern-pressing-tub"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7091,7 +7118,10 @@
             }
           },
           "ground_south_true": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "waterlogged_leaves",
+              "id": "kaleidoscope-tavern-pressing-tub-water"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7102,7 +7132,10 @@
             }
           },
           "tilted_south_false": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "solid",
+              "id": "kaleidoscope-tavern-pressing-tub"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7113,7 +7146,10 @@
             }
           },
           "tilted_south_true": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "waterlogged_leaves",
+              "id": "kaleidoscope-tavern-pressing-tub-water"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7124,7 +7160,10 @@
             }
           },
           "ground_west_false": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "solid",
+              "id": "kaleidoscope-tavern-pressing-tub"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7136,7 +7175,10 @@
             }
           },
           "ground_west_true": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "waterlogged_leaves",
+              "id": "kaleidoscope-tavern-pressing-tub-water"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7148,7 +7190,10 @@
             }
           },
           "tilted_west_false": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=false,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "solid",
+              "id": "kaleidoscope-tavern-pressing-tub"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
@@ -7160,7 +7205,10 @@
             }
           },
           "tilted_west_true": {
-            "state": "minecraft:copper_slab[type=bottom,waterlogged=true,oxidation=none,waxed=false]",
+            "auto_state": {
+              "type": "waterlogged_leaves",
+              "id": "kaleidoscope-tavern-pressing-tub-water"
+            },
             "transparent": true,
             "entity_renderer": {
               "type": "item_display",
