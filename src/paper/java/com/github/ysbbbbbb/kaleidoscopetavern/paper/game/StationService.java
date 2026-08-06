@@ -5,11 +5,11 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.BarrelRecipe;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.PressingRecipe;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.PressingTubBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.TickingFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.visual.DisplayVisual;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.ShakerItemBehavior;
 import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
@@ -32,14 +32,12 @@ import net.momirealms.craftengine.core.world.context.InteractEntityContext;
 import net.momirealms.craftengine.core.world.context.UseOnContext;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -72,15 +70,10 @@ import java.util.function.Consumer;
 /** Implements the former Forge block-entity gameplay on CraftEngine furniture entities. */
 public final class StationService implements Listener {
     private static final String NAMESPACE = "kaleidoscope_tavern:";
-    private static final String PRESSING_TUB = NAMESPACE + "pressing_tub";
     private static final String BARREL = NAMESPACE + "barrel";
     private static final String SHAKER = NAMESPACE + "shaker";
     private static final String EMPTY_GLASSWARE = NAMESPACE + "empty_glassware";
     private static final Key BARREL_KEY = Key.of(BARREL);
-    private static final int PRESS_CAPACITY = 1_000;
-    // IPressingTub.MIN_FALL_DISTANCE: the NMS interceptor reports every
-    // collision, so the block behavior gates the press on this threshold.
-    private static final double PRESS_MIN_FALL_DISTANCE = 0.5;
     private static final int BARREL_CAPACITY = 4_000;
     private static final int MAX_BARREL_SLOTS = 4;
     private static final int MAX_BARREL_STACK = 16;
@@ -88,9 +81,6 @@ public final class StationService implements Listener {
     // a bounded visual pool keeps station refresh packets cheap at high counts.
     private static final int MAX_STATION_ITEM_VISUALS = 16;
     private static final int MAX_STATION_MATERIAL_VISUALS = 4;
-    // PressingTubBlockEntityRender's PoseStack tilt and item flattening.
-    private static final double TILT_X_DEGREES = -45;
-    private static final double ITEM_X_DEGREES = -90;
 
     private final JavaPlugin plugin;
     private final ContentCatalog catalog;
@@ -104,47 +94,6 @@ public final class StationService implements Listener {
             this::stationVisuals;
     private final StationInteractionFurnitureBehavior.Handler stationInteractionHandler =
             this::interactStation;
-    private final PressingTubBlockBehavior.Handler pressingTubHandler =
-            new PressingTubBlockBehavior.Handler() {
-                @Override
-                public InteractionResult interact(
-                        PressingTubBlockBehavior.Controller controller,
-                        net.momirealms.craftengine.core.entity.player.Player cePlayer,
-                        InteractionHand hand) {
-                    if (!(cePlayer.platformPlayer() instanceof Player player)) {
-                        return InteractionResult.PASS;
-                    }
-                    boolean handled = interactPress(controller, player, hand);
-                    if (!handled) {
-                        return InteractionResult.PASS;
-                    }
-                    // Block interaction is dispatched from CE's useOnBlock on
-                    // the main thread. By then vanilla may already have started
-                    // the held milk-bucket/potion use animation. A successful
-                    // tub interaction owns that same hand, so explicitly cancel
-                    // the predicted consume state; otherwise pouring grape juice
-                    // can visibly (and, under latency, functionally) turn into
-                    // drinking it.
-                    EquipmentSlot usedHand = hand == InteractionHand.MAIN_HAND
-                            ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
-                    if (player.hasActiveItem() && player.getActiveItemHand() == usedHand) {
-                        player.clearActiveItem();
-                    }
-                    return InteractionResult.SUCCESS_AND_CANCEL;
-                }
-
-                @Override
-                public boolean press(PressingTubBlockBehavior.Controller controller,
-                                     double fallDistance) {
-                    return pressOne(controller, fallDistance);
-                }
-
-                @Override
-                public List<StationVisualFurnitureBehavior.Visual> visuals(
-                        PressingTubBlockBehavior.Controller controller, int limit) {
-                    return pressingTubVisuals(controller, limit);
-                }
-            };
     private final ShakerItemBehavior.Handler shakerItemHandler =
             this::usePortableShaker;
     private final TickingFurnitureBehavior.Handler barrelTickingHandler =
@@ -180,7 +129,6 @@ public final class StationService implements Listener {
         StationVisualFurnitureBehavior.bind(stationVisualHandler);
         TickingFurnitureBehavior.bind(
                 TickingFurnitureBehavior.Channel.BARREL, barrelTickingHandler);
-        PressingTubBlockBehavior.bind(pressingTubHandler);
     }
 
     public void stop() {
@@ -189,7 +137,6 @@ public final class StationService implements Listener {
         StationVisualFurnitureBehavior.unbind(stationVisualHandler);
         TickingFurnitureBehavior.unbind(
                 TickingFurnitureBehavior.Channel.BARREL, barrelTickingHandler);
-        PressingTubBlockBehavior.unbind(pressingTubHandler);
         if (portableShakerTask != null) {
             portableShakerTask.cancel();
             portableShakerTask = null;
@@ -358,13 +305,13 @@ public final class StationService implements Listener {
         }
     }
 
-    /** Whether a station that consumes bucket fluids occupies this block. */
+    /** Whether a station that consumes bucket fluids occupies this block.
+     *  压榨桶是真 CE Block，交互成功后返回 SUCCESS_AND_CANCEL 会取消原版
+     *  方块交互，不再需要这里的 Bukkit 方块扫描；该系统只为仍是 Furniture
+     *  的 barrel 保留。 */
     private boolean fluidStationAt(Block block) {
         if (block == null) {
             return false;
-        }
-        if (isPressingTubBlock(block)) {
-            return true;
         }
         Location center = block.getLocation().add(0.5, 0.5, 0.5);
         // CE supplies loaded barrel origins; Paper only preserves the source
@@ -380,15 +327,6 @@ public final class StationService implements Listener {
             }
         }
         return false;
-    }
-
-    private static boolean isPressingTubBlock(Block block) {
-        net.momirealms.craftengine.core.block.ImmutableBlockState state =
-                BukkitAdaptor.adapt(block.getWorld()).storageWorld()
-                        .getBlockStateAtIfLoaded(new BlockPos(
-                                block.getX(), block.getY(), block.getZ()));
-        return state != null
-                && state.owner().value().id().equals(Key.of(PRESSING_TUB));
     }
 
     @EventHandler
@@ -542,189 +480,6 @@ public final class StationService implements Listener {
         if (portableShakerTask != null && portableShakers.isEmpty()) {
             portableShakerTask.cancel();
             portableShakerTask = null;
-        }
-    }
-
-    private boolean interactPress(PressingTubBlockBehavior.Controller controller,
-                                  Player player, InteractionHand usedHand) {
-        ItemStack hand = usedHand == InteractionHand.MAIN_HAND
-                ? player.getInventory().getItemInMainHand()
-                : player.getInventory().getItemInOffHand();
-        String handId = items.id(hand);
-        int storedCount = controller.pressCount();
-        if (hand.isEmpty() && storedCount > 0) {
-            int removeCount = player.isSneaking() ? Math.min(64, storedCount) : 1;
-            ItemStack stored = controller.pressItem();
-            if (stored != null) {
-                giveStored(player, stored, removeCount);
-                int remaining = storedCount - removeCount;
-                controller.setPressState(remaining == 0 ? null : stored, remaining,
-                        controller.pressFluid(), controller.pressAmount());
-                playItemFrameSound(controller.location(),
-                        "minecraft:entity.item_frame.remove_item");
-                return true;
-            }
-        }
-
-        if (handId.equals("minecraft:bucket") && controller.pressAmount() >= PRESS_CAPACITY) {
-            String fluid = controller.pressFluid();
-            Optional<PressingRecipe> recipe = catalog.pressingByFluid(fluid == null ? "" : fluid);
-            Optional<ItemStack> result = recipe.flatMap(value -> items.build(value.bucket(), player));
-            if (result.isPresent()) {
-                if (player.getGameMode() != GameMode.CREATIVE) {
-                    hand.subtract(1);
-                }
-                items.give(player, result.get());
-                controller.setPressState(controller.pressItem(), controller.pressCount(),
-                        null, 0);
-                controller.location().getWorld().playSound(controller.location(),
-                        "minecraft:item.bucket.fill", SoundCategory.BLOCKS, 1.0F, 1.0F);
-                return true;
-            }
-        }
-
-        if (!hand.isEmpty()) {
-            ItemStack current = controller.pressItem();
-            int count = controller.pressCount();
-            int capacity = Math.min(64,
-                    current == null ? hand.getMaxStackSize() : current.getMaxStackSize());
-            if ((current == null || current.isSimilar(hand)) && count < capacity) {
-                int inserted = Math.min(hand.getAmount(), capacity - count);
-                ItemStack template = hand.clone();
-                template.setAmount(1);
-                // PressingTubBlockEntity inserts the carried stack directly;
-                // unlike most interactions this also shrinks creative stacks.
-                hand.subtract(inserted);
-                controller.setPressState(template, count + inserted,
-                        controller.pressFluid(), controller.pressAmount());
-                playItemFrameSound(controller.location(),
-                        "minecraft:entity.item_frame.add_item");
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean pressOne(PressingTubBlockBehavior.Controller controller,
-                             double fallDistance) {
-        // The NMS interceptor reports every collision, so the source's own
-        // MIN_FALL_DISTANCE gate must live here; the former Bukkit fall-damage
-        // bridge applied it implicitly through a real damage event.
-        if (controller.isTilted() || fallDistance < PRESS_MIN_FALL_DISTANCE) {
-            return false;
-        }
-        int count = controller.pressCount();
-        ItemStack ingredient = controller.pressItem();
-        if (ingredient == null || count <= 0) {
-            if (controller.pressAmount() > 0) {
-                playSuccessfulPress(controller.location(), null);
-            } else {
-                playFailedPress(controller.location(), null);
-            }
-            return false;
-        }
-        Optional<PressingRecipe> optional = catalog.pressing(items.id(ingredient));
-        if (optional.isEmpty()) {
-            playFailedPress(controller.location(), ingredient);
-            ejectInvalidPressContents(controller, ingredient, count);
-            return false;
-        }
-        PressingRecipe recipe = optional.get();
-        String currentFluid = controller.pressFluid();
-        int amount = controller.pressAmount();
-        if (currentFluid != null && !currentFluid.equals(recipe.fluid())) {
-            playFailedPress(controller.location(), ingredient);
-            ejectInvalidPressContents(controller, ingredient, count);
-            return false;
-        }
-        if (amount >= PRESS_CAPACITY) {
-            playFinishedPress(controller.location());
-            return false;
-        }
-        controller.setPressState(count == 1 ? null : ingredient, count - 1,
-                recipe.fluid(), Math.min(PRESS_CAPACITY, amount + recipe.amount()));
-        playSuccessfulPress(controller.location(), ingredient);
-        return true;
-    }
-
-    private void playSuccessfulPress(Location location, ItemStack ingredient) {
-        Location point = location.clone().add(0, 0.5, 0);
-        playPressSound(point, "minecraft:block.slime_block.fall");
-        if (ingredient == null) {
-            point.getWorld().spawnParticle(Particle.RAIN, point, 10,
-                    0.25, 0.2, 0.25, 0.05);
-        } else {
-            point.getWorld().spawnParticle(Particle.ITEM, point, 10,
-                    0.25, 0.2, 0.25, 0.05, ingredient);
-        }
-    }
-
-    private void playFailedPress(Location location, ItemStack ingredient) {
-        Location point = location.clone().add(0, 0.5, 0);
-        playPressSound(point, "minecraft:block.wood.fall");
-        if (ingredient == null) {
-            point.getWorld().spawnParticle(Particle.BLOCK, point, 10,
-                    0.25, 0.2, 0.25, 0.05, Material.OAK_PLANKS.createBlockData());
-        } else {
-            point.getWorld().spawnParticle(Particle.ITEM, point, 10,
-                    0.25, 0.2, 0.25, 0.05, ingredient);
-        }
-    }
-
-    private void playFinishedPress(Location location) {
-        Location point = location.clone().add(0, 0.5, 0);
-        playPressSound(point, "minecraft:block.honey_block.hit");
-        point.getWorld().spawnParticle(Particle.RAIN, point, 10,
-                0.25, 0.2, 0.25, 0.05);
-    }
-
-    private static void playPressSound(Location location, String sound) {
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        location.getWorld().playSound(location, sound,
-                SoundCategory.BLOCKS,
-                0.5F + random.nextFloat(), random.nextFloat() * 0.3F + 0.7F);
-    }
-
-    private static void playItemFrameSound(Location location, String sound) {
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        location.getWorld().playSound(location, sound,
-                SoundCategory.BLOCKS,
-                0.5F + random.nextFloat(), random.nextFloat() * 0.7F + 0.6F);
-    }
-
-    private void ejectInvalidPressContents(PressingTubBlockBehavior.Controller controller,
-                                            ItemStack template, int totalCount) {
-        if (!plugin.getConfig().getBoolean("stations.press-eject-invalid", true) || totalCount <= 0) {
-            return;
-        }
-        controller.setPressState(null, 0,
-                controller.pressFluid(), controller.pressAmount());
-        int directionCount = Math.min(8, totalCount);
-        double diagonal = 1.0 / Math.sqrt(2.0);
-        double[][] directions = {
-                {1, 0}, {diagonal, diagonal}, {0, 1}, {-diagonal, diagonal},
-                {-1, 0}, {-diagonal, -diagonal}, {0, -1}, {diagonal, -diagonal},
-        };
-        int base = totalCount / directionCount;
-        int remainder = totalCount % directionCount;
-        Boolean drops = controller.world().getGameRuleValue(GameRule.DO_TILE_DROPS);
-        if (Boolean.FALSE.equals(drops)) {
-            return;
-        }
-        Location origin = controller.location();
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        for (int index = 0; index < directionCount; index++) {
-            ItemStack dropped = template.clone();
-            dropped.setAmount(base + (index < remainder ? 1 : 0));
-            double[] direction = directions[index];
-            Location spawn = origin.clone().add(
-                    direction[0] * 0.3 + random.nextDouble(-0.05, 0.05),
-                    0.5 + random.nextDouble(0, 0.1),
-                    direction[1] * 0.3 + random.nextDouble(-0.05, 0.05));
-            origin.getWorld().dropItem(spawn, dropped, entity -> entity.setVelocity(new Vector(
-                    direction[0] * 0.15 + random.nextDouble(-0.02, 0.02),
-                    0.1 + random.nextDouble(-0.02, 0.02),
-                    direction[1] * 0.15 + random.nextDouble(-0.02, 0.02))));
         }
     }
 
@@ -1300,7 +1055,7 @@ public final class StationService implements Listener {
         }
     }
 
-    private List<StationVisualFurnitureBehavior.Visual> stationVisuals(
+    private List<DisplayVisual> stationVisuals(
             BukkitFurniture furniture, int limit) {
         if (furniture == null || !furniture.isValid()) {
             return List.of();
@@ -1312,7 +1067,7 @@ public final class StationService implements Listener {
     }
 
     /** Mirrors BarrelBlockEntityRender's open-only fluid and ingredient layer. */
-    private List<StationVisualFurnitureBehavior.Visual> barrelVisuals(
+    private List<DisplayVisual> barrelVisuals(
             BukkitFurniture furniture, int limit) {
         if (!isBarrelOpen(furniture)) {
             return List.of();
@@ -1322,7 +1077,7 @@ public final class StationService implements Listener {
         String fluid = state.string("barrel_fluid");
         boolean hasFluid = amount > 0 && fluid != null;
         int itemLimit = Math.max(0, limit - (hasFluid ? 1 : 0));
-        List<StationVisualFurnitureBehavior.Visual> result = new ArrayList<>(
+        List<DisplayVisual> result = new ArrayList<>(
                 Math.min(limit, MAX_STATION_ITEM_VISUALS + 1));
         long seed = blockPositionSeed(furniture.location());
         int globalIndex = 0;
@@ -1352,11 +1107,11 @@ public final class StationService implements Listener {
                         .rotateY((float) Math.toRadians(-yRotation))
                         .rotateZ((float) Math.toRadians(-zRotation));
                 Location origin = furniture.location();
-                result.add(StationVisualFurnitureBehavior.Visual.of(
+                result.add(DisplayVisual.of(
                         displayItem,
                         origin.getX() + x, origin.getY() + 2.7 + y, origin.getZ() + z,
                         0, 0, 0.5F, rotation,
-                        StationVisualFurnitureBehavior.ITEM_TRANSFORM_FIXED));
+                        DisplayVisual.ITEM_TRANSFORM_FIXED));
                 globalIndex++;
             }
         }
@@ -1366,7 +1121,7 @@ public final class StationService implements Listener {
                     .ifPresent(renderItem -> {
                         renderItem.setAmount(1);
                         Location origin = furniture.location();
-                        result.add(StationVisualFurnitureBehavior.Visual.of(
+                        result.add(DisplayVisual.of(
                                 BukkitAdaptor.adapt(renderItem),
                                 origin.getX(),
                                 origin.getY() + 2
@@ -1374,133 +1129,10 @@ public final class StationService implements Listener {
                                         / (float) BARREL_CAPACITY * 0.65F,
                                 origin.getZ(),
                                 0, 0, 1, new Quaternionf(),
-                                StationVisualFurnitureBehavior.ITEM_TRANSFORM_NONE));
+                                DisplayVisual.ITEM_TRANSFORM_NONE));
                     });
         }
         return result;
-    }
-
-    /** Mirrors PressingTubBlockEntityRender's item pile and fluid plane. */
-    private List<StationVisualFurnitureBehavior.Visual> pressingTubVisuals(
-            PressingTubBlockBehavior.Controller controller, int limit) {
-        int amount = Math.max(0, controller.pressAmount());
-        String fluid = controller.pressFluid();
-        boolean hasFluid = amount > 0 && fluid != null;
-        int itemLimit = Math.max(0, limit - (hasFluid ? 1 : 0));
-        List<StationVisualFurnitureBehavior.Visual> result = new ArrayList<>(
-                Math.min(limit, MAX_STATION_ITEM_VISUALS + 1));
-        ItemStack ingredient = controller.pressItem();
-        int count = ingredient == null ? 0
-                : Math.min(64, Math.max(0, controller.pressCount()));
-        int visualCount = Math.min(itemLimit,
-                Math.min(count, MAX_STATION_ITEM_VISUALS));
-        if (ingredient != null && visualCount > 0) {
-            long seed = blockPositionSeed(controller.location());
-            boolean tilted = controller.isTilted();
-            Location origin = controller.location();
-            // Adapt the pile material once; every visual copy shares the Item.
-            ItemStack shown = ingredient.clone();
-            shown.setAmount(1);
-            Item displayItem = BukkitAdaptor.adapt(shown);
-            for (int index = 0; index < visualCount; index++) {
-                float x = index % 4 % 2 == 0
-                        ? -0.15F : 0.15F + stableRandom(seed, index, 1) * 0.0625F;
-                float z = index % 4 / 2 == 0
-                        ? -0.15F : 0.15F + stableRandom(seed, index, 2) * 0.0625F;
-                float y = index / 4 * 0.03125F
-                        + stableRandom(seed, index, 3) * 0.05F;
-                // 与物品数量无关的稳定旋转：6.4F 是 count=64 时的最大范围，
-                // 压榨成功只改变 count/press_amount，不再让所有已有物品旋转变化，
-                // 否则每次压榨都会触发整组 metadata 差量重发。
-                float yRotation = stableRandom(seed, index, 4) * 6.4F;
-                float zRotation = stableRandom(seed, index, 5) * 360F;
-                double displayX;
-                double displayY;
-                double displayZ;
-                float displayYaw;
-                Quaternionf rotation;
-                if (tilted) {
-                    // The source renderer applied its Rx(-45) pose and the
-                    // blockstate model carries the same tilt; rotate the local
-                    // point around the cell centre by the model's effective yaw
-                    // (CE's configured facing rotation plus the ItemDisplay
-                    // renderer's intrinsic +180-degree turn) so the pile follows
-                    // the wall-mounted tub like the old furniture transform.
-                    double[] point = tiltNorth(0.5 + x, 0.2 + y, 0.5 + z);
-                    double radians = Math.toRadians(facingYaw(controller.facing()) + 180.0);
-                    double dx = point[0] - 0.5;
-                    double dz = point[2] - 0.5;
-                    displayX = origin.getX() + 0.5 + Math.cos(radians) * dx + Math.sin(radians) * dz;
-                    displayY = origin.getY() + point[1];
-                    displayZ = origin.getZ() + 0.5 - Math.sin(radians) * dx + Math.cos(radians) * dz;
-                    displayYaw = facingYaw(controller.facing());
-                    rotation = new Quaternionf()
-                            .rotateX((float) Math.toRadians(TILT_X_DEGREES))
-                            .rotateX((float) Math.toRadians(ITEM_X_DEGREES))
-                            .rotateY((float) Math.toRadians(-yRotation))
-                            .rotateZ((float) Math.toRadians(-zRotation));
-                } else {
-                    displayX = origin.getX() + x;
-                    displayY = origin.getY() + 0.2 + y;
-                    displayZ = origin.getZ() + z;
-                    displayYaw = 0;
-                    rotation = new Quaternionf()
-                            .rotateX((float) Math.toRadians(ITEM_X_DEGREES))
-                            .rotateY((float) Math.toRadians(-yRotation))
-                            .rotateZ((float) Math.toRadians(-zRotation));
-                }
-                result.add(StationVisualFurnitureBehavior.Visual.of(
-                        displayItem,
-                        displayX, displayY, displayZ, displayYaw, 0, 0.5F, rotation,
-                        StationVisualFurnitureBehavior.ITEM_TRANSFORM_FIXED));
-            }
-        }
-
-        if (hasFluid) {
-            items.build(NAMESPACE + "_render/pressing_fluid/" + path(fluid), null)
-                    .ifPresent(renderItem -> {
-                        renderItem.setAmount(1);
-                        float y = 0.125F + Math.min(PRESS_CAPACITY, amount)
-                                / (float) PRESS_CAPACITY * 0.25F;
-                        Location origin = controller.location();
-                        // The wall variant keeps the source fluid plane
-                        // horizontal at the target cell centre.
-                        double displayX = origin.getX();
-                        double displayY = origin.getY() + y;
-                        double displayZ = origin.getZ();
-                        result.add(StationVisualFurnitureBehavior.Visual.of(
-                                BukkitAdaptor.adapt(renderItem),
-                                displayX, displayY, displayZ,
-                                0, 0, 1, new Quaternionf(),
-                                StationVisualFurnitureBehavior.ITEM_TRANSFORM_NONE));
-                    });
-        }
-        return result;
-    }
-
-    /** The source renderer's facing=NORTH tilt pose for one local point. */
-    private static double[] tiltNorth(double x, double y, double z) {
-        double translatedY = y - 0.25;
-        double translatedZ = z + 0.25;
-        double radians = Math.toRadians(TILT_X_DEGREES);
-        double cos = Math.cos(radians);
-        double sin = Math.sin(radians);
-        return new double[]{
-                x,
-                cos * translatedY - sin * translatedZ,
-                sin * translatedY + cos * translatedZ,
-        };
-    }
-
-    /** Matches the entity_renderer rotation the block config bakes per facing. */
-    private static float facingYaw(Direction facing) {
-        return switch (facing) {
-            case NORTH -> 180;
-            case EAST -> 90;
-            case SOUTH -> 0;
-            case WEST -> 270;
-            default -> 0;
-        };
     }
 
     private static String path(String resourceId) {
@@ -1552,15 +1184,6 @@ public final class StationService implements Listener {
             }
             ItemStack stack = built.get();
             stack.setAmount(Math.min(count, stack.getMaxStackSize()));
-            items.give(player, stack);
-            remaining -= stack.getAmount();
-        }
-    }
-
-    private void giveStored(Player player, ItemStack template, int amount) {
-        for (int remaining = amount; remaining > 0; ) {
-            ItemStack stack = template.clone();
-            stack.setAmount(Math.min(remaining, stack.getMaxStackSize()));
             items.give(player, stack);
             remaining -= stack.getAmount();
         }

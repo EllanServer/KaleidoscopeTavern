@@ -1,13 +1,13 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.PressingTubState;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.VirtualEntityIdentity;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.visual.DifferentialItemDisplayElement;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.visual.DisplayVisual;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
-import net.momirealms.craftengine.bukkit.entity.data.DisplayData;
+import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
-import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.BlockDefinition;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -17,11 +17,12 @@ import net.momirealms.craftengine.core.block.behavior.EntityBlock;
 import net.momirealms.craftengine.core.block.behavior.PrioritizedFallOnHandler;
 import net.momirealms.craftengine.core.block.entity.BlockEntity;
 import net.momirealms.craftengine.core.block.entity.BlockEntityController;
+import net.momirealms.craftengine.core.block.entity.render.BlockEntityRenderer;
 import net.momirealms.craftengine.core.block.entity.render.element.BlockEntityElement;
 import net.momirealms.craftengine.core.block.property.Property;
-import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
 import net.momirealms.craftengine.core.entity.player.Player;
+import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
@@ -32,26 +33,20 @@ import net.momirealms.craftengine.core.world.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.world.context.UseOnContext;
 import net.momirealms.craftengine.libraries.nbt.ByteArrayTag;
 import net.momirealms.craftengine.libraries.nbt.CompoundTag;
-import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.ClientboundAddEntityPacketProxy;
-import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacketProxy;
-import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.ClientboundSetEntityDataPacketProxy;
 import net.momirealms.craftengine.proxy.minecraft.server.level.ServerPlayerProxy;
-import net.momirealms.craftengine.proxy.minecraft.world.entity.EntityTypesProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.entity.LivingEntityProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
-import net.momirealms.craftengine.proxy.minecraft.world.phys.Vec3Proxy;
 import org.bukkit.GameMode;
+import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
-import org.joml.Vector3f;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 /**
  * CE server-side custom block for the pressing tub.
@@ -64,12 +59,21 @@ import java.util.function.Consumer;
  * reverse spatial index are gone entirely.</p>
  *
  * <p>State (ingredient pile, pressed fluid) lives in the CE block entity and
- * drives a packet-only item-pile/fluid-plane visual, mirroring the former
- * station visuals without any Bukkit furniture/PDC lookup.</p>
+ * drives a packet-only item-pile/fluid-plane visual ({@link DifferentialItemDisplayElement})
+ * that only renders the exact content difference, mirroring the former
+ * station visuals without any Bukkit furniture/PDC lookup. CE owns the element
+ * lifecycle; the controller only invalidates the content and asks the CE
+ * renderer to push updates to its tracked players.</p>
  */
 public final class PressingTubBlockBehavior extends BukkitBlockBehavior
         implements EntityBlock, PrioritizedFallOnHandler {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "pressing_tub_block");
+
+    /** The CE block definition id the migration behavior targets. */
+    public static final Key BLOCK_ID = Key.of("kaleidoscope_tavern", "pressing_tub");
+    /** 原料视觉 + 液体视觉最多占用的动态实体槽位数（与源渲染器一致）。 */
+    private static final int MAX_ELEMENTS = 17;
+    private static final float VIEW_RANGE = 1.25F;
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static volatile Handler handler;
 
@@ -141,7 +145,7 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
         if (controller != null
                 && LivingEntityProxy.CLASS.isInstance(args[3])
                 && current != null
-                && current.press(controller,
+                && current.press(controller, args[3],
                 ((Number) args[4]).doubleValue())) {
             // The press consumed the landing: skip the default fall damage.
             return;
@@ -150,19 +154,8 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
     }
 
     @Override
-    public void updateEntityMovementAfterFallOn(Object thisBlock, Object[] args) {
-        // Keep the vanilla vertical-momentum reset that follows a landing,
-        // pressed or not.
-        super.updateEntityMovementAfterFallOn(thisBlock, args);
-    }
-
-    @Override
     public InteractionResult useOnBlock(UseOnContext context, ImmutableBlockState state) {
-        if (context.getHand() != InteractionHand.MAIN_HAND) {
-            return InteractionResult.PASS;
-        }
-        Player cePlayer = context.getPlayer();
-        if (cePlayer == null) {
+        if (context.getPlayer() == null) {
             return InteractionResult.PASS;
         }
         Controller controller = controller(context.getLevel().storageWorld(),
@@ -174,7 +167,26 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
         if (current == null) {
             return InteractionResult.FAIL;
         }
-        return current.interact(controller, cePlayer, context.getHand());
+        // Both main and off hand are allowed; CE resolves the held item from
+        // the hand context, so the business layer never re-reads the Bukkit
+        // inventory. While sneaking with an item CE skips useOnBlock entirely
+        // (vanilla "place beside the interactable" semantics), so no Paper
+        // sneak patch is needed here.
+        return current.interact(controller, context);
+    }
+
+    @Override
+    public boolean hasAnalogOutputSignal(Object thisBlock, Object[] args) {
+        // args: BlockState, Level, BlockPos
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(Object thisBlock, Object[] args) {
+        // args: BlockState, Level, BlockPos
+        Controller controller = controller(args[1], args[2]);
+        return controller == null ? 0
+                : PressingTubState.comparatorSignal(controller.fluidAmount());
     }
 
     @Override
@@ -221,51 +233,97 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
         return blockEntity == null ? null : blockEntity.controller.get(Controller.class, 0);
     }
 
+    /**
+     * Public lookup used by the legacy-furniture migration to reach the
+     * controller of a freshly placed or already-existing pressing tub.
+     */
+    public static Controller findController(CEWorld world, BlockPos pos) {
+        return controller(world, pos);
+    }
+
     /** Gameplay bridge implemented by StationService. */
     public interface Handler {
-        InteractionResult interact(Controller controller, Player cePlayer, InteractionHand hand);
+        /**
+         * Handles a right-click on the tub. The full CE use-on context is
+         * passed through so the business layer reads the held item, player,
+         * hand, sneak state and click position from one consistent source.
+         */
+        InteractionResult interact(Controller controller, UseOnContext context);
 
-        /** 返回是否成功压榨（成功则跳过默认摔落伤害）。 */
-        boolean press(Controller controller, double fallDistance);
+        /**
+         * 返回是否成功压榨（成功则跳过默认摔落伤害）。
+         *
+         * @param nmsEntity the NMS entity that landed on the tub; the business
+         *                  layer converts it once for its permission rule
+         */
+        boolean press(Controller controller, Object nmsEntity, double fallDistance);
 
-        List<StationVisualFurnitureBehavior.Visual> visuals(Controller controller, int limit);
+        /** Builds at most {@code limit} visuals (including the fluid slot). */
+        List<DisplayVisual> visuals(Controller controller, int limit);
     }
 
     public static final class Controller extends BlockEntityController {
         private static final String DATA_KEY = "kaleidoscope_tavern:press";
+        private static final int DATA_VERSION = 1;
 
         private final PressingTubBlockBehavior behavior;
-        private final PressingTubVisualElement element;
-        private ItemStack pressItem;
-        private int pressCount;
-        private String pressFluid;
-        private int pressAmount;
+        private final DifferentialItemDisplayElement element;
+        private Item ingredient;
+        private Key fluid;
+        private int fluidAmount;
         private boolean dropContents = true;
 
         private Controller(BlockEntity blockEntity, PressingTubBlockBehavior behavior) {
             super(blockEntity);
             this.behavior = behavior;
-            this.element = new PressingTubVisualElement(this);
+            this.element = new DifferentialItemDisplayElement(
+                    limit -> {
+                        Handler current = handler;
+                        return current == null ? List.of()
+                                : current.visuals(this, limit);
+                    }, MAX_ELEMENTS, VIEW_RANGE);
         }
 
         public Key id() {
             return behavior.blockDefinition.id();
         }
 
-        public ItemStack pressItem() {
-            return pressItem;
+        public Item ingredient() {
+            return ingredient;
         }
 
-        public int pressCount() {
-            return pressCount;
+        public Key fluid() {
+            return fluid;
         }
 
-        public String pressFluid() {
-            return pressFluid;
+        public int fluidAmount() {
+            return fluidAmount;
         }
 
-        public int pressAmount() {
-            return pressAmount;
+        public PressingTubState snapshot() {
+            return new PressingTubState(
+                    ingredient == null ? null : ingredient.copy(), fluid, fluidAmount);
+        }
+
+        /**
+         * Applies a state mutation and notifies CE (dirty marker) plus the
+         * block-entity renderer's tracked players when something changed.
+         *
+         * @param mutation maps the current snapshot to the desired next state
+         * @return whether the stored state actually changed
+         */
+        public boolean updateState(UnaryOperator<PressingTubState> mutation) {
+            PressingTubState next = mutation.apply(snapshot());
+            if (next.ingredient() == ingredient && next.fluid() == fluid
+                    && next.fluidAmount() == fluidAmount) {
+                return false;
+            }
+            ingredient = next.ingredient();
+            fluid = next.fluid();
+            fluidAmount = next.fluidAmount();
+            markChanged();
+            updateTrackedPlayers();
+            return true;
         }
 
         /** 墙面（tilt=true）压榨桶不能压榨、交互取放。 */
@@ -299,30 +357,6 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
             return new Location(world(), pos.x() + 0.5, pos.y(), pos.z() + 0.5);
         }
 
-        public void setPressState(ItemStack item, int count, String fluid, int amount) {
-            boolean changed = false;
-            if (!Objects.equals(pressItem, item)) {
-                pressItem = item;
-                changed = true;
-            }
-            if (pressCount != count) {
-                pressCount = count;
-                changed = true;
-            }
-            if (!Objects.equals(pressFluid, fluid)) {
-                pressFluid = fluid;
-                changed = true;
-            }
-            if (pressAmount != amount) {
-                pressAmount = amount;
-                changed = true;
-            }
-            if (changed) {
-                markChanged();
-                updateTrackedPlayers();
-            }
-        }
-
         @Override
         public boolean hasElement() {
             return true;
@@ -330,51 +364,66 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
 
         @Override
         public void gatherElements(Consumer<BlockEntityElement> consumer) {
-            consumer.accept(element);
+            consumer.accept(new PressingTubVisualElement(this));
         }
 
         @Override
         public void loadCustomData(CompoundTag tag) {
-            pressItem = null;
-            pressCount = 0;
-            pressFluid = null;
-            pressAmount = 0;
+            // Deserialization runs before the block entity is attached to a
+            // world, so this method must stay free of world/chunk access and
+            // visual refresh; the CE renderer lifecycle shows the element once
+            // the entity becomes visible to a tracked player.
+            ingredient = null;
+            fluid = null;
+            fluidAmount = 0;
             CompoundTag data = tag.getCompound(DATA_KEY);
             if (data == null) {
-                element.invalidate();
                 return;
             }
-            byte[] encodedItem = data.getByteArray("press_item");
-            if (encodedItem != null) {
-                try {
-                    pressItem = ItemStack.deserializeBytes(encodedItem);
-                    if (pressItem.isEmpty()) {
-                        pressItem = null;
+            if (data.getInt("version", 1) >= 1) {
+                byte[] encodedItem = data.getByteArray("ingredient");
+                if (encodedItem != null) {
+                    try {
+                        Item item = Item.fromBytes(encodedItem);
+                        if (!item.isEmpty()) {
+                            ingredient = item;
+                        }
+                    } catch (RuntimeException ignored) {
+                        ingredient = null;
                     }
-                } catch (RuntimeException ignored) {
-                    pressItem = null;
                 }
+                String fluidId = data.getString("fluid", null);
+                if (fluidId != null && !fluidId.isEmpty()) {
+                    try {
+                        fluid = Key.of(fluidId);
+                    } catch (RuntimeException ignored) {
+                        fluid = null;
+                    }
+                }
+                fluidAmount = data.getInt("amount", 0);
             }
-            pressCount = data.getInt("press_count", 0);
-            pressFluid = data.getString("press_fluid", null);
-            pressAmount = data.getInt("press_amount", 0);
-            element.invalidate();
+            // Normalize corrupt saves once at load time so a damaged archive
+            // can never loop-spawn items on break.
+            PressingTubState normalized = new PressingTubState(ingredient, fluid, fluidAmount);
+            ingredient = normalized.ingredient();
+            fluid = normalized.fluid();
+            fluidAmount = normalized.fluidAmount();
         }
 
         @Override
         public void saveCustomData(CompoundTag tag) {
-            if (pressItem == null && pressCount == 0 && pressFluid == null && pressAmount == 0) {
+            if (ingredient == null && fluid == null && fluidAmount == 0) {
                 return;
             }
             CompoundTag data = new CompoundTag();
-            if (pressItem != null) {
-                data.put("press_item", new ByteArrayTag(pressItem.serializeAsBytes()));
+            data.putInt("version", DATA_VERSION);
+            if (ingredient != null) {
+                data.put("ingredient", new ByteArrayTag(ingredient.toBytes()));
             }
-            data.putInt("press_count", pressCount);
-            if (pressFluid != null && !pressFluid.isEmpty()) {
-                data.putString("press_fluid", pressFluid);
+            if (fluid != null) {
+                data.putString("fluid", fluid.toString());
             }
-            data.putInt("press_amount", pressAmount);
+            data.putInt("amount", fluidAmount);
             tag.put(DATA_KEY, data);
         }
 
@@ -387,119 +436,86 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
         @Override
         public void onRemove() {
             // PressingTubBlock#getDrops restores only the ingredient pile;
-            // finished tank fluid is deliberately lost on break.
-            if (dropContents && pressItem != null && pressCount > 0) {
-                Location origin = location();
-                for (int remaining = pressCount; remaining > 0; ) {
-                    ItemStack stack = pressItem.clone();
-                    stack.setAmount(Math.min(remaining, stack.getMaxStackSize()));
-                    origin.getWorld().dropItemNaturally(origin, stack);
-                    remaining -= stack.getAmount();
+            // finished tank fluid is deliberately lost on break. This is the
+            // sanctioned thin fallback until the CE loot pipeline replaces it:
+            // the block's own drop is owned by CE's block loot, and content
+            // drops are suppressed for creative breaks, explosions and when
+            // DO_TILE_DROPS is off, so a damaged save can never loop-spawn
+            // items on break.
+            if (dropContents && ingredient != null && blockEntity.world != null) {
+                World bukkitWorld = (World) blockEntity.world.world().platformWorld();
+                if (bukkitWorld != null
+                        && !Boolean.FALSE.equals(
+                        bukkitWorld.getGameRuleValue(GameRule.DO_TILE_DROPS))
+                        && ingredient instanceof BukkitItem bukkitItem) {
+                    Location origin = location();
+                    int remaining = ingredient.count();
+                    while (remaining > 0) {
+                        int amount = Math.min(remaining, ingredient.maxStackSize());
+                        ItemStack stack = bukkitItem.getBukkitItem().clone();
+                        stack.setAmount(amount);
+                        origin.getWorld().dropItemNaturally(origin, stack);
+                        remaining -= amount;
+                    }
                 }
             }
-            pressItem = null;
-            pressCount = 0;
-            pressFluid = null;
-            pressAmount = 0;
+            ingredient = null;
+            fluid = null;
+            fluidAmount = 0;
             dropContents = true;
-            element.invalidate();
+            // Element hide/removal is owned by the CE block-entity renderer
+            // lifecycle; do not touch tracked players here.
         }
 
         private void suppressContentDrops() {
             dropContents = false;
         }
 
+        /**
+         * 状态变化后让 CE renderer 把差量推给该区块的追踪玩家。元素隐藏/卸载
+         * 完全由 CE BlockEntityRenderer 生命周期负责，这里不直接调用私有元素，
+         * 也不自行维护全局玩家集合。
+         */
         private void updateTrackedPlayers() {
+            if (blockEntity.world == null || !blockEntity.isValid()) {
+                return;
+            }
             CEChunk chunk = blockEntity.world.getChunkAtIfLoaded(blockEntity.pos);
             if (chunk == null) {
                 return;
             }
+            element.invalidate();
+            BlockEntityRenderer renderer = blockEntity.renderer();
             for (Player tracked : chunk.getTrackedBy()) {
-                element.update(tracked);
+                renderer.update(tracked);
             }
-        }
-
-        private List<Player> trackedPlayers() {
-            CEChunk chunk = blockEntity.world.getChunkAtIfLoaded(blockEntity.pos);
-            return chunk == null ? List.of() : new ArrayList<>(chunk.getTrackedBy());
         }
     }
 
+    /**
+     * 极薄的 BlockEntityElement 适配：内容差量、ID 延迟分配、跨玩家共享 packet
+     * 全部由 {@link DifferentialItemDisplayElement} 承担。
+     */
     private static final class PressingTubVisualElement implements BlockEntityElement {
-        private static final int MAX_ELEMENTS = 17;
-
         private final Controller controller;
-        private final int[] entityIds;
-        private final UUID[] entityUuids;
-        private final Object removePacket;
 
         private PressingTubVisualElement(Controller controller) {
             this.controller = controller;
-            this.entityIds = new int[MAX_ELEMENTS];
-            this.entityUuids = new UUID[MAX_ELEMENTS];
-            for (int index = 0; index < MAX_ELEMENTS; index++) {
-                entityIds[index] = EntityUtils.ENTITY_COUNTER.incrementAndGet();
-                entityUuids[index] = VirtualEntityIdentity.fromEntityId(entityIds[index]);
-            }
-            this.removePacket = ClientboundRemoveEntitiesPacketProxy.INSTANCE.newInstance(
-                    new IntArrayList(entityIds));
         }
 
         @Override
         public void show(Player player) {
-            sendVisuals(player, false);
+            controller.element.show(player);
         }
 
         @Override
         public void hide(Player player) {
-            player.sendPacket(removePacket, false);
+            controller.element.hide(player);
         }
 
         @Override
         public void update(Player player) {
-            sendVisuals(player, true);
-        }
-
-        private void sendVisuals(Player player, boolean replace) {
-            Handler current = handler;
-            if (current == null) {
-                return;
-            }
-            List<StationVisualFurnitureBehavior.Visual> visuals =
-                    current.visuals(controller, MAX_ELEMENTS);
-            List<Object> packets = new ArrayList<>(visuals.size() * 2 + (replace ? 1 : 0));
-            if (replace) {
-                packets.add(removePacket);
-            }
-            for (int index = 0; index < visuals.size(); index++) {
-                StationVisualFurnitureBehavior.Visual visual = visuals.get(index);
-                packets.add(ClientboundAddEntityPacketProxy.INSTANCE.newInstance(
-                        entityIds[index], entityUuids[index],
-                        visual.x(), visual.y(), visual.z(),
-                        visual.xRot(), visual.yRot(),
-                        EntityTypesProxy.ITEM_DISPLAY, 0, Vec3Proxy.ZERO, 0));
-                List<Object> metadata = new ArrayList<>(3);
-                DisplayData.ItemDisplayData.ItemStack.addEntityData(
-                        visual.item().minecraftItem(), metadata);
-                DisplayData.Scale.addEntityDataIfNotDefaultValue(
-                        new Vector3f(visual.scale()), metadata);
-                DisplayData.LeftRotation.addEntityData(visual.leftRotation(), metadata);
-                DisplayData.ItemDisplayData.ItemTransform.addEntityData(
-                        visual.itemTransform(), metadata);
-                DisplayData.ViewRange.addEntityDataIfNotDefaultValue(
-                        (float) (1.25F * player.displayEntityViewDistance()), metadata);
-                packets.add(ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
-                        entityIds[index], metadata));
-            }
-            if (!packets.isEmpty()) {
-                player.sendPackets(packets, false);
-            }
-        }
-
-        private void invalidate() {
-            for (Player tracked : controller.trackedPlayers()) {
-                sendVisuals(tracked, true);
-            }
+            controller.element.update(player);
         }
     }
 }

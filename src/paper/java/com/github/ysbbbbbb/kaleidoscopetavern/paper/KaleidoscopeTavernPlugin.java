@@ -15,6 +15,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BottleFurnitureService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.DisplayStorageService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.FurnitureConnectionService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.MolotovService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.PressingTubService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.ShakerVisualService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.StationService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.TapService;
@@ -33,6 +34,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.AnimatedItemF
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BoardTextFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BottleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LegacyPressingTubMigrationFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StateFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
@@ -52,6 +54,9 @@ import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.CraftEngineItems;
 import net.momirealms.craftengine.bukkit.api.event.CraftEngineReloadEvent;
+import net.momirealms.craftengine.core.block.BlockDefinition;
+import net.momirealms.craftengine.core.block.ImmutableBlockState;
+import net.momirealms.craftengine.core.block.setting.PushReaction;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -62,6 +67,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -78,7 +84,12 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     private static final String NAMESPACE = "kaleidoscope_tavern";
     private static final int EXPECTED_ITEMS = 660; // 157 public items + 503 private render helpers
     private static final int EXPECTED_BLOCKS = 39;
-    private static final int EXPECTED_FURNITURE = 135;
+    private static final int EXPECTED_FURNITURE = 136; // includes the migration-only legacy pressing tub
+    // 已验证的 CraftEngine minor 版本。低于 26.7 直接拒绝启动（使用了
+    // PrioritizedFallOnHandler / BlockEntityElement Experimental / NMS proxy 等
+    // 非稳定 API），高于已验证 minor 仅警告。
+    private static final int MIN_CE_MAJOR = 26;
+    private static final int MIN_CE_MINOR = 7;
 
     private PackInstaller.Result packResult;
     private CustomCropsInstaller.Result customCropsResult;
@@ -86,6 +97,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     private ContentCatalog catalog;
     private ItemService items;
     private StationService stations;
+    private PressingTubService pressingTubs;
     private EffectService effects;
     private BoardTextService boards;
     private TapService taps;
@@ -111,6 +123,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             PressingTubBlockBehavior.register();
             TapBlockBehavior.register();
             StateFurnitureBehavior.register();
+            LegacyPressingTubMigrationFurnitureBehavior.register();
             AnimatedItemFurnitureBehavior.register();
             BoardTextFurnitureBehavior.register();
             BottleFurnitureBehavior.register();
@@ -142,6 +155,11 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+        // fail-fast：低于已验证的 CraftEngine 版本拒绝启动。
+        verifyCraftEngineVersion();
+        if (!isEnabled()) {
+            return;
+        }
         try {
             CustomCropsBridge.requireReady();
         } catch (RuntimeException | LinkageError exception) {
@@ -162,6 +180,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         Messages messages = new Messages(this);
         shakerVisuals = new ShakerVisualService(this, catalog, items);
         stations = new StationService(this, catalog, items, messages, shakerVisuals);
+        pressingTubs = new PressingTubService(this, catalog, items);
         effects = new EffectService(this, catalog, items);
         boards = new BoardTextService(this);
         taps = new TapService(this, stations, items);
@@ -181,8 +200,10 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         getServer().getPluginManager().registerEvents(stations, this);
         getServer().getPluginManager().registerEvents(effects, this);
         TickingFurnitureBehavior.start(this);
+        LegacyPressingTubMigrationFurnitureBehavior.bind(this);
         blocks.start();
         stations.start();
+        pressingTubs.start();
         effects.start();
         bottleFurniture.start();
         boards.start();
@@ -227,6 +248,9 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (stations != null) {
             stations.stop();
         }
+        if (pressingTubs != null) {
+            pressingTubs.stop();
+        }
         if (effects != null) {
             effects.stop();
         }
@@ -267,7 +291,90 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (trellisShapes == 0) {
             getLogger().warning("No trellis carrier shapes were available after CraftEngine loading");
         }
+        // 不只校验 trellis shape：每次 reload 都验证压榨桶方块定义完整可用。
+        boolean tubValid = verifyPressingTubDefinition();
         verifyContent(startup);
+        if (!tubValid && startup) {
+            getLogger().severe("压榨桶 CE Block 定义校验失败，插件已停用。");
+            getServer().getPluginManager().disablePlugin(this);
+        }
+    }
+
+    /** 启动时 fail-fast：拒绝低于已验证的 CraftEngine minor 版本。 */
+    private void verifyCraftEngineVersion() {
+        Plugin craftEngine = getServer().getPluginManager().getPlugin("CraftEngine");
+        if (craftEngine == null) {
+            getLogger().severe("未找到 CraftEngine 插件（depend 声明），插件无法启动。");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        int[] parts = parseVersion(craftEngine.getPluginMeta().getVersion());
+        if (parts.length < 2) {
+            getLogger().warning("无法解析 CraftEngine 版本 "
+                    + craftEngine.getPluginMeta().getVersion() + "，跳过版本校验。");
+            return;
+        }
+        if (parts[0] < MIN_CE_MAJOR
+                || (parts[0] == MIN_CE_MAJOR && parts[1] < MIN_CE_MINOR)) {
+            getLogger().severe("CraftEngine " + craftEngine.getPluginMeta().getVersion()
+                    + " 低于已验证的 " + MIN_CE_MAJOR + "." + MIN_CE_MINOR
+                    + "（压榨桶使用 PrioritizedFallOnHandler / BlockEntityElement "
+                    + "Experimental / NMS proxy 等非稳定 API），拒绝启动。");
+            getServer().getPluginManager().disablePlugin(this);
+        } else if (parts[1] > MIN_CE_MINOR) {
+            getLogger().warning("CraftEngine " + craftEngine.getPluginMeta().getVersion()
+                    + " 高于已验证的 " + MIN_CE_MAJOR + "." + MIN_CE_MINOR
+                    + "，压榨桶 BlockEntityElement 属于 Experimental API，"
+                    + "建议实测后再正式启用。");
+        }
+    }
+
+    private static int[] parseVersion(String version) {
+        String[] segments = version.split("\\.");
+        int[] parts = new int[segments.length];
+        for (int index = 0; index < segments.length; index++) {
+            try {
+                parts[index] = Integer.parseInt(segments[index].replaceAll("[^0-9].*$", ""));
+            } catch (NumberFormatException exception) {
+                return new int[]{};
+            }
+        }
+        return parts;
+    }
+
+    /**
+     * 校验压榨桶 CE Block 在 reload 后仍然完整：定义存在、行为已绑定、
+     * 三个状态属性可解析、block_item 指向正确方块、活塞 push_reaction 为 BLOCK。
+     */
+    private boolean verifyPressingTubDefinition() {
+        BlockDefinition definition = CraftEngineBlocks.byId(PressingTubBlockBehavior.BLOCK_ID);
+        if (definition == null) {
+            getLogger().severe("CraftEngine 未加载压榨桶方块定义 "
+                    + PressingTubBlockBehavior.BLOCK_ID);
+            return false;
+        }
+        ImmutableBlockState defaults = definition.defaultState();
+        if (defaults.behavior().getFirst(PressingTubBlockBehavior.class) == null) {
+            getLogger().severe("压榨桶方块未绑定 kaleidoscope_tavern:pressing_tub_block 行为");
+            return false;
+        }
+        for (String property : new String[]{"facing", "tilt", "waterlogged"}) {
+            if (!definition.hasProperty(property)) {
+                getLogger().severe("压榨桶方块缺少状态属性 " + property);
+                return false;
+            }
+        }
+        if (!Key.of(NAMESPACE + ":pressing_tub").equals(defaults.settings().itemId())) {
+            getLogger().severe("压榨桶 block_item 指向错误："
+                    + defaults.settings().itemId());
+            return false;
+        }
+        if (defaults.settings().pushReaction() != PushReaction.BLOCK) {
+            getLogger().severe("压榨桶 push_reaction 应为 BLOCK，当前为 "
+                    + defaults.settings().pushReaction());
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -296,6 +403,10 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             if (stations != null) {
                 stations.stop();
                 stations.start();
+            }
+            if (pressingTubs != null) {
+                pressingTubs.stop();
+                pressingTubs.start();
             }
             if (effects != null) {
                 effects.stop();
@@ -527,6 +638,15 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
                 + "，酒桶 " + catalog.barrelRecipes().size()
                 + "，摇壶 " + catalog.shakerRecipes().size()
                 + "，饮用效果 " + catalog.effectEntryCount()));
+        LegacyPressingTubMigrationFurnitureBehavior.MigrationStats migration =
+                LegacyPressingTubMigrationFurnitureBehavior.stats();
+        if (migration.loaded() > 0 || migration.migrated() > 0
+                || migration.conflicts() > 0 || migration.failures() > 0) {
+            sender.sendMessage(Component.text("旧压榨桶迁移：已加载 " + migration.loaded()
+                    + "，成功迁移 " + migration.migrated()
+                    + "，冲突 " + migration.conflicts()
+                    + "，失败 " + migration.failures()));
+        }
         if (packResult != null) {
             sender.sendMessage(Component.text("内容包目录：" + packResult.target()));
         }

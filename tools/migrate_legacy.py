@@ -935,7 +935,10 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
     settings: dict[str, Any] = {
         "hardness": hardness,
         "resistance": hardness,
-        "push_reaction": "NORMAL" if sturdy or block_id == "tap" else "DESTROY",
+        # 状态型 BlockEntity 方块（压榨桶）不能被活塞推动：Minecraft/CE 直接
+        # 阻止活塞移动，不自行为 BlockEntity 实现搬运。
+        "push_reaction": ("BLOCK" if block_id == "pressing_tub"
+                          else "NORMAL" if sturdy or block_id == "tap" else "DESTROY"),
         "is_redstone_conductor": False,
         "is_suffocating": False,
         "is_view_blocking": False,
@@ -1231,6 +1234,45 @@ def build_pressing_tub_block(
             "pressing_tub", {"facing", "tilt", "waterlogged"}),
     }
     return config, render_items, len(appearances)
+
+
+def build_legacy_pressing_tub_furniture(
+    render_items: dict[str, Any],
+) -> tuple[dict[str, Any], int]:
+    """Keep the pre-migration furniture definition for online world migration.
+
+    The pressing tub became a CE server-side custom block, so this furniture
+    entry exists only so already-placed furniture from old saves can still
+    load. No item maps to it (the tub item is a ``block_item``), it carries no
+    loot (the block owns the drops) and it is not registered for placement.
+    Its two behaviors are state storage plus the lazy migration that converts
+    it to the block and copies the old ``press_*`` state into the block
+    entity.
+    """
+    ground_model = (f"{NAMESPACE}:block/brew/pressing_tub", 0, 0, 0, False)
+    tilted_model = (f"{NAMESPACE}:block/brew/tilt_pressing_tub", 0, 0, 0, False)
+    config: dict[str, Any] = {
+        "settings": furniture_settings("pressing_tub"),
+        "variants": {
+            "ground": {
+                "elements": [furniture_element(
+                    render_items, "pressing_tub", "legacy_ground",
+                    ground_model, "ground")],
+                "hitboxes": furniture_hitboxes("pressing_tub", "ground"),
+            },
+            "wall": {
+                "elements": [furniture_element(
+                    render_items, "pressing_tub", "legacy_wall",
+                    tilted_model, "wall")],
+                "hitboxes": furniture_hitboxes("pressing_tub", "wall"),
+            },
+        },
+        "behaviors": [
+            {"type": f"{NAMESPACE}:state_furniture"},
+            {"type": f"{NAMESPACE}:legacy_pressing_tub_migration"},
+        ],
+    }
+    return config, 2
 
 
 def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, Any], dict[str, Any], dict[str, int]]:
@@ -3456,6 +3498,13 @@ def build_furniture(
                 block_id.removeprefix("string_lights_"))
         furniture[full_id] = config
         metrics["furniture_variants"] += len(variants)
+
+    # The pressing tub is a CE block now, but old worlds can still contain it
+    # as furniture. Keep a migration-only furniture definition so those saves
+    # load and convert online instead of vanishing.
+    legacy_config, legacy_variant_count = build_legacy_pressing_tub_furniture(render_items)
+    furniture[f"{NAMESPACE}:pressing_tub"] = legacy_config
+    metrics["furniture_variants"] += legacy_variant_count
 
     return furniture, render_items, placement, metrics
 

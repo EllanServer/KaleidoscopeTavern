@@ -7226,7 +7226,7 @@
       "settings": {
         "hardness": 0.8,
         "resistance": 0.8,
-        "push_reaction": "NORMAL",
+        "push_reaction": "BLOCK",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
