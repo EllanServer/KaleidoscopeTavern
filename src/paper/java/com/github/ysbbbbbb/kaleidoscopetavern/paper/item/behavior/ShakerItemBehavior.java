@@ -46,7 +46,7 @@ public final class ShakerItemBehavior extends ItemBehavior {
         // a non-interactable block must enter the same portable mixing path as
         // right-clicking air. Without this override, CompositeItemBehavior sees
         // PASS here and the furniture behavior consumes every block click.
-        if (context.isSecondaryUseActive()) {
+        if (!shouldUsePortableOnBlock(context.isSecondaryUseActive())) {
             return InteractionResult.PASS;
         }
         return dispatch(context.getPlayer(), context.getHand());
@@ -55,6 +55,10 @@ public final class ShakerItemBehavior extends ItemBehavior {
     @Override
     public InteractionResult use(World world, Player player, InteractionHand hand) {
         return dispatch(player, hand);
+    }
+
+    static boolean shouldUsePortableOnBlock(boolean secondaryUseActive) {
+        return !secondaryUseActive;
     }
 
     private static InteractionResult dispatch(Player player, InteractionHand hand) {
