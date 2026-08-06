@@ -3315,6 +3315,21 @@ def furniture_behaviors(block_id: str, variants: list[str]) -> list[dict[str, An
     return behaviors
 
 
+TABLE_FACING_YAW_OFFSETS = {
+    # CE ground furniture yaw: SOUTH=0, WEST=90, NORTH=180, EAST=270.
+    # Item-display yaw is added to the furniture yaw, so these values cancel
+    # placement rotation and restore TableBlock's world-aligned block models.
+    "south": 0,
+    "west": -90,
+    "north": 180,
+    "east": 90,
+}
+
+
+def table_furniture_variant_name(base: str, facing: str) -> str:
+    return base if facing == "south" else f"{base}_facing_{facing}"
+
+
 def furniture_rules(block_id: str, variant_names: list[str]) -> dict[str, Any]:
     anchors = [name for name in ("ground", "wall", "ceiling") if name in variant_names]
     rules: dict[str, Any] = {}
@@ -3418,10 +3433,14 @@ def build_furniture(
                 "hitboxes": furniture_hitboxes(block_id, "ceiling"),
             }
         elif block_id == "table":
-            # TableBlock can acquire either horizontal AXIS after placement;
-            # its axis is not permanently tied to the player's initial yaw.
-            # Keep both authored model axes so FurnitureConnectionService can
-            # reproduce that state transition when neighbours change.
+            # TableBlock's AXIS/POSITION models are world-aligned and have no
+            # facing property. CE ground furniture adds player-facing yaw, so a
+            # pair placed while the players look at one another rotates the two
+            # endpoint textures in opposite directions and makes them meet
+            # back-to-back. Keep one CE variant per cardinal furniture facing;
+            # the element yaw cancels placement yaw while the hitbox remains the
+            # same symmetric top slab. All facing copies share the same render
+            # item, so this adds no private appearance items.
             for axis in ("x", "z"):
                 for position in range(4):
                     if axis == "z" and position == 0:
@@ -3429,11 +3448,21 @@ def build_furniture(
                     selected = select_record(records, {
                         "axis": axis, "position": str(position), "waterlogged": "false",
                     })[1]
-                    name = "ground" if position == 0 else f"ground_axis_{axis}_position_{position}"
-                    variants[name] = {
-                        "elements": [furniture_element(render_items, block_id, name, selected, "ground")],
-                        "hitboxes": furniture_hitboxes(block_id, "ground", {"position": str(position)}),
-                    }
+                    base_name = ("ground" if position == 0
+                                 else f"ground_axis_{axis}_position_{position}")
+                    base_element = furniture_element(
+                        render_items, block_id, base_name, selected, "ground")
+                    hitboxes = furniture_hitboxes(
+                        block_id, "ground", {"position": str(position)})
+                    for facing, yaw in TABLE_FACING_YAW_OFFSETS.items():
+                        element = dict(base_element)
+                        if yaw:
+                            element["yaw"] = yaw
+                        name = table_furniture_variant_name(base_name, facing)
+                        variants[name] = {
+                            "elements": [element],
+                            "hitboxes": hitboxes,
+                        }
         elif block_id == "barrel":
             closed_model = (f"{NAMESPACE}:furniture/barrel_closed", 0, 0, 0, False)
             body_model = (f"{NAMESPACE}:furniture/barrel_body", 0, 0, 0, False)

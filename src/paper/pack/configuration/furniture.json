@@ -8723,6 +8723,609 @@
             }
           ]
         },
+        "ground_facing_west": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/34675ebc5b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": -90
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_facing_north": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/34675ebc5b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 180
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_facing_east": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/34675ebc5b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 90
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
         "ground_axis_x_position_1": {
           "elements": [
             {
@@ -8732,6 +9335,609 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "translation": "0,0.5,0"
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_x_position_1_facing_west": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/811887aa8b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": -90
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_x_position_1_facing_north": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/811887aa8b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 180
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_x_position_1_facing_east": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/811887aa8b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 90
             }
           ],
           "hitboxes": [
@@ -9123,6 +10329,609 @@
             }
           ]
         },
+        "ground_axis_x_position_2_facing_west": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/af86474a16",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": -90
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_x_position_2_facing_north": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/af86474a16",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 180
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_x_position_2_facing_east": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/af86474a16",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 90
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
         "ground_axis_x_position_3": {
           "elements": [
             {
@@ -9132,6 +10941,609 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "translation": "0,0.5,0"
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_x_position_3_facing_west": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/0711d6f122",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": -90
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_x_position_3_facing_north": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/0711d6f122",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 180
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_x_position_3_facing_east": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/0711d6f122",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 90
             }
           ],
           "hitboxes": [
@@ -9523,6 +11935,609 @@
             }
           ]
         },
+        "ground_axis_z_position_1_facing_west": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/2f4d4646ae",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": -90
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_z_position_1_facing_north": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/2f4d4646ae",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 180
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_z_position_1_facing_east": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/2f4d4646ae",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 90
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
         "ground_axis_z_position_2": {
           "elements": [
             {
@@ -9723,6 +12738,609 @@
             }
           ]
         },
+        "ground_axis_z_position_2_facing_west": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/3074b35dfb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": -90
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_z_position_2_facing_north": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/3074b35dfb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 180
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_z_position_2_facing_east": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/3074b35dfb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 90
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
         "ground_axis_z_position_3": {
           "elements": [
             {
@@ -9732,6 +13350,609 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "translation": "0,0.5,0"
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_z_position_3_facing_west": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/3174c95b3a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": -90
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_z_position_3_facing_north": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/3174c95b3a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 180
+            }
+          ],
+          "hitboxes": [
+            {
+              "type": "interaction",
+              "position": "0,0.8125,0",
+              "width": 1.0,
+              "height": 0.1875,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": true,
+              "blocks_building": true
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "-0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.125,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,-0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.125",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            },
+            {
+              "type": "shulker",
+              "position": "0.375,0.75,0.375",
+              "peek": 0,
+              "interaction_entity": false,
+              "can_use_item_on": true,
+              "can_be_hit_by_projectile": true,
+              "interactive": false,
+              "blocks_building": true,
+              "scale": 0.25
+            }
+          ]
+        },
+        "ground_axis_z_position_3_facing_east": {
+          "elements": [
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/3174c95b3a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "yaw": 90
             }
           ],
           "hitboxes": [

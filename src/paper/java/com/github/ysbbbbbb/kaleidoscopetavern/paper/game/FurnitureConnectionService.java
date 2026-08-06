@@ -10,6 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /** Keeps connected sofas, counters, tables and cabinets in their legacy variants. */
@@ -136,60 +137,105 @@ public final class FurnitureConnectionService {
     private static String tableVariant(BukkitFurniture self, Map<GridPosition, BukkitFurniture> byPosition) {
         BlockFace facing = facing(self.location().getYaw());
         GridPosition position = GridPosition.of(self.location());
+
+        // TableBlock stores AXIS in world coordinates. Furniture yaw is only a
+        // placement detail and must not turn LEFT/RIGHT into a local-space
+        // concept: two tables placed while looking at one another would then
+        // select the same endpoint texture and render back-to-back.
+        boolean east = isTableNeighbor(
+                byPosition.get(position.relative(BlockFace.EAST)), HorizontalAxis.X);
+        boolean west = isTableNeighbor(
+                byPosition.get(position.relative(BlockFace.WEST)), HorizontalAxis.X);
+        boolean south = isTableNeighbor(
+                byPosition.get(position.relative(BlockFace.SOUTH)), HorizontalAxis.Z);
+        boolean north = isTableNeighbor(
+                byPosition.get(position.relative(BlockFace.NORTH)), HorizontalAxis.Z);
+
+        HorizontalAxis current = tableWorldAxis(self);
         HorizontalAxis lateralAxis = worldAxis(clockwise(facing));
         HorizontalAxis longitudinalAxis = worldAxis(facing);
-
-        boolean clockwise = isTableNeighbor(
-                byPosition.get(position.relative(clockwise(facing))), lateralAxis);
-        boolean counterClockwise = isTableNeighbor(
-                byPosition.get(position.relative(counterClockwise(facing))), lateralAxis);
-        boolean forward = isTableNeighbor(byPosition.get(position.relative(facing)), longitudinalAxis);
-        boolean backward = isTableNeighbor(
-                byPosition.get(position.relative(opposite(facing))), longitudinalAxis);
-
-        LocalTableAxis current = tableLocalAxis(self);
-        LocalTableAxis selected;
-        if (current == LocalTableAxis.X && (clockwise || counterClockwise)) {
-            selected = LocalTableAxis.X;
-        } else if (current == LocalTableAxis.Z && (forward || backward)) {
-            selected = LocalTableAxis.Z;
-        } else if (clockwise || counterClockwise) {
-            // getStateForPlacement checks the axis lateral to the player first.
-            selected = LocalTableAxis.X;
-        } else if (forward || backward) {
-            selected = LocalTableAxis.Z;
+        HorizontalAxis selected;
+        if (current == HorizontalAxis.X && (east || west)) {
+            selected = HorizontalAxis.X;
+        } else if (current == HorizontalAxis.Z && (south || north)) {
+            selected = HorizontalAxis.Z;
+        } else if (hasTableNeighbor(lateralAxis, east, west, south, north)) {
+            // TableBlock#getStateForPlacement checks the axis lateral to the
+            // player first, but stores the selected axis in world space.
+            selected = lateralAxis;
+        } else if (hasTableNeighbor(longitudinalAxis, east, west, south, north)) {
+            selected = longitudinalAxis;
         } else {
-            return "ground";
+            return tableVariantName(facing, null, 0);
         }
 
-        int sourcePosition;
-        if (selected == LocalTableAxis.X) {
-            sourcePosition = clockwise && counterClockwise ? 2 : clockwise ? 3 : 1;
-        } else {
-            sourcePosition = forward && backward ? 2 : forward ? 1 : 3;
-        }
-        return "ground_axis_" + selected.name().toLowerCase() + "_position_" + sourcePosition;
+        int sourcePosition = selected == HorizontalAxis.X
+                ? tableSourcePosition(east, west)
+                : tableSourcePosition(south, north);
+        return tableVariantName(facing, selected, sourcePosition);
+    }
+
+    private static boolean hasTableNeighbor(HorizontalAxis axis,
+                                            boolean east, boolean west,
+                                            boolean south, boolean north) {
+        return axis == HorizontalAxis.X ? east || west : south || north;
+    }
+
+    /**
+     * Source POSITION values are world-directional: positive X/Z is LEFT (1),
+     * negative X/Z is RIGHT (3). They must not be derived from furniture yaw.
+     */
+    static int tableSourcePosition(boolean positiveNeighbor, boolean negativeNeighbor) {
+        if (positiveNeighbor && negativeNeighbor) return 2;
+        if (positiveNeighbor) return 1;
+        if (negativeNeighbor) return 3;
+        throw new IllegalArgumentException("A connected table requires at least one neighbour");
+    }
+
+    /**
+     * SOUTH is the authored zero-yaw furniture orientation. Other cardinal
+     * facings select CE variants whose element yaw cancels the furniture yaw,
+     * keeping the archived world-aligned tabletop texture continuous.
+     */
+    static String tableVariantName(BlockFace facing, HorizontalAxis axis,
+                                   int sourcePosition) {
+        String base = axis == null
+                ? "ground"
+                : "ground_axis_" + axis.name().toLowerCase(Locale.ROOT)
+                + "_position_" + sourcePosition;
+        return facing == BlockFace.SOUTH
+                ? base
+                : base + "_facing_" + facing.name().toLowerCase(Locale.ROOT);
     }
 
     private static boolean isTableNeighbor(BukkitFurniture other, HorizontalAxis desiredAxis) {
         if (other == null || !other.id().toString().equals(TABLE)) {
             return false;
         }
-        LocalTableAxis localAxis = tableLocalAxis(other);
-        if (localAxis == null) {
-            return true;
-        }
-        BlockFace otherFacing = facing(other.location().getYaw());
-        HorizontalAxis otherAxis = localAxis == LocalTableAxis.X
-                ? worldAxis(clockwise(otherFacing)) : worldAxis(otherFacing);
-        return otherAxis == desiredAxis;
+        HorizontalAxis otherAxis = tableWorldAxis(other);
+        return otherAxis == null || otherAxis == desiredAxis;
     }
 
-    private static LocalTableAxis tableLocalAxis(BukkitFurniture furniture) {
+    private static HorizontalAxis tableWorldAxis(BukkitFurniture furniture) {
         String variant = furniture.currentVariant().name();
-        if (variant.contains("_axis_x_")) return LocalTableAxis.X;
-        if (variant.contains("_axis_z_")) return LocalTableAxis.Z;
-        return null;
+        HorizontalAxis encoded;
+        if (variant.contains("_axis_x_")) {
+            encoded = HorizontalAxis.X;
+        } else if (variant.contains("_axis_z_")) {
+            encoded = HorizontalAxis.Z;
+        } else {
+            return null;
+        }
+
+        // New directional variants already encode the source world axis. The
+        // unsuffixed variants also occur on old saves, where X/Z was local to
+        // furniture yaw; convert those once so the next refresh migrates them.
+        if (variant.contains("_facing_")) {
+            return encoded;
+        }
+        BlockFace facing = facing(furniture.location().getYaw());
+        return encoded == HorizontalAxis.X
+                ? worldAxis(clockwise(facing)) : worldAxis(facing);
     }
 
     private static boolean isLinearNeighbor(BukkitFurniture self, BukkitFurniture other, BlockFace facing) {
@@ -301,12 +347,7 @@ public final class FurnitureConnectionService {
                 ? HorizontalAxis.X : HorizontalAxis.Z;
     }
 
-    private enum LocalTableAxis {
-        X,
-        Z
-    }
-
-    private enum HorizontalAxis {
+    enum HorizontalAxis {
         X,
         Z
     }

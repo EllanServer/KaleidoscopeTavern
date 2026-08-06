@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import math
 import re
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -4325,13 +4326,29 @@ def validate() -> dict[str, int]:
             raise AssertionError(f"{furniture_id}: source material/break behavior drifted")
 
     table_variants = furniture[f"{NAMESPACE}:table"]["variants"]
-    expected_table_variants = {
+    table_base_variants = {
         "ground",
         *(f"ground_axis_{axis}_position_{position}"
           for axis in ("x", "z") for position in range(1, 4)),
     }
+    table_facing_yaws = {
+        # CE furniture yaw plus the configured element yaw must be 0 so the
+        # source TableBlock model stays world-aligned instead of turning two
+        # opposite-facing endpoints back-to-back.
+        "south": (0, 0),
+        "west": (90, -90),
+        "north": (180, 180),
+        "east": (270, 90),
+    }
+    expected_table_variants = {
+        base if facing == "south" else f"{base}_facing_{facing}"
+        for base in table_base_variants
+        for facing in table_facing_yaws
+    }
     if set(table_variants) != expected_table_variants:
-        raise AssertionError("Table must retain both source AXIS state families")
+        raise AssertionError(
+            "Table must retain every source AXIS/POSITION model for all four "
+            "CE furniture facings")
     expected_table_models = {
         "ground": f"{NAMESPACE}:block/deco/table/single",
         "ground_axis_x_position_1": f"{NAMESPACE}:block/deco/table/right",
@@ -4341,17 +4358,37 @@ def validate() -> dict[str, int]:
         "ground_axis_z_position_2": f"{NAMESPACE}:block/deco/table/middle_rot",
         "ground_axis_z_position_3": f"{NAMESPACE}:block/deco/table/left_rot",
     }
+    render_items_by_base: dict[str, set[str]] = defaultdict(set)
     for variant_name, variant in table_variants.items():
-        model = render_items[variant["elements"][0]["item"]]["model"]["path"]
-        shulkers = [hitbox for hitbox in variant["hitboxes"] if hitbox["type"] == "shulker"]
-        if model != expected_table_models[variant_name]:
+        if "_facing_" in variant_name:
+            base_name, facing = variant_name.rsplit("_facing_", 1)
+        else:
+            base_name, facing = variant_name, "south"
+        element = variant["elements"][0]
+        render_id = element["item"]
+        model = render_items[render_id]["model"]["path"]
+        render_items_by_base[base_name].add(render_id)
+        furniture_yaw, element_yaw = table_facing_yaws[facing]
+        if model != expected_table_models[base_name]:
             raise AssertionError(f"table/{variant_name}: source axis/position model drifted")
+        if (element.get("yaw", 0) != element_yaw
+                or (furniture_yaw + element.get("yaw", 0)) % 360 != 0):
+            raise AssertionError(
+                f"table/{variant_name}: element yaw no longer cancels CE furniture yaw")
+        shulkers = [
+            hitbox for hitbox in variant["hitboxes"]
+            if hitbox["type"] == "shulker"
+        ]
         if (len(variant["hitboxes"]) != 17 or len(shulkers) != 16
                 or any(hitbox.get("scale") != 0.25
                        or hitbox.get("position", "").split(",")[1] != "0.75"
                        for hitbox in shulkers)):
             raise AssertionError(
                 f"table/{variant_name}: full-cube collision returned instead of the top slab")
+    if any(len(render_ids) != 1 for render_ids in render_items_by_base.values()):
+        raise AssertionError(
+            "Directional table variants must share render items instead of "
+            "duplicating private appearances")
 
     board = furniture[f"{NAMESPACE}:base_sandwich_board"]["variants"]["ground"]
     if [element.get("translation") for element in board["elements"]] != ["0,0.5,0", "0,1.5,0"]:
