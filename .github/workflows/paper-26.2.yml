@@ -58,6 +58,8 @@ jobs:
             build.gradle.kts
             gradle.properties
             settings.gradle.kts
+            gradlew
+            gradle
             AGENTS.md
           if-no-files-found: error
           retention-days: 1
