@@ -47,3 +47,21 @@ jobs:
             !build/libs/*-sources.jar
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload exact PR source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: KaleidoscopeTavern-PR56-source-9be02b0
+          path: |
+            .github
+            src
+            tools
+            build.gradle.kts
+            settings.gradle.kts
+            gradle.properties
+            gradlew
+            gradlew.bat
+            gradle
+            AGENTS.md
+          if-no-files-found: error
+          retention-days: 1
