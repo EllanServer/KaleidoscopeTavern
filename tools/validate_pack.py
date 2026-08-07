@@ -197,7 +197,7 @@ BAR_STOOL_COLORS = (
 # instead of silently disappearing during migration.
 SOURCE_STATE_OWNERS = {
     "age": "CustomCrops stage blocks",
-    "axis": "CE native placement plus ConnectedBlockBehavior table world-axis selection",
+    "axis": "CE native placement except table source axis, mapped to table_axis for ground placement",
     "connection": "ConnectedBlockBehavior sofa/counter topology plus migration furniture variants",
     "count": "BottleFurnitureService",
     "face": "CE ground/wall/ceiling placement rules",
@@ -4447,7 +4447,7 @@ def validate() -> dict[str, int]:
         raise AssertionError("Table item placement must be native CE block_item")
     table_states = table_block.get("states", {})
     if table_states.get("properties") != {
-            "axis": {"type": "axis", "default": "x", "values": ["x", "z"]},
+            "table_axis": {"type": "axis", "default": "x", "values": ["x", "z"]},
             "position": {"type": "int", "default": 0, "range": "0~3"}}:
         raise AssertionError("Furniture-style table state properties drifted")
     # Endpoint source files are selected declaratively in the opposite slot so
@@ -4464,7 +4464,7 @@ def validate() -> dict[str, int]:
         ("z", 3): f"{NAMESPACE}:block/deco/table/right_rot",
     }
     expected_table_keys = {
-        f"axis={axis},position={position}"
+        f"position={position},table_axis={axis}"
         for axis in ("x", "z") for position in range(4)
     }
     table_variants = table_states.get("variants", {})
@@ -4473,7 +4473,7 @@ def validate() -> dict[str, int]:
     table_render_ids: dict[tuple[str, int], set[str]] = defaultdict(set)
     for variant_key, variant in table_variants.items():
         props = dict(part.split("=", 1) for part in variant_key.split(","))
-        axis = props["axis"]
+        axis = props["table_axis"]
         position = int(props["position"])
         appearance = table_states["appearances"][variant["appearance"]]
         if (appearance.get("state") != "minecraft:barrier"
@@ -5142,9 +5142,11 @@ def validate() -> dict[str, int]:
         else f"ground_connection_{connection}"
         for connection in connection_names
     }
+    # Authored block-model rotations must be compensated for the final
+    # +180-degree item turn performed by Minecraft's ItemDisplay renderer.
     facing_rotations = {
-        "north": None, "east": "0,90,0",
-        "south": "0,180,0", "west": "0,270,0",
+        "north": "0,180,0", "east": "0,90,0",
+        "south": None, "west": "0,270,0",
     }
     sofa_connect_ids = [
         SHARED_SOFA_ID,
@@ -5160,7 +5162,7 @@ def validate() -> dict[str, int]:
             "mode": "corner",
             "connects": sofa_connect_ids,
         },
-        {"type": "seat_block", "seats": ["0,-0.1,0 0"]},
+        {"type": "seat_block", "seats": ["0,-0.1,0 180"]},
         {"type": "tint_source_block", "drop_item": True},
     ]
     if shared.get("behaviors") != expected_shared_behaviors:
@@ -5343,8 +5345,8 @@ def validate() -> dict[str, int]:
                 f"Runtime CE content count guard is stale: {expected_token}")
 
     storage_facing_rotations = {
-        "east": "0,90,0", "north": None,
-        "south": "0,180,0", "west": "0,270,0",
+        "east": "0,90,0", "north": "0,180,0",
+        "south": None, "west": "0,270,0",
     }
     for storage_id, (slot_count, blocklist, carrier_type) in STORAGE_BLOCK_SPECS.items():
         full_id = f"{NAMESPACE}:{storage_id}"

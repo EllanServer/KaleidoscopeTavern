@@ -25,7 +25,6 @@ import net.momirealms.craftengine.libraries.nbt.CompoundTag;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.Waterlogged;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Field;
@@ -388,7 +387,7 @@ public final class LegacyConnectedBlockMigrationFurnitureBehavior
             LegacyConnectedBlockMigrationSemantics.TableProperties table =
                     LegacyConnectedBlockMigrationSemantics.tableProperties(
                             variant, facingFromYaw(yaw));
-            properties.putString("axis", table.axis());
+            properties.putString("table_axis", table.axis());
             properties.putInt("position", table.position());
         } else if (isStorageCabinet(id)) {
             properties.putString("facing",
@@ -397,9 +396,6 @@ public final class LegacyConnectedBlockMigrationFurnitureBehavior
         } else {
             throw new IllegalArgumentException(
                     "Unsupported connected migration id: " + id);
-        }
-        if (path.equals("table")) {
-            properties.putBoolean("waterlogged", isWaterlogged(target));
         }
         return properties;
     }
@@ -428,12 +424,6 @@ public final class LegacyConnectedBlockMigrationFurnitureBehavior
     private static boolean isStorageCabinet(Key id) {
         return id.value().equals("bar_cabinet")
                 || id.value().equals("glass_bar_cabinet");
-    }
-
-    private static boolean isWaterlogged(Block block) {
-        return block.isLiquid()
-                || block.getBlockData() instanceof Waterlogged waterlogged
-                && waterlogged.isWaterlogged();
     }
 
     private static Field findDisplayItemField() {

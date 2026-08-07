@@ -287,6 +287,18 @@ GRAPE_CARRIER_ID = "kaleidoscope-tavern-wild-grapevine-transparent"
 # carrier, barrier does not consume a model-overridable state and therefore
 # cannot collide with another CraftEngine project's stair allocation.
 SOFA_CARRIER_STATE = "minecraft:barrier"
+
+# Minecraft 26.2 ItemDisplayRenderer applies a final +180-degree Y turn to
+# submitted item models. Source blockstate rotations use the block-model
+# convention, so furniture-style CE blocks must configure the inverse
+# compensation instead of copying the JSON `y` value verbatim. This is the
+# same mapping already required by chalkboards.
+ITEM_DISPLAY_FACING_YAW = {
+    "north": 180,
+    "east": 90,
+    "south": 0,
+    "west": 270,
+}
 COPPER_LANTERN_CARRIER_STATE = (
     "minecraft:copper_lantern[hanging=false,waterlogged=false]"
 )
@@ -772,6 +784,7 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
     preferred = {
         "facing": "north",
         "axis": "y",
+        "table_axis": "x",
         "waterlogged": "false",
         "powered": "false",
         "triggered": "false",
@@ -799,7 +812,7 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
         return {"type": "sofa_shape", "default": default, "values": ordered}
     if name == "facing" and set(ordered) <= {"north", "east", "south", "west", "up", "down"}:
         return {"type": "direction", "default": default, "values": ordered}
-    if name == "axis" and set(ordered) <= {"x", "y", "z"}:
+    if name in {"axis", "table_axis"} and set(ordered) <= {"x", "y", "z"}:
         return {"type": "axis", "default": default, "values": ordered}
     if name == "face" and set(ordered) <= {"floor", "wall", "ceiling"}:
         return {"type": "anchor_type", "default": default, "values": ordered}
@@ -887,7 +900,7 @@ def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | li
             },
             {
                 "type": "seat_block",
-                "seats": [f"0,{seat_offset(8 / 16):g},0 0"],
+                "seats": [f"0,{seat_offset(8 / 16):g},0 180"],
             },
             {
                 "type": "tint_source_block",
@@ -1516,7 +1529,7 @@ def build_shared_sofa_block(
     render_items: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
     facings = ("north", "east", "south", "west")
-    rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
+    rotations = ITEM_DISPLAY_FACING_YAW
     appearances: dict[str, Any] = {}
     variants: dict[str, Any] = {}
     for connection in SOFA_CONNECTIONS:
@@ -1583,7 +1596,7 @@ def build_legacy_sofa_alias_block(
             "shadow_radius": 0,
             "view_range": 1.25,
         }
-        rotation = {"north": 0, "east": 90, "south": 180, "west": 270}[facing]
+        rotation = ITEM_DISPLAY_FACING_YAW[facing]
         if rotation:
             renderer["rotation"] = f"0,{rotation},0"
         appearances[appearance_name] = {
@@ -1671,6 +1684,15 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             property_values["age"] = [str(age) for age in range(26)]
             property_values["sheared"] = ["false", "true"]
 
+        if block_id == "table":
+            # CE reserves the literal property name `axis` and initializes it
+            # from the clicked face. A table placed on top of the ground would
+            # therefore receive Y even though the source only permits X/Z, and
+            # placement fails before the topology adapter can run. Keep the
+            # source value type but use a non-hard-coded property name; Java
+            # owns only this source-specific horizontal-axis choice.
+            property_values["table_axis"] = property_values.pop("axis")
+
         if block_id in TRELLIS_BLOCKS:
             # `axis` is a CE hard-coded property name. CE writes the clicked
             # face axis before the Tavern behavior runs, rotates/mirrors it
@@ -1695,6 +1717,8 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             if isinstance(raw_model, list) and len(raw_model) > 1:
                 metrics["weighted_variants_reduced"] += 1
             variant_properties = parse_variant_key(variant_key)
+            if block_id == "table" and "axis" in variant_properties:
+                variant_properties["table_axis"] = variant_properties.pop("axis")
             if block_id in FURNITURE_STYLE_BLOCKS:
                 variant_properties.pop("waterlogged", None)
                 variant_key = ",".join(
@@ -1718,6 +1742,15 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 }
                 model = (table_endpoint_models.get(model[0], model[0]),
                          *model[1:])
+            if (block_id in FURNITURE_STYLE_BLOCKS
+                    and "facing" in variant_properties):
+                # Do not copy source blockstate `y` directly into an
+                # ItemDisplay quaternion. Compensate the renderer's intrinsic
+                # 180-degree item turn so the model front matches CE's logical
+                # facing on all four directions.
+                model = (model[0], model[1],
+                         ITEM_DISPLAY_FACING_YAW[variant_properties["facing"]],
+                         model[3], model[4])
             if (block_id == "tap"
                     and variant_properties.get("facing") in {"north", "south"}):
                 # The migrated wall block's north/south visual was reversed

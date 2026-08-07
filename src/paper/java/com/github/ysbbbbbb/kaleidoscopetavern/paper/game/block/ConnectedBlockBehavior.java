@@ -56,7 +56,7 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
         linearPositionProperty = BlockBehaviorFactory.getOptionalProperty(
                 block, "position", String.class);
         axisProperty = BlockBehaviorFactory.getOptionalProperty(
-                block, "axis", Direction.Axis.class);
+                block, "table_axis", Direction.Axis.class);
         tablePositionProperty = BlockBehaviorFactory.getOptionalProperty(
                 block, "position", Integer.class);
 
@@ -73,7 +73,8 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
         if (mode == Mode.TABLE
                 && (axisProperty == null || tablePositionProperty == null)) {
             throw new IllegalArgumentException(
-                    "TABLE requires axis/integer position at " + section.path());
+                    "TABLE requires table_axis/integer position at "
+                            + section.path());
         }
     }
 
@@ -253,7 +254,7 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
             return false;
         }
         Direction.Axis neighborAxis = property(
-                neighbor, "axis", Direction.Axis.class);
+                neighbor, "table_axis", Direction.Axis.class);
         Integer neighborPosition = property(
                 neighbor, "position", Integer.class);
         return neighborAxis != correctionAxis
