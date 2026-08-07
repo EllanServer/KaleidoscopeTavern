@@ -145,6 +145,12 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
             return next;
         }
 
+        // Connected cabinets use the same placement convention as the shared
+        // sofa and bar counter on both horizontal axes.
+        next = next.with(
+                facingProperty,
+                ConnectedBlockSemantics.connectedPlacementFacing(
+                        context.getHorizontalDirection()));
         Direction facing = next.get(facingProperty);
         boolean left = isMatchingCellar(
                 context.getLevel().storageWorld().getBlockStateAtIfLoaded(

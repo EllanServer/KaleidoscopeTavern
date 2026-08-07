@@ -62,7 +62,10 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
         Object level = context.getLevel().minecraftWorld();
         BlockPos pos = context.getClickedPos();
         return switch (mode) {
-            case CORNER -> updateCorner(level, pos, state);
+            case CORNER -> updateCorner(level, pos, state.with(
+                    facingProperty,
+                    ConnectedBlockSemantics.connectedPlacementFacing(
+                            context.getHorizontalDirection())));
             case TABLE -> placeTable(context, state);
         };
     }

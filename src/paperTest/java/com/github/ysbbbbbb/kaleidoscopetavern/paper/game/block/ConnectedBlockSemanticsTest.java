@@ -1,14 +1,26 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
+import net.momirealms.craftengine.core.util.Direction;
 import org.junit.jupiter.api.Test;
 
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.ConnectedBlockSemantics.Axis.X;
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.ConnectedBlockSemantics.Axis.Z;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConnectedBlockSemanticsTest {
+    @Test
+    void connectedPlacementUsesOneConventionOnBothHorizontalAxes() {
+        for (Direction direction : new Direction[]{
+                Direction.NORTH, Direction.EAST,
+                Direction.SOUTH, Direction.WEST}) {
+            assertSame(direction,
+                    ConnectedBlockSemantics.connectedPlacementFacing(direction));
+        }
+    }
+
     @Test
     void sideAndFrontChangesCanMoveCornerOwnership() {
         assertTrue(ConnectedBlockSemantics.cornerNeighbourAffectsState(true, false));

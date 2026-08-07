@@ -1,9 +1,23 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
+import net.momirealms.craftengine.core.util.Direction;
+
 /** Pure source-compatible state selection for connected custom blocks. */
 public final class ConnectedBlockSemantics {
     private ConnectedBlockSemantics() {}
     public enum Axis { X, Z }
+
+    /**
+     * Match CraftEngine's native sofa placement convention on every horizontal
+     * axis: the stored facing is the player's horizontal look direction.
+     */
+    public static Direction connectedPlacementFacing(Direction playerFacing) {
+        if (playerFacing == null || !playerFacing.axis().isHorizontal()) {
+            throw new IllegalArgumentException("playerFacing=" + playerFacing);
+        }
+        return playerFacing;
+    }
+
     public record TableState(Axis axis, int position) {
         public TableState {
             if (axis == null) throw new IllegalArgumentException("axis");
