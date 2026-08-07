@@ -70,6 +70,7 @@ jobs:
       - name: Generate and validate CraftEngine content
         shell: bash
         run: |
+          python -m pip install --disable-pip-version-check pillow
           python -m py_compile tools/migrate_legacy.py tools/validate_pack.py tools/verify_plugin_jar.py
           python tools/migrate_legacy.py
           python tools/validate_pack.py
