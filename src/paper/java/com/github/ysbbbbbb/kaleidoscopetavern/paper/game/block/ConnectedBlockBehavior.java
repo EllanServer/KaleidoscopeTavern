@@ -83,12 +83,18 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
     private ImmutableBlockState updateCornerAfterNeighbour(Object level, BlockPos pos,
                                                            ImmutableBlockState state, Direction changed) {
         Direction facing = state.get(facingProperty);
-        Direction left = facing.clockWise();
-        Direction right = facing.counterClockWise();
-        if (changed.axis() != left.axis() && changed != facing) return state;
-        String current = state.get(connectionProperty);
-        if (("left_corner".equals(current) && changed == left)
-                || ("right_corner".equals(current) && changed == right)) return state;
+        Direction side = facing.clockWise();
+        if (!ConnectedBlockSemantics.cornerNeighbourAffectsState(
+                changed.axis() == side.axis(), changed == facing)) {
+            return state;
+        }
+
+        // Always re-evaluate both side neighbours and the front neighbour.
+        // The archived Forge helper skipped one side while already in a corner
+        // state. Under CE's neighbour-update ordering that leaves stale corner
+        // ownership when a third sofa is added: the old corner never gives the
+        // corner model to the newly completed turn. A fixed-size three-neighbour
+        // read is cheap and converges without furniture scans or scheduled passes.
         return updateCorner(level, pos, state);
     }
     private ImmutableBlockState updateCorner(Object level, BlockPos pos, ImmutableBlockState state) {
