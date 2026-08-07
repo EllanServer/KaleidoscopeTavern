@@ -5,8 +5,17 @@ import org.junit.jupiter.api.Test;
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.ConnectedBlockSemantics.Axis.X;
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.ConnectedBlockSemantics.Axis.Z;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConnectedBlockSemanticsTest {
+    @Test
+    void sideAndFrontChangesCanMoveCornerOwnership() {
+        assertTrue(ConnectedBlockSemantics.cornerNeighbourAffectsState(true, false));
+        assertTrue(ConnectedBlockSemantics.cornerNeighbourAffectsState(false, true));
+        assertFalse(ConnectedBlockSemantics.cornerNeighbourAffectsState(false, false));
+    }
+
     @Test
     void cornerConnectionPreservesAllSixSourceStates() {
         assertEquals("single", ConnectedBlockSemantics.cornerConnection(false, false, false, false));
