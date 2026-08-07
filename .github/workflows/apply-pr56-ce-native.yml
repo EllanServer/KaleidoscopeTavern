@@ -1,0 +1,72 @@
+name: Apply PR 56 CE-native connected blocks
+
+on:
+  push:
+    branches:
+      - tmp/pr56-ce-native-connections
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.repository == 'EllanServer/KaleidoscopeTavern'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v4
+        with:
+          ref: tmp/pr56-ce-native-connections
+          fetch-depth: 0
+
+      - name: Reconstruct and verify source patch
+        shell: bash
+        run: |
+          cat .github/pr56-source-final.patch.gz.b64.part* > /tmp/pr56-source.patch.gz.b64
+          echo '1ed17393d06cf991eeb5a6af99068e51ed1d5c074eb627ea9e89012bab2c3ae8  /tmp/pr56-source.patch.gz.b64' | sha256sum -c -
+          base64 -d /tmp/pr56-source.patch.gz.b64 > /tmp/pr56-source.patch.gz
+          gzip -dc /tmp/pr56-source.patch.gz > /tmp/pr56-source.patch
+          echo 'f6bcc51b1a97b8bb4da05e7103f7ba68b8d33e4cc87378ff353373833ce7be42  /tmp/pr56-source.patch' | sha256sum -c -
+
+      - name: Apply patch on PR 56 head
+        shell: bash
+        run: |
+          git fetch origin codex/pressing-tub-ce-block
+          git checkout --detach origin/codex/pressing-tub-ce-block
+          git apply --index /tmp/pr56-source.patch
+          rm -f .github/ce-config-refactor.patch.gz.b64.part*
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Generate and validate CraftEngine content
+        shell: bash
+        run: |
+          python -m py_compile tools/migrate_legacy.py tools/validate_pack.py tools/verify_plugin_jar.py
+          python tools/migrate_legacy.py
+          python tools/validate_pack.py
+
+      - name: Compile and test
+        shell: bash
+        run: |
+          chmod +x gradlew
+          ./gradlew clean build --stacktrace
+
+      - name: Commit directly to PR 56
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'Move connected furniture to CE blocks and fix tilted tub contents'
+          git push origin HEAD:codex/pressing-tub-ce-block
