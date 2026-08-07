@@ -97,6 +97,14 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
         // read is cheap and converges without furniture scans or scheduled passes.
         return updateCorner(level, pos, state);
     }
+    ImmutableBlockState resolveCornerState(
+            Object level, BlockPos pos, ImmutableBlockState state) {
+        if (mode != Mode.CORNER) {
+            throw new IllegalStateException("Not a corner-connection behavior");
+        }
+        return updateCorner(level, pos, state);
+    }
+
     private ImmutableBlockState updateCorner(Object level, BlockPos pos, ImmutableBlockState state) {
         Direction facing = state.get(facingProperty);
         ImmutableBlockState left = customState(level, pos.relative(facing.clockWise()));
@@ -145,7 +153,7 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
         if (!isConnectable(neighbor)) return false;
         Direction check = property(neighbor, "facing", Direction.class);
         if (check == self.counterClockWise()) {
-            String connection = property(neighbor, "connection", String.class);
+            String connection = connection(neighbor);
             return "single".equals(connection) || "right".equals(connection) || "right_corner".equals(connection);
         }
         return check == self;
@@ -154,19 +162,28 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
         if (!isConnectable(neighbor)) return false;
         Direction check = property(neighbor, "facing", Direction.class);
         if (check == self.clockWise()) {
-            String connection = property(neighbor, "connection", String.class);
+            String connection = connection(neighbor);
             return "single".equals(connection) || "left".equals(connection) || "left_corner".equals(connection);
         }
         return check == self;
     }
     private boolean frontLeftConnected(ImmutableBlockState neighbor, Direction self) {
         return isConnectable(neighbor) && property(neighbor, "facing", Direction.class) == self.clockWise()
-                && !"left_corner".equals(property(neighbor, "connection", String.class));
+                && !"left_corner".equals(connection(neighbor));
     }
     private boolean frontRightConnected(ImmutableBlockState neighbor, Direction self) {
         return isConnectable(neighbor) && property(neighbor, "facing", Direction.class) == self.counterClockWise()
-                && !"right_corner".equals(property(neighbor, "connection", String.class));
+                && !"right_corner".equals(connection(neighbor));
     }
+    private static String connection(ImmutableBlockState state) {
+        String connection = property(state, "connection", String.class);
+        if (connection == null && state != null
+                && SofaBlockIds.isLegacy(state.owner().value().id())) {
+            return "single";
+        }
+        return connection;
+    }
+
     private boolean isConnectable(ImmutableBlockState state) {
         return state != null && connectableIds.contains(state.owner().value().id());
     }

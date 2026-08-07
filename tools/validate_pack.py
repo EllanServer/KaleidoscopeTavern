@@ -114,8 +114,23 @@ FURNITURE_COLORS = {
     "white", "yellow",
 }
 SOFA_BLOCKS = {f"{color}_sofa" for color in FURNITURE_COLORS}
-CONNECTED_GRID_BLOCKS = SOFA_BLOCKS | {"bar_counter", "table"}
-MIGRATION_BLOCK_FURNITURE = CONNECTED_GRID_BLOCKS | {
+SHARED_SOFA_BLOCK = "_internal/sofa"
+SHARED_SOFA_ID = f"{NAMESPACE}:{SHARED_SOFA_BLOCK}"
+SOFA_CONNECTIONS = (
+    "single", "left", "left_corner", "middle", "right", "right_corner",
+)
+SOFA_DYE_COLORS = {
+    "white": "249,255,254", "orange": "249,128,29",
+    "magenta": "199,78,189", "light_blue": "58,179,218",
+    "yellow": "254,216,61", "lime": "128,199,31",
+    "pink": "243,139,170", "gray": "71,79,82",
+    "light_gray": "157,157,151", "cyan": "22,156,156",
+    "purple": "137,50,184", "blue": "60,68,170",
+    "brown": "131,84,50", "green": "94,124,22",
+    "red": "176,46,38", "black": "29,29,33",
+}
+CONNECTED_GRID_BLOCKS = {"bar_counter", "table"}
+MIGRATION_BLOCK_FURNITURE = SOFA_BLOCKS | CONNECTED_GRID_BLOCKS | {
     "bar_cabinet", "glass_bar_cabinet", "pressing_tub",
 }
 EXPECTED_LIFECYCLE_FURNITURE: dict[str, tuple[str, ...]] = {
@@ -733,8 +748,8 @@ def validate() -> dict[str, int]:
 
     if len(items) != 157:
         raise AssertionError(f"Expected 157 public items, found {len(items)}")
-    if len(blocks) != 59:
-        raise AssertionError(f"Expected 59 grid/state blocks, found {len(blocks)}")
+    if len(blocks) != 60:
+        raise AssertionError(f"Expected 60 grid/state blocks, found {len(blocks)}")
     if len(furniture) != 137:
         raise AssertionError(
             f"Expected 137 furniture definitions (legacy pressing tub plus "
@@ -1202,6 +1217,8 @@ def validate() -> dict[str, int]:
         *(f"{NAMESPACE}:{incense}" for incense in INCENSE_BLOCK_SPECS),
         *(f"{NAMESPACE}:{storage}" for storage in STORAGE_BLOCK_SPECS),
         *(f"{NAMESPACE}:{connected}" for connected in CONNECTED_GRID_BLOCKS),
+        SHARED_SOFA_ID,
+        *(f"{NAMESPACE}:{sofa}" for sofa in SOFA_BLOCKS),
     }
     if set(blocks) != expected_grid_blocks:
         unexpected = sorted(set(blocks) - expected_grid_blocks)
@@ -1234,8 +1251,9 @@ def validate() -> dict[str, int]:
         if block_id.startswith(f"{NAMESPACE}:_crop/")
     }
     private_furniture = {WALL_PRESSING_TUB_ID}
+    private_blocks = {SHARED_SOFA_ID}
     represented_placeables = (
-        (set(blocks) - derived_crop_stages)
+        (set(blocks) - derived_crop_stages - private_blocks)
         | (set(furniture) - private_furniture)
     )
     if represented_placeables != source_placeables:
@@ -1711,6 +1729,48 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "ConnectedBlockBehavior must not duplicate CE lifecycle/static config; "
                 f"stale token: {stale_token}")
+    for required_token in (
+            "ImmutableBlockState resolveCornerState(",
+            "SofaBlockIds.isLegacy(",
+            'return "single";'):
+        if required_token not in connected_block_source:
+            raise AssertionError(
+                "Shared-sofa migration must connect compact legacy aliases while "
+                f"they are being converted; missing token: {required_token}")
+
+    sofa_tint_source = (
+        game_package / "block" / "SofaTintSupport.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "TintSourceBlockEntityController.class",
+            "controller.setSourceItem(source)",
+            "world.blockEntityChanged(pos)",
+            "clearSourceItem(world, pos)"):
+        if required_token not in sofa_tint_source:
+            raise AssertionError(
+                "Shared sofa must delegate exact colour/source persistence to CE's "
+                f"native tint-source controller; missing token: {required_token}")
+    for stale_token in (
+            "PersistentDataContainer", "ItemDisplay", "spawnEntity",
+            "FurnitureConnectionService"):
+        if stale_token in sofa_tint_source:
+            raise AssertionError(
+                "SofaTintSupport must remain a migration-only CE-native adapter; "
+                f"stale token: {stale_token}")
+
+    sofa_block_migration_source = (
+        game_package / "block" / "LegacySofaBlockMigrationService.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "CELLS_PER_TICK = 8_192",
+            "MIGRATIONS_PER_TICK = 32",
+            "statesContainer().hasAny(",
+            "SofaTintSupport.placeShared(",
+            "SofaBlockIds.isLegacy("):
+        if required_token not in sofa_block_migration_source:
+            raise AssertionError(
+                "Old colour-specific CE block ids need a bounded, palette-filtered "
+                f"one-release migration; missing token: {required_token}")
 
     migration_source = (
         game_package / "furniture" /
@@ -5085,8 +5145,7 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{storage_id}: storage visual controller must follow its native slot controllers")
 
-    connection_names = (
-        "single", "left", "left_corner", "middle", "right", "right_corner")
+    connection_names = SOFA_CONNECTIONS
     legacy_connection_variants = {
         "ground" if connection == "single"
         else f"ground_connection_{connection}"
@@ -5097,89 +5156,122 @@ def validate() -> dict[str, int]:
         "south": "0,180,0", "west": "0,270,0",
     }
     sofa_connect_ids = [
-        f"{NAMESPACE}:{color}_sofa" for color in sorted(FURNITURE_COLORS)
+        SHARED_SOFA_ID,
+        *(f"{NAMESPACE}:{name}" for name in sorted(SOFA_BLOCKS)),
     ]
+
+    shared = blocks.get(SHARED_SOFA_ID)
+    if shared is None:
+        raise AssertionError("Shared tint-source sofa block is missing")
+    expected_shared_behaviors = [
+        {
+            "type": f"{NAMESPACE}:connected_block",
+            "mode": "corner",
+            "connects": sofa_connect_ids,
+        },
+        {"type": "seat_block", "seats": ["0,-0.1,0 0"]},
+        {"type": "tint_source_block", "drop_item": True},
+    ]
+    if shared.get("behaviors") != expected_shared_behaviors:
+        raise AssertionError(
+            "Shared sofa must delegate colour/drop/seat ownership to CE")
+    shared_states = shared.get("states", {})
+    if shared_states.get("properties") != {
+            "connection": {
+                "type": "string", "default": "single",
+                "values": ["single", "left", "left_corner", "middle",
+                           "right", "right_corner"],
+            },
+            "facing": {
+                "type": "horizontal_direction", "default": "north",
+                "values": ["north", "east", "south", "west"],
+            }}:
+        raise AssertionError("Shared sofa state product drifted")
+    expected_shared_keys = {
+        f"connection={connection},facing={facing}"
+        for connection in connection_names
+        for facing in ("north", "east", "south", "west")
+    }
+    shared_variants = shared_states.get("variants", {})
+    if set(shared_variants) != expected_shared_keys:
+        raise AssertionError("Shared sofa must expose exactly 24 active states")
+    tint_render_ids: dict[str, set[str]] = defaultdict(set)
+    for variant_key, variant in shared_variants.items():
+        props = dict(part.split("=", 1) for part in variant_key.split(","))
+        appearance = shared_states["appearances"][variant["appearance"]]
+        if appearance.get("state") != "minecraft:barrier":
+            raise AssertionError(f"Shared sofa/{variant_key}: carrier drifted")
+        renderer = appearance.get("entity_renderer", {})
+        if renderer.get("rotation") != facing_rotations[props["facing"]]:
+            raise AssertionError(f"Shared sofa/{variant_key}: rotation drifted")
+        if renderer.get("tint_source") != "minecraft:dyed_color":
+            raise AssertionError(f"Shared sofa/{variant_key}: tint source missing")
+        render_id = renderer.get("item")
+        tint_render_ids[props["connection"]].add(render_id)
+        render_model = render_items.get(render_id, {}).get("model", {})
+        if (render_model.get("path") !=
+                f"{NAMESPACE}:block/deco/sofa/tint/{props['connection']}"
+                or render_model.get("tints") != [{
+                    "type": "minecraft:dye", "default": 16_777_215}]):
+            raise AssertionError(
+                f"Shared sofa/{variant_key}: tintable render model drifted")
+    if set(tint_render_ids) != set(connection_names) \
+            or any(len(ids) != 1 for ids in tint_render_ids.values()):
+        raise AssertionError("Shared sofa must use six tintable render items")
+
+    tint_model_root = (
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models"
+        / "block/deco/sofa/tint"
+    )
+    for connection in connection_names:
+        wrapper = json.loads((tint_model_root / f"{connection}.json")
+                             .read_text(encoding="utf-8-sig"))
+        if wrapper.get("parent") != (
+                f"{NAMESPACE}:block/deco/sofa/tint/base/{connection}"):
+            raise AssertionError(f"Tint sofa {connection}: wrapper drifted")
+        base = json.loads((tint_model_root / "base" / f"{connection}.json")
+                          .read_text(encoding="utf-8-sig"))
+        tinted_faces = [
+            face
+            for element in base.get("elements", [])
+            for face in element.get("faces", {}).values()
+            if face.get("texture") == "#texture"
+        ]
+        if not tinted_faces or any(face.get("tintindex") != 0
+                                   for face in tinted_faces):
+            raise AssertionError(
+                f"Tint sofa {connection}: every upholstery face needs tintindex 0")
+
     for color in sorted(FURNITURE_COLORS):
         sofa_name = f"{color}_sofa"
         sofa_id = f"{NAMESPACE}:{sofa_name}"
-        definition = blocks.get(sofa_id)
-        if definition is None:
-            raise AssertionError(f"{sofa_name}: must be a real CE custom block")
-        if items[sofa_id].get("behavior") != {
-                "type": "block_item", "block": sofa_id}:
-            raise AssertionError(f"{sofa_name}: placement must use native CE block_item")
-        expected_behaviors = [
-            {
-                "type": f"{NAMESPACE}:connected_block",
-                "mode": "corner",
-                "connects": sofa_connect_ids,
-            },
-            {"type": "seat_block", "seats": ["0,-0.1,0 0"]},
-        ]
-        if definition.get("behaviors") != expected_behaviors:
+        item = items[sofa_id]
+        if item.get("behavior") != {
+                "type": "block_item", "block": SHARED_SOFA_ID}:
             raise AssertionError(
-                f"{sofa_name}: CE must own seating while Java owns topology only")
-        states = definition.get("states", {})
-        if states.get("properties") != {
-                "connection": {
-                    "type": "string", "default": "single",
-                    "values": ["left", "left_corner", "middle",
-                               "right", "right_corner", "single"],
-                },
-                "facing": {
-                    "type": "horizontal_direction", "default": "north",
-                    "values": ["east", "north", "south", "west"],
-                },
-                "waterlogged": {"type": "boolean", "default": "false"},
-                }:
-            raise AssertionError(f"{sofa_name}: source state cartesian product drifted")
-        expected_keys = {
-            f"connection={connection},facing={facing},waterlogged={waterlogged}"
-            for connection in connection_names
-            for facing in ("east", "north", "south", "west")
-            for waterlogged in ("false", "true")
+                f"{sofa_name}: public item must place the shared sofa")
+        if item.get("data", {}).get("dyed_color") != SOFA_DYE_COLORS[color]:
+            raise AssertionError(f"{sofa_name}: fixed dye colour drifted")
+
+        alias = blocks.get(sofa_id)
+        if alias is None or "behavior" in alias or "behaviors" in alias:
+            raise AssertionError(
+                f"{sofa_name}: old id must be a passive migration alias")
+        alias_states = alias.get("states", {})
+        expected_alias_keys = {
+            f"facing={facing}" for facing in
+            ("north", "east", "south", "west")
         }
-        variants = states.get("variants", {})
-        if set(variants) != expected_keys:
-            raise AssertionError(f"{sofa_name}: must retain all 48 source states")
-        render_ids: dict[str, set[str]] = defaultdict(set)
-        for variant_key, variant in variants.items():
-            props = dict(part.split("=", 1) for part in variant_key.split(","))
-            connection = props["connection"]
-            facing = props["facing"]
-            waterlogged = props["waterlogged"]
-            appearance = states["appearances"][variant["appearance"]]
-            if appearance.get("state") != "minecraft:barrier":
-                raise AssertionError(
-                    f"{sofa_name}/{variant_key}: CE native sofa carrier drifted")
-            renderer = appearance.get("entity_renderer", {})
-            if renderer.get("rotation") != facing_rotations[facing]:
-                raise AssertionError(
-                    f"{sofa_name}/{variant_key}: model rotation drifted")
-            render_id = renderer.get("item")
-            render_ids[connection].add(render_id)
-            expected_model = (
-                f"{NAMESPACE}:block/deco/sofa/{color}/{connection}")
-            if render_items.get(render_id, {}).get("model", {}).get("path") \
-                    != expected_model:
-                raise AssertionError(
-                    f"{sofa_name}/{variant_key}: source model drifted")
-            expected_variant = {"appearance": variant["appearance"]}
-            if waterlogged == "true":
-                expected_variant["settings"] = {"fluid_state": "water"}
-            if variant != expected_variant:
-                raise AssertionError(
-                    f"{sofa_name}/{variant_key}: water state drifted")
-        if any(len(ids) != 1 for ids in render_ids.values()) or len(render_ids) != 6:
+        if set(alias_states.get("variants", {})) != expected_alias_keys:
             raise AssertionError(
-                f"{sofa_name}: facings/water states must share six render items")
-        settings = definition.get("settings", {})
-        if (settings.get("item") != sofa_id
-                or settings.get("hardness") != 0.8
-                or settings.get("sounds", {}).get("break")
-                != "minecraft:block.wool.break"
-                or settings.get("support_shape") != "minecraft:cobweb"):
-            raise AssertionError(f"{sofa_name}: CE block settings drifted")
+                f"{sofa_name}: migration alias must consume only four states")
+        settings = alias.get("settings", {})
+        if settings.get("item") != sofa_id:
+            raise AssertionError(f"{sofa_name}: alias pickup item drifted")
+        loot_entries = alias.get("loot", {}).get("pools", [{}])[0] \
+            .get("entries", [])
+        if loot_entries != [{"type": "item", "item": sofa_id}]:
+            raise AssertionError(f"{sofa_name}: alias loot drifted")
 
         legacy = furniture.get(sofa_id)
         if (legacy is None
@@ -5190,7 +5282,16 @@ def validate() -> dict[str, int]:
                 or set(legacy.get("variants", {}))
                 != legacy_connection_variants):
             raise AssertionError(
-                f"{sofa_name}: old furniture must be unreachable and migration-only")
+                f"{sofa_name}: old furniture must remain migration-only")
+
+    sofa_state_total = len(shared_variants) + sum(
+        len(blocks[f"{NAMESPACE}:{name}"]["states"]["variants"])
+        for name in SOFA_BLOCKS
+    )
+    if sofa_state_total != 88:
+        raise AssertionError(
+            f"Sofa family must use 24 active + 64 alias states, found "
+            f"{sofa_state_total}")
 
     counter_id = f"{NAMESPACE}:bar_counter"
     counter = blocks[counter_id]
@@ -5245,7 +5346,7 @@ def validate() -> dict[str, int]:
 
     for expected_token in (
             "EXPECTED_ITEMS = 660",
-            "EXPECTED_BLOCKS = 59",
+            "EXPECTED_BLOCKS = 60",
             "EXPECTED_FURNITURE = 137"):
         if expected_token not in plugin_source:
             raise AssertionError(

@@ -179,11 +179,43 @@ SOFA_COLORS = (
     "brown", "green", "red", "black",
 )
 SOFA_BLOCKS = frozenset(f"{color}_sofa" for color in SOFA_COLORS)
-CONNECTED_GRID_BLOCKS = frozenset({*SOFA_BLOCKS, "bar_counter", "table"})
+SHARED_SOFA_BLOCK = "_internal/sofa"
+SHARED_SOFA_ID = f"{NAMESPACE}:{SHARED_SOFA_BLOCK}"
+SOFA_CONNECTIONS = (
+    "single", "left", "left_corner", "middle", "right", "right_corner",
+)
+# Exact vanilla dye RGB values used by the source's 16 wool-colour sofas.
+SOFA_DYE_COLORS = {
+    "white": "249,255,254",
+    "orange": "249,128,29",
+    "magenta": "199,78,189",
+    "light_blue": "58,179,218",
+    "yellow": "254,216,61",
+    "lime": "128,199,31",
+    "pink": "243,139,170",
+    "gray": "71,79,82",
+    "light_gray": "157,157,151",
+    "cyan": "22,156,156",
+    "purple": "137,50,184",
+    "blue": "60,68,170",
+    "brown": "131,84,50",
+    "green": "94,124,22",
+    "red": "176,46,38",
+    "black": "29,29,33",
+}
+# Only one active block is needed per connected furniture family. The sixteen
+# old sofa ids remain as compact four-state aliases for one release so CE can
+# deserialize already-placed colour blocks before the migration service folds
+# them into the shared tint-source block.
+CONNECTED_GRID_BLOCKS = frozenset({"bar_counter", "table"})
 CONNECTED_MIGRATION_BLOCKS = frozenset({
-    *CONNECTED_GRID_BLOCKS, "bar_cabinet", "glass_bar_cabinet",
+    *SOFA_BLOCKS, *CONNECTED_GRID_BLOCKS,
+    "bar_cabinet", "glass_bar_cabinet",
 })
-SOFA_CONNECT_IDS = [f"{NAMESPACE}:{block_id}" for block_id in sorted(SOFA_BLOCKS)]
+SOFA_CONNECT_IDS = [
+    SHARED_SOFA_ID,
+    *(f"{NAMESPACE}:{block_id}" for block_id in sorted(SOFA_BLOCKS)),
+]
 
 # One public item selects between the ground CE block and this private wall-only
 # CE furniture definition.  Keeping the active wall definition separate from
@@ -212,6 +244,10 @@ def is_grid_block(block_id: str) -> bool:
         or block_id.endswith("_grapevine_trellis")
         or block_id.endswith("_grape_crop")
     )
+
+
+def is_sofa_block(block_id: str) -> bool:
+    return block_id in SOFA_BLOCKS or block_id == SHARED_SOFA_BLOCK
 
 
 # Trellises keep their custom block state and gameplay behavior, but their
@@ -851,7 +887,7 @@ def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
 
 
 def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | list[dict[str, Any]] | None:
-    if block_id in SOFA_BLOCKS:
+    if block_id == SHARED_SOFA_BLOCK:
         return [
             {
                 "type": f"{NAMESPACE}:connected_block",
@@ -861,6 +897,10 @@ def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | li
             {
                 "type": "seat_block",
                 "seats": [f"0,{seat_offset(8 / 16):g},0 0"],
+            },
+            {
+                "type": "tint_source_block",
+                "drop_item": True,
             },
         ]
     if block_id == "bar_counter":
@@ -954,7 +994,7 @@ def block_settings(block_id: str, has_item: bool) -> dict[str, Any]:
     is_wild_vine = block_id in {"wild_grapevine", "wild_grapevine_plant"}
     is_crop = block_id.endswith("_grape_crop") or block_id == "grape_crop"
     is_storage = block_id in STORAGE_BLOCKS
-    is_sofa = block_id.endswith("_sofa")
+    is_sofa = is_sofa_block(block_id)
     sturdy = (block_id in STURDY_BLOCKS or is_storage or is_sofa
               or block_id in {"chalkboard", "pressing_tub", "table", "bar_counter"})
     if is_wild_vine:
@@ -1399,10 +1439,194 @@ def build_wall_pressing_tub_furniture(
     return config, 1
 
 
+def sofa_model(
+    color: str,
+    connection: str,
+    facing: str = "north",
+) -> tuple[str, int, int, int, bool]:
+    records = blockstate_records(f"{color}_sofa")
+    return select_record(records, {
+        "connection": connection,
+        "facing": facing,
+        "waterlogged": "false",
+    })[1]
+
+
+def sofa_render_id(
+    render_items: dict[str, Any],
+    connection: str,
+) -> str:
+    # Reuse the six existing white-sofa render ids. Their modern model becomes
+    # tintable with a white default, so one-release white furniture remains
+    # visually unchanged while the shared block can supply any dyed colour.
+    render_id = ensure_render_item(
+        render_items,
+        "white_sofa",
+        f"tintable {connection}",
+        sofa_model("white", connection),
+    )
+    render_items[render_id]["model"] = {
+        "type": "minecraft:model",
+        "path": f"{NAMESPACE}:block/deco/sofa/tint/{connection}",
+        "tints": [{"type": "minecraft:dye", "default": 16_777_215}],
+    }
+    return render_id
+
+
+def create_tintable_sofa_models() -> None:
+    source_root = (
+        MAIN_RESOURCES
+        / f"assets/{NAMESPACE}/models/block/deco/sofa/base"
+    )
+    target_root = (
+        ROOT
+        / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/block/deco/sofa/tint"
+    )
+    if target_root.exists():
+        shutil.rmtree(target_root)
+    base_root = target_root / "base"
+    for connection in SOFA_CONNECTIONS:
+        model = read_json(source_root / f"{connection}.json")
+        model.pop("render_type", None)
+        for element in model.get("elements", []):
+            for face in element.get("faces", {}).values():
+                if face.get("texture") == "#texture":
+                    face["tintindex"] = 0
+        write_json(base_root / f"{connection}.json", model)
+        write_json(target_root / f"{connection}.json", {
+            "parent": f"{NAMESPACE}:block/deco/sofa/tint/base/{connection}",
+            "textures": {
+                "particle": "minecraft:block/white_wool",
+                "texture": f"{NAMESPACE}:block/deco/sofa/white",
+            },
+        })
+
+
+def sofa_settings(public_item: str | None) -> dict[str, Any]:
+    settings = block_settings("white_sofa", False)
+    # Sofas are soft furniture, not stone. Keep this explicit so future
+    # refactors cannot inherit the old accidental pickaxe tag.
+    settings["tags"] = ["minecraft:mineable/axe"]
+    if public_item is not None:
+        settings["item"] = public_item
+    return settings
+
+
+def build_shared_sofa_block(
+    render_items: dict[str, Any],
+) -> tuple[dict[str, Any], int]:
+    facings = ("north", "east", "south", "west")
+    rotations = {"north": 0, "east": 90, "south": 180, "west": 270}
+    appearances: dict[str, Any] = {}
+    variants: dict[str, Any] = {}
+    for connection in SOFA_CONNECTIONS:
+        render_id = sofa_render_id(render_items, connection)
+        for facing in facings:
+            appearance_name = f"{connection}_{facing}"
+            renderer: dict[str, Any] = {
+                "type": "item_display",
+                "item": render_id,
+                "display_transform": "none",
+                "shadow_radius": 0,
+                "view_range": 1.25,
+                "tint_source": "minecraft:dyed_color",
+            }
+            rotation = rotations[facing]
+            if rotation:
+                renderer["rotation"] = f"0,{rotation},0"
+            appearances[appearance_name] = {
+                "state": SOFA_CARRIER_STATE,
+                "entity_renderer": renderer,
+            }
+            variants[f"connection={connection},facing={facing}"] = {
+                "appearance": appearance_name,
+            }
+    return {
+        "states": {
+            "properties": {
+                "connection": property_definition(
+                    "connection", list(SOFA_CONNECTIONS)),
+                "facing": property_definition("facing", list(facings)),
+            },
+            "appearances": appearances,
+            "variants": variants,
+        },
+        "settings": sofa_settings(None),
+        "behaviors": behavior_for(
+            SHARED_SOFA_BLOCK, {"connection", "facing"}),
+    }, len(appearances)
+
+
+def build_legacy_sofa_alias_block(
+    sofa_name: str,
+    render_items: dict[str, Any],
+) -> tuple[dict[str, Any], int]:
+    color = sofa_name.removesuffix("_sofa")
+    facings = ("north", "east", "south", "west")
+    appearances: dict[str, Any] = {}
+    variants: dict[str, Any] = {}
+    if color == "white":
+        render_id = sofa_render_id(render_items, "single")
+    else:
+        render_id = ensure_render_item(
+            render_items,
+            sofa_name,
+            "legacy single",
+            sofa_model(color, "single"),
+        )
+    for facing in facings:
+        appearance_name = f"facing_{facing}"
+        renderer: dict[str, Any] = {
+            "type": "item_display",
+            "item": render_id,
+            "display_transform": "none",
+            "shadow_radius": 0,
+            "view_range": 1.25,
+        }
+        rotation = {"north": 0, "east": 90, "south": 180, "west": 270}[facing]
+        if rotation:
+            renderer["rotation"] = f"0,{rotation},0"
+        appearances[appearance_name] = {
+            "state": SOFA_CARRIER_STATE,
+            "entity_renderer": renderer,
+        }
+        variants[f"facing={facing}"] = {"appearance": appearance_name}
+    sofa_id = f"{NAMESPACE}:{sofa_name}"
+    return {
+        "states": {
+            "properties": {
+                "facing": property_definition("facing", list(facings)),
+            },
+            "appearances": appearances,
+            "variants": variants,
+        },
+        "settings": sofa_settings(sofa_id),
+        "loot": {
+            "pools": [{
+                "rolls": 1,
+                "conditions": [{"type": "survives_explosion"}],
+                "entries": [{"type": "item", "item": sofa_id}],
+            }],
+        },
+    }, len(appearances)
+
+
 def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, Any], dict[str, Any], dict[str, int]]:
     blocks: dict[str, Any] = {}
     render_items: dict[str, Any] = {}
     metrics = {"appearances": 0, "weighted_variants_reduced": 0, "collidable_trellises": 0}
+
+    # One active CE tint-source sofa replaces sixteen colour-specific state
+    # tables. Compact four-facing aliases retain the old ids for one release
+    # so already-saved CE palettes can deserialize and migrate safely.
+    for sofa_name in sorted(SOFA_BLOCKS):
+        alias, alias_render_count = build_legacy_sofa_alias_block(
+            sofa_name, render_items)
+        blocks[f"{NAMESPACE}:{sofa_name}"] = alias
+        metrics["appearances"] += alias_render_count
+    shared_sofa, shared_render_count = build_shared_sofa_block(render_items)
+    blocks[SHARED_SOFA_ID] = shared_sofa
+    metrics["appearances"] += shared_render_count
 
     for block_id in block_ids:
         if block_id == "chalkboard":
@@ -1431,7 +1655,7 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
         if not variants:
             raise ValueError(f"No variants in {state_path}")
 
-        is_sofa = block_id in SOFA_BLOCKS
+        is_sofa = is_sofa_block(block_id)
 
         property_values: dict[str, list[str]] = defaultdict(list)
         for key in variants:
@@ -3916,7 +4140,7 @@ def build_items(
                 memberships[member.split(":", 1)[1]].append(tag)
 
     items: dict[str, Any] = {}
-    placeable_ids = block_ids | furniture_ids
+    placeable_ids = block_ids | furniture_ids | SOFA_BLOCKS
     for item_id in item_ids:
         model = find_file(ITEM_MODELS, Path(f"{item_id}.json"))
         if model is None:
@@ -3928,6 +4152,9 @@ def build_items(
             },
             "model": {"type": "minecraft:model", "path": f"{NAMESPACE}:item/{item_id}"},
         }
+        if item_id in SOFA_BLOCKS:
+            color = item_id.removesuffix("_sofa")
+            config["data"]["dyed_color"] = SOFA_DYE_COLORS[color]
         behaviors: list[dict[str, Any]] = []
         # Every portable vessel uses the same interaction contract: ordinary
         # right-click keeps its held-item action (drink, throw or shake), while
@@ -4039,7 +4266,15 @@ def build_items(
                 "consume_seconds": 1.6,
                 "animation": "eat",
             }
-        if item_id in furniture_ids:
+        if item_id in SOFA_BLOCKS:
+            # All sixteen public ids remain distinct items, recipes and names.
+            # CE copies the exact placed item into tint_source_block, so colour
+            # and the correct drop survive without a colour state dimension.
+            behaviors.append({
+                "type": "block_item",
+                "block": SHARED_SOFA_ID,
+            })
+        elif item_id in furniture_ids:
             if item_id == "shaker":
                 # Portable use remains a minimal CE callback.  The following
                 # generic sneak-placement adapter delegates actual placement to
@@ -4215,7 +4450,10 @@ def main() -> None:
     item_ids = registry_ids(ITEM_REGISTER, "ITEMS")
     legacy_placeable_ids = registry_ids(BLOCK_REGISTER, "BLOCKS")
     block_ids = [block_id for block_id in legacy_placeable_ids if is_grid_block(block_id)]
-    furniture_ids = [block_id for block_id in legacy_placeable_ids if not is_grid_block(block_id)]
+    furniture_ids = [
+        block_id for block_id in legacy_placeable_ids
+        if not is_grid_block(block_id) and block_id not in SOFA_BLOCKS
+    ]
     raw_tags = load_raw_tags()
     tags = flatten_tags(raw_tags)
     block_tags = load_raw_registry_tags(("blocks", "block"))
@@ -4234,11 +4472,16 @@ def main() -> None:
     if generated_furniture_models.exists():
         shutil.rmtree(generated_furniture_models)
 
+    create_tintable_sofa_models()
     blocks, block_render_items, block_metrics = build_blocks(block_ids, set(item_ids))
     furniture, furniture_render_items, furniture_placement, furniture_metrics = build_furniture(
         furniture_ids, set(item_ids)
     )
     render_items = {**block_render_items, **furniture_render_items}
+    # Migration-only white furniture reuses the same six ids. Reassert the
+    # tintable model after merging the two independently generated maps.
+    for connection in SOFA_CONNECTIONS:
+        sofa_render_id(render_items, connection)
     create_pressing_fluid_models()
     create_barrel_fluid_models()
     create_pendant_lamp_models()

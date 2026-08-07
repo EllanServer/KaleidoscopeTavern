@@ -19,7 +19,7 @@ from typing import Any
 
 DEFAULT_BLOCKS = Path("src/paper/pack/configuration/blocks.json")
 DEFAULT_CAPACITY = 2_000
-DEFAULT_RESERVE = 500
+DEFAULT_RESERVE = 1_000
 CAPACITY_STEP = 1_000
 
 

@@ -24,6 +24,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.ConnectedBlockBeh
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.GrapeSeasonGate;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.IncenseBlockBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.LegacySofaBlockMigrationService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.PressingTubBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.StorageBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TapBlockBehavior;
@@ -81,7 +82,7 @@ import java.util.logging.Level;
 public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listener, TabExecutor {
     private static final String NAMESPACE = "kaleidoscope_tavern";
     private static final int EXPECTED_ITEMS = 660; // 157 public items + 503 private render helpers
-    private static final int EXPECTED_BLOCKS = 59; // + sofas, table, counter and two cabinets
+    private static final int EXPECTED_BLOCKS = 60; // + sofas, table, counter and two cabinets
     private static final int EXPECTED_FURNITURE = 137; // includes one-release migration-only definitions
     // 已验证的 CraftEngine minor 版本。低于 26.7 直接拒绝启动（使用了
     // PrioritizedFallOnHandler / BlockEntityElement Experimental / NMS proxy 等
@@ -104,6 +105,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     private BarStoolVisualService barStoolVisuals;
     private ShakerVisualService shakerVisuals;
     private BottleFurnitureService bottleFurniture;
+    private LegacySofaBlockMigrationService legacySofaBlocks;
     private BlockService blocks;
     private EffectHudPlaceholder effectHudPlaceholder;
 
@@ -187,8 +189,10 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         displayStorage = new DisplayStorageService(this, catalog, items);
         ambientFurniture = new AmbientFurnitureService();
         barStoolVisuals = new BarStoolVisualService(this, items);
+        legacySofaBlocks = new LegacySofaBlockMigrationService(this);
 
         getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(legacySofaBlocks, this);
         blocks = new BlockService(catalog);
         getServer().getPluginManager().registerEvents(new MolotovService(this, items), this);
         getServer().getPluginManager().registerEvents(new BottlePlacementService(this, catalog, items), this);
@@ -212,6 +216,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         ambientFurniture.start();
         barStoolVisuals.start();
         shakerVisuals.start();
+        legacySofaBlocks.start();
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             effectHudPlaceholder = new EffectHudPlaceholder(this, effects);
@@ -244,6 +249,9 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (effectHudPlaceholder != null) {
             effectHudPlaceholder.unregister();
             effectHudPlaceholder = null;
+        }
+        if (legacySofaBlocks != null) {
+            legacySofaBlocks.stop();
         }
         if (blocks != null) {
             blocks.stop();
@@ -294,6 +302,9 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         // 结构、状态笛卡尔积、carrier、原生行为与物品路由都由
         // validate_pack.py 在构建期校验；运行时只检查 CE 已加载的内容数量。
         verifyContent(startup);
+        if (legacySofaBlocks != null) {
+            legacySofaBlocks.rescanLoadedChunks();
+        }
     }
 
     /** 启动时 fail-fast：拒绝低于已验证的 CraftEngine minor 版本。 */
@@ -604,6 +615,15 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
                 + "，命中 " + effectStats.trackHits()
                 + "，批处理 " + effectStats.trackFlushes()
                 + "，metadata 构建 " + effectStats.metadataBuilds()));
+        if (legacySofaBlocks != null) {
+            LegacySofaBlockMigrationService.MigrationStats sofaMigration =
+                    legacySofaBlocks.stats();
+            if (sofaMigration.migrated() > 0 || sofaMigration.failures() > 0) {
+                sender.sendMessage(Component.text("旧彩色沙发方块迁移：成功 "
+                        + sofaMigration.migrated() + "，失败 "
+                        + sofaMigration.failures()));
+            }
+        }
         LegacyConnectedBlockMigrationFurnitureBehavior.MigrationStats connectedMigration =
                 LegacyConnectedBlockMigrationFurnitureBehavior.stats();
         if (connectedMigration.migrated() > 0 || connectedMigration.conflicts() > 0

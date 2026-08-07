@@ -3,7 +3,8 @@
     "kaleidoscope_tavern:white_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>",
+        "dyed_color": "249,255,254"
       },
       "model": {
         "type": "minecraft:model",
@@ -11,13 +12,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:white_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:light_gray_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>",
+        "dyed_color": "157,157,151"
       },
       "model": {
         "type": "minecraft:model",
@@ -25,13 +27,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:light_gray_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:gray_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>",
+        "dyed_color": "71,79,82"
       },
       "model": {
         "type": "minecraft:model",
@@ -39,13 +42,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:gray_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:black_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>",
+        "dyed_color": "29,29,33"
       },
       "model": {
         "type": "minecraft:model",
@@ -53,13 +57,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:black_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:brown_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>",
+        "dyed_color": "131,84,50"
       },
       "model": {
         "type": "minecraft:model",
@@ -67,13 +72,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:brown_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:red_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>",
+        "dyed_color": "176,46,38"
       },
       "model": {
         "type": "minecraft:model",
@@ -81,13 +87,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:red_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:orange_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>",
+        "dyed_color": "249,128,29"
       },
       "model": {
         "type": "minecraft:model",
@@ -95,13 +102,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:orange_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:yellow_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>",
+        "dyed_color": "254,216,61"
       },
       "model": {
         "type": "minecraft:model",
@@ -109,13 +117,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:yellow_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:lime_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>",
+        "dyed_color": "128,199,31"
       },
       "model": {
         "type": "minecraft:model",
@@ -123,13 +132,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:lime_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:green_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>",
+        "dyed_color": "94,124,22"
       },
       "model": {
         "type": "minecraft:model",
@@ -137,13 +147,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:green_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:cyan_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>",
+        "dyed_color": "22,156,156"
       },
       "model": {
         "type": "minecraft:model",
@@ -151,13 +162,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:cyan_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:light_blue_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>",
+        "dyed_color": "58,179,218"
       },
       "model": {
         "type": "minecraft:model",
@@ -165,13 +177,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:light_blue_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:blue_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>",
+        "dyed_color": "60,68,170"
       },
       "model": {
         "type": "minecraft:model",
@@ -179,13 +192,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:blue_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:purple_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>",
+        "dyed_color": "137,50,184"
       },
       "model": {
         "type": "minecraft:model",
@@ -193,13 +207,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:purple_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:magenta_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>",
+        "dyed_color": "199,78,189"
       },
       "model": {
         "type": "minecraft:model",
@@ -207,13 +222,14 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:magenta_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:pink_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>",
+        "dyed_color": "243,139,170"
       },
       "model": {
         "type": "minecraft:model",
@@ -221,7 +237,7 @@
       },
       "behavior": {
         "type": "block_item",
-        "block": "kaleidoscope_tavern:pink_sofa"
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:white_bar_stool": {

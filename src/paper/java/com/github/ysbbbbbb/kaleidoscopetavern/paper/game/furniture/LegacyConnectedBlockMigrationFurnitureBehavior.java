@@ -1,5 +1,7 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture;
 
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.SofaBlockIds;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.SofaTintSupport;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.StorageBlockBehavior;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
@@ -18,6 +20,7 @@ import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockPos;
+import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.libraries.nbt.CompoundTag;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -152,19 +155,30 @@ public final class LegacyConnectedBlockMigrationFurnitureBehavior
             boolean placedHere = false;
             Block target = origin.getBlock();
             StorageBlockBehavior.Controller storageTarget = null;
+            CEWorld ceWorld = BukkitAdaptor.adapt(origin.getWorld()).storageWorld();
+            BlockPos blockPos = new BlockPos(
+                    target.getX(), target.getY(), target.getZ());
+            boolean sofaTarget = false;
             try {
-                Key targetId = bukkitFurniture.id();
-                boolean storageCabinet = isStorageCabinet(targetId);
+                Key sourceId = bukkitFurniture.id();
+                sofaTarget = SofaBlockIds.isLegacy(sourceId);
+                Key targetId = sofaTarget ? SofaBlockIds.SHARED : sourceId;
+                boolean storageCabinet = isStorageCabinet(sourceId);
                 FurnitureContents contents = storageCabinet
                         ? readFurnitureContents() : FurnitureContents.EMPTY;
                 CompoundTag properties = properties(
-                        targetId, bukkitFurniture.currentVariant().name(),
+                        sourceId, bukkitFurniture.currentVariant().name(),
                         origin.getYaw(), target);
 
                 ImmutableBlockState existing =
                         CraftEngineBlocks.getCustomBlockState(target);
                 if (existing != null) {
                     if (!existing.owner().value().id().equals(targetId)) {
+                        CONFLICTS.incrementAndGet();
+                        return;
+                    }
+                    if (sofaTarget && !reconcileSofaSource(
+                            ceWorld, blockPos, sourceId)) {
                         CONFLICTS.incrementAndGet();
                         return;
                     }
@@ -189,8 +203,12 @@ public final class LegacyConnectedBlockMigrationFurnitureBehavior
                 Location placeAt = new Location(
                         origin.getWorld(), target.getX() + 0.5,
                         target.getY(), target.getZ() + 0.5);
-                if (!CraftEngineBlocks.place(
-                        placeAt, targetId, properties, false)) {
+                boolean placedSuccessfully = sofaTarget
+                        ? SofaTintSupport.placeShared(
+                                placeAt, sourceId, facingFromYaw(origin.getYaw()))
+                        : CraftEngineBlocks.place(
+                                placeAt, targetId, properties, false);
+                if (!placedSuccessfully) {
                     FAILURES.incrementAndGet();
                     return;
                 }
@@ -200,7 +218,7 @@ public final class LegacyConnectedBlockMigrationFurnitureBehavior
                         CraftEngineBlocks.getCustomBlockState(target);
                 if (placed == null
                         || !placed.owner().value().id().equals(targetId)) {
-                    rollbackPlacedBlock(target, null);
+                    rollbackPlacedBlock(target, null, ceWorld, blockPos, sofaTarget);
                     FAILURES.incrementAndGet();
                     return;
                 }
@@ -208,7 +226,7 @@ public final class LegacyConnectedBlockMigrationFurnitureBehavior
                     storageTarget = storageController(origin);
                     if (storageTarget == null
                             || !transferIntoEmpty(storageTarget, contents)) {
-                        rollbackPlacedBlock(target, storageTarget);
+                        rollbackPlacedBlock(target, storageTarget, ceWorld, blockPos, sofaTarget);
                         FAILURES.incrementAndGet();
                         return;
                     }
@@ -219,7 +237,7 @@ public final class LegacyConnectedBlockMigrationFurnitureBehavior
                 MIGRATED.incrementAndGet();
             } catch (ReflectiveOperationException | RuntimeException exception) {
                 if (placedHere) {
-                    rollbackPlacedBlock(target, storageTarget);
+                    rollbackPlacedBlock(target, storageTarget, ceWorld, blockPos, sofaTarget);
                 }
                 FAILURES.incrementAndGet();
                 JavaPlugin owner = plugin;
@@ -286,6 +304,15 @@ public final class LegacyConnectedBlockMigrationFurnitureBehavior
         }
     }
 
+    private static boolean reconcileSofaSource(
+            CEWorld world, BlockPos pos, Key expectedItemId) {
+        Key stored = SofaTintSupport.sourceItemId(world, pos);
+        if (stored == null) {
+            return SofaTintSupport.setSourceItem(world, pos, expectedItemId);
+        }
+        return stored.equals(expectedItemId);
+    }
+
     private static StorageBlockBehavior.Controller storageController(
             Location origin) {
         return StorageBlockBehavior.findController(
@@ -327,11 +354,20 @@ public final class LegacyConnectedBlockMigrationFurnitureBehavior
     }
 
     private static void rollbackPlacedBlock(
-            Block target, StorageBlockBehavior.Controller controller) {
+            Block target,
+            StorageBlockBehavior.Controller controller,
+            CEWorld world,
+            BlockPos pos,
+            boolean sofaTarget) {
         if (controller != null) {
             for (int slot = 0; slot < controller.slots(); slot++) {
                 controller.take(slot);
             }
+        }
+        if (sofaTarget) {
+            // tint_source_block drops its stored source item from onRemove.
+            // Clear it before rollback so a failed migration cannot duplicate.
+            SofaTintSupport.clearSourceItem(world, pos);
         }
         CraftEngineBlocks.remove(target, false);
     }
@@ -340,7 +376,11 @@ public final class LegacyConnectedBlockMigrationFurnitureBehavior
             Key id, String variant, float yaw, Block target) {
         CompoundTag properties = new CompoundTag();
         String path = id.value();
-        if (path.endsWith("_sofa") || path.equals("bar_counter")) {
+        if (path.endsWith("_sofa")) {
+            properties.putString("facing",
+                    facingFromYaw(yaw).name().toLowerCase(Locale.ROOT));
+            properties.putString("connection", connection(variant));
+        } else if (path.equals("bar_counter")) {
             properties.putString("facing",
                     facingFromYaw(yaw).name().toLowerCase(Locale.ROOT));
             properties.putString("connection", connection(variant));
@@ -358,7 +398,7 @@ public final class LegacyConnectedBlockMigrationFurnitureBehavior
             throw new IllegalArgumentException(
                     "Unsupported connected migration id: " + id);
         }
-        if (path.endsWith("_sofa") || path.equals("table")) {
+        if (path.equals("table")) {
             properties.putBoolean("waterlogged", isWaterlogged(target));
         }
         return properties;
