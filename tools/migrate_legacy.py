@@ -172,6 +172,9 @@ STORAGE_BLOCK_SPECS: dict[str, tuple[int, str | None]] = {
     "holder": (1, "holder_blocklist"),
 }
 STORAGE_BLOCKS = frozenset(STORAGE_BLOCK_SPECS)
+CONNECTED_STORAGE_BLOCKS = frozenset({
+    "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet",
+})
 
 SOFA_COLORS = (
     "white", "orange", "magenta", "light_blue", "yellow", "lime",
@@ -208,6 +211,13 @@ SOFA_DYE_COLORS = {
 # deserialize already-placed colour blocks before the migration service folds
 # them into the shared tint-source block.
 CONNECTED_GRID_BLOCKS = frozenset({"bar_counter", "table"})
+# These remain real CE blocks for native neighbour updates and persistent block
+# entities, but visually follow CE's bundled sofa: one invisible barrier
+# carrier plus an ItemDisplay renderer. They therefore do not reserve unrelated
+# trapdoor, cactus, lightning-rod or solid carrier-state pools.
+FURNITURE_STYLE_BLOCKS = frozenset({
+    *CONNECTED_GRID_BLOCKS, *STORAGE_BLOCKS,
+})
 CONNECTED_MIGRATION_BLOCKS = frozenset({
     *SOFA_BLOCKS, *CONNECTED_GRID_BLOCKS,
     "bar_cabinet", "glass_bar_cabinet",
@@ -804,27 +814,8 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
 
 
 def carrier_type(block_id: str) -> tuple[str, str]:
-    if block_id == "table":
-        return "table_trapdoor", "kaleidoscope-tavern-table"
-    if block_id == "bar_counter":
-        return "solid", "kaleidoscope-tavern-bar-counter"
-    if block_id in {"bar_cabinet", "glass_bar_cabinet"}:
-        return "solid", f"kaleidoscope-tavern-{block_id.replace('_', '-')}"
-    if block_id == "cellar_cabinet":
-        return "solid", "kaleidoscope-tavern-cellar-cabinet-transparent"
-    if block_id == "circular_rack":
-        # CE releases every non-zero cave-vines age. The berry-bearing state
-        # supplies a broad, full-height selection column without collision,
-        # making every side of the circular rack easy to target while the
-        # authored ItemDisplay remains its only visible model.
-        return "state", CIRCULAR_RACK_CARRIER_STATE
-    if block_id == "holder":
-        # HolderBlock rotates its long horizontal axis with FACING. CE releases
-        # all four horizontal lightning-rod states, allowing the client target
-        # to rotate with the authored rack instead of remaining upright.
-        return "horizontal_lightning_rod", "kaleidoscope-tavern-holder"
-    if block_id == "tilted_rack":
-        return "cactus", f"kaleidoscope-tavern-{block_id.replace('_', '-')}-transparent"
+    if block_id in FURNITURE_STYLE_BLOCKS:
+        return "state", SOFA_CARRIER_STATE
     return "higher_tripwire", "kaleidoscope-tavern-decor-transparent"
 
 
@@ -930,7 +921,7 @@ def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | li
         ]
     if block_id in STORAGE_BLOCK_SPECS:
         slots, blocklist = STORAGE_BLOCK_SPECS[block_id]
-        behavior = {
+        storage_behavior = {
             "type": f"{NAMESPACE}:storage",
             "kind": ("bar_cabinet"
                      if block_id == "glass_bar_cabinet" else block_id),
@@ -938,8 +929,17 @@ def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | li
             "data_key": f"{NAMESPACE}:storage_{block_id}",
         }
         if blocklist is not None:
-            behavior["blocklist"] = f"{NAMESPACE}:{blocklist}"
-        return behavior
+            storage_behavior["blocklist"] = f"{NAMESPACE}:{blocklist}"
+        if block_id in CONNECTED_STORAGE_BLOCKS:
+            return [
+                {
+                    "type": f"{NAMESPACE}:connected_block",
+                    "mode": "linear",
+                    "connects": [f"{NAMESPACE}:{block_id}"],
+                },
+                storage_behavior,
+            ]
+        return storage_behavior
     if block_id in INCENSE_BLOCKS:
         small, large, y_offset, y_range = INCENSE_SPECS[block_id]
         return {
@@ -1677,9 +1677,15 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             # natively, and Tavern only derives the connected visual `type`.
             property_values["axis"] = ["x", "y", "z"]
 
+        # Sofa-style furniture blocks intentionally do not model waterlogging.
+        # Their barrier carrier, model and interaction semantics are the same in
+        # water and air, so retaining this property only doubled state usage.
+        if block_id in FURNITURE_STYLE_BLOCKS:
+            property_values.pop("waterlogged", None)
+
         carrier, carrier_id = carrier_type(block_id)
         uses_waterlogged_carrier = (
-            block_id in {"tap", "table"} or block_id in TRELLIS_BLOCKS
+            block_id == "tap" or block_id in TRELLIS_BLOCKS
         )
         appearance_names: dict[Any, str] = {}
         appearances: dict[str, Any] = {}
@@ -1689,16 +1695,29 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             if isinstance(raw_model, list) and len(raw_model) > 1:
                 metrics["weighted_variants_reduced"] += 1
             variant_properties = parse_variant_key(variant_key)
+            if block_id in FURNITURE_STYLE_BLOCKS:
+                variant_properties.pop("waterlogged", None)
+                variant_key = ",".join(
+                    f"{name}={value}"
+                    for name, value in sorted(variant_properties.items()))
             model = normalize_model_entry(raw_model)
-            if block_id in {"tilted_rack", "holder"}:
-                # CE's ItemDisplay yaw uses the opposite sign from the legacy
-                # block-state model. Reflecting around 180 degrees keeps the
-                # already-correct north/south variants and swaps east/west into
-                # place. Only the visible base model changes; slot selection,
-                # bottle visuals and redstone launch semantics still use the
-                # original block state.
-                model = (model[0], model[1], (180 - model[2]) % 360,
-                         model[3], model[4])
+            if block_id == "table":
+                # The archived state numbers name the neighbour side while the
+                # authored endpoint files name the visible missing side. Swap
+                # only the endpoint model in configuration; the world-axis
+                # topology stays compact and code-free.
+                table_endpoint_models = {
+                    f"{NAMESPACE}:block/deco/table/right":
+                        f"{NAMESPACE}:block/deco/table/left",
+                    f"{NAMESPACE}:block/deco/table/left":
+                        f"{NAMESPACE}:block/deco/table/right",
+                    f"{NAMESPACE}:block/deco/table/right_rot":
+                        f"{NAMESPACE}:block/deco/table/left_rot",
+                    f"{NAMESPACE}:block/deco/table/left_rot":
+                        f"{NAMESPACE}:block/deco/table/right_rot",
+                }
+                model = (table_endpoint_models.get(model[0], model[0]),
+                         *model[1:])
             if (block_id == "tap"
                     and variant_properties.get("facing") in {"north", "south"}):
                 # The migrated wall block's north/south visual was reversed
@@ -1723,8 +1742,7 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                 # Incense facing is an ItemDisplay transform, not a distinct
                 # item model. Reuse the same two render helpers for all four
                 # directions just as the former furniture definitions did.
-                if (is_sofa or block_id == "bar_counter"
-                        or block_id in {"bar_cabinet", "glass_bar_cabinet"}):
+                if is_sofa or block_id in FURNITURE_STYLE_BLOCKS:
                     # The old furniture used the authored north-state model and
                     # let furniture yaw rotate it. Real CE blocks need all four
                     # state rotations, but those states must still share the same
@@ -1764,21 +1782,11 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                         "minecraft:lightning_rod"
                         f"[facing={facing},powered=false,waterlogged={waterlogged}]"
                     )
-                elif carrier == "table_trapdoor":
-                    appearance["state"] = (
-                        "minecraft:iron_trapdoor"
-                        "[facing=north,half=top,open=false,powered=true,"
-                        f"waterlogged={variant_properties['waterlogged']}]"
-                    )
-                elif carrier == "horizontal_lightning_rod":
-                    appearance["state"] = holder_carrier_state(
-                        variant_properties["facing"])
-                elif carrier == "state":
-                    appearance["state"] = carrier_id
-                elif is_sofa:
+                elif is_sofa or block_id in FURNITURE_STYLE_BLOCKS:
                     # Match CE's bundled sofa: barrier is already invisible,
-                    # so do not mark this appearance transparent (which would
-                    # try to bind CE's empty model to the shared vanilla state).
+                    # while the authored geometry is supplied by ItemDisplay.
+                    # Do not mark it transparent or allocate another vanilla
+                    # carrier pool.
                     appearance["state"] = SOFA_CARRIER_STATE
                 elif block_id in INCENSE_BLOCKS:
                     # CE 26.7.4 explicitly releases the un-waxed source state
@@ -1801,7 +1809,7 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
                     }
                 else:
                     appearance["auto_state"] = {"type": carrier, "id": carrier_id}
-                if not is_sofa:
+                if not (is_sofa or block_id in FURNITURE_STYLE_BLOCKS):
                     appearance["transparent"] = True
                 appearance["entity_renderer"] = renderer
                 appearances[appearance_name] = appearance

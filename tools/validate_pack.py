@@ -23,28 +23,13 @@ EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
 COPPER_LANTERN_CARRIER_STATE = (
     "minecraft:copper_lantern[hanging=false,waterlogged=false]"
 )
-CIRCULAR_RACK_CARRIER_STATE = (
-    "minecraft:cave_vines[age=1,berries=true]"
-)
-
-
-def holder_carrier_state(facing: str) -> str:
-    if facing not in {"north", "east", "south", "west"}:
-        raise AssertionError(f"Unsupported holder facing: {facing}")
-    return (
-        "minecraft:lightning_rod"
-        f"[facing={facing},powered=false,waterlogged=false]"
-    )
-
-
 STORAGE_BLOCK_SPECS = {
-    "bar_cabinet": (2, None, "solid"),
-    "glass_bar_cabinet": (2, None, "solid"),
-    "cellar_cabinet": (9, "cellar_cabinet_blocklist", "solid"),
-    "tilted_rack": (3, "tilted_rack_blocklist", "cactus"),
-    "circular_rack": (
-        6, "circular_rack_blocklist", CIRCULAR_RACK_CARRIER_STATE),
-    "holder": (1, "holder_blocklist", "horizontal_lightning_rod"),
+    "bar_cabinet": (2, None, "minecraft:barrier"),
+    "glass_bar_cabinet": (2, None, "minecraft:barrier"),
+    "cellar_cabinet": (9, "cellar_cabinet_blocklist", "minecraft:barrier"),
+    "tilted_rack": (3, "tilted_rack_blocklist", "minecraft:barrier"),
+    "circular_rack": (6, "circular_rack_blocklist", "minecraft:barrier"),
+    "holder": (1, "holder_blocklist", "minecraft:barrier"),
 }
 EXPECTED_TICKING_FURNITURE = {
     "mystery_cocktail": (
@@ -269,7 +254,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("DisplayStorageService.java", "interactStorageBlock"),
     ),
     "BarCabinetBlock.java": (
-        ("block/StorageBlockBehavior.java", "ConnectedBlockSemantics.linearPosition"),
+        ("block/ConnectedBlockBehavior.java", "ConnectedBlockSemantics.linearPosition"),
         ("DisplayStorageService.java", "interactBarCabinetBlock"),
     ),
     "BarStoolBlock.java": (
@@ -286,7 +271,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "CellarCabinetBlock.java": (
         ("DisplayStorageService.java", "CELLAR_CABINET"),
-        ("block/StorageBlockBehavior.java", "ConnectedBlockSemantics.linearPosition"),
+        ("block/ConnectedBlockBehavior.java", "ConnectedBlockSemantics.linearPosition"),
     ),
     "ChalkboardBlock.java": (
         ("block/ChalkboardBlockBehavior.java", "private void tryMerge("),
@@ -2389,7 +2374,6 @@ def validate() -> dict[str, int]:
             "public void neighborChanged",
             "SignalGetterProxy.INSTANCE.hasNeighborSignal(level, minecraftPos)",
             "state.with(poweredProperty, powered)",
-            "ConnectedBlockSemantics.linearPosition",
             "private final Item[] items",
             "private int occupiedSlots",
             "occupiedSlots++",
@@ -2405,6 +2389,20 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "CE storage blocks must own exact slots, rendering and redstone edges; "
                 f"missing token: {required_token}")
+    connected_block_source = (
+        game_package / "block/ConnectedBlockBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "case LINEAR -> updateLinear",
+            "ConnectedBlockSemantics.linearPosition"):
+        if required_token not in connected_block_source:
+            raise AssertionError(
+                "Connected grid topology ownership drifted; missing token: "
+                f"{required_token}")
+    if "state.with(\n                    facingProperty" in connected_block_source:
+        raise AssertionError(
+            "ConnectedBlockBehavior must not override CE's native facing placement")
+
     if "Arrays.stream(items)" in storage_block_source:
         raise AssertionError(
             "CE storage ticking must use the maintained occupied-slot count instead "
@@ -4443,63 +4441,56 @@ def validate() -> dict[str, int]:
             "type": f"{NAMESPACE}:connected_block",
             "mode": "table",
             "connects": [table_id]}:
-        raise AssertionError("Table must use only the minimal connected-block topology adapter")
-    if items[table_id].get("behavior") != {"type": "block_item", "block": table_id}:
+        raise AssertionError("Table must use only the minimal topology adapter")
+    if items[table_id].get("behavior") != {
+            "type": "block_item", "block": table_id}:
         raise AssertionError("Table item placement must be native CE block_item")
     table_states = table_block.get("states", {})
     if table_states.get("properties") != {
             "axis": {"type": "axis", "default": "x", "values": ["x", "z"]},
-            "position": {"type": "int", "default": 0, "range": "0~3"},
-            "waterlogged": {"type": "boolean", "default": "false"}}:
-        raise AssertionError("Table CE state properties drifted")
+            "position": {"type": "int", "default": 0, "range": "0~3"}}:
+        raise AssertionError("Furniture-style table state properties drifted")
+    # Endpoint source files are selected declaratively in the opposite slot so
+    # the visible tabletop edge meets the neighbour. Topology numbers remain
+    # source-compatible and Java does not know model names.
     expected_table_models = {
         ("x", 0): f"{NAMESPACE}:block/deco/table/single",
-        ("x", 1): f"{NAMESPACE}:block/deco/table/right",
+        ("x", 1): f"{NAMESPACE}:block/deco/table/left",
         ("x", 2): f"{NAMESPACE}:block/deco/table/middle",
-        ("x", 3): f"{NAMESPACE}:block/deco/table/left",
+        ("x", 3): f"{NAMESPACE}:block/deco/table/right",
         ("z", 0): f"{NAMESPACE}:block/deco/table/single",
-        ("z", 1): f"{NAMESPACE}:block/deco/table/right_rot",
+        ("z", 1): f"{NAMESPACE}:block/deco/table/left_rot",
         ("z", 2): f"{NAMESPACE}:block/deco/table/middle_rot",
-        ("z", 3): f"{NAMESPACE}:block/deco/table/left_rot",
+        ("z", 3): f"{NAMESPACE}:block/deco/table/right_rot",
     }
     expected_table_keys = {
-        f"axis={axis},position={position},waterlogged={waterlogged}"
-        for axis in ("x", "z")
-        for position in range(4)
-        for waterlogged in ("false", "true")
+        f"axis={axis},position={position}"
+        for axis in ("x", "z") for position in range(4)
     }
     table_variants = table_states.get("variants", {})
     if set(table_variants) != expected_table_keys:
-        raise AssertionError("Table must expose all 16 world-axis/endpoint/water states")
+        raise AssertionError("Table must expose exactly eight axis/endpoint states")
     table_render_ids: dict[tuple[str, int], set[str]] = defaultdict(set)
     for variant_key, variant in table_variants.items():
         props = dict(part.split("=", 1) for part in variant_key.split(","))
         axis = props["axis"]
         position = int(props["position"])
-        waterlogged = props["waterlogged"]
         appearance = table_states["appearances"][variant["appearance"]]
-        expected_carrier = (
-            "minecraft:iron_trapdoor"
-            "[facing=north,half=top,open=false,powered=true,"
-            f"waterlogged={waterlogged}]"
-        )
-        if (appearance.get("state") != expected_carrier
-                or appearance.get("transparent") is not True):
+        if (appearance.get("state") != "minecraft:barrier"
+                or "auto_state" in appearance
+                or appearance.get("transparent") is not None):
             raise AssertionError(
-                f"table/{variant_key}: CE trapdoor carrier/collision drifted")
+                f"table/{variant_key}: must use CE sofa-style barrier rendering")
         renderer = appearance.get("entity_renderer", {})
         render_id = renderer.get("item")
         table_render_ids[(axis, position)].add(render_id)
         if render_items.get(render_id, {}).get("model", {}).get("path") \
                 != expected_table_models[(axis, position)]:
             raise AssertionError(f"table/{variant_key}: source model drifted")
-        expected_variant = {"appearance": variant["appearance"]}
-        if waterlogged == "true":
-            expected_variant["settings"] = {"fluid_state": "water"}
-        if variant != expected_variant:
-            raise AssertionError(f"table/{variant_key}: fluid state drifted")
+        if variant != {"appearance": variant["appearance"]}:
+            raise AssertionError(f"table/{variant_key}: unexpected state settings")
     if any(len(ids) != 1 for ids in table_render_ids.values()):
-        raise AssertionError("Table water states must share their private render item")
+        raise AssertionError("Table states must share their seven render helpers")
     if len({next(iter(ids)) for ids in table_render_ids.values()}) != 7:
         raise AssertionError("Table must retain exactly seven authored source models")
 
@@ -5315,12 +5306,11 @@ def validate() -> dict[str, int]:
     for variant_key, variant in counter_states["variants"].items():
         props = dict(part.split("=", 1) for part in variant_key.split(","))
         appearance = counter_states["appearances"][variant["appearance"]]
-        auto_state = appearance.get("auto_state", {})
-        if (auto_state.get("type") != "solid"
-                or auto_state.get("id") != "kaleidoscope-tavern-bar-counter"
-                or appearance.get("transparent") is not True):
+        if (appearance.get("state") != "minecraft:barrier"
+                or "auto_state" in appearance
+                or appearance.get("transparent") is not None):
             raise AssertionError(
-                f"bar_counter/{variant_key}: CE solid carrier drifted")
+                f"bar_counter/{variant_key}: must use CE sofa-style barrier rendering")
         renderer = appearance.get("entity_renderer", {})
         if renderer.get("rotation") != facing_rotations[props["facing"]]:
             raise AssertionError(f"bar_counter/{variant_key}: rotation drifted")
@@ -5356,10 +5346,6 @@ def validate() -> dict[str, int]:
         "east": "0,90,0", "north": None,
         "south": "0,180,0", "west": "0,270,0",
     }
-    corrected_storage_rotations = {
-        "east": "0,90,0", "north": "0,180,0",
-        "south": None, "west": "0,270,0",
-    }
     for storage_id, (slot_count, blocklist, carrier_type) in STORAGE_BLOCK_SPECS.items():
         full_id = f"{NAMESPACE}:{storage_id}"
         legacy_cabinet = storage_id in {"bar_cabinet", "glass_bar_cabinet"}
@@ -5380,10 +5366,22 @@ def validate() -> dict[str, int]:
         }
         if blocklist is not None:
             expected_behavior["blocklist"] = f"{NAMESPACE}:{blocklist}"
-        if definition.get("behavior") != expected_behavior:
+        if storage_id in {"bar_cabinet", "glass_bar_cabinet", "cellar_cabinet"}:
+            expected_configured_behavior = [
+                {
+                    "type": f"{NAMESPACE}:connected_block",
+                    "mode": "linear",
+                    "connects": [full_id],
+                },
+                expected_behavior,
+            ]
+            actual_behavior = definition.get("behaviors")
+        else:
+            expected_configured_behavior = expected_behavior
+            actual_behavior = definition.get("behavior")
+        if actual_behavior != expected_configured_behavior:
             raise AssertionError(
-                f"{storage_id}: CE storage behavior drifted: "
-                f"{definition.get('behavior')!r}")
+                f"{storage_id}: CE behavior ownership drifted: {actual_behavior!r}")
 
         properties = definition.get("states", {}).get("properties", {})
         if legacy_cabinet:
@@ -5420,42 +5418,11 @@ def validate() -> dict[str, int]:
 
         render_ids: set[str] = set()
         for appearance in appearances.values():
-            if carrier_type == "horizontal_lightning_rod":
-                if (appearance.get("state") not in {
-                        holder_carrier_state(facing)
-                        for facing in ("north", "east", "south", "west")
-                    } or "auto_state" in appearance):
-                    raise AssertionError(
-                        f"{storage_id}: expected a released horizontal "
-                        f"lightning-rod carrier, got {appearance!r}")
-            elif carrier_type.startswith("minecraft:"):
-                if (appearance.get("state") != carrier_type
-                        or "auto_state" in appearance):
-                    raise AssertionError(
-                        f"{storage_id}: expected released carrier state "
-                        f"{carrier_type}, got {appearance!r}")
-            else:
-                auto_state = appearance.get("auto_state", {})
-                if auto_state.get("type") != carrier_type:
-                    raise AssertionError(
-                        f"{storage_id}: expected {carrier_type} carrier, "
-                        f"got {auto_state!r}")
-                expected_carrier_id = {
-                    "bar_cabinet": "kaleidoscope-tavern-bar-cabinet",
-                    "glass_bar_cabinet":
-                        "kaleidoscope-tavern-glass-bar-cabinet",
-                    "cellar_cabinet":
-                        "kaleidoscope-tavern-cellar-cabinet-transparent",
-                    "tilted_rack":
-                        "kaleidoscope-tavern-tilted-rack-transparent",
-                }.get(storage_id)
-                if (expected_carrier_id is not None
-                        and auto_state.get("id") != expected_carrier_id):
-                    raise AssertionError(
-                        f"{storage_id}: carrier allocation id drifted")
-            if appearance.get("transparent") is not True:
+            if (appearance.get("state") != "minecraft:barrier"
+                    or "auto_state" in appearance
+                    or appearance.get("transparent") is not None):
                 raise AssertionError(
-                    f"{storage_id}: storage carrier must stay client-transparent")
+                    f"{storage_id}: must use CE sofa-style barrier rendering")
             renderer = appearance.get("entity_renderer", {})
             if renderer.get("type") != "item_display":
                 raise AssertionError(
@@ -5469,9 +5436,7 @@ def validate() -> dict[str, int]:
                 f"{storage_id}: expected {expected_render_items} shared base "
                 f"render items, found {render_ids}")
 
-        rotations = (corrected_storage_rotations
-                     if storage_id in {"tilted_rack", "holder"}
-                     else storage_facing_rotations)
+        rotations = storage_facing_rotations
         powered_suffix = ",powered=false" if "powered" in properties else ""
         position_suffix = ",position=single" if "position" in properties else ""
         for facing, expected_rotation in rotations.items():
@@ -5486,12 +5451,6 @@ def validate() -> dict[str, int]:
                 raise AssertionError(
                     f"{storage_id}: {facing} model rotation drifted: "
                     f"{actual_rotation!r}")
-            if (storage_id == "holder"
-                    and appearance.get("state")
-                    != holder_carrier_state(facing)):
-                raise AssertionError(
-                    f"holder: {facing} carrier must rotate horizontally "
-                    f"with the block state, got {appearance.get('state')!r}")
 
         settings = definition.get("settings", {})
         expected_mining_tag = (

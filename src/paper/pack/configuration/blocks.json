@@ -2934,16 +2934,11 @@
             "type": "int",
             "default": 0,
             "range": "0~3"
-          },
-          "waterlogged": {
-            "type": "boolean",
-            "default": "false"
           }
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=false]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/table/34675ebc5b",
@@ -2953,30 +2948,27 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=true]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/34675ebc5b",
+              "item": "kaleidoscope_tavern:_render/table/0711d6f122",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_2": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=false]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/811887aa8b",
+              "item": "kaleidoscope_tavern:_render/table/af86474a16",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_3": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=true]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/table/811887aa8b",
@@ -2986,110 +2978,30 @@
             }
           },
           "appearance_4": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=false]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/af86474a16",
+              "item": "kaleidoscope_tavern:_render/table/3174c95b3a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_5": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=true]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/af86474a16",
+              "item": "kaleidoscope_tavern:_render/table/3074b35dfb",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_6": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=false]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/0711d6f122",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_7": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=true]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/0711d6f122",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_8": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=false]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/table/2f4d4646ae",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_9": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=true]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/2f4d4646ae",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_10": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=false]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/3074b35dfb",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_11": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=true]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/3074b35dfb",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_12": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=false]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/3174c95b3a",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_13": {
-            "state": "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=true,waterlogged=true]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/table/3174c95b3a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
@@ -3097,77 +3009,29 @@
           }
         },
         "variants": {
-          "axis=x,position=0,waterlogged=false": {
+          "axis=x,position=0": {
             "appearance": "appearance_0"
           },
-          "axis=x,position=0,waterlogged=true": {
-            "appearance": "appearance_1",
-            "settings": {
-              "fluid_state": "water"
-            }
+          "axis=x,position=1": {
+            "appearance": "appearance_1"
           },
-          "axis=x,position=1,waterlogged=false": {
+          "axis=x,position=2": {
             "appearance": "appearance_2"
           },
-          "axis=x,position=1,waterlogged=true": {
-            "appearance": "appearance_3",
-            "settings": {
-              "fluid_state": "water"
-            }
+          "axis=x,position=3": {
+            "appearance": "appearance_3"
           },
-          "axis=x,position=2,waterlogged=false": {
-            "appearance": "appearance_4"
-          },
-          "axis=x,position=2,waterlogged=true": {
-            "appearance": "appearance_5",
-            "settings": {
-              "fluid_state": "water"
-            }
-          },
-          "axis=x,position=3,waterlogged=false": {
-            "appearance": "appearance_6"
-          },
-          "axis=x,position=3,waterlogged=true": {
-            "appearance": "appearance_7",
-            "settings": {
-              "fluid_state": "water"
-            }
-          },
-          "axis=z,position=0,waterlogged=false": {
+          "axis=z,position=0": {
             "appearance": "appearance_0"
           },
-          "axis=z,position=0,waterlogged=true": {
-            "appearance": "appearance_1",
-            "settings": {
-              "fluid_state": "water"
-            }
+          "axis=z,position=1": {
+            "appearance": "appearance_4"
           },
-          "axis=z,position=1,waterlogged=false": {
-            "appearance": "appearance_8"
+          "axis=z,position=2": {
+            "appearance": "appearance_5"
           },
-          "axis=z,position=1,waterlogged=true": {
-            "appearance": "appearance_9",
-            "settings": {
-              "fluid_state": "water"
-            }
-          },
-          "axis=z,position=2,waterlogged=false": {
-            "appearance": "appearance_10"
-          },
-          "axis=z,position=2,waterlogged=true": {
-            "appearance": "appearance_11",
-            "settings": {
-              "fluid_state": "water"
-            }
-          },
-          "axis=z,position=3,waterlogged=false": {
-            "appearance": "appearance_12"
-          },
-          "axis=z,position=3,waterlogged=true": {
-            "appearance": "appearance_13",
-            "settings": {
-              "fluid_state": "water"
-            }
+          "axis=z,position=3": {
+            "appearance": "appearance_6"
           }
         }
       },
@@ -6323,11 +6187,7 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/ced9c7fb4d",
@@ -6338,11 +6198,7 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/ced9c7fb4d",
@@ -6352,11 +6208,7 @@
             }
           },
           "appearance_2": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/ced9c7fb4d",
@@ -6367,11 +6219,7 @@
             }
           },
           "appearance_3": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/ced9c7fb4d",
@@ -6382,11 +6230,7 @@
             }
           },
           "appearance_4": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/e4c3e4395a",
@@ -6397,11 +6241,7 @@
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/e4c3e4395a",
@@ -6411,11 +6251,7 @@
             }
           },
           "appearance_6": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/e4c3e4395a",
@@ -6426,11 +6262,7 @@
             }
           },
           "appearance_7": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/e4c3e4395a",
@@ -6441,11 +6273,7 @@
             }
           },
           "appearance_8": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/bb1a9c3db9",
@@ -6456,11 +6284,7 @@
             }
           },
           "appearance_9": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/bb1a9c3db9",
@@ -6470,11 +6294,7 @@
             }
           },
           "appearance_10": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/bb1a9c3db9",
@@ -6485,11 +6305,7 @@
             }
           },
           "appearance_11": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/bb1a9c3db9",
@@ -6500,11 +6316,7 @@
             }
           },
           "appearance_12": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/5e041288be",
@@ -6515,11 +6327,7 @@
             }
           },
           "appearance_13": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/5e041288be",
@@ -6529,11 +6337,7 @@
             }
           },
           "appearance_14": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/5e041288be",
@@ -6544,11 +6348,7 @@
             }
           },
           "appearance_15": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/5e041288be",
@@ -6559,11 +6359,7 @@
             }
           },
           "appearance_16": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/8043a621af",
@@ -6574,11 +6370,7 @@
             }
           },
           "appearance_17": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/8043a621af",
@@ -6588,11 +6380,7 @@
             }
           },
           "appearance_18": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/8043a621af",
@@ -6603,11 +6391,7 @@
             }
           },
           "appearance_19": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/8043a621af",
@@ -6618,11 +6402,7 @@
             }
           },
           "appearance_20": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/fba778d59b",
@@ -6633,11 +6413,7 @@
             }
           },
           "appearance_21": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/fba778d59b",
@@ -6647,11 +6423,7 @@
             }
           },
           "appearance_22": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/fba778d59b",
@@ -6662,11 +6434,7 @@
             }
           },
           "appearance_23": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-counter"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_counter/fba778d59b",
@@ -10746,11 +10514,7 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/168d317b28",
@@ -10761,11 +10525,7 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9d2d3e7a21",
@@ -10776,11 +10536,7 @@
             }
           },
           "appearance_2": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9651abf3e7",
@@ -10791,11 +10547,7 @@
             }
           },
           "appearance_3": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/12fa828aea",
@@ -10806,11 +10558,7 @@
             }
           },
           "appearance_4": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/168d317b28",
@@ -10820,11 +10568,7 @@
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9d2d3e7a21",
@@ -10834,11 +10578,7 @@
             }
           },
           "appearance_6": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9651abf3e7",
@@ -10848,11 +10588,7 @@
             }
           },
           "appearance_7": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/12fa828aea",
@@ -10862,11 +10598,7 @@
             }
           },
           "appearance_8": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/168d317b28",
@@ -10877,11 +10609,7 @@
             }
           },
           "appearance_9": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9d2d3e7a21",
@@ -10892,11 +10620,7 @@
             }
           },
           "appearance_10": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9651abf3e7",
@@ -10907,11 +10631,7 @@
             }
           },
           "appearance_11": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/12fa828aea",
@@ -10922,11 +10642,7 @@
             }
           },
           "appearance_12": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/168d317b28",
@@ -10937,11 +10653,7 @@
             }
           },
           "appearance_13": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9d2d3e7a21",
@@ -10952,11 +10664,7 @@
             }
           },
           "appearance_14": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9651abf3e7",
@@ -10967,11 +10675,7 @@
             }
           },
           "appearance_15": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/bar_cabinet/12fa828aea",
@@ -11062,12 +10766,21 @@
         "fire_spread_chance": 20,
         "item": "kaleidoscope_tavern:bar_cabinet"
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:storage",
-        "kind": "bar_cabinet",
-        "slots": 2,
-        "data_key": "kaleidoscope_tavern:storage_bar_cabinet"
-      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:connected_block",
+          "mode": "linear",
+          "connects": [
+            "kaleidoscope_tavern:bar_cabinet"
+          ]
+        },
+        {
+          "type": "kaleidoscope_tavern:storage",
+          "kind": "bar_cabinet",
+          "slots": 2,
+          "data_key": "kaleidoscope_tavern:storage_bar_cabinet"
+        }
+      ],
       "loot": {
         "pools": [
           {
@@ -11113,11 +10826,7 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/dd06a67476",
@@ -11128,11 +10837,7 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/c75e5649a8",
@@ -11143,11 +10848,7 @@
             }
           },
           "appearance_2": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/16d881cbec",
@@ -11158,11 +10859,7 @@
             }
           },
           "appearance_3": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/4d048a5587",
@@ -11173,11 +10870,7 @@
             }
           },
           "appearance_4": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/dd06a67476",
@@ -11187,11 +10880,7 @@
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/c75e5649a8",
@@ -11201,11 +10890,7 @@
             }
           },
           "appearance_6": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/16d881cbec",
@@ -11215,11 +10900,7 @@
             }
           },
           "appearance_7": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/4d048a5587",
@@ -11229,11 +10910,7 @@
             }
           },
           "appearance_8": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/dd06a67476",
@@ -11244,11 +10921,7 @@
             }
           },
           "appearance_9": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/c75e5649a8",
@@ -11259,11 +10932,7 @@
             }
           },
           "appearance_10": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/16d881cbec",
@@ -11274,11 +10943,7 @@
             }
           },
           "appearance_11": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/4d048a5587",
@@ -11289,11 +10954,7 @@
             }
           },
           "appearance_12": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/dd06a67476",
@@ -11304,11 +10965,7 @@
             }
           },
           "appearance_13": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/c75e5649a8",
@@ -11319,11 +10976,7 @@
             }
           },
           "appearance_14": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/16d881cbec",
@@ -11334,11 +10987,7 @@
             }
           },
           "appearance_15": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-glass-bar-cabinet"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/4d048a5587",
@@ -11429,12 +11078,21 @@
         "fire_spread_chance": 20,
         "item": "kaleidoscope_tavern:glass_bar_cabinet"
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:storage",
-        "kind": "bar_cabinet",
-        "slots": 2,
-        "data_key": "kaleidoscope_tavern:storage_glass_bar_cabinet"
-      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:connected_block",
+          "mode": "linear",
+          "connects": [
+            "kaleidoscope_tavern:glass_bar_cabinet"
+          ]
+        },
+        {
+          "type": "kaleidoscope_tavern:storage",
+          "kind": "bar_cabinet",
+          "slots": 2,
+          "data_key": "kaleidoscope_tavern:storage_glass_bar_cabinet"
+        }
+      ],
       "loot": {
         "pools": [
           {
@@ -11484,14 +11142,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/5771cda45d",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11499,14 +11153,10 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/4e8b5129e2",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11514,14 +11164,10 @@
             }
           },
           "appearance_2": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/c5ff0d993c",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11529,14 +11175,10 @@
             }
           },
           "appearance_3": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/3c63f2b1ed",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11544,70 +11186,50 @@
             }
           },
           "appearance_4": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/5771cda45d",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/4e8b5129e2",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_6": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/c5ff0d993c",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_7": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/3c63f2b1ed",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_8": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/5771cda45d",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11615,14 +11237,10 @@
             }
           },
           "appearance_9": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/4e8b5129e2",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11630,14 +11248,10 @@
             }
           },
           "appearance_10": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/c5ff0d993c",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11645,14 +11259,10 @@
             }
           },
           "appearance_11": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/3c63f2b1ed",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11660,14 +11270,10 @@
             }
           },
           "appearance_12": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/5771cda45d",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11675,14 +11281,10 @@
             }
           },
           "appearance_13": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/4e8b5129e2",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11690,14 +11292,10 @@
             }
           },
           "appearance_14": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/c5ff0d993c",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11705,14 +11303,10 @@
             }
           },
           "appearance_15": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/3c63f2b1ed",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11843,13 +11437,22 @@
         },
         "item": "kaleidoscope_tavern:cellar_cabinet"
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:storage",
-        "kind": "cellar_cabinet",
-        "slots": 9,
-        "data_key": "kaleidoscope_tavern:storage_cellar_cabinet",
-        "blocklist": "kaleidoscope_tavern:cellar_cabinet_blocklist"
-      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:connected_block",
+          "mode": "linear",
+          "connects": [
+            "kaleidoscope_tavern:cellar_cabinet"
+          ]
+        },
+        {
+          "type": "kaleidoscope_tavern:storage",
+          "kind": "cellar_cabinet",
+          "slots": 9,
+          "data_key": "kaleidoscope_tavern:storage_cellar_cabinet",
+          "blocklist": "kaleidoscope_tavern:cellar_cabinet_blocklist"
+        }
+      ],
       "loot": {
         "pools": [
           {
@@ -11889,14 +11492,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-tilted-rack-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/tilted_rack/0b95975b59",
+              "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -11904,43 +11503,31 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-tilted-rack-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/tilted_rack/0b95975b59",
+              "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_2": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
-          "appearance_2": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-tilted-rack-transparent"
-            },
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/tilted_rack/0b95975b59",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
           "appearance_3": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-tilted-rack-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/tilted_rack/0b95975b59",
+              "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -12045,11 +11632,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:cave_vines[age=1,berries=true]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/circular_rack/bf215250db",
+              "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -12057,22 +11643,20 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:cave_vines[age=1,berries=true]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/circular_rack/bf215250db",
+              "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_2": {
-            "state": "minecraft:cave_vines[age=1,berries=true]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/circular_rack/bf215250db",
+              "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -12080,11 +11664,10 @@
             }
           },
           "appearance_3": {
-            "state": "minecraft:cave_vines[age=1,berries=true]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/circular_rack/bf215250db",
+              "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -12190,11 +11773,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/holder/d532879009",
+              "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -12202,34 +11784,31 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/holder/d532879009",
+              "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_2": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
-          "appearance_2": {
-            "state": "minecraft:lightning_rod[facing=south,powered=false,waterlogged=false]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/holder/d532879009",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
           "appearance_3": {
-            "state": "minecraft:lightning_rod[facing=west,powered=false,waterlogged=false]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/holder/d532879009",
+              "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,

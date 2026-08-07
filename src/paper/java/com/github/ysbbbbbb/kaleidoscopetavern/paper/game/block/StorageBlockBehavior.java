@@ -8,7 +8,6 @@ import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
 import net.momirealms.craftengine.bukkit.entity.data.DisplayData;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
-import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.ItemStackUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -133,32 +132,14 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
     @Override
     public ImmutableBlockState updateStateForPlacement(
             BlockPlaceContext context, ImmutableBlockState state) {
+        if (poweredProperty == null) {
+            return state;
+        }
         BlockPos pos = context.getClickedPos();
         Object level = context.getLevel().minecraftWorld();
-        ImmutableBlockState next = state;
-        if (poweredProperty != null) {
-            next = next.with(poweredProperty,
-                    SignalGetterProxy.INSTANCE.hasNeighborSignal(
-                            level, LocationUtils.toBlockPos(pos)));
-        }
-        if (positionProperty == null) {
-            return next;
-        }
-
-        // Connected cabinets use the same placement convention as the shared
-        // sofa and bar counter on both horizontal axes.
-        next = next.with(
-                facingProperty,
-                ConnectedBlockSemantics.connectedPlacementFacing(
-                        context.getHorizontalDirection()));
-        Direction facing = next.get(facingProperty);
-        boolean left = isMatchingCellar(
-                context.getLevel().storageWorld().getBlockStateAtIfLoaded(
-                        pos.relative(facing.clockWise())), facing);
-        boolean right = isMatchingCellar(
-                context.getLevel().storageWorld().getBlockStateAtIfLoaded(
-                        pos.relative(facing.counterClockWise())), facing);
-        return next.with(positionProperty, ConnectedBlockSemantics.linearPosition(left, right));
+        return state.with(poweredProperty,
+                SignalGetterProxy.INSTANCE.hasNeighborSignal(
+                        level, LocationUtils.toBlockPos(pos)));
     }
 
     @Override
@@ -241,62 +222,6 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                 level, minecraftPos,
                 state.with(poweredProperty, powered).customBlockState().minecraftState(),
                 UpdateFlags.UPDATE_CLIENTS);
-    }
-
-    @Override
-    public Object updateShape(Object thisBlock, Object[] args) {
-        if (positionProperty == null) {
-            return super.updateShape(thisBlock, args);
-        }
-        ImmutableBlockState state = BlockStateUtils.getOptionalCustomBlockState(args[0])
-                .orElse(null);
-        if (state == null) {
-            return args[0];
-        }
-
-        Direction facing = state.get(facingProperty);
-        Direction direction = DirectionUtils.fromNMSDirection(args[updateShape$direction]);
-        Direction left = facing.clockWise();
-        Direction right = facing.counterClockWise();
-        if (direction != left && direction != right) {
-            return args[0];
-        }
-
-        ImmutableBlockState neighbor = BlockStateUtils.getOptionalCustomBlockState(
-                args[updateShape$neighborState]).orElse(null);
-        boolean connected = isMatchingCellar(neighbor, facing);
-        String position = state.get(positionProperty);
-        String next = position;
-        if (direction == left) {
-            if (connected) {
-                next = switch (position) {
-                    case "single" -> "right";
-                    case "left" -> "middle";
-                    default -> position;
-                };
-            } else {
-                next = switch (position) {
-                    case "right" -> "single";
-                    case "middle" -> "left";
-                    default -> position;
-                };
-            }
-        } else if (connected) {
-            next = switch (position) {
-                case "single" -> "left";
-                case "right" -> "middle";
-                default -> position;
-            };
-        } else {
-            next = switch (position) {
-                case "left" -> "single";
-                case "middle" -> "right";
-                default -> position;
-            };
-        }
-        return next.equals(position)
-                ? args[0]
-                : state.with(positionProperty, next).customBlockState().minecraftState();
     }
 
     @Override
@@ -388,12 +313,6 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
             return 2;
         }
         return angle > 60 ? 3 : 4;
-    }
-
-    private boolean isMatchingCellar(ImmutableBlockState state, Direction facing) {
-        return state != null
-                && state.owner().value().id().equals(blockDefinition.id())
-                && state.get(facingProperty) == facing;
     }
 
     /** Returns the loaded controller at an exact CE block position. */
