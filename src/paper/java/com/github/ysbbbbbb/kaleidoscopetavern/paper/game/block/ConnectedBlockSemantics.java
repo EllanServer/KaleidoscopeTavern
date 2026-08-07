@@ -10,6 +10,15 @@ public final class ConnectedBlockSemantics {
             if (position < 0 || position > 3) throw new IllegalArgumentException("position=" + position);
         }
     }
+    /**
+     * A corner/end state depends on both side cells and the cell in front.
+     * The cell behind cannot affect the selected source model.
+     */
+    public static boolean cornerNeighbourAffectsState(boolean sideChange,
+                                                      boolean frontChange) {
+        return sideChange || frontChange;
+    }
+
     public static String cornerConnection(boolean left, boolean right,
                                           boolean frontLeft, boolean frontRight) {
         if (left && right) return "middle";
