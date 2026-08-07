@@ -1,7 +1,6 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import net.momirealms.craftengine.core.util.Direction;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
@@ -21,42 +20,42 @@ class PressingTubVisualFactoryTest {
 
     private static final Map<String, double[]> GOLDENS = Map.ofEntries(
             // key = "facing|x|y|z"（物品局部偏移），value = 相对 origin 的偏移
-            Map.entry("NORTH|0.0|0.0|0.0", new double[]{0.000000, 0.494975, -0.065685}),
-            Map.entry("NORTH|0.15|0.0|0.15", new double[]{-0.150000, 0.601041, -0.171751}),
-            Map.entry("NORTH|-0.15|0.0|-0.15", new double[]{0.150000, 0.388909, 0.040381}),
-            Map.entry("NORTH|0.15|0.0|-0.15", new double[]{-0.150000, 0.388909, 0.040381}),
-            Map.entry("NORTH|-0.15|0.0|0.15", new double[]{0.150000, 0.601041, -0.171751}),
-            Map.entry("NORTH|0.15|0.5|0.15", new double[]{-0.150000, 0.954594, 0.181802}),
-            Map.entry("NORTH|-0.15|0.5|-0.15", new double[]{0.150000, 0.742462, 0.393934}),
-            Map.entry("NORTH|0.15|0.5|-0.15", new double[]{-0.150000, 0.742462, 0.393934}),
-            Map.entry("NORTH|-0.15|0.5|0.15", new double[]{0.150000, 0.954594, 0.181802}),
-            Map.entry("EAST|0.0|0.0|0.0", new double[]{0.005025, 0.494975, 0.000000}),
-            Map.entry("EAST|0.15|0.0|0.15", new double[]{-0.101041, 0.388909, 0.150000}),
-            Map.entry("EAST|-0.15|0.0|-0.15", new double[]{0.111091, 0.601041, -0.150000}),
-            Map.entry("EAST|0.15|0.0|-0.15", new double[]{0.111091, 0.601041, 0.150000}),
-            Map.entry("EAST|-0.15|0.0|0.15", new double[]{-0.101041, 0.388909, -0.150000}),
-            Map.entry("EAST|0.15|0.5|0.15", new double[]{-0.454594, 0.742462, 0.150000}),
-            Map.entry("EAST|-0.15|0.5|-0.15", new double[]{-0.242462, 0.954594, -0.150000}),
-            Map.entry("EAST|0.15|0.5|-0.15", new double[]{-0.242462, 0.954594, 0.150000}),
-            Map.entry("EAST|-0.15|0.5|0.15", new double[]{-0.454594, 0.742462, -0.150000}),
-            Map.entry("SOUTH|0.0|0.0|0.0", new double[]{0.000000, 0.494975, 0.065685}),
-            Map.entry("SOUTH|0.15|0.0|0.15", new double[]{0.150000, 0.601041, 0.171751}),
-            Map.entry("SOUTH|-0.15|0.0|-0.15", new double[]{-0.150000, 0.388909, -0.040381}),
-            Map.entry("SOUTH|0.15|0.0|-0.15", new double[]{0.150000, 0.388909, -0.040381}),
-            Map.entry("SOUTH|-0.15|0.0|0.15", new double[]{-0.150000, 0.601041, 0.171751}),
-            Map.entry("SOUTH|0.15|0.5|0.15", new double[]{0.150000, 0.954594, -0.181802}),
-            Map.entry("SOUTH|-0.15|0.5|-0.15", new double[]{-0.150000, 0.742462, -0.393934}),
-            Map.entry("SOUTH|0.15|0.5|-0.15", new double[]{0.150000, 0.742462, -0.393934}),
-            Map.entry("SOUTH|-0.15|0.5|0.15", new double[]{-0.150000, 0.954594, -0.181802}),
-            Map.entry("WEST|0.0|0.0|0.0", new double[]{-0.005025, 0.494975, 0.000000}),
-            Map.entry("WEST|0.15|0.0|0.15", new double[]{0.101041, 0.388909, -0.150000}),
-            Map.entry("WEST|-0.15|0.0|-0.15", new double[]{-0.111091, 0.601041, 0.150000}),
-            Map.entry("WEST|0.15|0.0|-0.15", new double[]{-0.111091, 0.601041, -0.150000}),
-            Map.entry("WEST|-0.15|0.0|0.15", new double[]{0.101041, 0.388909, 0.150000}),
-            Map.entry("WEST|0.15|0.5|0.15", new double[]{0.454594, 0.742462, -0.150000}),
-            Map.entry("WEST|-0.15|0.5|-0.15", new double[]{0.242462, 0.954594, 0.150000}),
-            Map.entry("WEST|0.15|0.5|-0.15", new double[]{0.242462, 0.954594, -0.150000}),
-            Map.entry("WEST|-0.15|0.5|0.15", new double[]{0.454594, 0.742462, 0.150000})
+            Map.entry("SOUTH|0.0|0.0|0.0", new double[]{0.000000, 0.494975, -0.065685}),
+            Map.entry("SOUTH|0.15|0.0|0.15", new double[]{-0.150000, 0.601041, -0.171751}),
+            Map.entry("SOUTH|-0.15|0.0|-0.15", new double[]{0.150000, 0.388909, 0.040381}),
+            Map.entry("SOUTH|0.15|0.0|-0.15", new double[]{-0.150000, 0.388909, 0.040381}),
+            Map.entry("SOUTH|-0.15|0.0|0.15", new double[]{0.150000, 0.601041, -0.171751}),
+            Map.entry("SOUTH|0.15|0.5|0.15", new double[]{-0.150000, 0.954594, 0.181802}),
+            Map.entry("SOUTH|-0.15|0.5|-0.15", new double[]{0.150000, 0.742462, 0.393934}),
+            Map.entry("SOUTH|0.15|0.5|-0.15", new double[]{-0.150000, 0.742462, 0.393934}),
+            Map.entry("SOUTH|-0.15|0.5|0.15", new double[]{0.150000, 0.954594, 0.181802}),
+            Map.entry("WEST|0.0|0.0|0.0", new double[]{0.005025, 0.494975, 0.000000}),
+            Map.entry("WEST|0.15|0.0|0.15", new double[]{-0.101041, 0.388909, 0.150000}),
+            Map.entry("WEST|-0.15|0.0|-0.15", new double[]{0.111091, 0.601041, -0.150000}),
+            Map.entry("WEST|0.15|0.0|-0.15", new double[]{0.111091, 0.601041, 0.150000}),
+            Map.entry("WEST|-0.15|0.0|0.15", new double[]{-0.101041, 0.388909, -0.150000}),
+            Map.entry("WEST|0.15|0.5|0.15", new double[]{-0.454594, 0.742462, 0.150000}),
+            Map.entry("WEST|-0.15|0.5|-0.15", new double[]{-0.242462, 0.954594, -0.150000}),
+            Map.entry("WEST|0.15|0.5|-0.15", new double[]{-0.242462, 0.954594, 0.150000}),
+            Map.entry("WEST|-0.15|0.5|0.15", new double[]{-0.454594, 0.742462, -0.150000}),
+            Map.entry("NORTH|0.0|0.0|0.0", new double[]{0.000000, 0.494975, 0.065685}),
+            Map.entry("NORTH|0.15|0.0|0.15", new double[]{0.150000, 0.601041, 0.171751}),
+            Map.entry("NORTH|-0.15|0.0|-0.15", new double[]{-0.150000, 0.388909, -0.040381}),
+            Map.entry("NORTH|0.15|0.0|-0.15", new double[]{0.150000, 0.388909, -0.040381}),
+            Map.entry("NORTH|-0.15|0.0|0.15", new double[]{-0.150000, 0.601041, 0.171751}),
+            Map.entry("NORTH|0.15|0.5|0.15", new double[]{0.150000, 0.954594, -0.181802}),
+            Map.entry("NORTH|-0.15|0.5|-0.15", new double[]{-0.150000, 0.742462, -0.393934}),
+            Map.entry("NORTH|0.15|0.5|-0.15", new double[]{0.150000, 0.742462, -0.393934}),
+            Map.entry("NORTH|-0.15|0.5|0.15", new double[]{-0.150000, 0.954594, -0.181802}),
+            Map.entry("EAST|0.0|0.0|0.0", new double[]{-0.005025, 0.494975, 0.000000}),
+            Map.entry("EAST|0.15|0.0|0.15", new double[]{0.101041, 0.388909, -0.150000}),
+            Map.entry("EAST|-0.15|0.0|-0.15", new double[]{-0.111091, 0.601041, 0.150000}),
+            Map.entry("EAST|0.15|0.0|-0.15", new double[]{-0.111091, 0.601041, -0.150000}),
+            Map.entry("EAST|-0.15|0.0|0.15", new double[]{0.101041, 0.388909, 0.150000}),
+            Map.entry("EAST|0.15|0.5|0.15", new double[]{0.454594, 0.742462, -0.150000}),
+            Map.entry("EAST|-0.15|0.5|-0.15", new double[]{0.242462, 0.954594, 0.150000}),
+            Map.entry("EAST|0.15|0.5|-0.15", new double[]{0.242462, 0.954594, -0.150000}),
+            Map.entry("EAST|-0.15|0.5|0.15", new double[]{0.454594, 0.742462, 0.150000})
     );
 
     @Test
@@ -79,40 +78,43 @@ class PressingTubVisualFactoryTest {
     }
 
     @Test
-    void itemQuaternionFollowsSourceTiltDirection() {
-        // X 轴（EAST/WEST）Rx(+45°)、Z 轴（NORTH/SOUTH）Rx(-45°)，
-        // 物品平放 Rx(-90°)；实体 yaw 承担源矩阵的 YN(θ) 部分。
-        assertTiltDirection(Direction.EAST, 0.7071068f, 0.7071068f);
-        assertTiltDirection(Direction.WEST, 0.7071068f, 0.7071068f);
-        assertTiltDirection(Direction.NORTH, 0.7071068f, -0.7071068f);
-        assertTiltDirection(Direction.SOUTH, 0.7071068f, -0.7071068f);
+    void itemQuaternionContainsTheCompleteSourceFacingAndTilt() {
+        // The packet entity itself stays at yaw=0. The complete source
+        // YN(facing) · Rx(tilt) · Rx(-90) transform lives in leftRotation,
+        // preventing CE wall-furniture yaw from composing the facing twice.
+        assertForward(Direction.NORTH, 0, 0.7071068F, -0.7071068F);
+        assertForward(Direction.EAST, 0.7071068F, 0.7071068F, 0);
+        assertForward(Direction.SOUTH, 0, 0.7071068F, 0.7071068F);
+        assertForward(Direction.WEST, -0.7071068F, 0.7071068F, 0);
     }
 
     @Test
-    void facingYawPointsContentAlongTheTubFacing() {
-        // 实体 yaw 顺时针（0=南 90=西 180=北 270=东）：方向向量
-        // (dirX, dirZ) = (-sin(yaw), cos(yaw)) 必须等于 facing 指向。
-        assertFacingYaw(Direction.NORTH, 0, -1);
-        assertFacingYaw(Direction.EAST, 1, 0);
-        assertFacingYaw(Direction.SOUTH, 0, 1);
-        assertFacingYaw(Direction.WEST, -1, 0);
+    void itemQuaternionPreservesTheSourceHorizontalBasis() {
+        assertRight(Direction.NORTH, 1, 0, 0);
+        assertRight(Direction.EAST, 0, 0, -1);
+        assertRight(Direction.SOUTH, -1, 0, 0);
+        assertRight(Direction.WEST, 0, 0, 1);
     }
 
-    private static void assertFacingYaw(Direction facing, double dx, double dz) {
-        double radians = Math.toRadians(PressingTubVisualFactory.facingYaw(facing));
-        assertEquals(dx, -Math.sin(radians), 1e-6, "facing=" + facing);
-        assertEquals(dz, Math.cos(radians), 1e-6, "facing=" + facing);
+    private static void assertForward(Direction facing, float x, float y, float z) {
+        Vector3f transformed = PressingTubVisualFactory
+                .tiltRotation(facing, 0, 0)
+                .transform(new Vector3f(0, 0, 1));
+        assertVector(facing, transformed, x, y, z);
     }
 
-    private static void assertTiltDirection(Direction facing, float y, float z) {
-        float tilt = (facing == Direction.EAST || facing == Direction.WEST) ? 45 : -45;
-        Quaternionf rotation = new Quaternionf()
-                .rotateX((float) Math.toRadians(tilt))
-                .rotateX((float) Math.toRadians(-90))
-                .rotateY(0)
-                .rotateZ(0);
-        Vector3f transformed = rotation.transform(new Vector3f(0, 0, 1));
-        assertEquals(y, transformed.y, 1e-5, "facing=" + facing);
-        assertEquals(z, transformed.z, 1e-5, "facing=" + facing);
+    private static void assertRight(Direction facing, float x, float y, float z) {
+        Vector3f transformed = PressingTubVisualFactory
+                .tiltRotation(facing, 0, 0)
+                .transform(new Vector3f(1, 0, 0));
+        assertVector(facing, transformed, x, y, z);
     }
+
+    private static void assertVector(Direction facing, Vector3f actual,
+                                     float x, float y, float z) {
+        assertEquals(x, actual.x, 1e-5, "facing=" + facing + " x");
+        assertEquals(y, actual.y, 1e-5, "facing=" + facing + " y");
+        assertEquals(z, actual.z, 1e-5, "facing=" + facing + " z");
+    }
+
 }

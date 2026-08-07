@@ -113,8 +113,8 @@ def main() -> int:
         blocks_document = json.loads(
             archive.read("tavern-pack/configuration/blocks.json").decode("utf-8-sig")
         )
-        if len(blocks_document.get("blocks", {})) != 39:
-            raise SystemExit("Embedded CraftEngine project must contain 39 block ids")
+        if len(blocks_document.get("blocks", {})) != 59:
+            raise SystemExit("Embedded CraftEngine project must contain 59 block ids")
 
         furniture_document = json.loads(
             archive.read("tavern-pack/configuration/furniture.json").decode("utf-8-sig")

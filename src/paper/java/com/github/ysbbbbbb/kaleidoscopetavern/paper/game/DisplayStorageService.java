@@ -100,6 +100,12 @@ public final class DisplayStorageService {
                 public Item visualItem(StorageBlockBehavior.Controller controller, int slot) {
                     return storageBlockVisual(controller, slot);
                 }
+
+                @Override
+                public boolean irregular(StorageBlockBehavior.Controller controller) {
+                    return isIrregular(controller.item(0))
+                            || isIrregular(controller.item(1));
+                }
             };
 
     public DisplayStorageService(JavaPlugin plugin, ContentCatalog catalog, ItemService items) {
@@ -142,6 +148,9 @@ public final class DisplayStorageService {
         }
         Player player = (Player) context.getPlayer().platformPlayer();
         ItemStack hand = player.getInventory().getItemInMainHand();
+        if (spec.kind() == StorageSemantics.Kind.BAR_CABINET) {
+            return interactBarCabinetBlock(player, controller, context, hand, selected);
+        }
         Item stored = controller.item(selected);
 
         if (hand.isEmpty()) {
@@ -186,6 +195,79 @@ public final class DisplayStorageService {
         context.getPlayer().swingHand(context.getHand());
         playStorageSound(controller.location(), spec, false);
         return InteractionResult.SUCCESS_AND_CANCEL;
+    }
+
+
+    private InteractionResult interactBarCabinetBlock(
+            Player player,
+            StorageBlockBehavior.Controller controller,
+            UseOnContext context,
+            ItemStack hand,
+            int selected
+    ) {
+        Item left = controller.item(0);
+        Item right = controller.item(1);
+        boolean leftEmpty = left == null || left.isEmpty();
+        boolean rightEmpty = right == null || right.isEmpty();
+        boolean containsIrregular = isIrregular(left) || isIrregular(right);
+
+        if (hand.isEmpty()) {
+            if (containsIrregular) {
+                selected = 0;
+            } else if ((selected == 0 && leftEmpty && !rightEmpty)
+                    || (selected == 1 && rightEmpty && !leftEmpty)) {
+                selected = 1 - selected;
+            }
+            Item stored = controller.item(selected);
+            if (stored == null || stored.isEmpty()) {
+                return InteractionResult.PASS;
+            }
+            Item taken = controller.take(selected);
+            if (taken == null || taken.isEmpty()) {
+                return InteractionResult.PASS;
+            }
+            player.getInventory().setItemInMainHand(bukkitItem(taken));
+            context.getPlayer().swingHand(context.getHand());
+            playCabinetSound(controller.location(), true);
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+
+        String handId = items.id(hand);
+        if (!isBottle(handId) || containsIrregular) {
+            return InteractionResult.PASS;
+        }
+        boolean insertingIrregular = catalog.tag(IRREGULAR_TAG).contains(handId);
+        if (insertingIrregular) {
+            if (!leftEmpty || !rightEmpty) {
+                return InteractionResult.PASS;
+            }
+            selected = 0;
+        } else if ((selected == 0 && !leftEmpty) || (selected == 1 && !rightEmpty)) {
+            int other = 1 - selected;
+            Item otherItem = controller.item(other);
+            if (otherItem != null && !otherItem.isEmpty()) {
+                return InteractionResult.PASS;
+            }
+            selected = other;
+        }
+
+        ItemStack one = hand.clone();
+        one.setAmount(1);
+        if (!controller.put(selected, BukkitAdaptor.adapt(one))) {
+            return InteractionResult.PASS;
+        }
+        // The source uses ItemStack#split directly, including in creative.
+        hand.subtract(1);
+        context.getPlayer().swingHand(context.getHand());
+        playCabinetSound(controller.location(), hand.isEmpty());
+        return InteractionResult.SUCCESS_AND_CANCEL;
+    }
+
+    private boolean isIrregular(Item item) {
+        if (item == null || item.isEmpty()) {
+            return false;
+        }
+        return catalog.tag(IRREGULAR_TAG).contains(items.id(bukkitItem(item)));
     }
 
     private InteractionResult interact(BukkitFurniture furniture,
@@ -381,9 +463,14 @@ public final class DisplayStorageService {
     }
 
     private static void playCabinetSound(BukkitFurniture furniture, boolean taking) {
+        playCabinetSound(furniture.location(), taking);
+    }
+
+    private static void playCabinetSound(Location location, boolean taking) {
         float volume = ThreadLocalRandom.current().nextFloat() * 0.2F + 0.8F;
-        float pitch = ThreadLocalRandom.current().nextFloat() * 0.2F + (taking ? 0.8F : 0.2F);
-        furniture.location().getWorld().playSound(furniture.location(),
+        float pitch = ThreadLocalRandom.current().nextFloat() * 0.2F
+                + (taking ? 0.8F : 0.2F);
+        location.getWorld().playSound(location,
                 "minecraft:block.glass.place", SoundCategory.BLOCKS, volume, pitch);
     }
 

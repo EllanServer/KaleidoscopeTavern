@@ -101,13 +101,15 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         this.dataKey = section.getNonEmptyString("data_key");
         this.facingProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "facing", Direction.class);
-        this.poweredProperty = BlockBehaviorFactory.getProperty(
-                section.path(), block, "powered", Boolean.class);
+        this.poweredProperty = BlockBehaviorFactory.getOptionalProperty(
+                block, "powered", Boolean.class);
         this.positionProperty = BlockBehaviorFactory.getOptionalProperty(
                 block, "position", String.class);
-        if (kind == StorageSemantics.Kind.CELLAR_CABINET && positionProperty == null) {
+        if ((kind == StorageSemantics.Kind.CELLAR_CABINET
+                || kind == StorageSemantics.Kind.BAR_CABINET)
+                && positionProperty == null) {
             throw new IllegalArgumentException(
-                    "Cellar cabinet storage requires a position property at " + section.path());
+                    kind + " storage requires a position property at " + section.path());
         }
     }
 
@@ -133,8 +135,12 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
             BlockPlaceContext context, ImmutableBlockState state) {
         BlockPos pos = context.getClickedPos();
         Object level = context.getLevel().minecraftWorld();
-        ImmutableBlockState next = state.with(poweredProperty,
-                SignalGetterProxy.INSTANCE.hasNeighborSignal(level, LocationUtils.toBlockPos(pos)));
+        ImmutableBlockState next = state;
+        if (poweredProperty != null) {
+            next = next.with(poweredProperty,
+                    SignalGetterProxy.INSTANCE.hasNeighborSignal(
+                            level, LocationUtils.toBlockPos(pos)));
+        }
         if (positionProperty == null) {
             return next;
         }
@@ -146,7 +152,7 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         boolean right = isMatchingCellar(
                 context.getLevel().storageWorld().getBlockStateAtIfLoaded(
                         pos.relative(facing.counterClockWise())), facing);
-        return next.with(positionProperty, cellarPosition(left, right));
+        return next.with(positionProperty, ConnectedBlockSemantics.linearPosition(left, right));
     }
 
     @Override
@@ -191,7 +197,7 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
 
     @Override
     public void neighborChanged(Object thisBlock, Object[] args) {
-        if (!ServerLevelProxy.CLASS.isInstance(args[1])) {
+        if (poweredProperty == null || !ServerLevelProxy.CLASS.isInstance(args[1])) {
             return;
         }
         BlockStateUtils.getOptionalCustomBlockState(args[0])
@@ -340,6 +346,13 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
             default -> 0.5;
         };
         return switch (kind) {
+            case BAR_CABINET -> switch (facing) {
+                case NORTH -> relativeX > 0.5 ? 0 : 1;
+                case SOUTH -> relativeX < 0.5 ? 0 : 1;
+                case EAST -> relativeZ < 0.5 ? 0 : 1;
+                case WEST -> relativeZ > 0.5 ? 0 : 1;
+                default -> -1;
+            };
             case CELLAR_CABINET -> {
                 int column = ((int) (localX * 3)) % 3;
                 int row = 2 - ((int) (relativeY * 3)) % 3;
@@ -377,14 +390,9 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                 && state.get(facingProperty) == facing;
     }
 
-    private static String cellarPosition(boolean left, boolean right) {
-        if (left && right) {
-            return "middle";
-        }
-        if (left) {
-            return "right";
-        }
-        return right ? "left" : "single";
+    /** Returns the loaded controller at an exact CE block position. */
+    public static Controller findController(CEWorld world, BlockPos pos) {
+        return controller(world, pos);
     }
 
     private static Controller controller(CEWorld world, BlockPos pos) {
@@ -398,6 +406,8 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         void launch(Controller controller);
 
         Item visualItem(Controller controller, int slot);
+
+        boolean irregular(Controller controller);
     }
 
     public static final class Controller extends BlockEntityController {
@@ -704,8 +714,11 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                 if (item == null || item.isEmpty()) {
                     continue;
                 }
+                Handler current = handler;
+                boolean irregular = controller.kind() == StorageSemantics.Kind.BAR_CABINET
+                        && current != null && current.irregular(controller);
                 StorageSemantics.Visual visual = StorageSemantics.visual(
-                        controller.kind(), slot, false, facingAxisX);
+                        controller.kind(), slot, irregular, facingAxisX);
                 RenderPosition position = renderPosition(controller, visual);
                 packets.add(ClientboundAddEntityPacketProxy.INSTANCE.newInstance(
                         entityIds[slot], entityUuids[slot],

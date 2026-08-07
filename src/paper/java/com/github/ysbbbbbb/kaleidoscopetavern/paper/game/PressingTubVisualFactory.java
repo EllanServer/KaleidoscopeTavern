@@ -78,24 +78,15 @@ public final class PressingTubVisualFactory {
                 float displayYaw;
                 Quaternionf rotation;
                 if (tilted) {
-                    // 完全按源 PressingTubBlockEntityRender 的 PoseStack 顺序：
-                    // X 轴方向（EAST/WEST）Rx(+45°) + translate(0,+0.5,-0.5)，
-                    // Z 轴方向（NORTH/SOUTH）Rx(-45°) + translate(0,-0.25,+0.25)，
-                    // 随后绕方块中心绕 Y 轴旋转 θ=180-facingIndex*90。实体 yaw
-                    // 承担该 YN(θ) 旋转，leftRotation 承担剩余 Rx(±45)·Rx(-90)
-                    // ·YN(yRot)·ZN(zRot)，与显示实体叠加后等于源矩阵。
+                    // Keep the source outer YN facing rotation in the same
+                    // quaternion as the tilt. Splitting it into entity yaw made
+                    // CE wall-furniture yaw compose the facing a second time.
                     double[] display = tiltDisplay(facing, x, y, z);
                     displayX = origin.getX() + display[0];
                     displayY = origin.getY() + display[1];
                     displayZ = origin.getZ() + display[2];
-                    displayYaw = facingYaw(facing);
-                    float tiltDegrees = (facing == Direction.EAST
-                            || facing == Direction.WEST) ? 45 : -45;
-                    rotation = new Quaternionf()
-                            .rotateX((float) Math.toRadians(tiltDegrees))
-                            .rotateX((float) Math.toRadians(ITEM_X_DEGREES))
-                            .rotateY((float) Math.toRadians(-yRotation))
-                            .rotateZ((float) Math.toRadians(-zRotation));
+                    displayYaw = 0;
+                    rotation = tiltRotation(facing, yRotation, zRotation);
                 } else {
                     displayX = origin.getX() + x;
                     displayY = origin.getY() + 0.2 + y;
@@ -148,8 +139,8 @@ public final class PressingTubVisualFactory {
             double tZ = z;
             double p2y = c * tY - s * tZ;
             double p2z = s * tY + c * tZ;
-            // EAST θ=90（rotY(-90)），WEST θ=270（rotY(90)）。
-            return facing == Direction.EAST
+            // Source get2DDataValue: WEST=1, EAST=3.
+            return facing == Direction.WEST
                     ? new double[]{-p2z + 0.5, p2y, x}
                     : new double[]{p2z - 0.5, p2y, -x};
         }
@@ -158,27 +149,29 @@ public final class PressingTubVisualFactory {
         double tZ = z + 0.75;
         double p2y = c * tY + s * tZ;
         double p2z = -s * tY + c * tZ;
-        // NORTH θ=180（rotY(-180)），SOUTH θ=0。
-        return facing == Direction.NORTH
+        // Source get2DDataValue: SOUTH=0, NORTH=2.
+        return facing == Direction.SOUTH
                 ? new double[]{-x, p2y, -p2z + 0.5}
                 : new double[]{x, p2y, p2z - 0.5};
     }
 
-    /**
-     * 把源 PoseStack 的 YN(θ) 翻译成 Minecraft 实体 yaw。源模组用 JOML
-     * rotateY（逆时针，θ=NORTH=180 / EAST=90 / SOUTH=0 / WEST=-90），而
-     * 实体 yaw 是顺时针（0=南 90=西 180=北 270=东）。EAST/WEST 一旦写反，
-     * 内容物朝向就会与果盆 facing 相差 180°。位置的 YN(θ) 已由
-     * {@link #tiltDisplay} 硬编码，因此这里只负责物品朝向。
-     */
-    static float facingYaw(Direction facing) {
-        return switch (facing) {
-            case NORTH -> 180;
-            case EAST -> 270;
-            case SOUTH -> 0;
-            case WEST -> 90;
+    static Quaternionf tiltRotation(Direction facing, float yRotation,
+                                    float zRotation) {
+        float outerY = switch (facing) {
+            case NORTH -> 0;
+            case EAST -> 90;
+            case SOUTH -> -180;
+            case WEST -> -90;
             default -> 0;
         };
+        float tilt = (facing == Direction.EAST || facing == Direction.WEST)
+                ? 45 : -45;
+        return new Quaternionf()
+                .rotateY((float) Math.toRadians(outerY))
+                .rotateX((float) Math.toRadians(tilt))
+                .rotateX((float) Math.toRadians(ITEM_X_DEGREES))
+                .rotateY((float) Math.toRadians(-yRotation))
+                .rotateZ((float) Math.toRadians(-zRotation));
     }
 
     private static String path(String resourceId) {
