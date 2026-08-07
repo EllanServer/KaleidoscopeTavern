@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - tmp/pr56-ce-native-connections
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
