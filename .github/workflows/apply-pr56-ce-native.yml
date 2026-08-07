@@ -25,10 +25,10 @@ jobs:
           ref: tmp/pr56-ce-native-connections
           fetch-depth: 0
 
-      - name: Reconstruct and verify source patch
+      - name: Reconstruct and verify patches
         shell: bash
         run: |
-          parts=(
+          source_parts=(
             .github/pr56-source-final.patch.gz.b64.part00
             .github/pr56-source-final.patch.gz.b64.part01
             .github/pr56-source-final.patch.gz.b64.part02a
@@ -42,20 +42,31 @@ jobs:
             .github/pr56-source-final.patch.gz.b64.part06
             .github/pr56-source-final.patch.gz.b64.part07
           )
-          wc -c "${parts[@]}"
-          sha256sum "${parts[@]}"
-          cat "${parts[@]}" > /tmp/pr56-source.patch.gz.b64
+          cat "${source_parts[@]}" > /tmp/pr56-source.patch.gz.b64
           echo '1ed17393d06cf991eeb5a6af99068e51ed1d5c074eb627ea9e89012bab2c3ae8  /tmp/pr56-source.patch.gz.b64' | sha256sum -c -
           base64 -d /tmp/pr56-source.patch.gz.b64 > /tmp/pr56-source.patch.gz
           gzip -dc /tmp/pr56-source.patch.gz > /tmp/pr56-source.patch
           echo 'f6bcc51b1a97b8bb4da05e7103f7ba68b8d33e4cc87378ff353373833ce7be42  /tmp/pr56-source.patch' | sha256sum -c -
 
-      - name: Apply patch on PR 56 head
+          fix_parts=(
+            .github/pr56-test-fix.patch.gz.b64.part00
+            .github/pr56-test-fix.patch.gz.b64.part01
+            .github/pr56-test-fix.patch.gz.b64.part02
+            .github/pr56-test-fix.patch.gz.b64.part03
+          )
+          cat "${fix_parts[@]}" > /tmp/pr56-test-fix.patch.gz.b64
+          echo 'e1905a5d54be94b71dca5a2d26b865b9016eadc0e78daaae6d44071dc14e0743  /tmp/pr56-test-fix.patch.gz.b64' | sha256sum -c -
+          base64 -d /tmp/pr56-test-fix.patch.gz.b64 > /tmp/pr56-test-fix.patch.gz
+          gzip -dc /tmp/pr56-test-fix.patch.gz > /tmp/pr56-test-fix.patch
+          echo '92749304c60f6db0dc88a883381bc5e7cf632ae7496a655837f26f15bb4be7b2  /tmp/pr56-test-fix.patch' | sha256sum -c -
+
+      - name: Apply patches on PR 56 head
         shell: bash
         run: |
           git fetch origin codex/pressing-tub-ce-block
           git checkout --detach origin/codex/pressing-tub-ce-block
           git apply --index /tmp/pr56-source.patch
+          git apply --index /tmp/pr56-test-fix.patch
           rm -f .github/ce-config-refactor.patch.gz.b64.part*
 
       - name: Set up Java 25
