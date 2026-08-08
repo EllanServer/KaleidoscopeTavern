@@ -28,10 +28,28 @@ jobs:
           HEAD_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
         shell: bash
         run: |
-          git apply --check --whitespace=nowarn .github/pr56-ci-fix.patch
-          git apply --index --whitespace=nowarn .github/pr56-ci-fix.patch
+          python - <<'PY'
+          from pathlib import Path
+
+          behavior = Path('src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockBehavior.java')
+          text = behavior.read_text(encoding='utf-8')
+          old = '            player.sendActionBar(Component.translatable(translationKey));'
+          new = '            ((org.bukkit.entity.Player) player.platformPlayer())\n                    .sendActionBar(Component.translatable(translationKey));'
+          assert old in text
+          text = text.replace(old, new, 1)
+          old = '                        controller.config().viewRange()\n                                * player.displayEntityViewDistance(), metadata);'
+          new = '                        (float) (controller.config().viewRange()\n                                * player.displayEntityViewDistance()), metadata);'
+          assert old in text
+          behavior.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          config = Path('src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockConfig.java')
+          text = config.read_text(encoding='utf-8')
+          old = '            return sample(random, minimum, maximum);'
+          new = '            return StorageBlockConfig.sample(random, minimum, maximum);'
+          assert old in text
+          config.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
           rm .github/pr56-ci-fix.patch
-          git show HEAD^:.github/workflows/paper-26.2.yml > .github/workflows/paper-26.2.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
