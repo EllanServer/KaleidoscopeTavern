@@ -399,6 +399,17 @@ SMALL_FURNITURE = {
     "watermelon_juice",
 }
 BOTTLE_AND_GLASS_ITEMS = SMALL_FURNITURE - {"shaker"}
+# Zero-based Blockbench element indices whose geometry must not share the
+# glass/liquid translucent render pass.  The private Paper model redirects
+# only these faces to an alpha-binarized copy of the source sprite.
+OPAQUE_PLACED_DRINK_ELEMENTS: dict[str, tuple[int, ...]] = {
+    "brass_heart": (11,),
+    "grasshopper": (13,),
+    "mojito": (0,),
+    "nether_special": (15,),
+    "mystery_cocktail": (12,),
+    "signature_cocktail": (12,),
+}
 GRAPE_ITEMS = {"grape", "ice_grape", "gold_grape", "green_grape"}
 
 # These families mirror the VoxelShape groups passed to DrinkBlock.create() in
@@ -560,6 +571,104 @@ def migrate_translucent_model(model: dict[str, Any], owner: str) -> dict[str, An
     return model
 
 
+def create_opaque_detail_texture(sprite: str, owner: str) -> str:
+    """Create a cutout-pass copy while preserving every source RGB texel."""
+    if ":" not in sprite:
+        raise AssertionError(f"{owner}: opaque detail sprite must be namespaced")
+    namespace, sprite_path = sprite.split(":", 1)
+    source = find_file(
+        (MAIN_RESOURCES, GENERATED),
+        Path("assets") / namespace / "textures" / f"{sprite_path}.png",
+    )
+    if source is None:
+        raise FileNotFoundError(f"{owner}: missing opaque detail source texture {sprite}")
+
+    try:
+        from PIL import Image
+    except ImportError as exc:  # pragma: no cover - local setup guard
+        raise RuntimeError(
+            "Pillow is required to generate opaque placed-drink detail textures"
+        ) from exc
+
+    private_path = f"furniture/placed_drink/opaque/{namespace}/{sprite_path}"
+    target = (
+        ROOT
+        / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/textures/{private_path}.png"
+    )
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with Image.open(source) as source_image:
+        rgba = source_image.convert("RGBA")
+        source_alpha = rgba.getchannel("A")
+        if not any(source_alpha.histogram()[1:255]):
+            raise AssertionError(
+                f"{owner}: expected partially transparent source pixels in {sprite}")
+        opaque_alpha = source_alpha.point(lambda value: 0 if value == 0 else 255)
+        if any(opaque_alpha.histogram()[1:255]):
+            raise AssertionError(f"{owner}: opaque detail alpha conversion failed")
+        rgba.putalpha(opaque_alpha)
+        rgba.save(target, format="PNG", compress_level=9, optimize=False)
+
+    source_meta = Path(f"{source}.mcmeta")
+    target_meta = Path(f"{target}.mcmeta")
+    if source_meta.is_file():
+        shutil.copyfile(source_meta, target_meta)
+    elif target_meta.exists():
+        target_meta.unlink()
+    return f"{NAMESPACE}:{private_path}"
+
+
+def split_opaque_placed_drink_details(
+    model: dict[str, Any],
+    block_id: str,
+    owner: str,
+) -> None:
+    """Move selected decorations/straws from translucent to cutout geometry."""
+    element_indices = OPAQUE_PLACED_DRINK_ELEMENTS.get(block_id)
+    if element_indices is None:
+        return
+
+    textures = model.get("textures")
+    elements = model.get("elements")
+    if not isinstance(textures, dict) or not isinstance(elements, list):
+        raise AssertionError(f"{owner}: opaque placed-drink detail has no model data")
+
+    target_faces: list[dict[str, Any]] = []
+    source_slots: set[str] = set()
+    for element_index in element_indices:
+        if element_index >= len(elements):
+            raise AssertionError(
+                f"{owner}: missing opaque detail element {element_index}")
+        faces = elements[element_index].get("faces", {})
+        if not isinstance(faces, dict) or not faces:
+            raise AssertionError(
+                f"{owner}: opaque detail element {element_index} has no faces")
+        for face in faces.values():
+            texture = face.get("texture")
+            if not isinstance(texture, str) or not texture.startswith("#"):
+                raise AssertionError(
+                    f"{owner}: opaque detail element {element_index} has an inline texture")
+            source_slots.add(texture[1:])
+            target_faces.append(face)
+
+    if len(source_slots) != 1:
+        raise AssertionError(
+            f"{owner}: opaque details must use exactly one source texture slot")
+    source_slot = next(iter(source_slots))
+    descriptor = textures.get(source_slot)
+    if (not isinstance(descriptor, dict)
+            or not isinstance(descriptor.get("sprite"), str)
+            or descriptor.get("force_translucent") is not True):
+        raise AssertionError(
+            f"{owner}: opaque detail source slot must retain forced translucency")
+    if "opaque_detail" in textures:
+        raise AssertionError(f"{owner}: duplicate opaque_detail texture slot")
+
+    textures["opaque_detail"] = create_opaque_detail_texture(
+        descriptor["sprite"], owner)
+    for face in target_faces:
+        face["texture"] = "#opaque_detail"
+
+
 def placed_drink_model(
     block_id: str,
     model: tuple[str, int, int, int, bool],
@@ -607,6 +716,7 @@ def placed_drink_model(
     needs_migration = "render_type" in copied
     if needs_migration:
         migrate_translucent_model(copied, resource_id)
+    split_opaque_placed_drink_details(copied, block_id, resource_id)
 
     # Bottle/glass models always receive a private pack copy.  Forge's
     # original lives under src/main and is never packaged, so the CE render
@@ -4840,6 +4950,13 @@ def main() -> None:
     generated_furniture_models = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/furniture"
     if generated_furniture_models.exists():
         shutil.rmtree(generated_furniture_models)
+    generated_opaque_drink_textures = (
+        ROOT
+        / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/textures/"
+          "furniture/placed_drink/opaque"
+    )
+    if generated_opaque_drink_textures.exists():
+        shutil.rmtree(generated_opaque_drink_textures)
 
     create_tintable_sofa_models()
     blocks, block_render_items, block_metrics = build_blocks(block_ids, set(item_ids), tags)

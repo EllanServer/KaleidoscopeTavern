@@ -10,7 +10,8 @@
       "sprite": "kaleidoscope_tavern:block/mixology/grasshopper",
       "force_translucent": true
     },
-    "particle": "block/glass"
+    "particle": "block/glass",
+    "opaque_detail": "kaleidoscope_tavern:furniture/placed_drink/opaque/kaleidoscope_tavern/block/mixology/grasshopper"
   },
   "elements": [
     {
@@ -1021,7 +1022,7 @@
             6.5,
             11.5
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -1030,7 +1031,7 @@
             6.5,
             11.5
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -1039,7 +1040,7 @@
             6.5,
             11.5
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -1048,7 +1049,7 @@
             6.5,
             11.5
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -1057,7 +1058,7 @@
             6.5,
             13
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -1066,7 +1067,7 @@
             6.5,
             11.5
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         }
       }
     }

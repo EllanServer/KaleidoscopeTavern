@@ -83,6 +83,14 @@ EXPECTED_BOTTLE_FURNITURE = {
     "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
     "watermelon_juice",
 }
+OPAQUE_PLACED_DRINK_ELEMENTS = {
+    "brass_heart": 11,
+    "grasshopper": 13,
+    "mojito": 0,
+    "nether_special": 15,
+    "mystery_cocktail": 12,
+    "signature_cocktail": 12,
+}
 SIMPLE_BOTTLES = {
     "water_bottle", "honey_bottle", "dragon_breath_bottle",
     "potion_bottle", "xp_bottle",
@@ -806,6 +814,64 @@ def validate() -> dict[str, int]:
     for model_path, owner in placed_drink_models.items():
         assert_ordered_model_bounds(model_path, owner)
         assert_no_forge_render_type(model_path, owner)
+
+    for drink_id, opaque_element_index in OPAQUE_PLACED_DRINK_ELEMENTS.items():
+        resource_path = (
+            f"furniture/placed_drink/{NAMESPACE}/block/mixology/{drink_id}"
+        )
+        model_id = f"{NAMESPACE}:{resource_path}"
+        model = asset_json(model_id, "models", roots=(ASSET_ROOTS[0],))
+        if model is None:
+            raise AssertionError(f"{drink_id}: missing private placed-drink model")
+        textures = model.get("textures", {})
+        opaque_sprite = (
+            f"{NAMESPACE}:furniture/placed_drink/opaque/{NAMESPACE}/"
+            f"block/mixology/{drink_id}"
+        )
+        if textures.get("opaque_detail") != opaque_sprite:
+            raise AssertionError(
+                f"{drink_id}: opaque detail must use its private cutout sprite")
+        if not asset_exists(opaque_sprite, "textures", ".png"):
+            raise AssertionError(f"{drink_id}: missing opaque detail texture")
+        forced_slots = {
+            slot for slot, texture in textures.items()
+            if isinstance(texture, dict)
+            and texture.get("force_translucent") is True
+        }
+        if len(forced_slots) != 1:
+            raise AssertionError(
+                f"{drink_id}: glass/liquid must retain one forced-translucent slot")
+        elements = model.get("elements", [])
+        if opaque_element_index >= len(elements):
+            raise AssertionError(
+                f"{drink_id}: missing opaque model element {opaque_element_index}")
+        for index, element in enumerate(elements):
+            face_textures = {
+                face.get("texture")
+                for face in element.get("faces", {}).values()
+            }
+            if index == opaque_element_index:
+                if face_textures != {"#opaque_detail"}:
+                    raise AssertionError(
+                        f"{drink_id}: target decoration/straw is not fully opaque")
+            elif "#opaque_detail" in face_textures:
+                raise AssertionError(
+                    f"{drink_id}: opaque texture leaked onto non-target element {index}")
+
+        source_meta = (
+            ROOT / f"src/main/resources/assets/{NAMESPACE}/textures/"
+            f"block/mixology/{drink_id}.png.mcmeta"
+        )
+        generated_meta = (
+            ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/textures/"
+            f"furniture/placed_drink/opaque/{NAMESPACE}/block/mixology/"
+            f"{drink_id}.png.mcmeta"
+        )
+        if source_meta.is_file() and (
+                not generated_meta.is_file()
+                or source_meta.read_bytes() != generated_meta.read_bytes()):
+            raise AssertionError(
+                f"{drink_id}: opaque animated detail must preserve source frames")
 
     assert_no_forge_render_type(
         f"{NAMESPACE}:furniture/bar_stool_body_base", "bar_stool_body_base")

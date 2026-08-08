@@ -10,7 +10,8 @@
       "sprite": "kaleidoscope_tavern:block/mixology/mojito",
       "force_translucent": true
     },
-    "particle": "block/glass"
+    "particle": "block/glass",
+    "opaque_detail": "kaleidoscope_tavern:furniture/placed_drink/opaque/kaleidoscope_tavern/block/mixology/mojito"
   },
   "elements": [
     {
@@ -41,7 +42,7 @@
             1.5,
             11
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -50,7 +51,7 @@
             1.5,
             11
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -59,7 +60,7 @@
             1.5,
             11
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -68,7 +69,7 @@
             1.5,
             11
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -77,7 +78,7 @@
             1.5,
             6.5
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -86,7 +87,7 @@
             1.5,
             6.5
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         }
       }
     },
