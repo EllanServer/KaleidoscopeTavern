@@ -1,4 +1,5 @@
 diff --git a/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockBehavior.java b/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockBehavior.java
+index 052bfc6..9538b04 100644
 --- a/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockBehavior.java
 +++ b/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockBehavior.java
 @@ -242,7 +242,8 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
@@ -11,7 +12,8 @@ diff --git a/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/bl
          }
          return result == StorageBlockConfig.InteractionFailure.PASS
                  ? InteractionResult.PASS : InteractionResult.FAIL;
-@@ -724,8 +725,8 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
+@@ -723,8 +724,8 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
+                 DisplayData.ItemDisplayData.Scale.addEntityDataIfNotDefaultValue(
                          new Vector3f(visual.scale()), metadata);
                  DisplayData.ItemDisplayData.ViewRange.addEntityDataIfNotDefaultValue(
 -                        controller.config().viewRange()
@@ -22,6 +24,7 @@ diff --git a/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/bl
                          entityIds[slot], metadata));
              }
 diff --git a/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockConfig.java b/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockConfig.java
+index 1c4c689..6d47190 100644
 --- a/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockConfig.java
 +++ b/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockConfig.java
 @@ -499,7 +499,7 @@ public record StorageBlockConfig(
