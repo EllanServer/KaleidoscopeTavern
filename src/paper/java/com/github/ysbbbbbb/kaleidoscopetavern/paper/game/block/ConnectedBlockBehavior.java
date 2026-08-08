@@ -22,9 +22,11 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Minimal neighbour-state adapter for source connections CE 26.7.4 cannot
- * express declaratively. CraftEngine owns placement facing/axis, block-item
- * routing, rendering, carriers, collision, loot, seats and block entities.
+ * Generic fixed-neighbour topology adapter.
+ *
+ * <p>Every family-specific property name, output value and compatible neighbour
+ * state lives in CraftEngine configuration. Java only performs the O(1)
+ * neighbour reads that CE 26.7.4 cannot declare in YAML.</p>
  */
 public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "connected_block");
@@ -33,14 +35,16 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
     private final Mode mode;
     private final Set<Key> connectableIds;
     private final Property<Direction> facingProperty;
-    private final Property<String> connectionProperty;
-    private final Property<String> linearPositionProperty;
+    private final Property<String> stringStateProperty;
     private final Property<Direction.Axis> axisProperty;
-    private final Property<Integer> tablePositionProperty;
+    private final Property<Integer> integerStateProperty;
+    private final CornerConfig corner;
+    private final LinearConfig linear;
+    private final TableConfig table;
 
     private ConnectedBlockBehavior(BlockDefinition block, ConfigSection section) {
         super(block);
-        mode = Mode.valueOf(section.getNonEmptyString("mode").toUpperCase(Locale.ROOT));
+        mode = section.getNonNullEnum("mode", Mode.class);
         connectableIds = new HashSet<>();
         for (String id : section.getStringList("connects")) {
             connectableIds.add(Key.of(id));
@@ -50,31 +54,32 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
         }
 
         facingProperty = BlockBehaviorFactory.getOptionalProperty(
-                block, "facing", Direction.class);
-        connectionProperty = BlockBehaviorFactory.getOptionalProperty(
-                block, "connection", String.class);
-        linearPositionProperty = BlockBehaviorFactory.getOptionalProperty(
-                block, "position", String.class);
-        axisProperty = BlockBehaviorFactory.getOptionalProperty(
-                block, "table_axis", Direction.Axis.class);
-        tablePositionProperty = BlockBehaviorFactory.getOptionalProperty(
-                block, "position", Integer.class);
+                block, section.getString("facing_property", "facing"), Direction.class);
+        String stateProperty = section.getString("state_property",
+                mode == Mode.TABLE ? "position" : mode == Mode.CORNER ? "connection" : "position");
+        stringStateProperty = mode == Mode.TABLE ? null
+                : BlockBehaviorFactory.getProperty(
+                        section.path(), block, stateProperty, String.class);
+        integerStateProperty = mode == Mode.TABLE
+                ? BlockBehaviorFactory.getProperty(
+                        section.path(), block, stateProperty, Integer.class)
+                : null;
+        axisProperty = mode == Mode.TABLE
+                ? BlockBehaviorFactory.getProperty(
+                        section.path(), block,
+                        section.getString("axis_property", "table_axis"),
+                        Direction.Axis.class)
+                : null;
 
-        if (mode == Mode.CORNER
-                && (facingProperty == null || connectionProperty == null)) {
+        corner = mode == Mode.CORNER
+                ? CornerConfig.parse(section.getNonNullSection("topology")) : null;
+        linear = mode == Mode.LINEAR
+                ? LinearConfig.parse(section.getNonNullSection("topology")) : null;
+        table = mode == Mode.TABLE
+                ? TableConfig.parse(section.getNonNullSection("topology")) : null;
+        if (mode != Mode.TABLE && facingProperty == null) {
             throw new IllegalArgumentException(
-                    "CORNER requires facing/connection at " + section.path());
-        }
-        if (mode == Mode.LINEAR
-                && (facingProperty == null || linearPositionProperty == null)) {
-            throw new IllegalArgumentException(
-                    "LINEAR requires facing/string position at " + section.path());
-        }
-        if (mode == Mode.TABLE
-                && (axisProperty == null || tablePositionProperty == null)) {
-            throw new IllegalArgumentException(
-                    "TABLE requires table_axis/integer position at "
-                            + section.path());
+                    mode + " requires a horizontal facing property at " + section.path());
         }
     }
 
@@ -89,9 +94,6 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
             BlockPlaceContext context, ImmutableBlockState state) {
         Object level = context.getLevel().minecraftWorld();
         BlockPos pos = context.getClickedPos();
-        // Do not assign facing here. CE's hard-coded `facing` property already
-        // applies context.getHorizontalDirection().opposite(), matching every
-        // archived sofa/counter/cabinet placement rule.
         return switch (mode) {
             case CORNER -> updateCorner(level, pos, state);
             case LINEAR -> updateLinear(level, pos, state);
@@ -128,14 +130,9 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
             Direction changed) {
         Direction facing = state.get(facingProperty);
         Direction side = facing.clockWise();
-        if (!ConnectedBlockSemantics.cornerNeighbourAffectsState(
-                changed.axis() == side.axis(), changed == facing)) {
+        if (changed.axis() != side.axis() && changed != facing) {
             return state;
         }
-
-        // Re-read both sides and the front on every relevant update. Skipping
-        // one side while already in a corner leaves stale armrests under CE's
-        // neighbour-notification ordering. This remains a fixed O(1) lookup.
         return updateCorner(level, pos, state);
     }
 
@@ -156,14 +153,13 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
                 level, pos.relative(facing.counterClockWise()));
         ImmutableBlockState front = customState(
                 level, pos.relative(facing));
-        String next = ConnectedBlockSemantics.cornerConnection(
+        String next = corner.output(
                 leftConnected(left, facing),
                 rightConnected(right, facing),
                 frontLeftConnected(front, facing),
                 frontRightConnected(front, facing));
-        return next.equals(state.get(connectionProperty))
-                ? state
-                : state.with(connectionProperty, next);
+        return next.equals(state.get(stringStateProperty))
+                ? state : state.with(stringStateProperty, next);
     }
 
     private ImmutableBlockState updateLinearAfterNeighbour(
@@ -180,85 +176,70 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
     private ImmutableBlockState updateLinear(
             Object level, BlockPos pos, ImmutableBlockState state) {
         Direction facing = state.get(facingProperty);
-        boolean left = linearConnected(
+        boolean left = sameFacing(
                 customState(level, pos.relative(facing.clockWise())), facing);
-        boolean right = linearConnected(
+        boolean right = sameFacing(
                 customState(level, pos.relative(facing.counterClockWise())), facing);
-        String next = ConnectedBlockSemantics.linearPosition(left, right);
-        return next.equals(state.get(linearPositionProperty))
-                ? state
-                : state.with(linearPositionProperty, next);
-    }
-
-    private boolean linearConnected(
-            ImmutableBlockState neighbor, Direction facing) {
-        return isConnectable(neighbor)
-                && property(neighbor, "facing", Direction.class) == facing;
+        String next = linear.output(left, right);
+        return next.equals(state.get(stringStateProperty))
+                ? state : state.with(stringStateProperty, next);
     }
 
     private ImmutableBlockState placeTable(
             BlockPlaceContext context, ImmutableBlockState state) {
-        ImmutableBlockState base = state
-                .with(axisProperty, Direction.Axis.Z)
-                .with(tablePositionProperty, 0);
+        Direction.Axis defaultAxis = table.defaultAxis;
+        ImmutableBlockState base = state.with(axisProperty, defaultAxis)
+                .with(integerStateProperty, table.none);
         Direction.Axis playerAxis = context.getHorizontalDirection().axis();
+        Direction.Axis initialUpdate = table.perpendicularToPlayer
+                ? perpendicular(playerAxis) : playerAxis;
         return updateTable(
-                context.getLevel().minecraftWorld(), context.getClickedPos(), base,
-                playerAxis == Direction.Axis.X
-                        ? Direction.Axis.Z
-                        : Direction.Axis.X);
+                context.getLevel().minecraftWorld(), context.getClickedPos(),
+                base, initialUpdate);
     }
 
     private ImmutableBlockState updateTable(
             Object level, BlockPos pos, ImmutableBlockState state,
             Direction.Axis changedAxis) {
-        ConnectedBlockSemantics.TableState current = tableState(state);
-        ConnectedBlockSemantics.TableState next;
+        Direction.Axis currentAxis = state.get(axisProperty);
+        int currentPosition = state.get(integerStateProperty);
+        if (currentPosition != table.none && changedAxis != currentAxis) {
+            return state;
+        }
+
+        boolean positive;
+        boolean negative;
         if (changedAxis == Direction.Axis.X) {
-            next = ConnectedBlockSemantics.eastWest(
-                    current,
-                    tableConnects(level, pos.east(), Direction.Axis.Z),
-                    tableConnects(level, pos.west(), Direction.Axis.Z));
+            positive = tableConnects(level, pos.east(), Direction.Axis.X);
+            negative = tableConnects(level, pos.west(), Direction.Axis.X);
         } else if (changedAxis == Direction.Axis.Z) {
-            next = ConnectedBlockSemantics.northSouth(
-                    current,
-                    tableConnects(level, pos.south(), Direction.Axis.X),
-                    tableConnects(level, pos.north(), Direction.Axis.X));
+            positive = tableConnects(level, pos.south(), Direction.Axis.Z);
+            negative = tableConnects(level, pos.north(), Direction.Axis.Z);
         } else {
             return state;
         }
-        Direction.Axis axis = next.axis() == ConnectedBlockSemantics.Axis.X
-                ? Direction.Axis.X
-                : Direction.Axis.Z;
-        if (axis == state.get(axisProperty)
-                && next.position() == state.get(tablePositionProperty)) {
+        int nextPosition = table.output(positive, negative);
+        Direction.Axis nextAxis = nextPosition == table.none ? currentAxis : changedAxis;
+        if (nextAxis == currentAxis && nextPosition == currentPosition) {
             return state;
         }
-        return state.with(axisProperty, axis)
-                .with(tablePositionProperty, next.position());
-    }
-
-    private ConnectedBlockSemantics.TableState tableState(
-            ImmutableBlockState state) {
-        return new ConnectedBlockSemantics.TableState(
-                state.get(axisProperty) == Direction.Axis.X
-                        ? ConnectedBlockSemantics.Axis.X
-                        : ConnectedBlockSemantics.Axis.Z,
-                state.get(tablePositionProperty));
+        return state.with(axisProperty, nextAxis)
+                .with(integerStateProperty, nextPosition);
     }
 
     private boolean tableConnects(
-            Object level, BlockPos pos, Direction.Axis correctionAxis) {
+            Object level, BlockPos pos, Direction.Axis connectionAxis) {
         ImmutableBlockState neighbor = customState(level, pos);
         if (!isConnectable(neighbor)) {
             return false;
         }
         Direction.Axis neighborAxis = property(
-                neighbor, "table_axis", Direction.Axis.class);
+                neighbor, axisProperty.name(), Direction.Axis.class);
         Integer neighborPosition = property(
-                neighbor, "position", Integer.class);
-        return neighborAxis != correctionAxis
-                || Integer.valueOf(0).equals(neighborPosition);
+                neighbor, integerStateProperty.name(), Integer.class);
+        return (table.allowCrossAxisSingles
+                && Integer.valueOf(table.none).equals(neighborPosition))
+                || neighborAxis == connectionAxis;
     }
 
     private boolean leftConnected(
@@ -266,12 +247,9 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
         if (!isConnectable(neighbor)) {
             return false;
         }
-        Direction check = property(neighbor, "facing", Direction.class);
+        Direction check = property(neighbor, facingProperty.name(), Direction.class);
         if (check == self.counterClockWise()) {
-            String connection = connection(neighbor);
-            return "single".equals(connection)
-                    || "right".equals(connection)
-                    || "right_corner".equals(connection);
+            return corner.leftPerpendicularStates.contains(connection(neighbor));
         }
         return check == self;
     }
@@ -281,12 +259,9 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
         if (!isConnectable(neighbor)) {
             return false;
         }
-        Direction check = property(neighbor, "facing", Direction.class);
+        Direction check = property(neighbor, facingProperty.name(), Direction.class);
         if (check == self.clockWise()) {
-            String connection = connection(neighbor);
-            return "single".equals(connection)
-                    || "left".equals(connection)
-                    || "left_corner".equals(connection);
+            return corner.rightPerpendicularStates.contains(connection(neighbor));
         }
         return check == self;
     }
@@ -294,26 +269,33 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
     private boolean frontLeftConnected(
             ImmutableBlockState neighbor, Direction self) {
         return isConnectable(neighbor)
-                && property(neighbor, "facing", Direction.class)
+                && property(neighbor, facingProperty.name(), Direction.class)
                 == self.clockWise()
-                && !"left_corner".equals(connection(neighbor));
+                && !corner.frontLeftExcluded.equals(connection(neighbor));
     }
 
     private boolean frontRightConnected(
             ImmutableBlockState neighbor, Direction self) {
         return isConnectable(neighbor)
-                && property(neighbor, "facing", Direction.class)
+                && property(neighbor, facingProperty.name(), Direction.class)
                 == self.counterClockWise()
-                && !"right_corner".equals(connection(neighbor));
+                && !corner.frontRightExcluded.equals(connection(neighbor));
     }
 
-    private static String connection(ImmutableBlockState state) {
-        String connection = property(state, "connection", String.class);
+    private String connection(ImmutableBlockState state) {
+        String connection = property(
+                state, stringStateProperty.name(), String.class);
         if (connection == null && state != null
                 && SofaBlockIds.isLegacy(state.owner().value().id())) {
-            return "single";
+            return corner.none;
         }
         return connection;
+    }
+
+    private boolean sameFacing(
+            ImmutableBlockState neighbor, Direction facing) {
+        return isConnectable(neighbor)
+                && property(neighbor, facingProperty.name(), Direction.class) == facing;
     }
 
     private boolean isConnectable(ImmutableBlockState state) {
@@ -326,6 +308,10 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
                 BlockGetterProxy.INSTANCE.getBlockState(
                         level, LocationUtils.toBlockPos(pos)))
                 .orElse(null);
+    }
+
+    private static Direction.Axis perpendicular(Direction.Axis axis) {
+        return axis == Direction.Axis.X ? Direction.Axis.Z : Direction.Axis.X;
     }
 
     private static <T extends Comparable<T>> T property(
@@ -344,5 +330,112 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
         CORNER,
         LINEAR,
         TABLE
+    }
+
+    private record CornerConfig(
+            String none,
+            String left,
+            String right,
+            String both,
+            String frontLeft,
+            String frontLeftWithRight,
+            String frontRight,
+            String frontRightWithLeft,
+            Set<String> leftPerpendicularStates,
+            Set<String> rightPerpendicularStates,
+            String frontLeftExcluded,
+            String frontRightExcluded
+    ) {
+        static CornerConfig parse(ConfigSection section) {
+            ConfigSection outputs = section.getNonNullSection("outputs");
+            ConfigSection compatibility = section.getNonNullSection("compatibility");
+            return new CornerConfig(
+                    outputs.getNonEmptyString("none"),
+                    outputs.getNonEmptyString("left"),
+                    outputs.getNonEmptyString("right"),
+                    outputs.getNonEmptyString("both"),
+                    outputs.getNonEmptyString("front_left"),
+                    outputs.getNonEmptyString("front_left_with_right"),
+                    outputs.getNonEmptyString("front_right"),
+                    outputs.getNonEmptyString("front_right_with_left"),
+                    Set.copyOf(compatibility.getStringList("left_perpendicular")),
+                    Set.copyOf(compatibility.getStringList("right_perpendicular")),
+                    compatibility.getNonEmptyString("front_left_excluded"),
+                    compatibility.getNonEmptyString("front_right_excluded"));
+        }
+
+        String output(boolean leftConnected, boolean rightConnected,
+                      boolean frontLeftConnected, boolean frontRightConnected) {
+            if (leftConnected && rightConnected) {
+                return both;
+            }
+            if (frontLeftConnected) {
+                return rightConnected ? frontLeftWithRight : frontLeft;
+            }
+            if (frontRightConnected) {
+                return leftConnected ? frontRightWithLeft : frontRight;
+            }
+            if (leftConnected) {
+                return left;
+            }
+            if (rightConnected) {
+                return right;
+            }
+            return none;
+        }
+    }
+
+    private record LinearConfig(String none, String left, String right, String both) {
+        static LinearConfig parse(ConfigSection section) {
+            ConfigSection outputs = section.getNonNullSection("outputs");
+            return new LinearConfig(
+                    outputs.getNonEmptyString("none"),
+                    outputs.getNonEmptyString("left"),
+                    outputs.getNonEmptyString("right"),
+                    outputs.getNonEmptyString("both"));
+        }
+
+        String output(boolean leftConnected, boolean rightConnected) {
+            if (leftConnected && rightConnected) {
+                return both;
+            }
+            if (leftConnected) {
+                return left;
+            }
+            return rightConnected ? right : none;
+        }
+    }
+
+    private record TableConfig(
+            Direction.Axis defaultAxis,
+            boolean perpendicularToPlayer,
+            boolean allowCrossAxisSingles,
+            int none,
+            int positive,
+            int negative,
+            int both
+    ) {
+        static TableConfig parse(ConfigSection section) {
+            ConfigSection outputs = section.getNonNullSection("outputs");
+            return new TableConfig(
+                    section.getEnum("default_axis", Direction.Axis.class,
+                            Direction.Axis.Z),
+                    section.getBoolean("perpendicular_to_player", true),
+                    section.getBoolean("allow_cross_axis_singles", true),
+                    outputs.getInt("none", 0),
+                    outputs.getInt("positive", 1),
+                    outputs.getInt("negative", 3),
+                    outputs.getInt("both", 2));
+        }
+
+        int output(boolean positiveConnected, boolean negativeConnected) {
+            if (positiveConnected && negativeConnected) {
+                return both;
+            }
+            if (positiveConnected) {
+                return positive;
+            }
+            return negativeConnected ? negative : none;
+        }
     }
 }

@@ -288,15 +288,14 @@ GRAPE_CARRIER_ID = "kaleidoscope-tavern-wild-grapevine-transparent"
 # cannot collide with another CraftEngine project's stair allocation.
 SOFA_CARRIER_STATE = "minecraft:barrier"
 
-# Minecraft 26.2 ItemDisplayRenderer applies a final +180-degree Y turn to
-# submitted item models. Source blockstate rotations use the block-model
-# convention, so furniture-style CE blocks must configure the inverse
-# compensation instead of copying the JSON `y` value verbatim. This is the
-# same mapping already required by chalkboards.
+# CraftEngine's bundled sofa and the archived Forge blockstates use the same
+# ItemDisplay-facing convention. Keep this one canonical table for every
+# furniture-style block; the previous north/south inversion made logical
+# left/right connections appear on the opposite visual side.
 ITEM_DISPLAY_FACING_YAW = {
-    "north": 180,
+    "north": 0,
     "east": 90,
-    "south": 0,
+    "south": 180,
     "west": 270,
 }
 COPPER_LANTERN_CARRIER_STATE = (
@@ -890,14 +889,345 @@ def normalize_model_entry(raw: Any) -> tuple[str, int, int, int, bool]:
     )
 
 
-def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | list[dict[str, Any]] | None:
-    if block_id == SHARED_SOFA_BLOCK:
+
+
+STORAGE_ALLOWED_ITEMS = tuple(sorted(
+    f"{NAMESPACE}:{item}" for item in CABINET_BOTTLES - {"potion_bottle"}
+))
+STORAGE_PROJECTILE_ITEMS = tuple(sorted(
+    f"{NAMESPACE}:{item}" for item in CABINET_BOTTLES
+    - {"empty_bottle", "water_bottle", "honey_bottle",
+       "dragon_breath_bottle", "potion_bottle", "xp_bottle"}
+))
+STORAGE_PROJECTILE_SOUND_ITEMS = tuple(
+    item for item in STORAGE_PROJECTILE_ITEMS
+    if item != f"{NAMESPACE}:molotov"
+)
+
+
+def configured_sound(sound: str, volume: tuple[float, float] = (1, 1),
+                     pitch: tuple[float, float] = (1, 1)) -> dict[str, Any]:
+    return {
+        "id": sound,
+        "volume_min": volume[0],
+        "volume_max": volume[1],
+        "pitch_min": pitch[0],
+        "pitch_max": pitch[1],
+    }
+
+
+def storage_orientations(*, reverse_axis_x_slots: bool = False) -> dict[str, Any]:
+    """Source-space click transform plus separate body/item-display yaw.
+
+    `position_yaw` mirrors StorageBlockEntityRender.applyFacingRotation while
+    `model_yaw` follows CE's static ItemDisplay renderer. East/west must not use
+    one value for both or displayed bottles turn 180 degrees against the rack.
+    """
+    return {
+        "north": {
+            "position_yaw": 0,
+            "model_yaw": 0,
+            "local_x": "1-x",
+            "local_z": "z",
+            "reverse_slots": False,
+        },
+        "east": {
+            "position_yaw": -90,
+            "model_yaw": 90,
+            "local_x": "1-z",
+            "local_z": "1-x",
+            "reverse_slots": reverse_axis_x_slots,
+        },
+        "south": {
+            "position_yaw": 180,
+            "model_yaw": 180,
+            "local_x": "x",
+            "local_z": "1-z",
+            "reverse_slots": False,
+        },
+        "west": {
+            "position_yaw": 90,
+            "model_yaw": 270,
+            "local_x": "z",
+            "local_z": "x",
+            "reverse_slots": reverse_axis_x_slots,
+        },
+    }
+
+
+def render_stack_visual(x: float, y: float, z: float, scale: float,
+                        y_rotation: float = 0, x_rotation: float = 0) -> dict[str, Any]:
+    x_rad = math.radians(x_rotation)
+    x_cos = math.cos(x_rad)
+    x_sin = math.sin(x_rad)
+    center_y = x_cos * (scale * 0.5)
+    center_z = x_sin * (scale * 0.5)
+    y_rad = math.radians(y_rotation)
+    y_sin = math.sin(y_rad)
+    y_cos = math.cos(y_rad)
+    center_x = y_sin * center_z
+    rotated_z = y_cos * center_z
+    return {
+        "position": f"{x + center_x:g},{y + center_y:g},{z + rotated_z:g}",
+        "scale": scale,
+        "y_rotation": y_rotation,
+        "x_rotation": x_rotation,
+    }
+
+
+def storage_slot_visuals(block_id: str) -> list[dict[str, Any]]:
+    if block_id in {"bar_cabinet", "glass_bar_cabinet"}:
+        y = 0.0625 + 0.9 * 0.5
         return [
             {
-                "type": f"{NAMESPACE}:connected_block",
-                "mode": "corner",
-                "connects": SOFA_CONNECT_IDS,
+                "position": f"0.75,{y:g},0.5",
+                "axis_x_position": f"0.25,{y:g},0.5",
+                "exclusive_position": f"0.5,{y:g},0.5",
+                "exclusive_axis_x_position": f"0.5,{y:g},0.5",
+                "scale": 0.9,
             },
+            {
+                "position": f"0.25,{y:g},0.5",
+                "axis_x_position": f"0.75,{y:g},0.5",
+                "scale": 0.9,
+            },
+        ]
+    if block_id == "cellar_cabinet":
+        return [
+            render_stack_visual(
+                0.825 - (slot % 3) * 0.325,
+                0.78 - (slot // 3) * 0.29,
+                0.875, 1, 0, -90)
+            for slot in range(9)
+        ]
+    if block_id == "tilted_rack":
+        result: list[dict[str, Any]] = []
+        scale = 0.9
+        angle = math.radians(22.5)
+        center_y = (math.cos(angle) - math.sin(angle)) * 0.5
+        center_z = (math.sin(angle) + math.cos(angle)) * 0.5
+        for slot in range(3):
+            x = 0.425 - 0.375 * slot
+            y = 0.3125
+            z = 0.02 + (slot - 1) * 0.005
+            result.append({
+                "position": f"{scale * (x + 0.5):g},{scale * (y + center_y):g},{scale * (z + center_z):g}",
+                "scale": scale,
+                "x_rotation": 22.5,
+            })
+        return result
+    if block_id == "circular_rack":
+        entries = (
+            (0.5, 0.125, 0),
+            (0.875, 0.3125, 22.5),
+            (0.875, 0.6875, -22.5),
+            (0.5, 0.875, 180),
+            (0.125, 0.6875, 157.5),
+            (0.125, 0.3125, -157.5),
+        )
+        return [
+            render_stack_visual(x, 0.125, z, 0.82, y_rot, 0)
+            for x, z, y_rot in entries
+        ]
+    if block_id == "holder":
+        return [render_stack_visual(0.5, 0.125, 0.75, 0.95, 0, -45)]
+    raise ValueError(f"No storage slot layout for {block_id}")
+
+
+def storage_selector(block_id: str) -> dict[str, Any]:
+    if block_id in {"bar_cabinet", "glass_bar_cabinet"}:
+        return {"type": "split", "axis": "x", "segments": 2}
+    if block_id == "cellar_cabinet":
+        return {
+            "type": "grid", "columns": 3, "rows": 3,
+            "reverse_y": True, "front_only": True,
+        }
+    if block_id == "tilted_rack":
+        return {"type": "split", "axis": "x", "segments": 3}
+    if block_id == "circular_rack":
+        return {
+            "type": "radial", "segments": 6,
+            "radial_offset": 4, "radial_clockwise": True,
+        }
+    if block_id == "holder":
+        return {"type": "single"}
+    raise ValueError(f"No storage selector for {block_id}")
+
+
+def storage_interaction(block_id: str, tags: dict[str, list[str]]) -> dict[str, Any]:
+    blocklist_name = STORAGE_BLOCK_SPECS[block_id][1]
+    blocked = [] if blocklist_name is None else tags.get(
+        f"{NAMESPACE}:{blocklist_name}", [])
+    interaction: dict[str, Any] = {
+        "allowed_items": list(STORAGE_ALLOWED_ITEMS),
+        "blocked_items": sorted(blocked),
+        "consume_in_creative": True,
+        "invalid_result": "pass" if block_id in {
+            "bar_cabinet", "glass_bar_cabinet"} else "fail",
+        "blocked_result": "fail",
+        "invalid_message": (None if block_id in {
+            "bar_cabinet", "glass_bar_cabinet"}
+                            else "message.kaleidoscope_tavern.rack.not_drink"),
+        "blocked_message": (None if block_id in {
+            "bar_cabinet", "glass_bar_cabinet"}
+                            else "message.kaleidoscope_tavern.rack.irregular"),
+        "sounds": {
+            "put": configured_sound("minecraft:block.stone.place"),
+            "take": configured_sound("minecraft:entity.item_frame.remove_item"),
+        },
+    }
+    if block_id in {"bar_cabinet", "glass_bar_cabinet"}:
+        interaction.update({
+            "exclusive_items": sorted(tags.get(
+                f"{NAMESPACE}:bar_cabinet_irregular", [])),
+            "exclusive_slot": 0,
+            "fallback_take": True,
+            "fallback_put": True,
+            "sounds": {
+                "put": configured_sound(
+                    "minecraft:block.glass.place", (0.8, 1.0), (0.2, 0.4)),
+                "put_last": configured_sound(
+                    "minecraft:block.glass.place", (0.8, 1.0), (0.8, 1.0)),
+                "take": configured_sound(
+                    "minecraft:block.glass.place", (0.8, 1.0), (0.8, 1.0)),
+            },
+        })
+    return interaction
+
+
+def storage_launch(block_id: str) -> dict[str, Any]:
+    base: dict[str, Any] = {
+        "candidate_items": list(STORAGE_ALLOWED_ITEMS),
+        "projectile_items": list(STORAGE_PROJECTILE_ITEMS),
+        "sound_items": list(STORAGE_PROJECTILE_SOUND_ITEMS),
+        "sound": configured_sound(
+            f"{NAMESPACE}:block.holder.pop", (0.9, 0.9), (1, 1)),
+        "factor_min": 0.5,
+        "factor_max": 1.5,
+        "vertical_factor": 0.1,
+        "origin_y": 0.5,
+        "origin_forward": 0,
+        "direction": "facing",
+    }
+    if block_id == "cellar_cabinet":
+        base.update({"origin_forward": 0.5, "factor_max": 2.5})
+    elif block_id == "circular_rack":
+        base.update({"direction": "up", "factor_max": 2.5, "vertical_factor": 0})
+    elif block_id == "tilted_rack":
+        base.update({
+            "origin_forward": -0.5, "origin_y": 0.875,
+            "direction": "opposite", "vertical_factor": 0.75,
+        })
+    elif block_id == "holder":
+        base.update({
+            "origin_forward": 0.5, "origin_y": 0.875,
+            "vertical_factor": 0.375,
+        })
+    return base
+
+
+def storage_behavior(block_id: str, tags: dict[str, list[str]]) -> dict[str, Any]:
+    config: dict[str, Any] = {
+        "type": f"{NAMESPACE}:storage",
+        "data_key": f"{NAMESPACE}:storage_{block_id}",
+        "render_item_prefix": f"{NAMESPACE}:_render/storage/",
+        "view_range": 1.25,
+        "refresh_properties": (["facing", "position"]
+                               if block_id == "cellar_cabinet" else ["facing"]),
+        "orientations": storage_orientations(
+            reverse_axis_x_slots=block_id in {
+                "bar_cabinet", "glass_bar_cabinet"}),
+        "selector": storage_selector(block_id),
+        "interaction": storage_interaction(block_id, tags),
+        "slots": storage_slot_visuals(block_id),
+    }
+    if block_id not in {"bar_cabinet", "glass_bar_cabinet"}:
+        config["launch"] = storage_launch(block_id)
+    if block_id == "circular_rack":
+        config["particle"] = {
+            "type": "END_ROD",
+            "chance": 49 * 8,
+            "min_x": 0.125,
+            "max_x": 0.375,
+            "alternate_min_x": 0.625,
+            "alternate_max_x": 0.875,
+            "min_y": 0,
+            "max_y": 1,
+            "min_z": 0.125,
+            "max_z": 0.375,
+            "alternate_min_z": 0.625,
+            "alternate_max_z": 0.875,
+            "offset_x": 0.01,
+            "offset_y": 0.01,
+            "offset_z": 0.01,
+            "speed": 1,
+        }
+    return config
+
+
+def corner_connection_behavior(connects: list[str]) -> dict[str, Any]:
+    return {
+        "type": f"{NAMESPACE}:connected_block",
+        "mode": "corner",
+        "connects": connects,
+        "state_property": "connection",
+        "topology": {
+            "outputs": {
+                "none": "single",
+                "left": "right",
+                "right": "left",
+                "both": "middle",
+                "front_left": "right_corner",
+                "front_left_with_right": "left",
+                "front_right": "left_corner",
+                "front_right_with_left": "right",
+            },
+            "compatibility": {
+                "left_perpendicular": ["single", "right", "right_corner"],
+                "right_perpendicular": ["single", "left", "left_corner"],
+                "front_left_excluded": "left_corner",
+                "front_right_excluded": "right_corner",
+            },
+        },
+    }
+
+
+def linear_connection_behavior(block_id: str) -> dict[str, Any]:
+    return {
+        "type": f"{NAMESPACE}:connected_block",
+        "mode": "linear",
+        "connects": [f"{NAMESPACE}:{block_id}"],
+        "state_property": "position",
+        "topology": {
+            "outputs": {
+                "none": "single",
+                "left": "right",
+                "right": "left",
+                "both": "middle",
+            },
+        },
+    }
+
+
+def table_connection_behavior() -> dict[str, Any]:
+    return {
+        "type": f"{NAMESPACE}:connected_block",
+        "mode": "table",
+        "connects": [f"{NAMESPACE}:table"],
+        "axis_property": "table_axis",
+        "state_property": "position",
+        "topology": {
+            "default_axis": "z",
+            "perpendicular_to_player": True,
+            "allow_cross_axis_singles": True,
+            "outputs": {"none": 0, "positive": 1, "negative": 3, "both": 2},
+        },
+    }
+
+def behavior_for(block_id: str, property_names: set[str], tags: dict[str, list[str]] | None = None) -> dict[str, Any] | list[dict[str, Any]] | None:
+    if block_id == SHARED_SOFA_BLOCK:
+        return [
+            corner_connection_behavior(SOFA_CONNECT_IDS),
             {
                 "type": "seat_block",
                 "seats": [f"0,{seat_offset(8 / 16):g},0 180"],
@@ -908,17 +1238,10 @@ def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | li
             },
         ]
     if block_id == "bar_counter":
-        return {
-            "type": f"{NAMESPACE}:connected_block",
-            "mode": "corner",
-            "connects": [f"{NAMESPACE}:bar_counter"],
-        }
+        return corner_connection_behavior(
+            [f"{NAMESPACE}:bar_counter"])
     if block_id == "table":
-        return {
-            "type": f"{NAMESPACE}:connected_block",
-            "mode": "table",
-            "connects": [f"{NAMESPACE}:table"],
-        }
+        return table_connection_behavior()
     if block_id == "tap":
         return {"type": f"{NAMESPACE}:tap"}
     if block_id == "pressing_tub":
@@ -933,26 +1256,12 @@ def behavior_for(block_id: str, property_names: set[str]) -> dict[str, Any] | li
             {"type": f"{NAMESPACE}:chalkboard"},
         ]
     if block_id in STORAGE_BLOCK_SPECS:
-        slots, blocklist = STORAGE_BLOCK_SPECS[block_id]
-        storage_behavior = {
-            "type": f"{NAMESPACE}:storage",
-            "kind": ("bar_cabinet"
-                     if block_id == "glass_bar_cabinet" else block_id),
-            "slots": slots,
-            "data_key": f"{NAMESPACE}:storage_{block_id}",
-        }
-        if blocklist is not None:
-            storage_behavior["blocklist"] = f"{NAMESPACE}:{blocklist}"
+        if tags is None:
+            raise ValueError(f"Storage behavior {block_id} requires flattened item tags")
+        configured_storage = storage_behavior(block_id, tags)
         if block_id in CONNECTED_STORAGE_BLOCKS:
-            return [
-                {
-                    "type": f"{NAMESPACE}:connected_block",
-                    "mode": "linear",
-                    "connects": [f"{NAMESPACE}:{block_id}"],
-                },
-                storage_behavior,
-            ]
-        return storage_behavior
+            return [linear_connection_behavior(block_id), configured_storage]
+        return configured_storage
     if block_id in INCENSE_BLOCKS:
         small, large, y_offset, y_range = INCENSE_SPECS[block_id]
         return {
@@ -1624,7 +1933,7 @@ def build_legacy_sofa_alias_block(
     }, len(appearances)
 
 
-def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, Any], dict[str, Any], dict[str, int]]:
+def build_blocks(block_ids: list[str], item_ids: set[str], tags: dict[str, list[str]]) -> tuple[dict[str, Any], dict[str, Any], dict[str, int]]:
     blocks: dict[str, Any] = {}
     render_items: dict[str, Any] = {}
     metrics = {"appearances": 0, "weighted_variants_reduced": 0, "collidable_trellises": 0}
@@ -1878,7 +2187,7 @@ def build_blocks(block_ids: list[str], item_ids: set[str]) -> tuple[dict[str, An
             config["state"] = next(iter(appearances.values()))
 
         config["settings"] = block_settings(block_id, block_id in item_ids)
-        behavior = behavior_for(block_id, set(property_values))
+        behavior = behavior_for(block_id, set(property_values), tags)
         if isinstance(behavior, list):
             config["behaviors"] = behavior
         elif behavior is not None:
@@ -4514,7 +4823,7 @@ def main() -> None:
         shutil.rmtree(generated_furniture_models)
 
     create_tintable_sofa_models()
-    blocks, block_render_items, block_metrics = build_blocks(block_ids, set(item_ids))
+    blocks, block_render_items, block_metrics = build_blocks(block_ids, set(item_ids), tags)
     furniture, furniture_render_items, furniture_placement, furniture_metrics = build_furniture(
         furniture_ids, set(item_ids)
     )

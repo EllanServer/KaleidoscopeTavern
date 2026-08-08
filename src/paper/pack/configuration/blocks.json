@@ -22,8 +22,7 @@
               "item": "kaleidoscope_tavern:_render/black_sofa/cb7b1b05de",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -44,7 +43,8 @@
               "item": "kaleidoscope_tavern:_render/black_sofa/cb7b1b05de",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -142,8 +142,7 @@
               "item": "kaleidoscope_tavern:_render/blue_sofa/2889998f2e",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -164,7 +163,8 @@
               "item": "kaleidoscope_tavern:_render/blue_sofa/2889998f2e",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -262,8 +262,7 @@
               "item": "kaleidoscope_tavern:_render/brown_sofa/3ebee86bfb",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -284,7 +283,8 @@
               "item": "kaleidoscope_tavern:_render/brown_sofa/3ebee86bfb",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -382,8 +382,7 @@
               "item": "kaleidoscope_tavern:_render/cyan_sofa/a45689e59f",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -404,7 +403,8 @@
               "item": "kaleidoscope_tavern:_render/cyan_sofa/a45689e59f",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -502,8 +502,7 @@
               "item": "kaleidoscope_tavern:_render/gray_sofa/f8fa2e58a1",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -524,7 +523,8 @@
               "item": "kaleidoscope_tavern:_render/gray_sofa/f8fa2e58a1",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -622,8 +622,7 @@
               "item": "kaleidoscope_tavern:_render/green_sofa/03cd9d61b8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -644,7 +643,8 @@
               "item": "kaleidoscope_tavern:_render/green_sofa/03cd9d61b8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -742,8 +742,7 @@
               "item": "kaleidoscope_tavern:_render/light_blue_sofa/97b359bdb6",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -764,7 +763,8 @@
               "item": "kaleidoscope_tavern:_render/light_blue_sofa/97b359bdb6",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -862,8 +862,7 @@
               "item": "kaleidoscope_tavern:_render/light_gray_sofa/a9e850247f",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -884,7 +883,8 @@
               "item": "kaleidoscope_tavern:_render/light_gray_sofa/a9e850247f",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -982,8 +982,7 @@
               "item": "kaleidoscope_tavern:_render/lime_sofa/3ab2ae04d3",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -1004,7 +1003,8 @@
               "item": "kaleidoscope_tavern:_render/lime_sofa/3ab2ae04d3",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -1102,8 +1102,7 @@
               "item": "kaleidoscope_tavern:_render/magenta_sofa/22f55066ca",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -1124,7 +1123,8 @@
               "item": "kaleidoscope_tavern:_render/magenta_sofa/22f55066ca",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -1222,8 +1222,7 @@
               "item": "kaleidoscope_tavern:_render/orange_sofa/f5d8ff2eaf",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -1244,7 +1243,8 @@
               "item": "kaleidoscope_tavern:_render/orange_sofa/f5d8ff2eaf",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -1342,8 +1342,7 @@
               "item": "kaleidoscope_tavern:_render/pink_sofa/10ced9a35c",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -1364,7 +1363,8 @@
               "item": "kaleidoscope_tavern:_render/pink_sofa/10ced9a35c",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -1462,8 +1462,7 @@
               "item": "kaleidoscope_tavern:_render/purple_sofa/34582175f1",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -1484,7 +1483,8 @@
               "item": "kaleidoscope_tavern:_render/purple_sofa/34582175f1",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -1582,8 +1582,7 @@
               "item": "kaleidoscope_tavern:_render/red_sofa/7a8fe4b873",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -1604,7 +1603,8 @@
               "item": "kaleidoscope_tavern:_render/red_sofa/7a8fe4b873",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -1702,8 +1702,7 @@
               "item": "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -1724,7 +1723,8 @@
               "item": "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -1822,8 +1822,7 @@
               "item": "kaleidoscope_tavern:_render/yellow_sofa/683a8e31b2",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_east": {
@@ -1844,7 +1843,8 @@
               "item": "kaleidoscope_tavern:_render/yellow_sofa/683a8e31b2",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_west": {
@@ -1955,8 +1955,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color",
-              "rotation": "0,180,0"
+              "tint_source": "minecraft:dyed_color"
             }
           },
           "single_east": {
@@ -1979,7 +1978,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color"
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
             }
           },
           "single_west": {
@@ -2002,8 +2002,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color",
-              "rotation": "0,180,0"
+              "tint_source": "minecraft:dyed_color"
             }
           },
           "left_east": {
@@ -2026,7 +2025,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color"
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
             }
           },
           "left_west": {
@@ -2049,8 +2049,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color",
-              "rotation": "0,180,0"
+              "tint_source": "minecraft:dyed_color"
             }
           },
           "left_corner_east": {
@@ -2073,7 +2072,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color"
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
             }
           },
           "left_corner_west": {
@@ -2096,8 +2096,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color",
-              "rotation": "0,180,0"
+              "tint_source": "minecraft:dyed_color"
             }
           },
           "middle_east": {
@@ -2120,7 +2119,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color"
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
             }
           },
           "middle_west": {
@@ -2143,8 +2143,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color",
-              "rotation": "0,180,0"
+              "tint_source": "minecraft:dyed_color"
             }
           },
           "right_east": {
@@ -2167,7 +2166,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color"
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
             }
           },
           "right_west": {
@@ -2190,8 +2190,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color",
-              "rotation": "0,180,0"
+              "tint_source": "minecraft:dyed_color"
             }
           },
           "right_corner_east": {
@@ -2214,7 +2213,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color"
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
             }
           },
           "right_corner_west": {
@@ -2353,7 +2353,34 @@
             "kaleidoscope_tavern:red_sofa",
             "kaleidoscope_tavern:white_sofa",
             "kaleidoscope_tavern:yellow_sofa"
-          ]
+          ],
+          "state_property": "connection",
+          "topology": {
+            "outputs": {
+              "none": "single",
+              "left": "right",
+              "right": "left",
+              "both": "middle",
+              "front_left": "right_corner",
+              "front_left_with_right": "left",
+              "front_right": "left_corner",
+              "front_right_with_left": "right"
+            },
+            "compatibility": {
+              "left_perpendicular": [
+                "single",
+                "right",
+                "right_corner"
+              ],
+              "right_perpendicular": [
+                "single",
+                "left",
+                "left_corner"
+              ],
+              "front_left_excluded": "left_corner",
+              "front_right_excluded": "right_corner"
+            }
+          }
         },
         {
           "type": "seat_block",
@@ -3066,7 +3093,20 @@
         "mode": "table",
         "connects": [
           "kaleidoscope_tavern:table"
-        ]
+        ],
+        "axis_property": "table_axis",
+        "state_property": "position",
+        "topology": {
+          "default_axis": "z",
+          "perpendicular_to_player": true,
+          "allow_cross_axis_singles": true,
+          "outputs": {
+            "none": 0,
+            "positive": 1,
+            "negative": 3,
+            "both": 2
+          }
+        }
       },
       "loot": {
         "pools": [
@@ -6204,8 +6244,7 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/ced9c7fb4d",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_2": {
@@ -6215,7 +6254,8 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/ced9c7fb4d",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_3": {
@@ -6247,8 +6287,7 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/e4c3e4395a",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_6": {
@@ -6258,7 +6297,8 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/e4c3e4395a",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_7": {
@@ -6290,8 +6330,7 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/bb1a9c3db9",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_10": {
@@ -6301,7 +6340,8 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/bb1a9c3db9",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_11": {
@@ -6333,8 +6373,7 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/5e041288be",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_14": {
@@ -6344,7 +6383,8 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/5e041288be",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_15": {
@@ -6376,8 +6416,7 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/8043a621af",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_18": {
@@ -6387,7 +6426,8 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/8043a621af",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_19": {
@@ -6419,8 +6459,7 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/fba778d59b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_22": {
@@ -6430,7 +6469,8 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/fba778d59b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_23": {
@@ -6551,7 +6591,34 @@
         "mode": "corner",
         "connects": [
           "kaleidoscope_tavern:bar_counter"
-        ]
+        ],
+        "state_property": "connection",
+        "topology": {
+          "outputs": {
+            "none": "single",
+            "left": "right",
+            "right": "left",
+            "both": "middle",
+            "front_left": "right_corner",
+            "front_left_with_right": "left",
+            "front_right": "left_corner",
+            "front_right_with_left": "right"
+          },
+          "compatibility": {
+            "left_perpendicular": [
+              "single",
+              "right",
+              "right_corner"
+            ],
+            "right_perpendicular": [
+              "single",
+              "left",
+              "left_corner"
+            ],
+            "front_left_excluded": "left_corner",
+            "front_right_excluded": "right_corner"
+          }
+        }
       },
       "loot": {
         "pools": [
@@ -10564,8 +10631,7 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/168d317b28",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_5": {
@@ -10575,8 +10641,7 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9d2d3e7a21",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_6": {
@@ -10586,8 +10651,7 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9651abf3e7",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
@@ -10597,8 +10661,7 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/12fa828aea",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_8": {
@@ -10608,7 +10671,8 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/168d317b28",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_9": {
@@ -10618,7 +10682,8 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9d2d3e7a21",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_10": {
@@ -10628,7 +10693,8 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9651abf3e7",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_11": {
@@ -10638,7 +10704,8 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/12fa828aea",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_12": {
@@ -10772,13 +10839,145 @@
           "mode": "linear",
           "connects": [
             "kaleidoscope_tavern:bar_cabinet"
-          ]
+          ],
+          "state_property": "position",
+          "topology": {
+            "outputs": {
+              "none": "single",
+              "left": "right",
+              "right": "left",
+              "both": "middle"
+            }
+          }
         },
         {
           "type": "kaleidoscope_tavern:storage",
-          "kind": "bar_cabinet",
-          "slots": 2,
-          "data_key": "kaleidoscope_tavern:storage_bar_cabinet"
+          "data_key": "kaleidoscope_tavern:storage_bar_cabinet",
+          "render_item_prefix": "kaleidoscope_tavern:_render/storage/",
+          "view_range": 1.25,
+          "refresh_properties": [
+            "facing"
+          ],
+          "orientations": {
+            "north": {
+              "position_yaw": 0,
+              "model_yaw": 0,
+              "local_x": "1-x",
+              "local_z": "z",
+              "reverse_slots": false
+            },
+            "east": {
+              "position_yaw": -90,
+              "model_yaw": 90,
+              "local_x": "1-z",
+              "local_z": "1-x",
+              "reverse_slots": true
+            },
+            "south": {
+              "position_yaw": 180,
+              "model_yaw": 180,
+              "local_x": "x",
+              "local_z": "1-z",
+              "reverse_slots": false
+            },
+            "west": {
+              "position_yaw": 90,
+              "model_yaw": 270,
+              "local_x": "z",
+              "local_z": "x",
+              "reverse_slots": true
+            }
+          },
+          "selector": {
+            "type": "split",
+            "axis": "x",
+            "segments": 2
+          },
+          "interaction": {
+            "allowed_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:champagne",
+              "kaleidoscope_tavern:dragon_breath_bottle",
+              "kaleidoscope_tavern:empty_bottle",
+              "kaleidoscope_tavern:glowflower_brew",
+              "kaleidoscope_tavern:honey_bottle",
+              "kaleidoscope_tavern:honey_wine",
+              "kaleidoscope_tavern:ice_wine",
+              "kaleidoscope_tavern:luminous_bride",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:molotov",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:plum_wine",
+              "kaleidoscope_tavern:polaris_sweet_white",
+              "kaleidoscope_tavern:red_queen",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sakura_wine",
+              "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+              "kaleidoscope_tavern:sherry",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vinegar",
+              "kaleidoscope_tavern:vodka",
+              "kaleidoscope_tavern:water_bottle",
+              "kaleidoscope_tavern:watermelon_juice",
+              "kaleidoscope_tavern:whiskey",
+              "kaleidoscope_tavern:wine",
+              "kaleidoscope_tavern:xp_bottle"
+            ],
+            "blocked_items": [],
+            "consume_in_creative": true,
+            "invalid_result": "pass",
+            "blocked_result": "fail",
+            "invalid_message": null,
+            "blocked_message": null,
+            "sounds": {
+              "put": {
+                "id": "minecraft:block.glass.place",
+                "volume_min": 0.8,
+                "volume_max": 1.0,
+                "pitch_min": 0.2,
+                "pitch_max": 0.4
+              },
+              "put_last": {
+                "id": "minecraft:block.glass.place",
+                "volume_min": 0.8,
+                "volume_max": 1.0,
+                "pitch_min": 0.8,
+                "pitch_max": 1.0
+              },
+              "take": {
+                "id": "minecraft:block.glass.place",
+                "volume_min": 0.8,
+                "volume_max": 1.0,
+                "pitch_min": 0.8,
+                "pitch_max": 1.0
+              }
+            },
+            "exclusive_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan"
+            ],
+            "exclusive_slot": 0,
+            "fallback_take": true,
+            "fallback_put": true
+          },
+          "slots": [
+            {
+              "position": "0.75,0.5125,0.5",
+              "axis_x_position": "0.25,0.5125,0.5",
+              "exclusive_position": "0.5,0.5125,0.5",
+              "exclusive_axis_x_position": "0.5,0.5125,0.5",
+              "scale": 0.9
+            },
+            {
+              "position": "0.25,0.5125,0.5",
+              "axis_x_position": "0.75,0.5125,0.5",
+              "scale": 0.9
+            }
+          ]
         }
       ],
       "loot": {
@@ -10876,8 +11075,7 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/dd06a67476",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_5": {
@@ -10887,8 +11085,7 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/c75e5649a8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_6": {
@@ -10898,8 +11095,7 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/16d881cbec",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
@@ -10909,8 +11105,7 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/4d048a5587",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_8": {
@@ -10920,7 +11115,8 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/dd06a67476",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_9": {
@@ -10930,7 +11126,8 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/c75e5649a8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_10": {
@@ -10940,7 +11137,8 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/16d881cbec",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_11": {
@@ -10950,7 +11148,8 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/4d048a5587",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_12": {
@@ -11084,13 +11283,145 @@
           "mode": "linear",
           "connects": [
             "kaleidoscope_tavern:glass_bar_cabinet"
-          ]
+          ],
+          "state_property": "position",
+          "topology": {
+            "outputs": {
+              "none": "single",
+              "left": "right",
+              "right": "left",
+              "both": "middle"
+            }
+          }
         },
         {
           "type": "kaleidoscope_tavern:storage",
-          "kind": "bar_cabinet",
-          "slots": 2,
-          "data_key": "kaleidoscope_tavern:storage_glass_bar_cabinet"
+          "data_key": "kaleidoscope_tavern:storage_glass_bar_cabinet",
+          "render_item_prefix": "kaleidoscope_tavern:_render/storage/",
+          "view_range": 1.25,
+          "refresh_properties": [
+            "facing"
+          ],
+          "orientations": {
+            "north": {
+              "position_yaw": 0,
+              "model_yaw": 0,
+              "local_x": "1-x",
+              "local_z": "z",
+              "reverse_slots": false
+            },
+            "east": {
+              "position_yaw": -90,
+              "model_yaw": 90,
+              "local_x": "1-z",
+              "local_z": "1-x",
+              "reverse_slots": true
+            },
+            "south": {
+              "position_yaw": 180,
+              "model_yaw": 180,
+              "local_x": "x",
+              "local_z": "1-z",
+              "reverse_slots": false
+            },
+            "west": {
+              "position_yaw": 90,
+              "model_yaw": 270,
+              "local_x": "z",
+              "local_z": "x",
+              "reverse_slots": true
+            }
+          },
+          "selector": {
+            "type": "split",
+            "axis": "x",
+            "segments": 2
+          },
+          "interaction": {
+            "allowed_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:champagne",
+              "kaleidoscope_tavern:dragon_breath_bottle",
+              "kaleidoscope_tavern:empty_bottle",
+              "kaleidoscope_tavern:glowflower_brew",
+              "kaleidoscope_tavern:honey_bottle",
+              "kaleidoscope_tavern:honey_wine",
+              "kaleidoscope_tavern:ice_wine",
+              "kaleidoscope_tavern:luminous_bride",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:molotov",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:plum_wine",
+              "kaleidoscope_tavern:polaris_sweet_white",
+              "kaleidoscope_tavern:red_queen",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sakura_wine",
+              "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+              "kaleidoscope_tavern:sherry",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vinegar",
+              "kaleidoscope_tavern:vodka",
+              "kaleidoscope_tavern:water_bottle",
+              "kaleidoscope_tavern:watermelon_juice",
+              "kaleidoscope_tavern:whiskey",
+              "kaleidoscope_tavern:wine",
+              "kaleidoscope_tavern:xp_bottle"
+            ],
+            "blocked_items": [],
+            "consume_in_creative": true,
+            "invalid_result": "pass",
+            "blocked_result": "fail",
+            "invalid_message": null,
+            "blocked_message": null,
+            "sounds": {
+              "put": {
+                "id": "minecraft:block.glass.place",
+                "volume_min": 0.8,
+                "volume_max": 1.0,
+                "pitch_min": 0.2,
+                "pitch_max": 0.4
+              },
+              "put_last": {
+                "id": "minecraft:block.glass.place",
+                "volume_min": 0.8,
+                "volume_max": 1.0,
+                "pitch_min": 0.8,
+                "pitch_max": 1.0
+              },
+              "take": {
+                "id": "minecraft:block.glass.place",
+                "volume_min": 0.8,
+                "volume_max": 1.0,
+                "pitch_min": 0.8,
+                "pitch_max": 1.0
+              }
+            },
+            "exclusive_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan"
+            ],
+            "exclusive_slot": 0,
+            "fallback_take": true,
+            "fallback_put": true
+          },
+          "slots": [
+            {
+              "position": "0.75,0.5125,0.5",
+              "axis_x_position": "0.25,0.5125,0.5",
+              "exclusive_position": "0.5,0.5125,0.5",
+              "exclusive_axis_x_position": "0.5,0.5125,0.5",
+              "scale": 0.9
+            },
+            {
+              "position": "0.25,0.5125,0.5",
+              "axis_x_position": "0.75,0.5125,0.5",
+              "scale": 0.9
+            }
+          ]
         }
       ],
       "loot": {
@@ -11192,8 +11523,7 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_5": {
@@ -11203,8 +11533,7 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_6": {
@@ -11214,8 +11543,7 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
@@ -11225,8 +11553,7 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_8": {
@@ -11236,7 +11563,8 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_9": {
@@ -11246,7 +11574,8 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_10": {
@@ -11256,7 +11585,8 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_11": {
@@ -11266,7 +11596,8 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_12": {
@@ -11443,14 +11774,290 @@
           "mode": "linear",
           "connects": [
             "kaleidoscope_tavern:cellar_cabinet"
-          ]
+          ],
+          "state_property": "position",
+          "topology": {
+            "outputs": {
+              "none": "single",
+              "left": "right",
+              "right": "left",
+              "both": "middle"
+            }
+          }
         },
         {
           "type": "kaleidoscope_tavern:storage",
-          "kind": "cellar_cabinet",
-          "slots": 9,
           "data_key": "kaleidoscope_tavern:storage_cellar_cabinet",
-          "blocklist": "kaleidoscope_tavern:cellar_cabinet_blocklist"
+          "render_item_prefix": "kaleidoscope_tavern:_render/storage/",
+          "view_range": 1.25,
+          "refresh_properties": [
+            "facing",
+            "position"
+          ],
+          "orientations": {
+            "north": {
+              "position_yaw": 0,
+              "model_yaw": 0,
+              "local_x": "1-x",
+              "local_z": "z",
+              "reverse_slots": false
+            },
+            "east": {
+              "position_yaw": -90,
+              "model_yaw": 90,
+              "local_x": "1-z",
+              "local_z": "1-x",
+              "reverse_slots": false
+            },
+            "south": {
+              "position_yaw": 180,
+              "model_yaw": 180,
+              "local_x": "x",
+              "local_z": "1-z",
+              "reverse_slots": false
+            },
+            "west": {
+              "position_yaw": 90,
+              "model_yaw": 270,
+              "local_x": "z",
+              "local_z": "x",
+              "reverse_slots": false
+            }
+          },
+          "selector": {
+            "type": "grid",
+            "columns": 3,
+            "rows": 3,
+            "reverse_y": true,
+            "front_only": true
+          },
+          "interaction": {
+            "allowed_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:champagne",
+              "kaleidoscope_tavern:dragon_breath_bottle",
+              "kaleidoscope_tavern:empty_bottle",
+              "kaleidoscope_tavern:glowflower_brew",
+              "kaleidoscope_tavern:honey_bottle",
+              "kaleidoscope_tavern:honey_wine",
+              "kaleidoscope_tavern:ice_wine",
+              "kaleidoscope_tavern:luminous_bride",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:molotov",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:plum_wine",
+              "kaleidoscope_tavern:polaris_sweet_white",
+              "kaleidoscope_tavern:red_queen",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sakura_wine",
+              "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+              "kaleidoscope_tavern:sherry",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vinegar",
+              "kaleidoscope_tavern:vodka",
+              "kaleidoscope_tavern:water_bottle",
+              "kaleidoscope_tavern:watermelon_juice",
+              "kaleidoscope_tavern:whiskey",
+              "kaleidoscope_tavern:wine",
+              "kaleidoscope_tavern:xp_bottle"
+            ],
+            "blocked_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vodka"
+            ],
+            "consume_in_creative": true,
+            "invalid_result": "fail",
+            "blocked_result": "fail",
+            "invalid_message": "message.kaleidoscope_tavern.rack.not_drink",
+            "blocked_message": "message.kaleidoscope_tavern.rack.irregular",
+            "sounds": {
+              "put": {
+                "id": "minecraft:block.stone.place",
+                "volume_min": 1,
+                "volume_max": 1,
+                "pitch_min": 1,
+                "pitch_max": 1
+              },
+              "take": {
+                "id": "minecraft:entity.item_frame.remove_item",
+                "volume_min": 1,
+                "volume_max": 1,
+                "pitch_min": 1,
+                "pitch_max": 1
+              }
+            }
+          },
+          "slots": [
+            {
+              "position": "0.825,0.78,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.5,0.78,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.175,0.78,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.825,0.49,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.5,0.49,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.175,0.49,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.825,0.2,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.5,0.2,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.175,0.2,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            }
+          ],
+          "launch": {
+            "candidate_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:champagne",
+              "kaleidoscope_tavern:dragon_breath_bottle",
+              "kaleidoscope_tavern:empty_bottle",
+              "kaleidoscope_tavern:glowflower_brew",
+              "kaleidoscope_tavern:honey_bottle",
+              "kaleidoscope_tavern:honey_wine",
+              "kaleidoscope_tavern:ice_wine",
+              "kaleidoscope_tavern:luminous_bride",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:molotov",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:plum_wine",
+              "kaleidoscope_tavern:polaris_sweet_white",
+              "kaleidoscope_tavern:red_queen",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sakura_wine",
+              "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+              "kaleidoscope_tavern:sherry",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vinegar",
+              "kaleidoscope_tavern:vodka",
+              "kaleidoscope_tavern:water_bottle",
+              "kaleidoscope_tavern:watermelon_juice",
+              "kaleidoscope_tavern:whiskey",
+              "kaleidoscope_tavern:wine",
+              "kaleidoscope_tavern:xp_bottle"
+            ],
+            "projectile_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:champagne",
+              "kaleidoscope_tavern:glowflower_brew",
+              "kaleidoscope_tavern:honey_wine",
+              "kaleidoscope_tavern:ice_wine",
+              "kaleidoscope_tavern:luminous_bride",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:molotov",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:plum_wine",
+              "kaleidoscope_tavern:polaris_sweet_white",
+              "kaleidoscope_tavern:red_queen",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sakura_wine",
+              "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+              "kaleidoscope_tavern:sherry",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vinegar",
+              "kaleidoscope_tavern:vodka",
+              "kaleidoscope_tavern:watermelon_juice",
+              "kaleidoscope_tavern:whiskey",
+              "kaleidoscope_tavern:wine"
+            ],
+            "sound_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:champagne",
+              "kaleidoscope_tavern:glowflower_brew",
+              "kaleidoscope_tavern:honey_wine",
+              "kaleidoscope_tavern:ice_wine",
+              "kaleidoscope_tavern:luminous_bride",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:plum_wine",
+              "kaleidoscope_tavern:polaris_sweet_white",
+              "kaleidoscope_tavern:red_queen",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sakura_wine",
+              "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+              "kaleidoscope_tavern:sherry",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vinegar",
+              "kaleidoscope_tavern:vodka",
+              "kaleidoscope_tavern:watermelon_juice",
+              "kaleidoscope_tavern:whiskey",
+              "kaleidoscope_tavern:wine"
+            ],
+            "sound": {
+              "id": "kaleidoscope_tavern:block.holder.pop",
+              "volume_min": 0.9,
+              "volume_max": 0.9,
+              "pitch_min": 1,
+              "pitch_max": 1
+            },
+            "factor_min": 0.5,
+            "factor_max": 2.5,
+            "vertical_factor": 0.1,
+            "origin_y": 0.5,
+            "origin_forward": 0.5,
+            "direction": "facing"
+          }
         }
       ],
       "loot": {
@@ -11509,8 +12116,7 @@
               "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_2": {
@@ -11520,7 +12126,8 @@
               "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_3": {
@@ -11588,10 +12195,227 @@
       },
       "behavior": {
         "type": "kaleidoscope_tavern:storage",
-        "kind": "tilted_rack",
-        "slots": 3,
         "data_key": "kaleidoscope_tavern:storage_tilted_rack",
-        "blocklist": "kaleidoscope_tavern:tilted_rack_blocklist"
+        "render_item_prefix": "kaleidoscope_tavern:_render/storage/",
+        "view_range": 1.25,
+        "refresh_properties": [
+          "facing"
+        ],
+        "orientations": {
+          "north": {
+            "position_yaw": 0,
+            "model_yaw": 0,
+            "local_x": "1-x",
+            "local_z": "z",
+            "reverse_slots": false
+          },
+          "east": {
+            "position_yaw": -90,
+            "model_yaw": 90,
+            "local_x": "1-z",
+            "local_z": "1-x",
+            "reverse_slots": false
+          },
+          "south": {
+            "position_yaw": 180,
+            "model_yaw": 180,
+            "local_x": "x",
+            "local_z": "1-z",
+            "reverse_slots": false
+          },
+          "west": {
+            "position_yaw": 90,
+            "model_yaw": 270,
+            "local_x": "z",
+            "local_z": "x",
+            "reverse_slots": false
+          }
+        },
+        "selector": {
+          "type": "split",
+          "axis": "x",
+          "segments": 3
+        },
+        "interaction": {
+          "allowed_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:dragon_breath_bottle",
+            "kaleidoscope_tavern:empty_bottle",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_bottle",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:water_bottle",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine",
+            "kaleidoscope_tavern:xp_bottle"
+          ],
+          "blocked_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan"
+          ],
+          "consume_in_creative": true,
+          "invalid_result": "fail",
+          "blocked_result": "fail",
+          "invalid_message": "message.kaleidoscope_tavern.rack.not_drink",
+          "blocked_message": "message.kaleidoscope_tavern.rack.irregular",
+          "sounds": {
+            "put": {
+              "id": "minecraft:block.stone.place",
+              "volume_min": 1,
+              "volume_max": 1,
+              "pitch_min": 1,
+              "pitch_max": 1
+            },
+            "take": {
+              "id": "minecraft:entity.item_frame.remove_item",
+              "volume_min": 1,
+              "volume_max": 1,
+              "pitch_min": 1,
+              "pitch_max": 1
+            }
+          }
+        },
+        "slots": [
+          {
+            "position": "0.8325,0.524788,0.601453",
+            "scale": 0.9,
+            "x_rotation": 22.5
+          },
+          {
+            "position": "0.495,0.524788,0.605953",
+            "scale": 0.9,
+            "x_rotation": 22.5
+          },
+          {
+            "position": "0.1575,0.524788,0.610453",
+            "scale": 0.9,
+            "x_rotation": 22.5
+          }
+        ],
+        "launch": {
+          "candidate_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:dragon_breath_bottle",
+            "kaleidoscope_tavern:empty_bottle",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_bottle",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:water_bottle",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine",
+            "kaleidoscope_tavern:xp_bottle"
+          ],
+          "projectile_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine"
+          ],
+          "sound_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine"
+          ],
+          "sound": {
+            "id": "kaleidoscope_tavern:block.holder.pop",
+            "volume_min": 0.9,
+            "volume_max": 0.9,
+            "pitch_min": 1,
+            "pitch_max": 1
+          },
+          "factor_min": 0.5,
+          "factor_max": 1.5,
+          "vertical_factor": 0.75,
+          "origin_y": 0.875,
+          "origin_forward": -0.5,
+          "direction": "opposite"
+        }
       },
       "loot": {
         "pools": [
@@ -11649,8 +12473,7 @@
               "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_2": {
@@ -11660,7 +12483,8 @@
               "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_3": {
@@ -11729,10 +12553,264 @@
       },
       "behavior": {
         "type": "kaleidoscope_tavern:storage",
-        "kind": "circular_rack",
-        "slots": 6,
         "data_key": "kaleidoscope_tavern:storage_circular_rack",
-        "blocklist": "kaleidoscope_tavern:circular_rack_blocklist"
+        "render_item_prefix": "kaleidoscope_tavern:_render/storage/",
+        "view_range": 1.25,
+        "refresh_properties": [
+          "facing"
+        ],
+        "orientations": {
+          "north": {
+            "position_yaw": 0,
+            "model_yaw": 0,
+            "local_x": "1-x",
+            "local_z": "z",
+            "reverse_slots": false
+          },
+          "east": {
+            "position_yaw": -90,
+            "model_yaw": 90,
+            "local_x": "1-z",
+            "local_z": "1-x",
+            "reverse_slots": false
+          },
+          "south": {
+            "position_yaw": 180,
+            "model_yaw": 180,
+            "local_x": "x",
+            "local_z": "1-z",
+            "reverse_slots": false
+          },
+          "west": {
+            "position_yaw": 90,
+            "model_yaw": 270,
+            "local_x": "z",
+            "local_z": "x",
+            "reverse_slots": false
+          }
+        },
+        "selector": {
+          "type": "radial",
+          "segments": 6,
+          "radial_offset": 4,
+          "radial_clockwise": true
+        },
+        "interaction": {
+          "allowed_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:dragon_breath_bottle",
+            "kaleidoscope_tavern:empty_bottle",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_bottle",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:water_bottle",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine",
+            "kaleidoscope_tavern:xp_bottle"
+          ],
+          "blocked_items": [],
+          "consume_in_creative": true,
+          "invalid_result": "fail",
+          "blocked_result": "fail",
+          "invalid_message": "message.kaleidoscope_tavern.rack.not_drink",
+          "blocked_message": "message.kaleidoscope_tavern.rack.irregular",
+          "sounds": {
+            "put": {
+              "id": "minecraft:block.stone.place",
+              "volume_min": 1,
+              "volume_max": 1,
+              "pitch_min": 1,
+              "pitch_max": 1
+            },
+            "take": {
+              "id": "minecraft:entity.item_frame.remove_item",
+              "volume_min": 1,
+              "volume_max": 1,
+              "pitch_min": 1,
+              "pitch_max": 1
+            }
+          }
+        },
+        "slots": [
+          {
+            "position": "0.5,0.535,0.125",
+            "scale": 0.82,
+            "y_rotation": 0,
+            "x_rotation": 0
+          },
+          {
+            "position": "0.875,0.535,0.3125",
+            "scale": 0.82,
+            "y_rotation": 22.5,
+            "x_rotation": 0
+          },
+          {
+            "position": "0.875,0.535,0.6875",
+            "scale": 0.82,
+            "y_rotation": -22.5,
+            "x_rotation": 0
+          },
+          {
+            "position": "0.5,0.535,0.875",
+            "scale": 0.82,
+            "y_rotation": 180,
+            "x_rotation": 0
+          },
+          {
+            "position": "0.125,0.535,0.6875",
+            "scale": 0.82,
+            "y_rotation": 157.5,
+            "x_rotation": 0
+          },
+          {
+            "position": "0.125,0.535,0.3125",
+            "scale": 0.82,
+            "y_rotation": -157.5,
+            "x_rotation": 0
+          }
+        ],
+        "launch": {
+          "candidate_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:dragon_breath_bottle",
+            "kaleidoscope_tavern:empty_bottle",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_bottle",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:water_bottle",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine",
+            "kaleidoscope_tavern:xp_bottle"
+          ],
+          "projectile_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine"
+          ],
+          "sound_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine"
+          ],
+          "sound": {
+            "id": "kaleidoscope_tavern:block.holder.pop",
+            "volume_min": 0.9,
+            "volume_max": 0.9,
+            "pitch_min": 1,
+            "pitch_max": 1
+          },
+          "factor_min": 0.5,
+          "factor_max": 2.5,
+          "vertical_factor": 0,
+          "origin_y": 0.5,
+          "origin_forward": 0,
+          "direction": "up"
+        },
+        "particle": {
+          "type": "END_ROD",
+          "chance": 392,
+          "min_x": 0.125,
+          "max_x": 0.375,
+          "alternate_min_x": 0.625,
+          "alternate_max_x": 0.875,
+          "min_y": 0,
+          "max_y": 1,
+          "min_z": 0.125,
+          "max_z": 0.375,
+          "alternate_min_z": 0.625,
+          "alternate_max_z": 0.875,
+          "offset_x": 0.01,
+          "offset_y": 0.01,
+          "offset_z": 0.01,
+          "speed": 1
+        }
       },
       "loot": {
         "pools": [
@@ -11790,8 +12868,7 @@
               "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_2": {
@@ -11801,7 +12878,8 @@
               "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_3": {
@@ -11869,10 +12947,224 @@
       },
       "behavior": {
         "type": "kaleidoscope_tavern:storage",
-        "kind": "holder",
-        "slots": 1,
         "data_key": "kaleidoscope_tavern:storage_holder",
-        "blocklist": "kaleidoscope_tavern:holder_blocklist"
+        "render_item_prefix": "kaleidoscope_tavern:_render/storage/",
+        "view_range": 1.25,
+        "refresh_properties": [
+          "facing"
+        ],
+        "orientations": {
+          "north": {
+            "position_yaw": 0,
+            "model_yaw": 0,
+            "local_x": "1-x",
+            "local_z": "z",
+            "reverse_slots": false
+          },
+          "east": {
+            "position_yaw": -90,
+            "model_yaw": 90,
+            "local_x": "1-z",
+            "local_z": "1-x",
+            "reverse_slots": false
+          },
+          "south": {
+            "position_yaw": 180,
+            "model_yaw": 180,
+            "local_x": "x",
+            "local_z": "1-z",
+            "reverse_slots": false
+          },
+          "west": {
+            "position_yaw": 90,
+            "model_yaw": 270,
+            "local_x": "z",
+            "local_z": "x",
+            "reverse_slots": false
+          }
+        },
+        "selector": {
+          "type": "single"
+        },
+        "interaction": {
+          "allowed_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:dragon_breath_bottle",
+            "kaleidoscope_tavern:empty_bottle",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_bottle",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:water_bottle",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine",
+            "kaleidoscope_tavern:xp_bottle"
+          ],
+          "blocked_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vodka"
+          ],
+          "consume_in_creative": true,
+          "invalid_result": "fail",
+          "blocked_result": "fail",
+          "invalid_message": "message.kaleidoscope_tavern.rack.not_drink",
+          "blocked_message": "message.kaleidoscope_tavern.rack.irregular",
+          "sounds": {
+            "put": {
+              "id": "minecraft:block.stone.place",
+              "volume_min": 1,
+              "volume_max": 1,
+              "pitch_min": 1,
+              "pitch_max": 1
+            },
+            "take": {
+              "id": "minecraft:entity.item_frame.remove_item",
+              "volume_min": 1,
+              "volume_max": 1,
+              "pitch_min": 1,
+              "pitch_max": 1
+            }
+          }
+        },
+        "slots": [
+          {
+            "position": "0.5,0.460876,0.414124",
+            "scale": 0.95,
+            "y_rotation": 0,
+            "x_rotation": -45
+          }
+        ],
+        "launch": {
+          "candidate_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:dragon_breath_bottle",
+            "kaleidoscope_tavern:empty_bottle",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_bottle",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:water_bottle",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine",
+            "kaleidoscope_tavern:xp_bottle"
+          ],
+          "projectile_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine"
+          ],
+          "sound_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine"
+          ],
+          "sound": {
+            "id": "kaleidoscope_tavern:block.holder.pop",
+            "volume_min": 0.9,
+            "volume_max": 0.9,
+            "pitch_min": 1,
+            "pitch_max": 1
+          },
+          "factor_min": 0.5,
+          "factor_max": 1.5,
+          "vertical_factor": 0.375,
+          "origin_y": 0.875,
+          "origin_forward": 0.5,
+          "direction": "facing"
+        }
       },
       "loot": {
         "pools": [

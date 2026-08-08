@@ -219,21 +219,21 @@ SOURCE_STATE_OWNERS = {
 # concrete Paper implementation; a newly added source renderer cannot pass CI
 # without an explicit migration decision.
 RENDERER_COVERAGE = {
-    "BarCabinetBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
+    "BarCabinetBlockEntityRender.java": ("block/StorageBlockConfig.java", "record SlotVisual"),
     "BarrelBlockEntityRender.java": ("StationService.java", "BarrelSemantics"),
     "BarStoolBlockEntityRender.java": ("BarStoolVisualService.java", "getBodyYaw"),
-    "CellarCabinetBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
+    "CellarCabinetBlockEntityRender.java": ("block/StorageBlockConfig.java", "record Orientation"),
     "ChalkboardBlockEntityRender.java": (
         "block/ChalkboardBlockBehavior.java", "class BlockTextElement"),
-    "CircularRackBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
+    "CircularRackBlockEntityRender.java": ("block/StorageBlockConfig.java", "record SlotVisual"),
     "GlasswareHolderBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
-    "HolderBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
+    "HolderBlockEntityRender.java": ("block/StorageBlockConfig.java", "record SlotVisual"),
     "PressingTubBlockEntityRender.java": ("PressingTubVisualFactory.java", "visuals"),
     "SandwichBlockEntityRender.java": ("BoardTextService.java", "sandwich"),
     "ShakerBlockEntityRender.java": ("ShakerVisualService.java", "ShakerAnimationSemantics"),
-    "StorageBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
+    "StorageBlockEntityRender.java": ("block/StorageBlockBehavior.java", "renderPosition("),
     "TextBlockEntityRender.java": ("BoardTextService.java", "boardVisuals"),
-    "TiltedRackBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
+    "TiltedRackBlockEntityRender.java": ("block/StorageBlockConfig.java", "record SlotVisual"),
 }
 
 # Runtime semantics need the same closed-world treatment as renderers. These
@@ -250,12 +250,14 @@ RUNTIME_METHODS = (
 RUNTIME_BEHAVIOR_COVERAGE = {
     "AbstractStorageBlock.java": (
         ("block/StorageBlockBehavior.java", "public void neighborChanged"),
-        ("DisplayStorageService.java", "launchRandomBottle(StorageBlockBehavior.Controller"),
-        ("DisplayStorageService.java", "interactStorageBlock"),
+        ("block/StorageBlockBehavior.java", "private InteractionResult interact("),
+        ("block/StorageBlockBehavior.java", "private void launchRandom()"),
+        ("block/StorageBlockConfig.java", "record Interaction("),
     ),
     "BarCabinetBlock.java": (
-        ("block/ConnectedBlockBehavior.java", "ConnectedBlockSemantics.linearPosition"),
-        ("DisplayStorageService.java", "interactBarCabinetBlock"),
+        ("block/ConnectedBlockBehavior.java", "private ImmutableBlockState updateLinear("),
+        ("block/StorageBlockConfig.java", "boolean fallbackPut"),
+        ("src/paper/pack/configuration/blocks.json", '"exclusive_items"'),
     ),
     "BarStoolBlock.java": (
         ("tools/migrate_legacy.py", "_bar_stool"),
@@ -270,8 +272,9 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("BottlePlacementService.java", "onDispenseBottle"),
     ),
     "CellarCabinetBlock.java": (
-        ("DisplayStorageService.java", "CELLAR_CABINET"),
-        ("block/ConnectedBlockBehavior.java", "ConnectedBlockSemantics.linearPosition"),
+        ("block/ConnectedBlockBehavior.java", "private ImmutableBlockState updateLinear("),
+        ("block/StorageBlockConfig.java", "boolean frontOnly"),
+        ("src/paper/pack/configuration/blocks.json", '"selector"'),
     ),
     "ChalkboardBlock.java": (
         ("block/ChalkboardBlockBehavior.java", "private void tryMerge("),
@@ -279,8 +282,9 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("BoardTextService.java", "private InteractionResult interactChalkboard("),
     ),
     "CircularRackBlock.java": (
-        ("DisplayStorageService.java", "CIRCULAR_RACK"),
-        ("block/StorageBlockBehavior.java", "tickCircularRack"),
+        ("block/StorageBlockConfig.java", "record ParticleEffect("),
+        ("block/StorageBlockBehavior.java", "private static void tickParticle("),
+        ("src/paper/pack/configuration/blocks.json", '"alternate_min_x"'),
     ),
     "CocktailBlockItem.java": (
         ("EffectService.java", "onConsume"),
@@ -312,8 +316,9 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("block/TrellisBehavior.java", "public static boolean grow"),
     ),
     "HolderBlock.java": (
-        ("DisplayStorageService.java", "HOLDER"),
-        ("block/StorageBlockBehavior.java", "case HOLDER"),
+        ("block/StorageBlockConfig.java", "record Launch("),
+        ("block/StorageBlockConfig.java", "case SINGLE ->"),
+        ("src/paper/pack/configuration/blocks.json", '"origin_forward"'),
     ),
     "IncenseBlock.java": (
         ("src/paper/pack/configuration/blocks.json", "minecraft:copper_lantern"),
@@ -371,8 +376,9 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("TapSemantics.java", "isBarrelConnection"),
     ),
     "TiltedRackBlock.java": (
-        ("DisplayStorageService.java", "TILTED_RACK"),
-        ("block/StorageBlockBehavior.java", "case TILTED_RACK"),
+        ("block/StorageBlockConfig.java", "case SPLIT ->"),
+        ("block/StorageBlockConfig.java", "public enum LaunchDirection"),
+        ("src/paper/pack/configuration/blocks.json", '"x_rotation"'),
     ),
     "TrellisBlock.java": (
         ("block/BlockService.java", "useGrapevineOnBlock"),
@@ -446,9 +452,9 @@ ENTITY_BEHAVIOR_COVERAGE = {
 }
 
 BLOCK_ENTITY_COVERAGE = {
-    "BarCabinetBlockEntity.java": (("DisplayStorageService.java", "BAR_CABINET"),),
+    "BarCabinetBlockEntity.java": (("block/StorageBlockBehavior.java", "private final Item[] items"),),
     "BarrelBlockEntity.java": (("StationService.java", "barrel_items"),),
-    "CellarCabinetBlockEntity.java": (("DisplayStorageService.java", "CELLAR_CABINET"),),
+    "CellarCabinetBlockEntity.java": (("block/StorageBlockBehavior.java", "private final Item[] items"),),
     "DrinkBlockEntity.java": (("BottleFurnitureService.java", "storedItems"),),
     "PotionBottleBlockEntity.java": (("BottleFurnitureService.java", "sourceItem"),),
     "PressingTubBlockEntity.java": (
@@ -468,8 +474,8 @@ BLOCK_ENTITY_COVERAGE = {
         ("BoardTextService.java", "controller.isLarge() ? 1_500 : 350"),
     ),
     "CircularRackBlockEntity.java": (
-        ("DisplayStorageService.java", "CIRCULAR_RACK"),
-        ("block/StorageBlockBehavior.java", "tickCircularRack"),
+        ("block/StorageBlockBehavior.java", "private final Item[] items"),
+        ("block/StorageBlockBehavior.java", "private static void tickParticle("),
     ),
     "GlasswareHolderBlockEntity.java": (("DisplayStorageService.java", "GLASSWARE_HOLDER"),),
     "HolderBlockEntity.java": (("block/StorageBlockBehavior.java", "Item[] items"),),
@@ -1694,16 +1700,26 @@ def validate() -> dict[str, int]:
     for required_token in (
             "extends BukkitBlockBehavior",
             "BlockBehaviors.register(TYPE, ConnectedBlockBehavior::new)",
+            'CornerConfig.parse(section.getNonNullSection("topology"))',
+            'LinearConfig.parse(section.getNonNullSection("topology"))',
+            'TableConfig.parse(section.getNonNullSection("topology"))',
+            'section.getString("state_property"',
+            'section.getString("axis_property"',
             "private ImmutableBlockState updateCorner(",
+            "private ImmutableBlockState updateLinear(",
             "private ImmutableBlockState updateTable(",
-            "ConnectedBlockSemantics.cornerConnection(",
-            "ConnectedBlockSemantics.eastWest(",
-            "ConnectedBlockSemantics.northSouth(",
             "BlockGetterProxy.INSTANCE.getBlockState("):
         if required_token not in connected_block_source:
             raise AssertionError(
-                "ConnectedBlockBehavior must contain only source neighbour topology; "
+                "ConnectedBlockBehavior must be one generic config-driven neighbour adapter; "
                 f"missing token: {required_token}")
+    for forbidden_family_token in (
+            '"single"', '"middle"', '"left_corner"', '"right_corner"',
+            '"bar_counter"', '"bar_cabinet"', '"cellar_cabinet"'):
+        if forbidden_family_token in connected_block_source:
+            raise AssertionError(
+                "Connected family output names must live in CE configuration, not Java; "
+                f"found {forbidden_family_token}")
     for stale_token in (
             "PlayerMoveEvent", "EntityMoveEvent", "Bukkit.getScheduler",
             "runTask", "ConcurrentHashMap", "BukkitFurniture",
@@ -1717,7 +1733,7 @@ def validate() -> dict[str, int]:
     for required_token in (
             "ImmutableBlockState resolveCornerState(",
             "SofaBlockIds.isLegacy(",
-            'return "single";'):
+            "return corner.none;"):
         if required_token not in connected_block_source:
             raise AssertionError(
                 "Shared-sofa migration must connect compact legacy aliases while "
@@ -2368,9 +2384,19 @@ def validate() -> dict[str, int]:
     storage_block_source = (
         game_package / "block/StorageBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
+    storage_config_source = (
+        game_package / "block/StorageBlockConfig.java"
+    ).read_text(encoding="utf-8-sig")
     for required_token in (
             "implements EntityBlock",
             "BlockBehaviors.register(TYPE, StorageBlockBehavior::new)",
+            "StorageBlockConfig.parse(section)",
+            "config.selector().select(",
+            "config.interaction()",
+            "config.orientation(facing)",
+            "controller.config().slots().get(slot)",
+            "config.launch()",
+            "config.particle()",
             "public void neighborChanged",
             "SignalGetterProxy.INSTANCE.hasNeighborSignal(level, minecraftPos)",
             "state.with(poweredProperty, powered)",
@@ -2384,21 +2410,40 @@ def validate() -> dict[str, int]:
             "blockEntity.world.blockEntityChanged(blockEntity.pos)",
             "implements BlockEntityElement",
             "ClientboundAddEntityPacketProxy.INSTANCE.newInstance",
-            "tickCircularRack"):
+            "private static void tickParticle("):
         if required_token not in storage_block_source:
             raise AssertionError(
-                "CE storage blocks must own exact slots, rendering and redstone edges; "
+                "CE storage blocks must use one generic config-driven slot engine; "
                 f"missing token: {required_token}")
+    for required_token in (
+            "record Orientation(", "record SlotVisual(", "record Selector(",
+            "record Interaction(", "record Launch(", "record ParticleEffect(",
+            "positionYaw", "modelYaw", "allowedItems", "blockedItems",
+            "exclusiveItems", "refreshProperties"):
+        if required_token not in storage_config_source:
+            raise AssertionError(
+                "Storage family data must be parsed from CE configuration; "
+                f"missing token: {required_token}")
+    for forbidden_family_token in (
+            "StorageSemantics.Kind", "case BAR_CABINET", "case CELLAR_CABINET",
+            "case TILTED_RACK", "case CIRCULAR_RACK", "case HOLDER",
+            '"bar_cabinet"', '"cellar_cabinet"', '"tilted_rack"',
+            '"circular_rack"', '"holder"'):
+        if forbidden_family_token in storage_block_source or forbidden_family_token in storage_config_source:
+            raise AssertionError(
+                "Active storage family rules must stay in CE configuration; "
+                f"found {forbidden_family_token}")
     connected_block_source = (
         game_package / "block/ConnectedBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             "case LINEAR -> updateLinear",
-            "ConnectedBlockSemantics.linearPosition"):
+            "LinearConfig.parse(",
+            "linear.output(left, right)"):
         if required_token not in connected_block_source:
             raise AssertionError(
-                "Connected grid topology ownership drifted; missing token: "
-                f"{required_token}")
+                "Connected grid topology must be selected by CE-configured output maps; "
+                f"missing token: {required_token}")
     if "state.with(\n                    facingProperty" in connected_block_source:
         raise AssertionError(
             "ConnectedBlockBehavior must not override CE's native facing placement")
@@ -2488,8 +2533,7 @@ def validate() -> dict[str, int]:
     for required_token in (
             "StorageBlockBehavior.bind(storageBlockHandler)",
             "StorageBlockBehavior.unbind(storageBlockHandler)",
-            "private InteractionResult interactStorageBlock(",
-            "private void launchRandomBottle(StorageBlockBehavior.Controller",
+            "private void launchConfiguredItem(",
             "private Item storageBlockVisual(StorageBlockBehavior.Controller",
             "StorageInteractionFurnitureBehavior.bind(storageInteractionHandler)",
             "StorageInteractionFurnitureBehavior.unbind(storageInteractionHandler)",
@@ -4440,8 +4484,22 @@ def validate() -> dict[str, int]:
     if table_block.get("behavior") != {
             "type": f"{NAMESPACE}:connected_block",
             "mode": "table",
-            "connects": [table_id]}:
-        raise AssertionError("Table must use only the minimal topology adapter")
+            "connects": [table_id],
+            "axis_property": "table_axis",
+            "state_property": "position",
+            "topology": {
+                "default_axis": "z",
+                "perpendicular_to_player": True,
+                "allow_cross_axis_singles": True,
+                "outputs": {
+                    "none": 0,
+                    "positive": 1,
+                    "negative": 3,
+                    "both": 2,
+                },
+            }}:
+        raise AssertionError(
+            "Table must keep every family-specific topology value in CE config")
     if items[table_id].get("behavior") != {
             "type": "block_item", "block": table_id}:
         raise AssertionError("Table item placement must be native CE block_item")
@@ -5142,11 +5200,11 @@ def validate() -> dict[str, int]:
         else f"ground_connection_{connection}"
         for connection in connection_names
     }
-    # Authored block-model rotations must be compensated for the final
-    # +180-degree item turn performed by Minecraft's ItemDisplay renderer.
+    # Match the authored Forge blockstate rotations and CraftEngine's own
+    # furniture-style sofa renderer.
     facing_rotations = {
-        "north": "0,180,0", "east": "0,90,0",
-        "south": None, "west": "0,270,0",
+        "north": None, "east": "0,90,0",
+        "south": "0,180,0", "west": "0,270,0",
     }
     sofa_connect_ids = [
         SHARED_SOFA_ID,
@@ -5156,11 +5214,31 @@ def validate() -> dict[str, int]:
     shared = blocks.get(SHARED_SOFA_ID)
     if shared is None:
         raise AssertionError("Shared tint-source sofa block is missing")
+    expected_corner_topology = {
+        "outputs": {
+            "none": "single",
+            "left": "right",
+            "right": "left",
+            "both": "middle",
+            "front_left": "right_corner",
+            "front_left_with_right": "left",
+            "front_right": "left_corner",
+            "front_right_with_left": "right",
+        },
+        "compatibility": {
+            "left_perpendicular": ["single", "right", "right_corner"],
+            "right_perpendicular": ["single", "left", "left_corner"],
+            "front_left_excluded": "left_corner",
+            "front_right_excluded": "right_corner",
+        },
+    }
     expected_shared_behaviors = [
         {
             "type": f"{NAMESPACE}:connected_block",
             "mode": "corner",
             "connects": sofa_connect_ids,
+            "state_property": "connection",
+            "topology": expected_corner_topology,
         },
         {"type": "seat_block", "seats": ["0,-0.1,0 180"]},
         {"type": "tint_source_block", "drop_item": True},
@@ -5291,8 +5369,11 @@ def validate() -> dict[str, int]:
     if counter.get("behavior") != {
             "type": f"{NAMESPACE}:connected_block",
             "mode": "corner",
-            "connects": [counter_id]}:
-        raise AssertionError("Bar counter must use only the topology adapter")
+            "connects": [counter_id],
+            "state_property": "connection",
+            "topology": expected_corner_topology}:
+        raise AssertionError(
+            "Bar counter topology/output ownership must stay in CE config")
     if items[counter_id].get("behavior") != {
             "type": "block_item", "block": counter_id}:
         raise AssertionError("Bar counter placement must use native CE block_item")
@@ -5345,8 +5426,26 @@ def validate() -> dict[str, int]:
                 f"Runtime CE content count guard is stale: {expected_token}")
 
     storage_facing_rotations = {
-        "east": "0,90,0", "north": "0,180,0",
-        "south": None, "west": "0,270,0",
+        "east": "0,90,0", "north": None,
+        "south": "0,180,0", "west": "0,270,0",
+    }
+    expected_storage_orientations = {
+        "north": {
+            "position_yaw": 0, "model_yaw": 0,
+            "local_x": "1-x", "local_z": "z", "reverse_slots": False,
+        },
+        "east": {
+            "position_yaw": -90, "model_yaw": 90,
+            "local_x": "1-z", "local_z": "1-x", "reverse_slots": False,
+        },
+        "south": {
+            "position_yaw": 180, "model_yaw": 180,
+            "local_x": "x", "local_z": "1-z", "reverse_slots": False,
+        },
+        "west": {
+            "position_yaw": 90, "model_yaw": 270,
+            "local_x": "z", "local_z": "x", "reverse_slots": False,
+        },
     }
     for storage_id, (slot_count, blocklist, carrier_type) in STORAGE_BLOCK_SPECS.items():
         full_id = f"{NAMESPACE}:{storage_id}"
@@ -5359,31 +5458,99 @@ def validate() -> dict[str, int]:
                 f"{storage_id}: old furniture id must remain for one-release migration")
 
         definition = blocks[full_id]
-        expected_behavior = {
-            "type": f"{NAMESPACE}:storage",
-            "kind": ("bar_cabinet"
-                     if storage_id == "glass_bar_cabinet" else storage_id),
-            "slots": slot_count,
-            "data_key": f"{NAMESPACE}:storage_{storage_id}",
-        }
-        if blocklist is not None:
-            expected_behavior["blocklist"] = f"{NAMESPACE}:{blocklist}"
+        actual_behavior = (definition.get("behaviors")
+                           if storage_id in {
+                               "bar_cabinet", "glass_bar_cabinet", "cellar_cabinet"
+                           } else definition.get("behavior"))
         if storage_id in {"bar_cabinet", "glass_bar_cabinet", "cellar_cabinet"}:
-            expected_configured_behavior = [
-                {
+            if not isinstance(actual_behavior, list) or len(actual_behavior) != 2:
+                raise AssertionError(
+                    f"{storage_id}: connected storage must compose topology + storage")
+            topology, configured_storage = actual_behavior
+            if topology != {
                     "type": f"{NAMESPACE}:connected_block",
                     "mode": "linear",
                     "connects": [full_id],
-                },
-                expected_behavior,
-            ]
-            actual_behavior = definition.get("behaviors")
+                    "state_property": "position",
+                    "topology": {
+                        "outputs": {
+                            "none": "single",
+                            "left": "right",
+                            "right": "left",
+                            "both": "middle",
+                        },
+                    }}:
+                raise AssertionError(
+                    f"{storage_id}: linear connection values must live in CE config")
         else:
-            expected_configured_behavior = expected_behavior
-            actual_behavior = definition.get("behavior")
-        if actual_behavior != expected_configured_behavior:
+            configured_storage = actual_behavior
+
+        if not isinstance(configured_storage, dict):
+            raise AssertionError(f"{storage_id}: missing configured storage behavior")
+        if (configured_storage.get("type") != f"{NAMESPACE}:storage"
+                or configured_storage.get("data_key")
+                != f"{NAMESPACE}:storage_{storage_id}"
+                or configured_storage.get("render_item_prefix")
+                != f"{NAMESPACE}:_render/storage/"
+                or configured_storage.get("view_range") != 1.25
+                or len(configured_storage.get("slots", [])) != slot_count):
             raise AssertionError(
-                f"{storage_id}: CE behavior ownership drifted: {actual_behavior!r}")
+                f"{storage_id}: generic multi-slot storage config drifted")
+
+        orientations = configured_storage.get("orientations")
+        expected_orientations = {
+            key: dict(value) for key, value in expected_storage_orientations.items()
+        }
+        if legacy_cabinet:
+            expected_orientations["east"]["reverse_slots"] = True
+            expected_orientations["west"]["reverse_slots"] = True
+        if orientations != expected_orientations:
+            raise AssertionError(
+                f"{storage_id}: source-space click/model orientation drifted: {orientations!r}")
+        # Position rotation and ItemDisplay model rotation are deliberately
+        # independent on the X axis. Equating them turns bottles 180 degrees
+        # against east/west cellar cabinets and racks.
+        if (orientations["east"]["position_yaw"]
+                == orientations["east"]["model_yaw"]
+                or orientations["west"]["position_yaw"]
+                == orientations["west"]["model_yaw"]):
+            raise AssertionError(
+                f"{storage_id}: east/west position and model yaw must stay independent")
+
+        selector = configured_storage.get("selector", {})
+        expected_selector_type = {
+            "bar_cabinet": "split", "glass_bar_cabinet": "split",
+            "cellar_cabinet": "grid", "tilted_rack": "split",
+            "circular_rack": "radial", "holder": "single",
+        }[storage_id]
+        if selector.get("type") != expected_selector_type:
+            raise AssertionError(f"{storage_id}: click selector is not config-owned")
+        interaction = configured_storage.get("interaction", {})
+        if (not interaction.get("allowed_items")
+                or "consume_in_creative" not in interaction
+                or "sounds" not in interaction):
+            raise AssertionError(
+                f"{storage_id}: item rules/sounds must live in CE configuration")
+        if blocklist is not None and "blocked_items" not in interaction:
+            raise AssertionError(
+                f"{storage_id}: configured blocklist key was not flattened into the behavior")
+        if legacy_cabinet and (not interaction.get("exclusive_items")
+                or interaction.get("exclusive_slot") != 0
+                or interaction.get("fallback_take") is not True
+                or interaction.get("fallback_put") is not True):
+            raise AssertionError(
+                f"{storage_id}: irregular two-slot behavior must be config-owned")
+        if not legacy_cabinet and "launch" not in configured_storage:
+            raise AssertionError(
+                f"{storage_id}: redstone launch parameters must be config-owned")
+        if storage_id == "circular_rack":
+            particle = configured_storage.get("particle", {})
+            if (particle.get("alternate_min_x") != 0.625
+                    or particle.get("alternate_max_x") != 0.875
+                    or particle.get("alternate_min_z") != 0.625
+                    or particle.get("alternate_max_z") != 0.875):
+                raise AssertionError(
+                    "Circular-rack edge particle ranges must remain in CE config")
 
         properties = definition.get("states", {}).get("properties", {})
         if legacy_cabinet:
