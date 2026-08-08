@@ -2,10 +2,7 @@
   "format_version": "1.9.0",
   "credit": "Made with Blockbench",
   "textures": {
-    "0": {
-      "sprite": "kaleidoscope_tavern:block/brew/wine",
-      "force_translucent": true
-    },
+    "0": "kaleidoscope_tavern:block/brew/wine",
     "particle": "kaleidoscope_tavern:block/brew/wine"
   },
   "elements": [

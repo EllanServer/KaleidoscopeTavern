@@ -10,7 +10,8 @@
       "sprite": "kaleidoscope_tavern:block/mixology/allium_garden",
       "force_translucent": true
     },
-    "particle": "block/glass"
+    "particle": "block/glass",
+    "opaque_detail": "kaleidoscope_tavern:furniture/placed_drink/opaque/kaleidoscope_tavern/block/mixology/allium_garden"
   },
   "elements": [
     {
@@ -927,7 +928,7 @@
             13,
             15
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -936,7 +937,7 @@
             13,
             15
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         }
       }
     },
@@ -970,7 +971,7 @@
             13,
             15
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -979,7 +980,7 @@
             13,
             15
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         }
       }
     }

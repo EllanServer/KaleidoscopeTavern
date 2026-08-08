@@ -84,12 +84,26 @@ EXPECTED_BOTTLE_FURNITURE = {
     "watermelon_juice",
 }
 OPAQUE_PLACED_DRINK_ELEMENTS = {
-    "brass_heart": 11,
-    "grasshopper": 13,
-    "mojito": 0,
-    "nether_special": 15,
-    "mystery_cocktail": 12,
-    "signature_cocktail": 12,
+    "allium_garden": (12, 13),
+    "bloody_mary": (1, 10, 11, 12, 13),
+    "brass_heart": (11,),
+    "depth_charge": (8, 9, 10, 11),
+    "emerald": (5, 6, 7),
+    "godfather": (9, 10, 11, 12, 13),
+    "grasshopper": (0, 1, 2, 13),
+    "mojito": (0, 10, 11, 12, 13),
+    "mystery_cocktail": (12,),
+    "nether_special": (12, 13, 14, 15),
+    "screwdriver": (7, 8, 9),
+    "sculk_special": (12, 13, 14),
+    "signature_cocktail": (12, 13, 14),
+    "white_lady": (10, 11, 12),
+}
+EXPECTED_CONSUMABLE_COCKTAILS = {
+    "signature_cocktail", "mystery_cocktail", "white_lady", "emerald",
+    "brass_heart", "godfather", "grasshopper", "screwdriver", "mojito",
+    "allium_garden", "depth_charge", "nether_special", "bloody_mary",
+    "sculk_special",
 }
 SIMPLE_BOTTLES = {
     "water_bottle", "honey_bottle", "dragon_breath_bottle",
@@ -811,11 +825,29 @@ def validate() -> dict[str, int]:
         model_path = definition.get("model", {}).get("path")
         if isinstance(model_path, str):
             placed_drink_models[model_path] = render_id
+            if "/block/brew/drink/" in model_path:
+                model = asset_json(model_path, "models", roots=(ASSET_ROOTS[0],))
+                if model is None:
+                    raise AssertionError(
+                        f"{render_id}: missing cutout storage bottle model {model_path}")
+                forced_slots = {
+                    slot for slot, texture in model.get("textures", {}).items()
+                    if isinstance(texture, dict)
+                    and texture.get("force_translucent") is True
+                }
+                if forced_slots:
+                    raise AssertionError(
+                        f"{render_id}: binary-alpha storage bottle slots "
+                        f"{sorted(forced_slots)} must use cutout rendering to avoid flicker")
     for model_path, owner in placed_drink_models.items():
         assert_ordered_model_bounds(model_path, owner)
         assert_no_forge_render_type(model_path, owner)
 
-    for drink_id, opaque_element_index in OPAQUE_PLACED_DRINK_ELEMENTS.items():
+    if set(OPAQUE_PLACED_DRINK_ELEMENTS) != EXPECTED_CONSUMABLE_COCKTAILS:
+        raise AssertionError(
+            "Every consumable cocktail must explicitly classify its opaque decorations")
+
+    for drink_id, opaque_element_indices in OPAQUE_PLACED_DRINK_ELEMENTS.items():
         resource_path = (
             f"furniture/placed_drink/{NAMESPACE}/block/mixology/{drink_id}"
         )
@@ -842,21 +874,25 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{drink_id}: glass/liquid must retain one forced-translucent slot")
         elements = model.get("elements", [])
-        if opaque_element_index >= len(elements):
+        missing_indices = [
+            index for index in opaque_element_indices if index >= len(elements)
+        ]
+        if missing_indices:
             raise AssertionError(
-                f"{drink_id}: missing opaque model element {opaque_element_index}")
+                f"{drink_id}: missing opaque model elements {missing_indices}")
+        translucent_slot = next(iter(forced_slots))
         for index, element in enumerate(elements):
             face_textures = {
                 face.get("texture")
                 for face in element.get("faces", {}).values()
             }
-            if index == opaque_element_index:
+            if index in opaque_element_indices:
                 if face_textures != {"#opaque_detail"}:
                     raise AssertionError(
-                        f"{drink_id}: target decoration/straw is not fully opaque")
-            elif "#opaque_detail" in face_textures:
+                        f"{drink_id}: decoration element {index} is not fully opaque")
+            elif face_textures != {f"#{translucent_slot}"}:
                 raise AssertionError(
-                    f"{drink_id}: opaque texture leaked onto non-target element {index}")
+                    f"{drink_id}: glass/liquid element {index} must remain translucent")
 
         source_meta = (
             ROOT / f"src/main/resources/assets/{NAMESPACE}/textures/"

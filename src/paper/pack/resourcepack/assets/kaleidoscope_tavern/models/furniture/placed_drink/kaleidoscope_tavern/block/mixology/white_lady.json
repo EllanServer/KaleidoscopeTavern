@@ -10,7 +10,8 @@
       "sprite": "kaleidoscope_tavern:block/mixology/white_lady",
       "force_translucent": true
     },
-    "particle": "block/glass"
+    "particle": "block/glass",
+    "opaque_detail": "kaleidoscope_tavern:furniture/placed_drink/opaque/kaleidoscope_tavern/block/mixology/white_lady"
   },
   "elements": [
     {
@@ -721,7 +722,7 @@
             11,
             15
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -731,7 +732,7 @@
             12.5
           ],
           "rotation": 270,
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -741,7 +742,7 @@
             12.5
           ],
           "rotation": 180,
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -751,7 +752,7 @@
             12.5
           ],
           "rotation": 90,
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -761,7 +762,7 @@
             12.5
           ],
           "rotation": 180,
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -770,7 +771,7 @@
             15,
             12.5
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         }
       }
     },
@@ -803,7 +804,7 @@
             15,
             12.5
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -812,7 +813,7 @@
             15,
             12.5
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -821,7 +822,7 @@
             15,
             12.5
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -830,7 +831,7 @@
             15,
             12.5
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -840,7 +841,7 @@
             12.5
           ],
           "rotation": 180,
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -850,7 +851,7 @@
             15
           ],
           "rotation": 180,
-          "texture": "#2"
+          "texture": "#opaque_detail"
         }
       }
     },
@@ -884,7 +885,7 @@
             12.5
           ],
           "rotation": 270,
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -894,7 +895,7 @@
             12.5
           ],
           "rotation": 180,
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -904,7 +905,7 @@
             12.5
           ],
           "rotation": 90,
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -913,7 +914,7 @@
             15,
             15
           ],
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -923,7 +924,7 @@
             12.5
           ],
           "rotation": 90,
-          "texture": "#2"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -933,7 +934,7 @@
             12.5
           ],
           "rotation": 90,
-          "texture": "#2"
+          "texture": "#opaque_detail"
         }
       }
     }

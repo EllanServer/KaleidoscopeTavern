@@ -2,10 +2,7 @@
   "format_version": "1.21.6",
   "credit": "Made with Blockbench",
   "textures": {
-    "0": {
-      "sprite": "kaleidoscope_tavern:block/brew/sauvignon_blanc_dry_white",
-      "force_translucent": true
-    },
+    "0": "kaleidoscope_tavern:block/brew/sauvignon_blanc_dry_white",
     "particle": "kaleidoscope_tavern:block/brew/sauvignon_blanc_dry_white"
   },
   "elements": [

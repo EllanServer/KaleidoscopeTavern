@@ -10,7 +10,8 @@
       "sprite": "kaleidoscope_tavern:block/mixology/depth_charge",
       "force_translucent": true
     },
-    "particle": "block/glass"
+    "particle": "block/glass",
+    "opaque_detail": "kaleidoscope_tavern:furniture/placed_drink/opaque/kaleidoscope_tavern/block/mixology/depth_charge"
   },
   "elements": [
     {
@@ -579,7 +580,7 @@
             2.5,
             10
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -588,7 +589,7 @@
             2.5,
             10
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -597,7 +598,7 @@
             2.5,
             10
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -606,7 +607,7 @@
             2.5,
             10
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -616,7 +617,7 @@
             8
           ],
           "rotation": 270,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -626,7 +627,7 @@
             8
           ],
           "rotation": 90,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         }
       }
     },
@@ -659,7 +660,7 @@
             5,
             16
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -668,7 +669,7 @@
             0,
             16
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -677,7 +678,7 @@
             5,
             16
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -686,7 +687,7 @@
             0,
             16
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -696,7 +697,7 @@
             10
           ],
           "rotation": 180,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -706,7 +707,7 @@
             10
           ],
           "rotation": 180,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         }
       }
     },
@@ -739,7 +740,7 @@
             0,
             16
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -748,7 +749,7 @@
             5,
             16
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -757,7 +758,7 @@
             0,
             16
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -766,7 +767,7 @@
             5,
             16
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -776,7 +777,7 @@
             10
           ],
           "rotation": 270,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -786,7 +787,7 @@
             10
           ],
           "rotation": 90,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         }
       }
     },
@@ -819,7 +820,7 @@
             2.5,
             2.5
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -829,7 +830,7 @@
             3
           ],
           "rotation": 90,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -839,7 +840,7 @@
             0
           ],
           "rotation": 180,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -849,7 +850,7 @@
             3
           ],
           "rotation": 90,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -859,7 +860,7 @@
             5
           ],
           "rotation": 90,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -869,7 +870,7 @@
             5
           ],
           "rotation": 90,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         }
       }
     },

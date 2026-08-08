@@ -16,6 +16,7 @@ import re
 import shutil
 from collections import defaultdict
 from copy import deepcopy
+from functools import cache
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -403,12 +404,20 @@ BOTTLE_AND_GLASS_ITEMS = SMALL_FURNITURE - {"shaker"}
 # glass/liquid translucent render pass.  The private Paper model redirects
 # only these faces to an alpha-binarized copy of the source sprite.
 OPAQUE_PLACED_DRINK_ELEMENTS: dict[str, tuple[int, ...]] = {
+    "allium_garden": (12, 13),
+    "bloody_mary": (1, 10, 11, 12, 13),
     "brass_heart": (11,),
-    "grasshopper": (13,),
-    "mojito": (0,),
-    "nether_special": (15,),
+    "depth_charge": (8, 9, 10, 11),
+    "emerald": (5, 6, 7),
+    "godfather": (9, 10, 11, 12, 13),
+    "grasshopper": (0, 1, 2, 13),
+    "mojito": (0, 10, 11, 12, 13),
     "mystery_cocktail": (12,),
-    "signature_cocktail": (12,),
+    "nether_special": (12, 13, 14, 15),
+    "screwdriver": (7, 8, 9),
+    "sculk_special": (12, 13, 14),
+    "signature_cocktail": (12, 13, 14),
+    "white_lady": (10, 11, 12),
 }
 GRAPE_ITEMS = {"grape", "ice_grape", "gold_grape", "green_grape"}
 
@@ -433,6 +442,9 @@ COCKTAILS = {
     "sculk_special",
 }
 CONSUMABLE_COCKTAILS = COCKTAILS - {"empty_glassware"}
+if set(OPAQUE_PLACED_DRINK_ELEMENTS) != CONSUMABLE_COCKTAILS:
+    raise AssertionError(
+        "Every consumable cocktail must explicitly classify its opaque decorations")
 # DrinkBlockItem does not require a drink-effect datamap entry.  These drinks
 # still use PotionItem's consume action and return their authored container,
 # but intentionally apply no effects after consumption.
@@ -521,6 +533,34 @@ def find_file(roots: Iterable[Path], relative: Path) -> Path | None:
     return None
 
 
+def source_texture_path(sprite: str, owner: str) -> Path:
+    if ":" not in sprite:
+        raise AssertionError(f"{owner}: texture sprite must be namespaced")
+    namespace, sprite_path = sprite.split(":", 1)
+    source = find_file(
+        (MAIN_RESOURCES, GENERATED),
+        Path("assets") / namespace / "textures" / f"{sprite_path}.png",
+    )
+    if source is None:
+        raise FileNotFoundError(f"{owner}: missing source texture {sprite}")
+    return source
+
+
+@cache
+def sprite_has_partial_alpha(sprite: str) -> bool:
+    """Return whether any frame contains alpha strictly between 0 and 255."""
+    source = source_texture_path(sprite, sprite)
+    try:
+        from PIL import Image
+    except ImportError as exc:  # pragma: no cover - local setup guard
+        raise RuntimeError(
+            "Pillow is required to inspect migrated texture alpha"
+        ) from exc
+    with Image.open(source) as source_image:
+        alpha_histogram = source_image.convert("RGBA").getchannel("A").histogram()
+    return any(alpha_histogram[1:255])
+
+
 def translucent_texture(sprite: str) -> dict[str, Any]:
     """Select Minecraft 26.1+'s translucent render pass for one texture slot."""
     return {
@@ -534,12 +574,11 @@ def migrate_translucent_model(model: dict[str, Any], owner: str) -> dict[str, An
 
     ``render_type`` is a Forge model-loader extension and is ignored by the
     vanilla 26.2 client.  Since 26.1, vanilla assigns render passes per texture
-    slot; an object with ``force_translucent`` preserves the source model's
-    explicit translucent pass even for opaque texels and their mipmaps.  Both
-    Forge ``cutout`` and ``translucent`` exports land here: cutout glasses and
-    liquids need the blended pass once they render as ItemDisplay furniture,
-    because the per-item alpha test would otherwise flatten their
-    semi-transparent texels into opaque ones.
+    slot.  Explicitly translucent models and cutout sprites that really contain
+    partial alpha need ``force_translucent`` so glass and liquid remain blended.
+    Binary-alpha cutout sprites must stay on the automatic cutout pass: forcing
+    several such bottle ItemDisplays into the blended pass makes their draw
+    order unstable and visibly flicker when stored together in a cabinet.
     """
     render_type = model.pop("render_type", None)
     if render_type not in {
@@ -561,13 +600,17 @@ def migrate_translucent_model(model: dict[str, Any], owner: str) -> dict[str, An
     }
     if not rendered_slots:
         raise AssertionError(f"{owner}: translucent model has no rendered texture slots")
+    explicit_translucent = render_type in {
+        "translucent", "minecraft:translucent",
+    }
     for slot in sorted(rendered_slots):
         sprite = textures.get(slot)
         if not isinstance(sprite, str) or sprite.startswith("#"):
             raise AssertionError(
                 f"{owner}: translucent texture slot {slot!r} must resolve directly, "
                 f"found {sprite!r}")
-        textures[slot] = translucent_texture(sprite)
+        if explicit_translucent or sprite_has_partial_alpha(sprite):
+            textures[slot] = translucent_texture(sprite)
     return model
 
 
@@ -576,12 +619,7 @@ def create_opaque_detail_texture(sprite: str, owner: str) -> str:
     if ":" not in sprite:
         raise AssertionError(f"{owner}: opaque detail sprite must be namespaced")
     namespace, sprite_path = sprite.split(":", 1)
-    source = find_file(
-        (MAIN_RESOURCES, GENERATED),
-        Path("assets") / namespace / "textures" / f"{sprite_path}.png",
-    )
-    if source is None:
-        raise FileNotFoundError(f"{owner}: missing opaque detail source texture {sprite}")
+    source = source_texture_path(sprite, owner)
 
     try:
         from PIL import Image
