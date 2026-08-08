@@ -39,11 +39,30 @@ jobs:
           sha256sum "${jars[0]}"
 
       - name: Upload plugin
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: KaleidoscopeTavern-Paper-26.2
           path: |
             build/libs/KaleidoscopeTavern-Paper-*.jar
             !build/libs/*-sources.jar
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: Upload exact source snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: KaleidoscopeTavern-PR56-ci-source
+          path: |
+            src
+            tools
+            build.gradle.kts
+            settings.gradle.kts
+            gradle.properties
+            gradlew
+            gradlew.bat
+            gradle
+            AGENTS.md
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 1
