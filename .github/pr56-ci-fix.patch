@@ -1,0 +1,34 @@
+diff --git a/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockBehavior.java b/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockBehavior.java
+--- a/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockBehavior.java
++++ b/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockBehavior.java
+@@ -242,7 +242,8 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
+             Player player, String translationKey,
+             StorageBlockConfig.InteractionFailure result) {
+         if (translationKey != null && !translationKey.isBlank()) {
+-            player.sendActionBar(Component.translatable(translationKey));
++            ((org.bukkit.entity.Player) player.platformPlayer())
++                    .sendActionBar(Component.translatable(translationKey));
+         }
+         return result == StorageBlockConfig.InteractionFailure.PASS
+                 ? InteractionResult.PASS : InteractionResult.FAIL;
+@@ -724,8 +725,8 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
+                         new Vector3f(visual.scale()), metadata);
+                 DisplayData.ItemDisplayData.ViewRange.addEntityDataIfNotDefaultValue(
+-                        controller.config().viewRange()
+-                                * player.displayEntityViewDistance(), metadata);
++                        (float) (controller.config().viewRange()
++                                * player.displayEntityViewDistance()), metadata);
+                 packets.add(ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
+                         entityIds[slot], metadata));
+             }
+diff --git a/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockConfig.java b/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockConfig.java
+--- a/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockConfig.java
++++ b/src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/block/StorageBlockConfig.java
+@@ -499,7 +499,7 @@ public record StorageBlockConfig(
+         }
+ 
+         public double sample(ThreadLocalRandom random) {
+-            return sample(random, minimum, maximum);
++            return StorageBlockConfig.sample(random, minimum, maximum);
+         }
+     }
