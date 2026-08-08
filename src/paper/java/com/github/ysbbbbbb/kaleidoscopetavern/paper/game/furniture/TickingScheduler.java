@@ -29,6 +29,11 @@ final class TickingScheduler {
 
         void tick(String id);
 
+        /** Optional decision already computed while ticking; null requests a recheck. */
+        default Boolean postTickScheduleDecision(String id) {
+            return null;
+        }
+
         /** 派发时发现 channel.handler 已为空：清空 deliveredHandler。 */
         void onHandlerMissing(String id);
 
@@ -50,15 +55,17 @@ final class TickingScheduler {
 
     private final LongSupplier tickSource;
     private final WakeTarget wakeTarget;
+    private final Runnable dispatchAction = this::dispatchDue;
     private final Object lock = new Object();
     private final Map<String, IdentityState> states = new HashMap<>();
-    private final PriorityQueue<ScheduledRun> queue = new PriorityQueue<>();
+    /** One heap node per due tick, not one heap node per furniture. */
+    private final Map<Long, DueBucket> bucketsByTick = new HashMap<>();
+    private final PriorityQueue<DueBucket> queue = new PriorityQueue<>();
 
     private boolean started;
     private boolean dispatching;
     private boolean wakeScheduled;
     private long scheduledWakeTick = Long.MAX_VALUE;
-    private long nextSequence;
     private int liveQueuedRuns;
     private int staleQueuedRuns;
 
@@ -87,14 +94,13 @@ final class TickingScheduler {
             }
             scheduledWakeTick = Long.MAX_VALUE;
             started = false;
+            for (IdentityState state : states.values()) {
+                invalidateLocked(state);
+            }
             queue.clear();
+            bucketsByTick.clear();
             liveQueuedRuns = 0;
             staleQueuedRuns = 0;
-            for (IdentityState state : states.values()) {
-                state.scheduledRun = null;
-                state.scheduleGeneration++;
-            }
-            nextSequence = 0;
             dispatching = false;
         }
     }
@@ -144,12 +150,10 @@ final class TickingScheduler {
             // 旧任务如果仍在队列，只标记为 stale，不做 O(n) 删除。
             invalidateLocked(state);
             ScheduledRun run = new ScheduledRun(id, state.scheduleGeneration,
-                    tickSource.getAsLong() + Math.max(1, delay), nextSequence++);
+                    tickSource.getAsLong() + Math.max(1, delay));
             state.scheduledRun = run;
-            queue.add(run);
-            liveQueuedRuns++;
-            maybeCompactQueueLocked();
-            scheduleWakeLocked();
+            enqueueLocked(run);
+            maintainQueueLocked();
         }
     }
 
@@ -161,8 +165,7 @@ final class TickingScheduler {
             }
             invalidateLocked(state);
             pruneStaleHeadLocked();
-            maybeCompactQueueLocked();
-            scheduleWakeLocked();
+            maintainQueueLocked();
         }
     }
 
@@ -189,8 +192,7 @@ final class TickingScheduler {
                 }
                 invalidateLocked(state);
                 pruneStaleHeadLocked();
-                maybeCompactQueueLocked();
-                scheduleWakeLocked();
+                maintainQueueLocked();
                 return ReconcileResult.CANCELLED;
             }
             if (state.scheduledRun != null) {
@@ -211,12 +213,10 @@ final class TickingScheduler {
                 return;
             }
             ScheduledRun run = new ScheduledRun(id, state.scheduleGeneration,
-                    tickSource.getAsLong() + Math.max(1, delay), nextSequence++);
+                    tickSource.getAsLong() + Math.max(1, delay));
             state.scheduledRun = run;
-            queue.add(run);
-            liveQueuedRuns++;
-            maybeCompactQueueLocked();
-            scheduleWakeLocked();
+            enqueueLocked(run);
+            maintainQueueLocked();
         }
     }
 
@@ -235,22 +235,14 @@ final class TickingScheduler {
         ScheduledRun oldRun = state.scheduledRun;
         state.scheduleGeneration++;
         state.scheduledRun = null;
-        if (oldRun != null && oldRun.queued && !oldRun.stale) {
+        if (oldRun != null && !oldRun.stale) {
             oldRun.stale = true;
-            liveQueuedRuns--;
-            staleQueuedRuns++;
-        }
-    }
-
-    /** {@code run} 仍是该 Controller 当前持有的 live 任务才返回 true。 */
-    boolean isCurrentRun(ScheduledRun run) {
-        synchronized (lock) {
-            IdentityState state = states.get(run.id);
-            return started
-                    && state != null
-                    && state.active
-                    && state.scheduledRun == run
-                    && state.scheduleGeneration == run.generation;
+            if (oldRun.queued) {
+                liveQueuedRuns--;
+                staleQueuedRuns++;
+                oldRun.bucket.liveQueuedRuns--;
+                oldRun.bucket.staleQueuedRuns++;
+            }
         }
     }
 
@@ -271,15 +263,14 @@ final class TickingScheduler {
             if (scheduleAgain && state.active && state.bound && started) {
                 ScheduledRun nextRun = new ScheduledRun(completedRun.id,
                         state.scheduleGeneration,
-                        tickSource.getAsLong() + Math.max(1, nextDelay),
-                        nextSequence++);
+                        tickSource.getAsLong() + Math.max(1, nextDelay));
                 state.scheduledRun = nextRun;
-                queue.add(nextRun);
-                liveQueuedRuns++;
+                enqueueLocked(nextRun);
             }
-            maybeCompactQueueLocked();
-            // dispatching=true 时这里不会立即创建唤醒任务，整批 due 执行完成后统一安排。
-            scheduleWakeLocked();
+            // A due batch can complete hundreds of runs. Defer compaction and
+            // wake calculation until finishDispatch instead of repeating the
+            // same global-queue work for every furniture in the batch.
+            maintainQueueLocked();
         }
     }
 
@@ -325,9 +316,9 @@ final class TickingScheduler {
             try {
                 runHandlerAndComplete(run);
             } catch (RuntimeException | LinkageError failure) {
-                IdentityState state = states.get(run.id);
-                if (state != null) {
-                    state.host.onRunFailure(run.id, failure);
+                Host host = registeredHost(run.id);
+                if (host != null) {
+                    host.onRunFailure(run.id, failure);
                 }
             }
         }
@@ -347,32 +338,38 @@ final class TickingScheduler {
         List<ScheduledRun> due = null;
         long currentTick = tickSource.getAsLong();
         while (true) {
-            ScheduledRun run = peekLiveRunLocked();
-            if (run == null || run.dueTick > currentTick) {
+            DueBucket bucket = peekLiveBucketLocked();
+            if (bucket == null || bucket.dueTick > currentTick) {
                 break;
             }
             queue.poll();
-            run.queued = false;
-            liveQueuedRuns--;
-            if (due == null) {
-                due = new ArrayList<>();
+            bucketsByTick.remove(bucket.dueTick, bucket);
+            int expectedLiveRuns = bucket.liveQueuedRuns;
+            for (ScheduledRun run : bucket.runs) {
+                if (!run.queued) {
+                    continue;
+                }
+                boolean current = run.isCurrent();
+                discardQueuedRunLocked(run);
+                if (!current) {
+                    continue;
+                }
+                if (due == null) {
+                    due = new ArrayList<>(Math.max(1, expectedLiveRuns));
+                }
+                // scheduledRun 仍指向 run：它表示该任务已出队、正在等待执行，
+                // 执行前的 generation 复检与 compare-and-complete 都依赖它。
+                due.add(run);
             }
-            // scheduledRun 仍指向 run：它表示该任务已出队、正在等待执行，
-            // 执行前的 generation 复检与 compare-and-complete 都依赖它。
-            due.add(run);
         }
         return due;
     }
 
     private void runHandlerAndComplete(ScheduledRun run) {
-        IdentityState state;
-        synchronized (lock) {
-            state = states.get(run.id);
-        }
-        if (state == null || !isCurrentRun(run)) {
+        Host host = currentHost(run);
+        if (host == null) {
             return;
         }
-        Host host = state.host;
 
         if (!host.isHandlerBound(run.id)) {
             finishRunIfCurrent(run, false, 0);
@@ -400,10 +397,13 @@ final class TickingScheduler {
         // 让 finishRunIfCurrent 清除 scheduledRun，reconcile 才能重建任务，
         // 否则该任务已出队却仍指向 scheduledRun，永远不再 tick。
         try {
-            if (isCurrentRun(run)
+            if (!run.stale
                     && host.isHandlerBound(run.id)
                     && !host.isHandlerChanged(run.id)) {
-                scheduleAgain = host.shouldSchedule(run.id);
+                Boolean postTickDecision = host.postTickScheduleDecision(run.id);
+                scheduleAgain = postTickDecision != null
+                        ? postTickDecision
+                        : host.shouldSchedule(run.id);
             }
             schedulingDecisionCompleted = true;
         } catch (Throwable decisionFailure) {
@@ -437,28 +437,47 @@ final class TickingScheduler {
 
     // ===== 队头清理与周期压缩 =====
 
-    /** 先删除队头连续的 stale 节点，再返回真正的 live 队头。 */
-    private ScheduledRun peekLiveRunLocked() {
-        pruneStaleHeadLocked();
-        return queue.peek();
+    private void pruneStaleHeadLocked() {
+        peekLiveBucketLocked();
     }
 
-    private void pruneStaleHeadLocked() {
+    private DueBucket peekLiveBucketLocked() {
         while (true) {
-            ScheduledRun run = queue.peek();
-            if (run == null || run.isCurrent()) {
-                return;
+            DueBucket bucket = queue.peek();
+            if (bucket == null || bucket.liveQueuedRuns > 0) {
+                return bucket;
             }
             queue.poll();
-            run.queued = false;
-            if (run.stale) {
-                staleQueuedRuns--;
+            bucketsByTick.remove(bucket.dueTick, bucket);
+            for (ScheduledRun run : bucket.runs) {
+                discardQueuedRunLocked(run);
             }
         }
     }
 
+    private Host currentHost(ScheduledRun run) {
+        synchronized (lock) {
+            IdentityState state = states.get(run.id);
+            if (!started
+                    || state == null
+                    || !state.active
+                    || state.scheduledRun != run
+                    || state.scheduleGeneration != run.generation) {
+                return null;
+            }
+            return state.host;
+        }
+    }
+
+    private Host registeredHost(String id) {
+        synchronized (lock) {
+            IdentityState state = states.get(id);
+            return state == null ? null : state.host;
+        }
+    }
+
     private boolean shouldCompactQueueLocked() {
-        return queue.size() >= COMPACT_MIN_QUEUE_SIZE
+        return liveQueuedRuns + staleQueuedRuns >= COMPACT_MIN_QUEUE_SIZE
                 && staleQueuedRuns >= COMPACT_MIN_STALE_RUNS
                 && staleQueuedRuns > liveQueuedRuns;
     }
@@ -468,20 +487,72 @@ final class TickingScheduler {
         if (!shouldCompactQueueLocked()) {
             return;
         }
-        PriorityQueue<ScheduledRun> rebuilt =
-                new PriorityQueue<>(Math.max(11, liveQueuedRuns));
-        for (ScheduledRun run : queue) {
-            if (run.isCurrent()) {
-                rebuilt.add(run);
-            } else {
-                run.queued = false;
+        Map<Long, DueBucket> rebuiltByTick = new HashMap<>();
+        PriorityQueue<DueBucket> rebuiltQueue =
+                new PriorityQueue<>(Math.max(11, queue.size()));
+        int rebuiltLiveRuns = 0;
+        for (DueBucket oldBucket : queue) {
+            DueBucket rebuiltBucket = null;
+            for (ScheduledRun run : oldBucket.runs) {
+                if (!run.isCurrent()) {
+                    run.queued = false;
+                    continue;
+                }
+                if (rebuiltBucket == null) {
+                    rebuiltBucket = new DueBucket(oldBucket.dueTick);
+                    rebuiltByTick.put(rebuiltBucket.dueTick, rebuiltBucket);
+                    rebuiltQueue.add(rebuiltBucket);
+                }
+                rebuiltBucket.runs.add(run);
+                rebuiltBucket.liveQueuedRuns++;
+                run.bucket = rebuiltBucket;
+                rebuiltLiveRuns++;
             }
         }
         queue.clear();
-        queue.addAll(rebuilt);
+        queue.addAll(rebuiltQueue);
+        bucketsByTick.clear();
+        bucketsByTick.putAll(rebuiltByTick);
         // 压缩后不依赖之前的增减结果，直接重算。
-        liveQueuedRuns = queue.size();
+        liveQueuedRuns = rebuiltLiveRuns;
         staleQueuedRuns = 0;
+    }
+
+    private void enqueueLocked(ScheduledRun run) {
+        DueBucket bucket = bucketsByTick.get(run.dueTick);
+        if (bucket == null) {
+            bucket = new DueBucket(run.dueTick);
+            bucketsByTick.put(run.dueTick, bucket);
+            queue.add(bucket);
+        }
+        bucket.runs.add(run);
+        bucket.liveQueuedRuns++;
+        run.bucket = bucket;
+        liveQueuedRuns++;
+    }
+
+    private void discardQueuedRunLocked(ScheduledRun run) {
+        if (!run.queued) {
+            return;
+        }
+        run.queued = false;
+        DueBucket bucket = run.bucket;
+        if (run.stale) {
+            staleQueuedRuns--;
+            bucket.staleQueuedRuns--;
+        } else {
+            liveQueuedRuns--;
+            bucket.liveQueuedRuns--;
+        }
+    }
+
+    /** During dispatch, finishDispatch performs this maintenance once per batch. */
+    private void maintainQueueLocked() {
+        if (dispatching) {
+            return;
+        }
+        maybeCompactQueueLocked();
+        scheduleWakeLocked();
     }
 
     // ===== 唤醒 =====
@@ -491,7 +562,7 @@ final class TickingScheduler {
         if (dispatching || !started) {
             return;
         }
-        ScheduledRun next = peekLiveRunLocked();
+        DueBucket next = peekLiveBucketLocked();
         if (next == null) {
             if (wakeScheduled) {
                 wakeTarget.cancel();
@@ -513,7 +584,7 @@ final class TickingScheduler {
         }
         long delay = Math.max(1L, next.dueTick - tickSource.getAsLong());
         scheduledWakeTick = next.dueTick;
-        wakeTarget.schedule(delay, this::dispatchDue);
+        wakeTarget.schedule(delay, dispatchAction);
         wakeScheduled = true;
     }
 
@@ -522,6 +593,7 @@ final class TickingScheduler {
     /** 只读的调度器快照，主要用于测试与临时 debug 命令。 */
     record SchedulerStats(
             int queueSize,
+            int dueBucketCount,
             int liveQueuedRuns,
             int staleQueuedRuns,
             long nextLiveDueTick,
@@ -532,8 +604,9 @@ final class TickingScheduler {
 
     SchedulerStats schedulerStats() {
         synchronized (lock) {
-            ScheduledRun next = peekLiveRunLocked();
+            DueBucket next = peekLiveBucketLocked();
             return new SchedulerStats(
+                    liveQueuedRuns + staleQueuedRuns,
                     queue.size(),
                     liveQueuedRuns,
                     staleQueuedRuns,
@@ -563,21 +636,36 @@ final class TickingScheduler {
         }
     }
 
-    final class ScheduledRun implements Comparable<ScheduledRun> {
+    private final class DueBucket implements Comparable<DueBucket> {
+        final long dueTick;
+        final List<ScheduledRun> runs = new ArrayList<>();
+        int liveQueuedRuns;
+        int staleQueuedRuns;
+
+        DueBucket(long dueTick) {
+            this.dueTick = dueTick;
+        }
+
+        @Override
+        public int compareTo(DueBucket other) {
+            return Long.compare(dueTick, other.dueTick);
+        }
+    }
+
+    final class ScheduledRun {
         final String id;
         final long generation;
         final long dueTick;
-        final long sequence;
 
         // 只允许在 lock 内修改
         boolean queued = true;
-        boolean stale;
+        volatile boolean stale;
+        DueBucket bucket;
 
-        ScheduledRun(String id, long generation, long dueTick, long sequence) {
+        ScheduledRun(String id, long generation, long dueTick) {
             this.id = id;
             this.generation = generation;
             this.dueTick = dueTick;
-            this.sequence = sequence;
         }
 
         boolean isCurrent() {
@@ -589,10 +677,5 @@ final class TickingScheduler {
                     && state.scheduleGeneration == generation;
         }
 
-        @Override
-        public int compareTo(ScheduledRun other) {
-            int byTick = Long.compare(dueTick, other.dueTick);
-            return byTick != 0 ? byTick : Long.compare(sequence, other.sequence);
-        }
     }
 }

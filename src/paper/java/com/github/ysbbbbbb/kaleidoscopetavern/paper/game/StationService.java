@@ -105,6 +105,11 @@ public final class StationService implements Listener {
                 }
 
                 @Override
+                public Boolean tickAndScheduleDecision(BukkitFurniture furniture) {
+                    return tickBarrel(furniture);
+                }
+
+                @Override
                 public void onReady(BukkitFurniture furniture) {
                     syncBarrelState(furniture);
                 }
@@ -1034,23 +1039,23 @@ public final class StationService implements Listener {
         return true;
     }
 
-    private void tickBarrel(BukkitFurniture furniture) {
+    private boolean tickBarrel(BukkitFurniture furniture) {
         if (isBarrelOpen(furniture)) {
-            return;
+            return false;
         }
         FurnitureState state = new FurnitureState(furniture);
         int level = state.integer("barrel_level");
         if (level >= 6) {
-            return;
+            return false;
         }
         if (level >= 1) {
             BarrelSemantics.BrewState next = BarrelSemantics.advance(
                     level, state.integer("barrel_time"), state.integer("barrel_unit"));
             state.integer("barrel_level", next.level());
             state.integer("barrel_time", next.remainingTicks());
-            return;
+            return next.level() < 6;
         }
-        beginBrewing(furniture, state);
+        return beginBrewing(furniture, state);
     }
 
     private boolean shouldTickBarrel(BukkitFurniture furniture) {

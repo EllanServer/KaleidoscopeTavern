@@ -249,12 +249,54 @@ class TickingSchedulerTest {
         core.schedule("B", 5);
         core.schedule("C", 5);
 
+        assertEquals(1, core.schedulerStats().dueBucketCount());
+
         advanceTo(5);
 
         assertEquals(List.of("A", "B", "C"), order);
         assertEquals(1, a.tickCount);
         assertEquals(1, b.tickCount);
         assertEquals(1, c.tickCount);
+    }
+
+    @Test
+    void coalescesLargeSameTickBatchIntoOnePriorityQueueNode() {
+        int furnitureCount = 2_000;
+        List<FakeHost> hosts = new ArrayList<>(furnitureCount);
+        for (int index = 0; index < furnitureCount; index++) {
+            FakeHost furniture = host("batch-" + index);
+            furniture.shouldScheduleResult = false;
+            hosts.add(furniture);
+            core.schedule(furniture.id, 50);
+        }
+
+        TickingScheduler.SchedulerStats queued = core.schedulerStats();
+        assertEquals(furnitureCount, queued.queueSize());
+        assertEquals(furnitureCount, queued.liveQueuedRuns());
+        assertEquals(1, queued.dueBucketCount());
+
+        advanceTo(50);
+
+        for (FakeHost furniture : hosts) {
+            assertEquals(1, furniture.tickCount);
+        }
+        assertEquals(0, core.schedulerStats().dueBucketCount());
+        assertInvariant();
+    }
+
+    @Test
+    void postTickDecisionAvoidsRepeatingAnExpensiveScheduleCheck() {
+        FakeHost furniture = host("A");
+        furniture.postTickScheduleDecision = true;
+        furniture.nextDelay = 20;
+
+        core.schedule("A", 5);
+        advanceTo(5);
+
+        assertEquals(1, furniture.tickCount);
+        assertEquals(0, furniture.shouldScheduleCalls);
+        assertEquals(25, core.schedulerStats().nextLiveDueTick());
+        assertInvariant();
     }
 
     // ===== 11. 队头 stale 清理 =====
@@ -513,6 +555,8 @@ class TickingSchedulerTest {
         TickingScheduler.SchedulerStats stats = core.schedulerStats();
         assertTrue(stats.liveQueuedRuns() >= 0);
         assertTrue(stats.staleQueuedRuns() >= 0);
+        assertTrue(stats.dueBucketCount() >= 0);
+        assertTrue(stats.dueBucketCount() <= stats.queueSize());
         assertEquals(stats.queueSize(), stats.liveQueuedRuns() + stats.staleQueuedRuns());
     }
 
@@ -575,6 +619,7 @@ class TickingSchedulerTest {
         boolean handlerBound = true;
         boolean handlerChanged;
         boolean shouldScheduleResult = true;
+        Boolean postTickScheduleDecision;
         int nextDelay = 1;
         Runnable tickAction = () -> {
         };
@@ -612,6 +657,11 @@ class TickingSchedulerTest {
             if (tickFailure != null) {
                 throw tickFailure;
             }
+        }
+
+        @Override
+        public Boolean postTickScheduleDecision(String id) {
+            return postTickScheduleDecision;
         }
 
         @Override

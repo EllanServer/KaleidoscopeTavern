@@ -1035,6 +1035,17 @@ def validate() -> dict[str, int]:
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
         "item/ItemService.java"
     ).read_text(encoding="utf-8-sig")
+    if "items.warmCocktailFurnitureSerialization()" not in plugin_source:
+        raise AssertionError(
+            "Cocktail furniture item serialization must be warmed during plugin startup")
+    for required_token in (
+            "warmCocktailFurnitureSerialization()",
+            "catalog.cocktailItems()",
+            "BukkitAdaptor.adapt(built.get()).copyWithCount(1).toBytes()"):
+        if required_token not in item_source:
+            raise AssertionError(
+                "Cocktail furniture placement must keep its item Codec cold-path warmup; "
+                f"missing token: {required_token}")
     drink_lore_source = (
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
         "item/DrinkLore.java"
@@ -2575,20 +2586,29 @@ def validate() -> dict[str, int]:
     ).read_text(encoding="utf-8-sig")
     # 纯调度内核持有唯一 due-time 队列；时钟与唤醒由外部注入，保持可单测。
     for required_token in (
-            "PriorityQueue<ScheduledRun>",
+            "PriorityQueue<DueBucket>",
+            "Map<Long, DueBucket> bucketsByTick",
+            "enqueueLocked",
+            "dispatchAction",
             "dispatchDue",
             "scheduleWakeLocked",
             "finishRunIfCurrent",
+            "peekLiveBucketLocked",
             "pruneStaleHeadLocked",
             "maybeCompactQueueLocked",
             "liveQueuedRuns",
             "staleQueuedRuns",
+            "postTickScheduleDecision",
             "LongSupplier",
             "WakeTarget"):
         if required_token not in ticking_scheduler_source:
             raise AssertionError(
                 "Sparse furniture ticks must be driven by one pure due-time queue "
                 f"in TickingScheduler; missing token: {required_token}")
+    if "PriorityQueue<ScheduledRun>" in ticking_scheduler_source:
+        raise AssertionError(
+            "Sparse furniture runs with equal due ticks must stay coalesced into "
+            "DueBucket heap nodes")
     for stale_token in ("org.bukkit", "BukkitTask", "Bukkit.getScheduler",
                         "runTaskLater", "net.momirealms.craftengine"):
         if stale_token in ticking_scheduler_source:
@@ -2605,7 +2625,10 @@ def validate() -> dict[str, int]:
             "public void preRemove(Player player)",
             "public static void refreshSchedule(",
             "default boolean shouldSchedule(",
+            "default Boolean tickAndScheduleDecision(",
             "handler.shouldSchedule(bukkitFurniture)",
+            "postTickScheduleDecision(",
+            "owner, action, delayTicks",
             "targetChannel.activeControllers.get(targetFurniture.uuid())"):
         if required_token not in ticking_behavior_source:
             raise AssertionError(
@@ -2618,6 +2641,10 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Sparse furniture due-time scheduling must stay wake-on-demand instead of "
             "polling an idle queue every server tick")
+    if "runTaskLater(owner, () ->" in ticking_behavior_source:
+        raise AssertionError(
+            "Sparse furniture wakeups must pass the cached dispatch action directly "
+            "instead of allocating one wrapper lambda per wake")
     if "bukkitFurniture.isValid()" in ticking_behavior_source:
         raise AssertionError(
             "CE lifecycle removal must keep the sparse due queue free of repeated "

@@ -58,10 +58,12 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
                     if (owner == null) {
                         return;
                     }
-                    schedulerTask = Bukkit.getScheduler().runTaskLater(owner, () -> {
-                        schedulerTask = null;
-                        action.run();
-                    }, delayTicks);
+                    // dispatchDue replaces this reference with the next wake,
+                    // or leaves a harmless completed task while idle. Passing
+                    // the cached action directly removes one wrapper/lambda
+                    // allocation and the hot stack frame on every wake.
+                    schedulerTask = Bukkit.getScheduler().runTaskLater(
+                            owner, action, delayTicks);
                 }
             });
 
@@ -183,6 +185,16 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
     public interface Handler {
         void tick(BukkitFurniture furniture);
 
+        /**
+         * Returns a post-tick scheduling decision when the tick already has
+         * the required state in hand. Null asks the scheduler to call
+         * {@link #shouldSchedule(BukkitFurniture)} separately.
+         */
+        default Boolean tickAndScheduleDecision(BukkitFurniture furniture) {
+            tick(furniture);
+            return null;
+        }
+
         default void onReady(BukkitFurniture furniture) {
         }
 
@@ -205,6 +217,7 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
 
         private boolean active;
         private Handler deliveredHandler;
+        private Boolean postTickScheduleDecision;
 
         private Controller(BukkitFurniture furniture, Channel channel, Schedule schedule) {
             super(furniture);
@@ -320,10 +333,19 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
 
         @Override
         public void tick(String id) {
+            postTickScheduleDecision = null;
             Handler handler = deliveredHandler;
             if (handler != null) {
-                handler.tick(bukkitFurniture);
+                postTickScheduleDecision =
+                        handler.tickAndScheduleDecision(bukkitFurniture);
             }
+        }
+
+        @Override
+        public Boolean postTickScheduleDecision(String id) {
+            Boolean decision = postTickScheduleDecision;
+            postTickScheduleDecision = null;
+            return decision;
         }
 
         @Override

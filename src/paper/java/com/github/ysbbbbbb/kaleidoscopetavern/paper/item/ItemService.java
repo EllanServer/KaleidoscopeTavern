@@ -9,6 +9,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineItems;
 import net.momirealms.craftengine.bukkit.item.BukkitItemDefinition;
 import net.momirealms.craftengine.core.util.Key;
@@ -96,6 +97,26 @@ public final class ItemService {
         String materialName = id.startsWith("minecraft:") ? id.substring("minecraft:".length()) : id;
         Material material = Material.matchMaterial(materialName.toUpperCase(Locale.ROOT));
         return material == null || material.isAir() ? Optional.empty() : Optional.of(new ItemStack(material));
+    }
+
+    /**
+     * Loads Minecraft's item Codec path before a player's first furniture placement.
+     * CraftEngine persists the exact source stack for lossless furniture drops;
+     * the first encode otherwise performs lazy class/JAR-manifest loading on the
+     * interaction tick. Serializing each cocktail once also seeds component
+     * encoder caches without retaining duplicate item stacks in this plugin.
+     */
+    public int warmCocktailFurnitureSerialization() {
+        int warmed = 0;
+        for (String itemId : catalog.cocktailItems()) {
+            Optional<ItemStack> built = build(itemId, null);
+            if (built.isEmpty()) {
+                continue;
+            }
+            BukkitAdaptor.adapt(built.get()).copyWithCount(1).toBytes();
+            warmed++;
+        }
+        return warmed;
     }
 
     public boolean consumeOne(Player player, ItemStack expected) {

@@ -178,6 +178,14 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
 
         GrapeSeasonGate.configure(getConfig(), getLogger());
         items = new ItemService(this, catalog);
+        try {
+            items.warmCocktailFurnitureSerialization();
+        } catch (RuntimeException | LinkageError exception) {
+            // Placement remains functional; this only moves CraftEngine's
+            // lazy item-codec initialization away from the first interaction.
+            getLogger().log(Level.WARNING,
+                    "Unable to warm cocktail furniture item serialization", exception);
+        }
         Messages messages = new Messages(this);
         shakerVisuals = new ShakerVisualService(this, catalog, items);
         pressingTubs = new PressingTubService(this, catalog, items);
