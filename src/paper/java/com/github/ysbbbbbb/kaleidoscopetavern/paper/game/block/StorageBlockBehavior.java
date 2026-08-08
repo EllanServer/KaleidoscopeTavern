@@ -242,7 +242,8 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
             Player player, String translationKey,
             StorageBlockConfig.InteractionFailure result) {
         if (translationKey != null && !translationKey.isBlank()) {
-            player.sendActionBar(Component.translatable(translationKey));
+            ((org.bukkit.entity.Player) player.platformPlayer())
+                    .sendActionBar(Component.translatable(translationKey));
         }
         return result == StorageBlockConfig.InteractionFailure.PASS
                 ? InteractionResult.PASS : InteractionResult.FAIL;
@@ -723,8 +724,8 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                 DisplayData.ItemDisplayData.Scale.addEntityDataIfNotDefaultValue(
                         new Vector3f(visual.scale()), metadata);
                 DisplayData.ItemDisplayData.ViewRange.addEntityDataIfNotDefaultValue(
-                        controller.config().viewRange()
-                                * player.displayEntityViewDistance(), metadata);
+                        (float) (controller.config().viewRange()
+                                * player.displayEntityViewDistance()), metadata);
                 packets.add(ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
                         entityIds[slot], metadata));
             }

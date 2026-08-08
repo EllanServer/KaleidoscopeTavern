@@ -499,7 +499,7 @@ public record StorageBlockConfig(
         }
 
         public double sample(ThreadLocalRandom random) {
-            return sample(random, minimum, maximum);
+            return StorageBlockConfig.sample(random, minimum, maximum);
         }
     }
 
