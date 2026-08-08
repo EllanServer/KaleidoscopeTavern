@@ -23,13 +23,28 @@ EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
 COPPER_LANTERN_CARRIER_STATE = (
     "minecraft:copper_lantern[hanging=false,waterlogged=false]"
 )
+CIRCULAR_RACK_CARRIER_STATE = (
+    "minecraft:cave_vines[age=1,berries=true]"
+)
+
+
+def holder_carrier_state(facing: str) -> str:
+    if facing not in {"north", "east", "south", "west"}:
+        raise AssertionError(f"Unsupported holder facing: {facing}")
+    return (
+        "minecraft:lightning_rod"
+        f"[facing={facing},powered=false,waterlogged=false]"
+    )
+
+
 STORAGE_BLOCK_SPECS = {
     "bar_cabinet": (2, None, "minecraft:barrier"),
     "glass_bar_cabinet": (2, None, "minecraft:barrier"),
     "cellar_cabinet": (9, "cellar_cabinet_blocklist", "minecraft:barrier"),
-    "tilted_rack": (3, "tilted_rack_blocklist", "minecraft:barrier"),
-    "circular_rack": (6, "circular_rack_blocklist", "minecraft:barrier"),
-    "holder": (1, "holder_blocklist", "minecraft:barrier"),
+    "tilted_rack": (3, "tilted_rack_blocklist", "cactus"),
+    "circular_rack": (
+        6, "circular_rack_blocklist", CIRCULAR_RACK_CARRIER_STATE),
+    "holder": (1, "holder_blocklist", "horizontal_lightning_rod"),
 }
 EXPECTED_TICKING_FURNITURE = {
     "mystery_cocktail": (
@@ -5811,11 +5826,39 @@ def validate() -> dict[str, int]:
 
         render_ids: set[str] = set()
         for appearance in appearances.values():
-            if (appearance.get("state") != "minecraft:barrier"
-                    or "auto_state" in appearance
-                    or appearance.get("transparent") is not None):
-                raise AssertionError(
-                    f"{storage_id}: must use CE sofa-style barrier rendering")
+            if carrier_type == "minecraft:barrier":
+                if (appearance.get("state") != carrier_type
+                        or "auto_state" in appearance
+                        or appearance.get("transparent") is not None):
+                    raise AssertionError(
+                        f"{storage_id}: must use CE sofa-style barrier rendering")
+            elif carrier_type == "horizontal_lightning_rod":
+                if (appearance.get("state") not in {
+                        holder_carrier_state(facing)
+                        for facing in ("north", "east", "south", "west")
+                    } or "auto_state" in appearance
+                        or appearance.get("transparent") is not True):
+                    raise AssertionError(
+                        f"{storage_id}: expected a transparent released horizontal "
+                        f"lightning-rod carrier, got {appearance!r}")
+            elif carrier_type.startswith("minecraft:"):
+                if (appearance.get("state") != carrier_type
+                        or "auto_state" in appearance
+                        or appearance.get("transparent") is not True):
+                    raise AssertionError(
+                        f"{storage_id}: expected transparent released carrier state "
+                        f"{carrier_type}, got {appearance!r}")
+            else:
+                expected_auto_state = {
+                    "type": carrier_type,
+                    "id": "kaleidoscope-tavern-tilted-rack-transparent",
+                }
+                if (appearance.get("auto_state") != expected_auto_state
+                        or "state" in appearance
+                        or appearance.get("transparent") is not True):
+                    raise AssertionError(
+                        f"{storage_id}: expected transparent {carrier_type} carrier, "
+                        f"got {appearance!r}")
             renderer = appearance.get("entity_renderer", {})
             if renderer.get("type") != "item_display":
                 raise AssertionError(
@@ -5844,6 +5887,12 @@ def validate() -> dict[str, int]:
                 raise AssertionError(
                     f"{storage_id}: {facing} model rotation drifted: "
                     f"{actual_rotation!r}")
+            if (storage_id == "holder"
+                    and appearance.get("state")
+                    != holder_carrier_state(facing)):
+                raise AssertionError(
+                    f"holder: {facing} carrier must rotate horizontally "
+                    f"with the block state, got {appearance.get('state')!r}")
 
         settings = definition.get("settings", {})
         expected_mining_tag = (

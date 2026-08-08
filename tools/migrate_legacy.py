@@ -213,12 +213,20 @@ SOFA_DYE_COLORS = {
 # them into the shared tint-source block.
 CONNECTED_GRID_BLOCKS = frozenset({"bar_counter", "table"})
 # These remain real CE blocks for native neighbour updates and persistent block
-# entities, but visually follow CE's bundled sofa: one invisible barrier
-# carrier plus an ItemDisplay renderer. They therefore do not reserve unrelated
-# trapdoor, cactus, lightning-rod or solid carrier-state pools.
+# entities, while their authored geometry is supplied by an ItemDisplay.
 FURNITURE_STYLE_BLOCKS = frozenset({
     *CONNECTED_GRID_BLOCKS, *STORAGE_BLOCKS,
 })
+# The three bottle racks keep the shaped carrier states selected before the
+# connected-furniture rewrite. Their client-side target/collision shapes are
+# part of the gameplay contract: a cactus allocation for the tilted rack, one
+# released cave-vines state for the circular rack and a facing-aware released
+# lightning rod for the single-bottle holder. Other furniture-style blocks use
+# CE's native invisible barrier carrier.
+SHAPED_RACK_BLOCKS = frozenset({
+    "tilted_rack", "circular_rack", "holder",
+})
+BARRIER_STYLE_BLOCKS = FURNITURE_STYLE_BLOCKS - SHAPED_RACK_BLOCKS
 CONNECTED_MIGRATION_BLOCKS = frozenset({
     *SOFA_BLOCKS, *CONNECTED_GRID_BLOCKS,
     "bar_cabinet", "glass_bar_cabinet",
@@ -975,6 +983,12 @@ def property_definition(name: str, values: list[str]) -> dict[str, Any]:
 
 
 def carrier_type(block_id: str) -> tuple[str, str]:
+    if block_id == "tilted_rack":
+        return "cactus", "kaleidoscope-tavern-tilted-rack-transparent"
+    if block_id == "circular_rack":
+        return "state", CIRCULAR_RACK_CARRIER_STATE
+    if block_id == "holder":
+        return "horizontal_lightning_rod", "kaleidoscope-tavern-holder"
     if block_id in FURNITURE_STYLE_BLOCKS:
         return "state", SOFA_CARRIER_STATE
     return "higher_tripwire", "kaleidoscope-tavern-decor-transparent"
@@ -2276,7 +2290,12 @@ def build_blocks(block_ids: list[str], item_ids: set[str], tags: dict[str, list[
                         "minecraft:lightning_rod"
                         f"[facing={facing},powered=false,waterlogged={waterlogged}]"
                     )
-                elif is_sofa or block_id in FURNITURE_STYLE_BLOCKS:
+                elif carrier == "horizontal_lightning_rod":
+                    appearance["state"] = holder_carrier_state(
+                        variant_properties["facing"])
+                elif carrier == "state" and block_id in SHAPED_RACK_BLOCKS:
+                    appearance["state"] = carrier_id
+                elif is_sofa or block_id in BARRIER_STYLE_BLOCKS:
                     # Match CE's bundled sofa: barrier is already invisible,
                     # while the authored geometry is supplied by ItemDisplay.
                     # Do not mark it transparent or allocate another vanilla
@@ -2303,7 +2322,7 @@ def build_blocks(block_ids: list[str], item_ids: set[str], tags: dict[str, list[
                     }
                 else:
                     appearance["auto_state"] = {"type": carrier, "id": carrier_id}
-                if not (is_sofa or block_id in FURNITURE_STYLE_BLOCKS):
+                if not (is_sofa or block_id in BARRIER_STYLE_BLOCKS):
                     appearance["transparent"] = True
                 appearance["entity_renderer"] = renderer
                 appearances[appearance_name] = appearance

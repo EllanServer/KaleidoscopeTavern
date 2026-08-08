@@ -12099,7 +12099,11 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:barrier",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-tilted-rack-transparent"
+            },
+            "transparent": true,
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
@@ -12110,7 +12114,11 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:barrier",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-tilted-rack-transparent"
+            },
+            "transparent": true,
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
@@ -12121,7 +12129,11 @@
             }
           },
           "appearance_2": {
-            "state": "minecraft:barrier",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-tilted-rack-transparent"
+            },
+            "transparent": true,
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
@@ -12131,7 +12143,11 @@
             }
           },
           "appearance_3": {
-            "state": "minecraft:barrier",
+            "auto_state": {
+              "type": "cactus",
+              "id": "kaleidoscope-tavern-tilted-rack-transparent"
+            },
+            "transparent": true,
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
@@ -12456,7 +12472,8 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:barrier",
+            "state": "minecraft:cave_vines[age=1,berries=true]",
+            "transparent": true,
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
@@ -12467,7 +12484,8 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:barrier",
+            "state": "minecraft:cave_vines[age=1,berries=true]",
+            "transparent": true,
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
@@ -12478,7 +12496,8 @@
             }
           },
           "appearance_2": {
-            "state": "minecraft:barrier",
+            "state": "minecraft:cave_vines[age=1,berries=true]",
+            "transparent": true,
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
@@ -12488,7 +12507,8 @@
             }
           },
           "appearance_3": {
-            "state": "minecraft:barrier",
+            "state": "minecraft:cave_vines[age=1,berries=true]",
+            "transparent": true,
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
@@ -12851,7 +12871,8 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:barrier",
+            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
+            "transparent": true,
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
@@ -12862,7 +12883,8 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:barrier",
+            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
+            "transparent": true,
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
@@ -12873,7 +12895,8 @@
             }
           },
           "appearance_2": {
-            "state": "minecraft:barrier",
+            "state": "minecraft:lightning_rod[facing=south,powered=false,waterlogged=false]",
+            "transparent": true,
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
@@ -12883,7 +12906,8 @@
             }
           },
           "appearance_3": {
-            "state": "minecraft:barrier",
+            "state": "minecraft:lightning_rod[facing=west,powered=false,waterlogged=false]",
+            "transparent": true,
             "entity_renderer": {
               "type": "item_display",
               "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
