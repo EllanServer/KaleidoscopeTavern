@@ -2,18 +2,15 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import net.momirealms.craftengine.bukkit.entity.data.LivingEntityData;
 import net.momirealms.craftengine.proxy.bukkit.craftbukkit.entity.CraftEntityProxy;
-import net.momirealms.craftengine.proxy.bukkit.craftbukkit.CraftWorldProxy;
 import net.momirealms.craftengine.proxy.minecraft.network.chat.ComponentProxy;
 import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.ClientboundSetEntityDataPacketProxy;
 import net.momirealms.craftengine.proxy.minecraft.network.syncher.EntityDataSerializersProxy;
 import net.momirealms.craftengine.proxy.minecraft.network.syncher.SynchedEntityDataProxy;
-import net.momirealms.craftengine.proxy.minecraft.server.level.ServerLevelProxy;
 import net.momirealms.craftengine.proxy.minecraft.server.level.ServerPlayerProxy;
 import net.momirealms.craftengine.proxy.minecraft.server.network.ServerPlayerConnectionProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.entity.EntityProxy;
 import org.bukkit.Color;
 import org.bukkit.Particle;
-import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -21,8 +18,6 @@ import org.bukkit.entity.Player;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -115,26 +110,6 @@ final class ViewerEffectPackets {
         }
     }
 
-    /**
-     * Uses Paper's own receiver-aware particle path with an already converted
-     * native option. This retains its world, visibility and 32-block distance
-     * checks while avoiding the hot CraftParticle registry/data conversion.
-     */
-    static void sendEntityEffectParticle(World world, Collection<Player> receivers,
-                                         Object particle, double x, double y, double z) {
-        List<Object> handles = new ArrayList<>(receivers.size());
-        for (Player receiver : receivers) {
-            handles.add(CraftEntityProxy.INSTANCE.getEntity(receiver));
-        }
-        try {
-            ParticleBridge.SEND_PARTICLES_SOURCE.invoke(
-                    CraftWorldProxy.INSTANCE.getWorld(world), handles, null, particle,
-                    false, false, x, y, z, 1, 0.0, 0.0, 0.0, 0.0);
-        } catch (Throwable error) {
-            throw packetBridgeFailure("send ENTITY_EFFECT particle", error);
-        }
-    }
-
     private static void sendDataValue(Player viewer, Object targetHandle, Object dataValue) {
         sendDataValues(viewer, targetHandle, List.of(dataValue));
     }
@@ -167,7 +142,6 @@ final class ViewerEffectPackets {
     /** Resolve the pinned Paper bridge only if custom-effect particles exist. */
     private static final class ParticleBridge {
         private static final MethodHandle CREATE_PARTICLE_PARAM = createParticleParam();
-        private static final MethodHandle SEND_PARTICLES_SOURCE = sendParticlesSource();
 
         private static MethodHandle createParticleParam() {
             try {
@@ -180,20 +154,5 @@ final class ViewerEffectPackets {
             }
         }
 
-        private static MethodHandle sendParticlesSource() {
-            for (Method method : ServerLevelProxy.CLASS.getMethods()) {
-                if (method.getName().equals("sendParticlesSource")
-                        && method.getParameterCount() == 13
-                        && method.getParameterTypes()[0] == List.class) {
-                    try {
-                        return MethodHandles.publicLookup().unreflect(method);
-                    } catch (IllegalAccessException error) {
-                        throw new ExceptionInInitializerError(error);
-                    }
-                }
-            }
-            throw new ExceptionInInitializerError(
-                    "Paper 26.2 receiver-aware sendParticlesSource method is missing");
-        }
     }
 }

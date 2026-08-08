@@ -152,6 +152,33 @@ class EffectSemanticsTest {
     }
 
     @Test
+    void passivePersistenceSnapshotAdvancesWithoutMutatingRuntimeState() {
+        EffectSemantics.EffectState initial = new EffectSemantics.EffectState(40, 2,
+                new EffectSemantics.EffectState(100, 0, null));
+        EffectSemantics.MutableEffectState actual =
+                new EffectSemantics.MutableEffectState(initial);
+
+        assertEquals(EffectSemantics.advanceEffect(initial, 30), actual.snapshotAfter(30));
+        assertEquals(initial, actual.snapshot());
+        assertEquals(EffectSemantics.advanceEffect(initial, 40), actual.snapshotAfter(40));
+        assertEquals(initial, actual.snapshot());
+        assertNull(actual.snapshotAfter(100));
+    }
+
+    @Test
+    void passiveSnapshotRetainsExpiredHiddenLayerUntilVisiblePromotion() {
+        EffectSemantics.EffectState initial = new EffectSemantics.EffectState(100, 1,
+                new EffectSemantics.EffectState(1, 0, null));
+        EffectSemantics.MutableEffectState actual =
+                new EffectSemantics.MutableEffectState(initial);
+
+        EffectSemantics.EffectState projected = actual.snapshotAfter(50);
+        assertEquals(50, projected.remainingTicks());
+        assertEquals(-49, projected.hidden().remainingTicks());
+        assertEquals(initial, actual.snapshot());
+    }
+
+    @Test
     void equalAmplifierOnlyExtendsDuration() {
         EffectSemantics.EffectState current = new EffectSemantics.EffectState(100, 1, null);
         assertEquals(current, EffectSemantics.mergeEffect(current, 80, 1));

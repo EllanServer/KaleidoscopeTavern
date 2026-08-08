@@ -71,6 +71,33 @@ public final class DifferentialItemDisplayElement {
         this.viewRange = viewRange;
     }
 
+    /**
+     * Initializes the packet-visual implementation during plugin loading.
+     *
+     * <p>The first real block entity must not pay for loading this class, its
+     * diff state, collection implementations, and nested array classes on the
+     * server tick thread. The throwaway instance deliberately follows the
+     * normal constructor path without allocating entity ids or sending any
+     * packets.</p>
+     */
+    public static void prewarm() {
+        new DifferentialItemDisplayElement(
+                EmptyVisualProvider.INSTANCE, 0, 0.0F);
+    }
+
+    private static final class EmptyVisualProvider implements VisualProvider {
+        private static final EmptyVisualProvider INSTANCE =
+                new EmptyVisualProvider();
+
+        private EmptyVisualProvider() {
+        }
+
+        @Override
+        public List<DisplayVisual> visuals(int limit) {
+            return List.of();
+        }
+    }
+
     /** 内容已变化：下一次 {@link #show}/{@link #update} 会重新查询视觉列表并推进
      * 一代。保持上一代的列表用于差量比较。 */
     public void invalidate() {

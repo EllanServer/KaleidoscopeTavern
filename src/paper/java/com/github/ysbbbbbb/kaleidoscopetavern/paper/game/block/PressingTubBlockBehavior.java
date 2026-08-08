@@ -92,6 +92,7 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
     public static void register() {
         if (REGISTERED.compareAndSet(false, true)) {
             VirtualEntityIdentity.prewarm();
+            Controller.prewarm();
             BlockBehaviors.register(TYPE, PressingTubBlockBehavior::new);
         }
     }
@@ -244,7 +245,8 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
         List<DisplayVisual> visuals(Controller controller, int limit);
     }
 
-    public static final class Controller extends BlockEntityController {
+    public static final class Controller extends BlockEntityController
+            implements DifferentialItemDisplayElement.VisualProvider {
         private static final String DATA_KEY = "kaleidoscope_tavern:press";
         private static final int DATA_VERSION = 1;
 
@@ -259,11 +261,18 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
             super(blockEntity);
             this.behavior = behavior;
             this.element = new DifferentialItemDisplayElement(
-                    limit -> {
-                        Handler current = handler;
-                        return current == null ? List.of()
-                                : current.visuals(this, limit);
-                    }, MAX_ELEMENTS, VIEW_RANGE);
+                    this, MAX_ELEMENTS, VIEW_RANGE);
+        }
+
+        private static void prewarm() {
+            DifferentialItemDisplayElement.prewarm();
+        }
+
+        @Override
+        public List<DisplayVisual> visuals(int limit) {
+            Handler current = handler;
+            return current == null ? List.of()
+                    : current.visuals(this, limit);
         }
 
         public Key id() {

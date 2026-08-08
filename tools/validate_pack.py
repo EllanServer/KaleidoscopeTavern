@@ -1637,6 +1637,10 @@ def validate() -> dict[str, int]:
     for required_token in (
             "implements EntityBlock, PrioritizedFallOnHandler",
             "BlockBehaviors.register(TYPE, PressingTubBlockBehavior::new)",
+            "Controller.prewarm()",
+            "implements DifferentialItemDisplayElement.VisualProvider",
+            "new DifferentialItemDisplayElement(\n                    this, MAX_ELEMENTS, VIEW_RANGE)",
+            "public List<DisplayVisual> visuals(int limit)",
             "super.fallOn(thisBlock, args)",
             "LivingEntityProxy.CLASS.isInstance(args[3])",
             "((Number) args[4]).doubleValue()",
@@ -1658,6 +1662,22 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Pressing-tub placement/facing/waterlogging must remain CE-configured; "
                 f"stale Java token: {configured_placement_token}")
+    if "limit -> {" in pressing_behavior_source:
+        raise AssertionError(
+            "Pressing-tub controllers must implement VisualProvider directly; "
+            "a captured constructor lambda would restore cold call-site linking")
+
+    differential_display_source = (
+        game_package / "visual" / "DifferentialItemDisplayElement.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "public static void prewarm()",
+            "EmptyVisualProvider.INSTANCE",
+            "new DifferentialItemDisplayElement("):
+        if required_token not in differential_display_source:
+            raise AssertionError(
+                "Differential item displays must be initialized before the first "
+                f"live block entity; missing token: {required_token}")
 
     # 冗余的 updateEntityMovementAfterFallOn override 已按 P7 删除，父类
     # BukkitBlockBehavior 提供实现；热路径截止到下一个方法 useOnBlock。
@@ -2810,8 +2830,9 @@ def validate() -> dict[str, int]:
     if "viewer.sendPotionEffectChange" not in effect_service_source:
         raise AssertionError("Vision must use Paper's per-viewer effect packet")
     for tipsy_packet_token in (
-            "private final Map<UUID, Integer> privateTipsyRemaining",
+            "private final Map<UUID, Long> privateTipsyExpiry",
             "syncPrivateTipsyVisual(player, effects)",
+            "tipsy.visibleExpiryTick()",
             "player.sendPotionEffectChange(player, new PotionEffect(",
             "player.sendPotionEffectChangeRemove(player, type)",
             "restorePrivateTipsyVisual(player)"):
@@ -2840,15 +2861,19 @@ def validate() -> dict[str, int]:
             "public void onEntityRemove(EntityRemoveEvent event)",
             "event.getCause() == EntityRemoveEvent.Cause.UNLOAD",
             "private void ensureTickTask()",
-            "task == null && !active.isEmpty()",
-            "runTaskTimer(plugin, () -> tick(1L), 1L, 1L)",
+            "if (active.isEmpty())",
+            "if (task != null && fastTickTask)",
+            "runTaskTimer(plugin, tickAction, 1L, 1L)",
+            "runTaskLater(plugin, tickAction, delay)",
+            "nextIntervalTick(",
+            "scheduledWakeTick",
             "private void stopTickTaskIfIdle()",
-            "task != null && active.isEmpty()"):
+            "if (!active.isEmpty())"):
         if on_demand_token not in effect_service_source:
             raise AssertionError(
                 f"Custom effect on-demand tick lifecycle is missing {on_demand_token}")
     effect_tick_source = effect_service_source.partition(
-        "private void tick(long period)")[2].partition(
+        "private void tick()")[2].partition(
         "private void ensureTickTask()")[0]
     for stale_effect_entity_probe in (
             "Bukkit.getEntity(entry.getKey())", "living.isValid()", "living.isDead()"):
@@ -2865,15 +2890,19 @@ def validate() -> dict[str, int]:
             "refreshAfterVanillaPotionChange(",
             "restoreVanillaParticleState(living)",
             "restoreAllEffectParticleMetadata()",
-            "if (!particleMetadataAvailable) {\n                spawnEffectParticles(living, effects);",
-            "effect.tickKind() != TickKind.NONE",
-            "private final TickKind tickKind",
-            "elapsedTicks % 3L != 0",
-            "living.isInvisible() && elapsedTicks % 15L != 0"):
+            "private final Set<UUID> fastTickEntities",
+            "private final Runnable tickAction = this::tick",
+            "tickFastEffects()",
+            "maintainEffects(",
+            "MAINTENANCE_INTERVAL_TICKS",
+            "PERSIST_INTERVAL_TICKS",
+            "nextPassiveExpiryTick",
+            "effect.tickKind() == TickKind.NONE",
+            "private final TickKind tickKind"):
         if event_particle_token not in effect_service_source:
             raise AssertionError(
-                "Custom effect particles must live in the real SynchedEntityData and keep the "
-                f"legacy tick path as failure-only fallback; missing {event_particle_token}")
+                "Custom effect visuals must use event-driven client metadata while passive "
+                f"effects stay out of the per-tick entity scan; missing {event_particle_token}")
     for stale_particle_replay in (
             "sendEffectParticleMetadata(",
             "effectParticleDataCache",
@@ -2910,27 +2939,31 @@ def validate() -> dict[str, int]:
     if "living.getWorld().spawnParticle(Particle.ENTITY_EFFECT,\n                box." in effect_service_source:
         raise AssertionError(
             "Custom effect particles must not scan every player in the world")
-    for fallback_particle_bridge_token in (
-            "Set<Player> trackedBy = living.getTrackedBy()",
-            "effectParticleOptionCache.get(chosen)",
-            "ViewerEffectPackets.sendEntityEffectParticle(",
-            "spawnParticle(Particle.ENTITY_EFFECT, receivers, null",
+    for client_particle_bridge_token in (
             'Class.forName("org.bukkit.craftbukkit.CraftParticle")',
-            '"createParticleParam", Particle.class, Object.class',
-            "ServerLevelProxy.CLASS.getMethods()",
-            'method.getName().equals("sendParticlesSource")',
-            "CraftWorldProxy.INSTANCE.getWorld(world)",
-            "CraftEntityProxy.INSTANCE.getEntity(receiver)"):
-        sources = effect_service_source + viewer_packet_source
-        if fallback_particle_bridge_token not in sources:
+            '"createParticleParam", Particle.class, Object.class'):
+        if client_particle_bridge_token not in viewer_packet_source:
             raise AssertionError(
-                "Custom effect particles must retain the receiver-aware server packet fallback; "
-                f"missing {fallback_particle_bridge_token}")
+                "Custom effect particle metadata must retain its one-time native option bridge; "
+                f"missing {client_particle_bridge_token}")
+    for server_particle_fallback in (
+            "spawnEffectParticles(",
+            "sendEntityEffectParticle(",
+            "spawnParticle(Particle.ENTITY_EFFECT, receivers, null",
+            "particlePacketsAvailable",
+            "sendParticlesSource",
+            "ServerLevelProxy.CLASS.getMethods()",
+            "CraftWorldProxy.INSTANCE.getWorld(world)"):
+        if server_particle_fallback in effect_service_source + viewer_packet_source:
+            raise AssertionError(
+                "Decorative effect particles must animate from client entity metadata, not "
+                f"server tick packets; found {server_particle_fallback}")
     for allocation_free_tick_token in (
             "Iterator<Map.Entry<String, ActiveEffect>> effectIterator",
             "effectIterator.remove()",
-            "boolean remainsActive = effect.advance((int) period)",
+            "boolean remainsActive = effect.advanceTo(elapsedTicks)",
             "private final EffectSemantics.MutableEffectState state",
+            "state.snapshotAfter(elapsedSince(currentTick))",
             "private boolean tickEffect(LivingEntity living, ActiveEffect effect)"):
         if allocation_free_tick_token not in effect_service_source:
             raise AssertionError(
@@ -2940,7 +2973,8 @@ def validate() -> dict[str, int]:
             "static final class MutableEffectState",
             "remainingTicks[index] -= elapsedTicks",
             "while (firstLayer < remainingTicks.length",
-            "EffectState snapshot()"):
+            "EffectState snapshot()",
+            "EffectState snapshotAfter(int elapsedTicks)"):
         if mutable_state_token not in effect_semantics_source:
             raise AssertionError(
                 "Runtime custom-effect state must preserve hidden-layer semantics without "
@@ -2959,7 +2993,8 @@ def validate() -> dict[str, int]:
             ".get(activeKey, PersistentDataType.TAG_CONTAINER)",
             "owner.set(activeKey, PersistentDataType.TAG_CONTAINER, encoded)",
             "owner.set(splashCustomEffectsKey, PersistentDataType.TAG_CONTAINER, encoded)",
-            "EffectSemantics.encodeState(effect.state())",
+            "effect.stateAt(currentTick)",
+            "EffectSemantics.encodeState(state)",
             "EffectSemantics.decodeState(values.get(index))"):
         if typed_effect_storage_token not in effect_service_source:
             raise AssertionError(

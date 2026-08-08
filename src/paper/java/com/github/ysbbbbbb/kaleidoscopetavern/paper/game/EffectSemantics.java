@@ -172,9 +172,28 @@ final class EffectSemantics {
         }
 
         EffectState snapshot() {
+            return snapshotAfter(0);
+        }
+
+        /**
+         * Builds a persistence snapshot at a later tick without mutating the
+         * runtime countdown. This lets passive effects skip per-tick writes
+         * while quit/unload saves still contain an exact remaining duration.
+         */
+        EffectState snapshotAfter(int elapsedTicks) {
+            if (elapsedTicks < 0) {
+                throw new IllegalArgumentException("elapsedTicks must not be negative");
+            }
+            int projectedFirst = firstLayer;
+            while (projectedFirst < remainingTicks.length
+                    && (long) remainingTicks[projectedFirst] - elapsedTicks <= 0L) {
+                projectedFirst++;
+            }
             EffectState result = null;
-            for (int index = remainingTicks.length - 1; index >= firstLayer; index--) {
-                result = new EffectState(remainingTicks[index], amplifiers[index], result);
+            for (int index = remainingTicks.length - 1; index >= projectedFirst; index--) {
+                long projected = (long) remainingTicks[index] - elapsedTicks;
+                int remaining = (int) Math.max(Integer.MIN_VALUE, projected);
+                result = new EffectState(remaining, amplifiers[index], result);
             }
             return result;
         }
