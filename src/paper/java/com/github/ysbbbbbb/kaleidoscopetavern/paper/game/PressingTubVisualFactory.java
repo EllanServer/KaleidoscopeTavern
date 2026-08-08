@@ -105,7 +105,7 @@ public final class PressingTubVisualFactory {
         }
 
         if (hasFluid) {
-            items.build(NAMESPACE + "_render/pressing_fluid/" + path(fluid.toString()), null)
+            items.buildVisual(NAMESPACE + "_render/pressing_fluid/" + path(fluid.toString()))
                     .ifPresent(renderItem -> {
                         renderItem.setAmount(1);
                         float y = 0.125F + Math.min(PRESS_CAPACITY, amount)

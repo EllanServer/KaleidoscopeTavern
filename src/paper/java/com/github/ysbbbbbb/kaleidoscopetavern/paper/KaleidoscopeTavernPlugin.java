@@ -161,6 +161,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (!isEnabled()) {
             return;
         }
+        IncenseBlockBehavior.prewarmRuntime();
         try {
             CustomCropsBridge.requireReady();
         } catch (RuntimeException | LinkageError exception) {
@@ -303,6 +304,9 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     }
 
     private void refreshRuntimeContent(boolean startup) {
+        if (items != null) {
+            items.clearVisualCache();
+        }
         int trellisShapes = TrellisBlockShape.install();
         if (trellisShapes == 0) {
             getLogger().warning("No trellis carrier shapes were available after CraftEngine loading");

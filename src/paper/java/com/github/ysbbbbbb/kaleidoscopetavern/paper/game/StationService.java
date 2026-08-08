@@ -1138,7 +1138,7 @@ public final class StationService implements Listener {
         }
 
         if (hasFluid) {
-            items.build(NAMESPACE + "_render/barrel_fluid/" + path(fluid), null)
+            items.buildVisual(NAMESPACE + "_render/barrel_fluid/" + path(fluid))
                     .ifPresent(renderItem -> {
                         renderItem.setAmount(1);
                         Location origin = furniture.location();

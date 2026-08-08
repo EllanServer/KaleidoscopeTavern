@@ -503,7 +503,7 @@ BLOCK_ENTITY_COVERAGE = {
     "HolderBlockEntity.java": (("block/StorageBlockBehavior.java", "Item[] items"),),
     "IncenseBlockEntity.java": (
         ("block/IncenseBlockBehavior.java", "hurtNearbyUndead"),
-        ("block/IncenseBlockBehavior.java", "world.getGameTime() % 120L"),
+        ("block/IncenseBlockBehavior.java", "takeDamageDue()"),
     ),
     "SandwichBlockEntity.java": (("BoardTextService.java", "isSandwichBoard"),),
     "StorageBlockEntity.java": (("block/StorageBlockBehavior.java", "Item[] items"),),
@@ -1046,6 +1046,25 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Cocktail furniture placement must keep its item Codec cold-path warmup; "
                 f"missing token: {required_token}")
+    for required_token in (
+            "private final Map<String, Optional<ItemStack>> visualItemPrototypes",
+            "public Optional<ItemStack> buildVisual(String id)",
+            "prototype = buildBase(id, null)",
+            "Optional.of(prototype.get().clone())",
+            "public void clearVisualCache()"):
+        if required_token not in item_source:
+            raise AssertionError(
+                "Static render helpers must use cloned cached prototypes without rebuilding "
+                f"gameplay lore/PDC; missing token: {required_token}")
+    visual_build_path = item_source.partition(
+        "public Optional<ItemStack> buildVisual(String id)")[2].partition(
+        "public void clearVisualCache()")[0]
+    if "refreshLore(" in visual_build_path:
+        raise AssertionError(
+            "Static render-helper construction must not enter gameplay lore/PDC repair")
+    if "items.clearVisualCache()" not in plugin_source:
+        raise AssertionError(
+            "CraftEngine reloads must invalidate cached static render-item prototypes")
     drink_lore_source = (
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
         "item/DrinkLore.java"
@@ -1191,6 +1210,9 @@ def validate() -> dict[str, int]:
 
     display_storage_source = (game_package / "DisplayStorageService.java").read_text(
         encoding="utf-8-sig")
+    if "items.buildVisual(prefix + storedId.substring(PREFIX.length()))" not in display_storage_source:
+        raise AssertionError(
+            "Storage display-model lookup must bypass repeated gameplay lore/PDC rebuilding")
     if ("controller.get(DisplayItemFurnitureController.class, slot)"
             in display_storage_source):
         raise AssertionError(
@@ -1489,6 +1511,9 @@ def validate() -> dict[str, int]:
     if "IncenseBlockBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register the CE incense block behavior before pack loading")
+    if "IncenseBlockBehavior.prewarmRuntime()" not in plugin_source:
+        raise AssertionError(
+            "KaleidoscopeTavernPlugin must warm Bukkit's entity-tag bridge before incense ticks")
     if "TapBlockBehavior.register()" not in plugin_source:
         raise AssertionError(
             "KaleidoscopeTavernPlugin must register the CE tap block behavior before pack loading")
@@ -1511,9 +1536,15 @@ def validate() -> dict[str, int]:
             "state.with(openProperty, powered).with(poweredProperty, powered)",
             "powered == state.get(poweredProperty)",
             "state.with(poweredProperty, powered)",
-            "random.nextInt(49) == 0",
+            "Controller.prewarm()",
+            "implements BlockEntityTicker<Controller>",
+            "return createTickerHelper(this)",
+            "takeParticleDue()",
+            "scheduleNextParticle(random)",
+            "random.nextInt(PARTICLE_DELAY_BOUND)",
             "random.nextInt(3) == 0",
-            "world.getGameTime() % 120L == 0L",
+            "takeDamageDue()",
+            "damageDelay = DAMAGE_INTERVAL - 1",
             "world.getNearbyLivingEntities(center, 32.5)",
             "zombieVillager.setConversionTime(60)"):
         if required_token not in incense_behavior_source:
@@ -1521,7 +1552,11 @@ def validate() -> dict[str, int]:
                 "CE incense behavior no longer preserves source interaction/tick semantics; "
                 f"missing {required_token}")
     for stale_token in ("PersistentDataContainer", "BukkitTask", "runTaskTimer",
-                        "public InteractionResult useOnBlock"):
+                        "public InteractionResult useOnBlock",
+                        "random.nextInt(49) == 0",
+                        "world.getGameTime() % 120L",
+                        "center.clone().add(",
+                        "Controller::tick"):
         if stale_token in incense_behavior_source:
             raise AssertionError(
                 f"CE incense state/lifecycle must not be duplicated through {stale_token}")

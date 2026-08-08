@@ -464,7 +464,7 @@ public final class DisplayStorageService {
         if (!storedId.startsWith(PREFIX)) {
             return Optional.empty();
         }
-        return items.build(prefix + storedId.substring(PREFIX.length()), null);
+        return items.buildVisual(prefix + storedId.substring(PREFIX.length()));
     }
 
     private Optional<ItemStack> storageRenderItem(ItemStack stored, String prefix) {
