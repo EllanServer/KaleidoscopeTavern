@@ -22,7 +22,8 @@
               "item": "kaleidoscope_tavern:_render/black_sofa/cb7b1b05de",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -43,8 +44,7 @@
               "item": "kaleidoscope_tavern:_render/black_sofa/cb7b1b05de",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -142,7 +142,8 @@
               "item": "kaleidoscope_tavern:_render/blue_sofa/2889998f2e",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -163,8 +164,7 @@
               "item": "kaleidoscope_tavern:_render/blue_sofa/2889998f2e",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -262,7 +262,8 @@
               "item": "kaleidoscope_tavern:_render/brown_sofa/3ebee86bfb",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -283,8 +284,7 @@
               "item": "kaleidoscope_tavern:_render/brown_sofa/3ebee86bfb",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -382,7 +382,8 @@
               "item": "kaleidoscope_tavern:_render/cyan_sofa/a45689e59f",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -403,8 +404,7 @@
               "item": "kaleidoscope_tavern:_render/cyan_sofa/a45689e59f",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -502,7 +502,8 @@
               "item": "kaleidoscope_tavern:_render/gray_sofa/f8fa2e58a1",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -523,8 +524,7 @@
               "item": "kaleidoscope_tavern:_render/gray_sofa/f8fa2e58a1",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -622,7 +622,8 @@
               "item": "kaleidoscope_tavern:_render/green_sofa/03cd9d61b8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -643,8 +644,7 @@
               "item": "kaleidoscope_tavern:_render/green_sofa/03cd9d61b8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -742,7 +742,8 @@
               "item": "kaleidoscope_tavern:_render/light_blue_sofa/97b359bdb6",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -763,8 +764,7 @@
               "item": "kaleidoscope_tavern:_render/light_blue_sofa/97b359bdb6",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -862,7 +862,8 @@
               "item": "kaleidoscope_tavern:_render/light_gray_sofa/a9e850247f",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -883,8 +884,7 @@
               "item": "kaleidoscope_tavern:_render/light_gray_sofa/a9e850247f",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -982,7 +982,8 @@
               "item": "kaleidoscope_tavern:_render/lime_sofa/3ab2ae04d3",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -1003,8 +1004,7 @@
               "item": "kaleidoscope_tavern:_render/lime_sofa/3ab2ae04d3",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -1102,7 +1102,8 @@
               "item": "kaleidoscope_tavern:_render/magenta_sofa/22f55066ca",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -1123,8 +1124,7 @@
               "item": "kaleidoscope_tavern:_render/magenta_sofa/22f55066ca",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -1222,7 +1222,8 @@
               "item": "kaleidoscope_tavern:_render/orange_sofa/f5d8ff2eaf",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -1243,8 +1244,7 @@
               "item": "kaleidoscope_tavern:_render/orange_sofa/f5d8ff2eaf",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -1342,7 +1342,8 @@
               "item": "kaleidoscope_tavern:_render/pink_sofa/10ced9a35c",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -1363,8 +1364,7 @@
               "item": "kaleidoscope_tavern:_render/pink_sofa/10ced9a35c",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -1462,7 +1462,8 @@
               "item": "kaleidoscope_tavern:_render/purple_sofa/34582175f1",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -1483,8 +1484,7 @@
               "item": "kaleidoscope_tavern:_render/purple_sofa/34582175f1",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -1582,7 +1582,8 @@
               "item": "kaleidoscope_tavern:_render/red_sofa/7a8fe4b873",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -1603,8 +1604,7 @@
               "item": "kaleidoscope_tavern:_render/red_sofa/7a8fe4b873",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -1702,7 +1702,8 @@
               "item": "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -1723,8 +1724,7 @@
               "item": "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -1822,7 +1822,8 @@
               "item": "kaleidoscope_tavern:_render/yellow_sofa/683a8e31b2",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "facing_east": {
@@ -1843,8 +1844,7 @@
               "item": "kaleidoscope_tavern:_render/yellow_sofa/683a8e31b2",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "facing_west": {
@@ -1955,7 +1955,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color"
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
             }
           },
           "single_east": {
@@ -1978,8 +1979,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color",
-              "rotation": "0,180,0"
+              "tint_source": "minecraft:dyed_color"
             }
           },
           "single_west": {
@@ -2002,7 +2002,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color"
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
             }
           },
           "left_east": {
@@ -2025,8 +2026,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color",
-              "rotation": "0,180,0"
+              "tint_source": "minecraft:dyed_color"
             }
           },
           "left_west": {
@@ -2049,7 +2049,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color"
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
             }
           },
           "left_corner_east": {
@@ -2072,8 +2073,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color",
-              "rotation": "0,180,0"
+              "tint_source": "minecraft:dyed_color"
             }
           },
           "left_corner_west": {
@@ -2096,7 +2096,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color"
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
             }
           },
           "middle_east": {
@@ -2119,8 +2120,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color",
-              "rotation": "0,180,0"
+              "tint_source": "minecraft:dyed_color"
             }
           },
           "middle_west": {
@@ -2143,7 +2143,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color"
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
             }
           },
           "right_east": {
@@ -2166,8 +2167,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color",
-              "rotation": "0,180,0"
+              "tint_source": "minecraft:dyed_color"
             }
           },
           "right_west": {
@@ -2190,7 +2190,8 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color"
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
             }
           },
           "right_corner_east": {
@@ -2213,8 +2214,7 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "tint_source": "minecraft:dyed_color",
-              "rotation": "0,180,0"
+              "tint_source": "minecraft:dyed_color"
             }
           },
           "right_corner_west": {
@@ -6244,7 +6244,8 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/ced9c7fb4d",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -6254,8 +6255,7 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/ced9c7fb4d",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -6287,7 +6287,8 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/e4c3e4395a",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
@@ -6297,8 +6298,7 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/e4c3e4395a",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_7": {
@@ -6330,7 +6330,8 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/bb1a9c3db9",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_10": {
@@ -6340,8 +6341,7 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/bb1a9c3db9",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_11": {
@@ -6373,7 +6373,8 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/5e041288be",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_14": {
@@ -6383,8 +6384,7 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/5e041288be",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_15": {
@@ -6416,7 +6416,8 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/8043a621af",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_18": {
@@ -6426,8 +6427,7 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/8043a621af",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_19": {
@@ -6459,7 +6459,8 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/fba778d59b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_22": {
@@ -6469,8 +6470,7 @@
               "item": "kaleidoscope_tavern:_render/bar_counter/fba778d59b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_23": {
@@ -10631,7 +10631,8 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/168d317b28",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_5": {
@@ -10641,7 +10642,8 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9d2d3e7a21",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
@@ -10651,7 +10653,8 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9651abf3e7",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_7": {
@@ -10661,7 +10664,8 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/12fa828aea",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_8": {
@@ -10671,8 +10675,7 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/168d317b28",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_9": {
@@ -10682,8 +10685,7 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9d2d3e7a21",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_10": {
@@ -10693,8 +10695,7 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/9651abf3e7",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_11": {
@@ -10704,8 +10705,7 @@
               "item": "kaleidoscope_tavern:_render/bar_cabinet/12fa828aea",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_12": {
@@ -10868,7 +10868,7 @@
             },
             "east": {
               "position_yaw": -90,
-              "model_yaw": 90,
+              "model_yaw": -90,
               "local_x": "1-z",
               "local_z": "1-x",
               "reverse_slots": true
@@ -10882,7 +10882,7 @@
             },
             "west": {
               "position_yaw": 90,
-              "model_yaw": 270,
+              "model_yaw": 90,
               "local_x": "z",
               "local_z": "x",
               "reverse_slots": true
@@ -11075,7 +11075,8 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/dd06a67476",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_5": {
@@ -11085,7 +11086,8 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/c75e5649a8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
@@ -11095,7 +11097,8 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/16d881cbec",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_7": {
@@ -11105,7 +11108,8 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/4d048a5587",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_8": {
@@ -11115,8 +11119,7 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/dd06a67476",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_9": {
@@ -11126,8 +11129,7 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/c75e5649a8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_10": {
@@ -11137,8 +11139,7 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/16d881cbec",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_11": {
@@ -11148,8 +11149,7 @@
               "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/4d048a5587",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_12": {
@@ -11312,7 +11312,7 @@
             },
             "east": {
               "position_yaw": -90,
-              "model_yaw": 90,
+              "model_yaw": -90,
               "local_x": "1-z",
               "local_z": "1-x",
               "reverse_slots": true
@@ -11326,7 +11326,7 @@
             },
             "west": {
               "position_yaw": 90,
-              "model_yaw": 270,
+              "model_yaw": 90,
               "local_x": "z",
               "local_z": "x",
               "reverse_slots": true
@@ -11523,7 +11523,8 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_5": {
@@ -11533,7 +11534,8 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
@@ -11543,7 +11545,8 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_7": {
@@ -11553,7 +11556,8 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_8": {
@@ -11563,8 +11567,7 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_9": {
@@ -11574,8 +11577,7 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_10": {
@@ -11585,8 +11587,7 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_11": {
@@ -11596,8 +11597,7 @@
               "item": "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_12": {
@@ -11804,7 +11804,7 @@
             },
             "east": {
               "position_yaw": -90,
-              "model_yaw": 90,
+              "model_yaw": -90,
               "local_x": "1-z",
               "local_z": "1-x",
               "reverse_slots": false
@@ -11818,7 +11818,7 @@
             },
             "west": {
               "position_yaw": 90,
-              "model_yaw": 270,
+              "model_yaw": 90,
               "local_x": "z",
               "local_z": "x",
               "reverse_slots": false
@@ -12116,7 +12116,8 @@
               "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -12126,8 +12127,7 @@
               "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -12211,7 +12211,7 @@
           },
           "east": {
             "position_yaw": -90,
-            "model_yaw": 90,
+            "model_yaw": -90,
             "local_x": "1-z",
             "local_z": "1-x",
             "reverse_slots": false
@@ -12225,7 +12225,7 @@
           },
           "west": {
             "position_yaw": 90,
-            "model_yaw": 270,
+            "model_yaw": 90,
             "local_x": "z",
             "local_z": "x",
             "reverse_slots": false
@@ -12473,7 +12473,8 @@
               "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -12483,8 +12484,7 @@
               "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -12569,7 +12569,7 @@
           },
           "east": {
             "position_yaw": -90,
-            "model_yaw": 90,
+            "model_yaw": -90,
             "local_x": "1-z",
             "local_z": "1-x",
             "reverse_slots": false
@@ -12583,7 +12583,7 @@
           },
           "west": {
             "position_yaw": 90,
-            "model_yaw": 270,
+            "model_yaw": 90,
             "local_x": "z",
             "local_z": "x",
             "reverse_slots": false
@@ -12868,7 +12868,8 @@
               "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_2": {
@@ -12878,8 +12879,7 @@
               "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_3": {
@@ -12963,7 +12963,7 @@
           },
           "east": {
             "position_yaw": -90,
-            "model_yaw": 90,
+            "model_yaw": -90,
             "local_x": "1-z",
             "local_z": "1-x",
             "reverse_slots": false
@@ -12977,7 +12977,7 @@
           },
           "west": {
             "position_yaw": 90,
-            "model_yaw": 270,
+            "model_yaw": 90,
             "local_x": "z",
             "local_z": "x",
             "reverse_slots": false

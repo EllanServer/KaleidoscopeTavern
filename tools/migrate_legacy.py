@@ -288,14 +288,15 @@ GRAPE_CARRIER_ID = "kaleidoscope-tavern-wild-grapevine-transparent"
 # cannot collide with another CraftEngine project's stair allocation.
 SOFA_CARRIER_STATE = "minecraft:barrier"
 
-# CraftEngine's bundled sofa and the archived Forge blockstates use the same
-# ItemDisplay-facing convention. Keep this one canonical table for every
-# furniture-style block; the previous north/south inversion made logical
-# left/right connections appear on the opposite visual side.
+# Minecraft 26.2 ItemDisplayRenderer applies a final +180-degree Y turn to
+# submitted item models. Source blockstate rotations use the block-model
+# convention, so furniture-style CE blocks must configure the inverse
+# compensation instead of copying the JSON `y` value verbatim. This is the
+# same mapping already required by chalkboards.
 ITEM_DISPLAY_FACING_YAW = {
-    "north": 0,
+    "north": 180,
     "east": 90,
-    "south": 180,
+    "south": 0,
     "west": 270,
 }
 COPPER_LANTERN_CARRIER_STATE = (
@@ -917,11 +918,12 @@ def configured_sound(sound: str, volume: tuple[float, float] = (1, 1),
 
 
 def storage_orientations(*, reverse_axis_x_slots: bool = False) -> dict[str, Any]:
-    """Source-space click transform plus separate body/item-display yaw.
+    """Source-space click transform plus packet ItemDisplay yaw.
 
-    `position_yaw` mirrors StorageBlockEntityRender.applyFacingRotation while
-    `model_yaw` follows CE's static ItemDisplay renderer. East/west must not use
-    one value for both or displayed bottles turn 180 degrees against the rack.
+    Both values mirror StorageBlockEntityRender.applyFacingRotation. The
+    packet-only bottle displays receive entity yaw directly, rather than CE's
+    static renderer rotation, so changing east/west to the unsigned CE model
+    yaw turns the contents 180 degrees away from the source layout.
     """
     return {
         "north": {
@@ -933,7 +935,7 @@ def storage_orientations(*, reverse_axis_x_slots: bool = False) -> dict[str, Any
         },
         "east": {
             "position_yaw": -90,
-            "model_yaw": 90,
+            "model_yaw": -90,
             "local_x": "1-z",
             "local_z": "1-x",
             "reverse_slots": reverse_axis_x_slots,
@@ -947,7 +949,7 @@ def storage_orientations(*, reverse_axis_x_slots: bool = False) -> dict[str, Any
         },
         "west": {
             "position_yaw": 90,
-            "model_yaw": 270,
+            "model_yaw": 90,
             "local_x": "z",
             "local_z": "x",
             "reverse_slots": reverse_axis_x_slots,

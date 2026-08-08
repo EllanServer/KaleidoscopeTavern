@@ -11,25 +11,24 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StorageBlockConfigTest {
     @Test
-    void eastWestPositionAndModelYawRemainIndependent() {
+    void packetModelYawFollowsSourcePositionYaw() {
         StorageBlockConfig.Orientation east = new StorageBlockConfig.Orientation(
-                -90, 90,
+                -90, -90,
                 StorageBlockConfig.CoordinateExpression.ONE_MINUS_Z,
                 StorageBlockConfig.CoordinateExpression.ONE_MINUS_X,
                 false);
         StorageBlockConfig.Orientation west = new StorageBlockConfig.Orientation(
-                90, 270,
+                90, 90,
                 StorageBlockConfig.CoordinateExpression.Z,
                 StorageBlockConfig.CoordinateExpression.X,
                 false);
 
-        assertNotEquals(east.positionYaw(), east.modelYaw());
-        assertNotEquals(west.positionYaw(), west.modelYaw());
+        assertEquals(east.positionYaw(), east.modelYaw());
+        assertEquals(west.positionYaw(), west.modelYaw());
         assertEquals(0.75, east.sourceX(0.3, 0.25), 1.0E-6);
         assertEquals(0.7, east.sourceZ(0.3, 0.25), 1.0E-6);
     }

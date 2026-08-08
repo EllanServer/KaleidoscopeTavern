@@ -5200,11 +5200,11 @@ def validate() -> dict[str, int]:
         else f"ground_connection_{connection}"
         for connection in connection_names
     }
-    # Match the authored Forge blockstate rotations and CraftEngine's own
-    # furniture-style sofa renderer.
+    # Authored block-model rotations must be compensated for the final
+    # +180-degree item turn performed by Minecraft's ItemDisplay renderer.
     facing_rotations = {
-        "north": None, "east": "0,90,0",
-        "south": "0,180,0", "west": "0,270,0",
+        "north": "0,180,0", "east": "0,90,0",
+        "south": None, "west": "0,270,0",
     }
     sofa_connect_ids = [
         SHARED_SOFA_ID,
@@ -5426,8 +5426,8 @@ def validate() -> dict[str, int]:
                 f"Runtime CE content count guard is stale: {expected_token}")
 
     storage_facing_rotations = {
-        "east": "0,90,0", "north": None,
-        "south": "0,180,0", "west": "0,270,0",
+        "east": "0,90,0", "north": "0,180,0",
+        "south": None, "west": "0,270,0",
     }
     expected_storage_orientations = {
         "north": {
@@ -5435,7 +5435,7 @@ def validate() -> dict[str, int]:
             "local_x": "1-x", "local_z": "z", "reverse_slots": False,
         },
         "east": {
-            "position_yaw": -90, "model_yaw": 90,
+            "position_yaw": -90, "model_yaw": -90,
             "local_x": "1-z", "local_z": "1-x", "reverse_slots": False,
         },
         "south": {
@@ -5443,7 +5443,7 @@ def validate() -> dict[str, int]:
             "local_x": "x", "local_z": "1-z", "reverse_slots": False,
         },
         "west": {
-            "position_yaw": 90, "model_yaw": 270,
+            "position_yaw": 90, "model_yaw": 90,
             "local_x": "z", "local_z": "x", "reverse_slots": False,
         },
     }
@@ -5507,15 +5507,13 @@ def validate() -> dict[str, int]:
         if orientations != expected_orientations:
             raise AssertionError(
                 f"{storage_id}: source-space click/model orientation drifted: {orientations!r}")
-        # Position rotation and ItemDisplay model rotation are deliberately
-        # independent on the X axis. Equating them turns bottles 180 degrees
-        # against east/west cellar cabinets and racks.
-        if (orientations["east"]["position_yaw"]
-                == orientations["east"]["model_yaw"]
-                or orientations["west"]["position_yaw"]
-                == orientations["west"]["model_yaw"]):
+        # Packet-only ItemDisplays use the same signed entity yaw as the source
+        # position transform. CE's unsigned static-renderer yaw is a different
+        # convention and would reverse east/west bottle displays.
+        if any(orientation["position_yaw"] != orientation["model_yaw"]
+               for orientation in orientations.values()):
             raise AssertionError(
-                f"{storage_id}: east/west position and model yaw must stay independent")
+                f"{storage_id}: packet model yaw must follow source position yaw")
 
         selector = configured_storage.get("selector", {})
         expected_selector_type = {
