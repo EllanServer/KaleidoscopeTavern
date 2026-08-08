@@ -917,13 +917,14 @@ def configured_sound(sound: str, volume: tuple[float, float] = (1, 1),
     }
 
 
-def storage_orientations(*, reverse_axis_x_slots: bool = False) -> dict[str, Any]:
+def storage_orientations(*, reverse_axis_x_slots: bool = False,
+                         flip_axis_x_model_yaw: bool = False) -> dict[str, Any]:
     """Source-space click transform plus packet ItemDisplay yaw.
 
-    Both values mirror StorageBlockEntityRender.applyFacingRotation. The
-    packet-only bottle displays receive entity yaw directly, rather than CE's
-    static renderer rotation, so changing east/west to the unsigned CE model
-    yaw turns the contents 180 degrees away from the source layout.
+    Upright displays use the signed source position yaw directly. Cellar
+    bottles are additionally pitched -90 degrees to lie on their sides; the
+    ItemDisplay yaw/pitch composition reverses their longitudinal axis for
+    east/west facings unless the model yaw receives a 180-degree correction.
     """
     return {
         "north": {
@@ -935,7 +936,7 @@ def storage_orientations(*, reverse_axis_x_slots: bool = False) -> dict[str, Any
         },
         "east": {
             "position_yaw": -90,
-            "model_yaw": -90,
+            "model_yaw": 90 if flip_axis_x_model_yaw else -90,
             "local_x": "1-z",
             "local_z": "1-x",
             "reverse_slots": reverse_axis_x_slots,
@@ -949,7 +950,7 @@ def storage_orientations(*, reverse_axis_x_slots: bool = False) -> dict[str, Any
         },
         "west": {
             "position_yaw": 90,
-            "model_yaw": 90,
+            "model_yaw": 270 if flip_axis_x_model_yaw else 90,
             "local_x": "z",
             "local_z": "x",
             "reverse_slots": reverse_axis_x_slots,
@@ -1138,7 +1139,8 @@ def storage_behavior(block_id: str, tags: dict[str, list[str]]) -> dict[str, Any
                                if block_id == "cellar_cabinet" else ["facing"]),
         "orientations": storage_orientations(
             reverse_axis_x_slots=block_id in {
-                "bar_cabinet", "glass_bar_cabinet"}),
+                "bar_cabinet", "glass_bar_cabinet"},
+            flip_axis_x_model_yaw=block_id == "cellar_cabinet"),
         "selector": storage_selector(block_id),
         "interaction": storage_interaction(block_id, tags),
         "slots": storage_slot_visuals(block_id),
@@ -4433,8 +4435,8 @@ def material_for(item_id: str, drink_ids: set[str], block_ids: set[str]) -> str:
     if is_drink(item_id, drink_ids):
         return "potion"
     if item_id == "molotov":
-        # MolotovBlockItem is a 72,000-tick spear-animation charge item, not an
-        # instantly-thrown vanilla splash potion. The consumable component
+        # MolotovBlockItem is a 72,000-tick trident-animation charge item, not
+        # an instantly-thrown vanilla splash potion. The consumable component
         # below supplies client use state while MolotovService handles release.
         return "paper"
     if item_id.endswith("_bucket"):
@@ -4530,6 +4532,16 @@ def build_items(
             if color is not None:
                 potion_contents["custom_color"] = color
             components["minecraft:potion_contents"] = potion_contents
+            # Declare the complete use contract instead of relying on the
+            # potion material default. CraftEngine then exposes the same drink
+            # duration and pose to both the using client and the server-side
+            # active-hand state mirrored to nearby players.
+            components["minecraft:consumable"] = {
+                "consume_seconds": 1.6,
+                "animation": "drink",
+                "sound": "minecraft:entity.generic.drink",
+                "has_consume_particles": False,
+            }
             config["data"]["custom_name"] = config["data"]["item_name"]
             # Drink effects are implemented by the Paper service rather than
             # potion_contents. Hide only that vanilla tooltip section so it
@@ -4568,11 +4580,11 @@ def build_items(
         if item_id == "molotov":
             config["data"].setdefault("components", {})["minecraft:consumable"] = {
                 "consume_seconds": 3_600.0,
-                "animation": "spear",
+                "animation": "trident",
                 "has_consume_particles": False,
             }
             # The trident technique: swap to the cocked-back display model
-            # while the throw charges, because the SPEAR pose alone is nearly
+            # while the throw charges, because the TRIDENT pose alone is nearly
             # invisible on a flat item.
             config["model"] = {
                 "type": "minecraft:condition",
@@ -4638,6 +4650,11 @@ def build_items(
                 "furniture": f"{NAMESPACE}:{item_id}",
                 "rules": furniture_placement[item_id],
             }
+            if is_drink(item_id, drink_ids) or item_id == "molotov":
+                # Explicitly seed the server's active-hand state from the CE
+                # air-use callback. This makes the use pose visible in third
+                # person instead of remaining only local client prediction.
+                furniture_behavior["sync_active_use"] = True
             if item_id.startswith("string_lights_"):
                 # The source block had an empty collision shape. Ignore only
                 # the player who is placing it while retaining CE's native

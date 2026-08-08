@@ -15,20 +15,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StorageBlockConfigTest {
     @Test
-    void packetModelYawFollowsSourcePositionYaw() {
+    void horizontalCellarBottlesCompensateEastWestModelYaw() {
         StorageBlockConfig.Orientation east = new StorageBlockConfig.Orientation(
-                -90, -90,
+                -90, 90,
                 StorageBlockConfig.CoordinateExpression.ONE_MINUS_Z,
                 StorageBlockConfig.CoordinateExpression.ONE_MINUS_X,
                 false);
         StorageBlockConfig.Orientation west = new StorageBlockConfig.Orientation(
-                90, 90,
+                90, 270,
                 StorageBlockConfig.CoordinateExpression.Z,
                 StorageBlockConfig.CoordinateExpression.X,
                 false);
 
-        assertEquals(east.positionYaw(), east.modelYaw());
-        assertEquals(west.positionYaw(), west.modelYaw());
+        assertEquals(180, Math.floorMod(
+                Math.round(east.modelYaw() - east.positionYaw()), 360));
+        assertEquals(180, Math.floorMod(
+                Math.round(west.modelYaw() - west.positionYaw()), 360));
         assertEquals(0.75, east.sourceX(0.3, 0.25), 1.0E-6);
         assertEquals(0.7, east.sourceZ(0.3, 0.25), 1.0E-6);
     }

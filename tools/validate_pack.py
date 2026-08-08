@@ -977,11 +977,15 @@ def validate() -> dict[str, int]:
     for token in (
             "if (!context.isSecondaryUseActive())",
             "return InteractionResult.PASS;",
+            'section.getBoolean("sync_active_use", false)',
+            "bukkitPlayer.startUsingItem(equipmentSlot(hand));",
+            "InteractionHand.OFF_HAND",
             "Direction.UP",
             "return InteractionResult.SUCCESS_AND_CANCEL;"):
         if token not in item_behavior_source:
             raise AssertionError(
-                "Vessel CE behavior must preserve normal item use and own rejected sneak placement")
+                "Vessel CE behavior must synchronize active use, preserve normal item use "
+                "and own rejected sneak placement")
     for token in (
             "event.getAction() != Action.RIGHT_CLICK_BLOCK",
             "!event.getPlayer().isSneaking()"):
@@ -3509,11 +3513,22 @@ def validate() -> dict[str, int]:
                 or item_behaviors[0].get("furniture") != item_id
                 or item_behaviors[0].get("rules") != {
                     "ground": {"rotation": "four", "alignment": "center"}
-                }):
+                }
+                or item_behaviors[0].get("sync_active_use") is not True):
             raise AssertionError(
-                f"{item_id}: CE drink placement target/rules drifted from BottleBlockItem")
-        if item.get("data", {}).get("components", {}).get("minecraft:max_stack_size") != 16:
+                f"{item_id}: CE drink placement target/rules or active-use sync drifted "
+                "from BottleBlockItem")
+        components = item.get("data", {}).get("components", {})
+        if components.get("minecraft:max_stack_size") != 16:
             raise AssertionError(f"{item_id}: bottle/glassware stack size must remain 16")
+        if components.get("minecraft:consumable") != {
+                "consume_seconds": 1.6,
+                "animation": "drink",
+                "sound": "minecraft:entity.generic.drink",
+                "has_consume_particles": False,
+                }:
+            raise AssertionError(
+                f"{item_id}: drinks must declare the complete server-visible drink use contract")
         data = item.get("data", {})
         if data.get("custom_name") != data.get("item_name"):
             raise AssertionError(
@@ -3523,7 +3538,7 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{item_id}: drinks must hide only the vanilla potion_contents tooltip; "
                 "their real server-side effects are rendered as custom lore")
-        potion_contents = data.get("components", {}).get("minecraft:potion_contents")
+        potion_contents = components.get("minecraft:potion_contents")
         if (not isinstance(potion_contents, dict)
                 or potion_contents.get("potion") != "minecraft:mundane"
                 or not set(potion_contents).issubset({"potion", "custom_color"})
@@ -3552,14 +3567,17 @@ def validate() -> dict[str, int]:
             if behavior.get("furniture") == item_id
         ]
         placement_type = f"{NAMESPACE}:sneak_place_drink"
-        if placement_behaviors != [{
+        expected_placement_behavior = {
                 "type": placement_type,
                 "furniture": item_id,
                 "rules": expected_ground_rule,
-                }]:
+        }
+        if item_id in drink_ids or item_id == f"{NAMESPACE}:molotov":
+            expected_placement_behavior["sync_active_use"] = True
+        if placement_behaviors != [expected_placement_behavior]:
             raise AssertionError(
                 f"{item_id}: portable vessels must delegate sneak placement through "
-                "the generic native-CE furniture adapter")
+                "the generic native-CE furniture adapter with the correct active-use policy")
 
     for item_id in EFFECTLESS_DRINKS:
         replacement = items[item_id].get("settings", {}).get("consume_replacement")
@@ -3654,11 +3672,11 @@ def validate() -> dict[str, int]:
             or molotov_components.get("minecraft:max_stack_size") != 16
             or molotov_components.get("minecraft:consumable") != {
                 "consume_seconds": 3_600.0,
-                "animation": "spear",
+                "animation": "trident",
                 "has_consume_particles": False,
             }):
         raise AssertionError(
-            "Molotov must retain its 72,000-tick spear charge instead of instant splash-potion use")
+            "Molotov must retain its 72,000-tick trident charge instead of instant splash-potion use")
     molotov_model = molotov_item.get("model", {})
     if (molotov_model.get("property") != "minecraft:using_item"
             or molotov_model.get("on_true", {}).get("path") != f"{NAMESPACE}:item/molotov_charging"):
@@ -5504,16 +5522,25 @@ def validate() -> dict[str, int]:
         if legacy_cabinet:
             expected_orientations["east"]["reverse_slots"] = True
             expected_orientations["west"]["reverse_slots"] = True
+        if storage_id == "cellar_cabinet":
+            expected_orientations["east"]["model_yaw"] = 90
+            expected_orientations["west"]["model_yaw"] = 270
         if orientations != expected_orientations:
             raise AssertionError(
                 f"{storage_id}: source-space click/model orientation drifted: {orientations!r}")
-        # Packet-only ItemDisplays use the same signed entity yaw as the source
-        # position transform. CE's unsigned static-renderer yaw is a different
-        # convention and would reverse east/west bottle displays.
-        if any(orientation["position_yaw"] != orientation["model_yaw"]
-               for orientation in orientations.values()):
-            raise AssertionError(
-                f"{storage_id}: packet model yaw must follow source position yaw")
+        # The -90-degree pitch used only by cellar bottles changes the effective
+        # east/west longitudinal axis. Those two model yaws need a half-turn;
+        # every upright/tilted packet display keeps the source position yaw.
+        for facing, orientation in orientations.items():
+            expected_offset = (180 if storage_id == "cellar_cabinet"
+                               and facing in {"east", "west"} else 0)
+            actual_offset = (
+                orientation["model_yaw"] - orientation["position_yaw"]
+            ) % 360
+            if actual_offset != expected_offset:
+                raise AssertionError(
+                    f"{storage_id}/{facing}: packet model yaw offset must be "
+                    f"{expected_offset}, found {actual_offset}")
 
         selector = configured_storage.get("selector", {})
         expected_selector_type = {
