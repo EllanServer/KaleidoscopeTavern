@@ -1,5 +1,2399 @@
 {
   "blocks": {
+    "kaleidoscope_tavern:black_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/black_sofa/cb7b1b05de",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/black_sofa/cb7b1b05de",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/black_sofa/cb7b1b05de",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/black_sofa/cb7b1b05de",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:black_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:black_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:blue_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/blue_sofa/2889998f2e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/blue_sofa/2889998f2e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/blue_sofa/2889998f2e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/blue_sofa/2889998f2e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:blue_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:blue_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:brown_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/brown_sofa/3ebee86bfb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/brown_sofa/3ebee86bfb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/brown_sofa/3ebee86bfb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/brown_sofa/3ebee86bfb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:brown_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:brown_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:cyan_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/cyan_sofa/a45689e59f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/cyan_sofa/a45689e59f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/cyan_sofa/a45689e59f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/cyan_sofa/a45689e59f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:cyan_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:cyan_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:gray_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gray_sofa/f8fa2e58a1",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gray_sofa/f8fa2e58a1",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gray_sofa/f8fa2e58a1",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/gray_sofa/f8fa2e58a1",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:gray_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:gray_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:green_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/green_sofa/03cd9d61b8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/green_sofa/03cd9d61b8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/green_sofa/03cd9d61b8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/green_sofa/03cd9d61b8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:green_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:green_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:light_blue_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/light_blue_sofa/97b359bdb6",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/light_blue_sofa/97b359bdb6",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/light_blue_sofa/97b359bdb6",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/light_blue_sofa/97b359bdb6",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:light_blue_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:light_blue_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:light_gray_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/light_gray_sofa/a9e850247f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/light_gray_sofa/a9e850247f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/light_gray_sofa/a9e850247f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/light_gray_sofa/a9e850247f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:light_gray_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:light_gray_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:lime_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/lime_sofa/3ab2ae04d3",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/lime_sofa/3ab2ae04d3",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/lime_sofa/3ab2ae04d3",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/lime_sofa/3ab2ae04d3",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:lime_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:lime_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:magenta_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/magenta_sofa/22f55066ca",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/magenta_sofa/22f55066ca",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/magenta_sofa/22f55066ca",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/magenta_sofa/22f55066ca",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:magenta_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:magenta_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:orange_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/orange_sofa/f5d8ff2eaf",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/orange_sofa/f5d8ff2eaf",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/orange_sofa/f5d8ff2eaf",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/orange_sofa/f5d8ff2eaf",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:orange_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:orange_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:pink_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pink_sofa/10ced9a35c",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pink_sofa/10ced9a35c",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pink_sofa/10ced9a35c",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pink_sofa/10ced9a35c",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:pink_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:pink_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:purple_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/purple_sofa/34582175f1",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/purple_sofa/34582175f1",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/purple_sofa/34582175f1",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/purple_sofa/34582175f1",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:purple_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:purple_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:red_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/red_sofa/7a8fe4b873",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/red_sofa/7a8fe4b873",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/red_sofa/7a8fe4b873",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/red_sofa/7a8fe4b873",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:red_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:red_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:white_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:white_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:white_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:yellow_sofa": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "facing_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/yellow_sofa/683a8e31b2",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "facing_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/yellow_sofa/683a8e31b2",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "facing_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/yellow_sofa/683a8e31b2",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "facing_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/yellow_sofa/683a8e31b2",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north": {
+            "appearance": "facing_north"
+          },
+          "facing=east": {
+            "appearance": "facing_east"
+          },
+          "facing=south": {
+            "appearance": "facing_south"
+          },
+          "facing=west": {
+            "appearance": "facing_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb",
+        "item": "kaleidoscope_tavern:yellow_sofa"
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:yellow_sofa"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:_internal/sofa": {
+      "states": {
+        "properties": {
+          "connection": {
+            "type": "string",
+            "default": "single",
+            "values": [
+              "single",
+              "left",
+              "left_corner",
+              "middle",
+              "right",
+              "right_corner"
+            ]
+          },
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "single_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
+            }
+          },
+          "single_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,90,0"
+            }
+          },
+          "single_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color"
+            }
+          },
+          "single_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/b50fcba9c7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,270,0"
+            }
+          },
+          "left_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/a4b01fe805",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
+            }
+          },
+          "left_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/a4b01fe805",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,90,0"
+            }
+          },
+          "left_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/a4b01fe805",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color"
+            }
+          },
+          "left_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/a4b01fe805",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,270,0"
+            }
+          },
+          "left_corner_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/467e05234d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
+            }
+          },
+          "left_corner_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/467e05234d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,90,0"
+            }
+          },
+          "left_corner_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/467e05234d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color"
+            }
+          },
+          "left_corner_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/467e05234d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,270,0"
+            }
+          },
+          "middle_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/d8eb8e9bd9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
+            }
+          },
+          "middle_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/d8eb8e9bd9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,90,0"
+            }
+          },
+          "middle_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/d8eb8e9bd9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color"
+            }
+          },
+          "middle_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/d8eb8e9bd9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,270,0"
+            }
+          },
+          "right_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/2ca76165a3",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
+            }
+          },
+          "right_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/2ca76165a3",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,90,0"
+            }
+          },
+          "right_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/2ca76165a3",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color"
+            }
+          },
+          "right_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/2ca76165a3",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,270,0"
+            }
+          },
+          "right_corner_north": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/5dda9d5d67",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,180,0"
+            }
+          },
+          "right_corner_east": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/5dda9d5d67",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,90,0"
+            }
+          },
+          "right_corner_south": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/5dda9d5d67",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color"
+            }
+          },
+          "right_corner_west": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/white_sofa/5dda9d5d67",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "tint_source": "minecraft:dyed_color",
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "connection=single,facing=north": {
+            "appearance": "single_north"
+          },
+          "connection=single,facing=east": {
+            "appearance": "single_east"
+          },
+          "connection=single,facing=south": {
+            "appearance": "single_south"
+          },
+          "connection=single,facing=west": {
+            "appearance": "single_west"
+          },
+          "connection=left,facing=north": {
+            "appearance": "left_north"
+          },
+          "connection=left,facing=east": {
+            "appearance": "left_east"
+          },
+          "connection=left,facing=south": {
+            "appearance": "left_south"
+          },
+          "connection=left,facing=west": {
+            "appearance": "left_west"
+          },
+          "connection=left_corner,facing=north": {
+            "appearance": "left_corner_north"
+          },
+          "connection=left_corner,facing=east": {
+            "appearance": "left_corner_east"
+          },
+          "connection=left_corner,facing=south": {
+            "appearance": "left_corner_south"
+          },
+          "connection=left_corner,facing=west": {
+            "appearance": "left_corner_west"
+          },
+          "connection=middle,facing=north": {
+            "appearance": "middle_north"
+          },
+          "connection=middle,facing=east": {
+            "appearance": "middle_east"
+          },
+          "connection=middle,facing=south": {
+            "appearance": "middle_south"
+          },
+          "connection=middle,facing=west": {
+            "appearance": "middle_west"
+          },
+          "connection=right,facing=north": {
+            "appearance": "right_north"
+          },
+          "connection=right,facing=east": {
+            "appearance": "right_east"
+          },
+          "connection=right,facing=south": {
+            "appearance": "right_south"
+          },
+          "connection=right,facing=west": {
+            "appearance": "right_west"
+          },
+          "connection=right_corner,facing=north": {
+            "appearance": "right_corner_north"
+          },
+          "connection=right_corner,facing=east": {
+            "appearance": "right_corner_east"
+          },
+          "connection=right_corner,facing=south": {
+            "appearance": "right_corner_south"
+          },
+          "connection=right_corner,facing=west": {
+            "appearance": "right_corner_west"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wool.break",
+          "step": "minecraft:block.wool.step",
+          "place": "minecraft:block.wool.place",
+          "hit": "minecraft:block.wool.hit",
+          "fall": "minecraft:block.wool.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 27,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "support_shape": "minecraft:cobweb"
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:connected_block",
+          "mode": "corner",
+          "connects": [
+            "kaleidoscope_tavern:_internal/sofa",
+            "kaleidoscope_tavern:black_sofa",
+            "kaleidoscope_tavern:blue_sofa",
+            "kaleidoscope_tavern:brown_sofa",
+            "kaleidoscope_tavern:cyan_sofa",
+            "kaleidoscope_tavern:gray_sofa",
+            "kaleidoscope_tavern:green_sofa",
+            "kaleidoscope_tavern:light_blue_sofa",
+            "kaleidoscope_tavern:light_gray_sofa",
+            "kaleidoscope_tavern:lime_sofa",
+            "kaleidoscope_tavern:magenta_sofa",
+            "kaleidoscope_tavern:orange_sofa",
+            "kaleidoscope_tavern:pink_sofa",
+            "kaleidoscope_tavern:purple_sofa",
+            "kaleidoscope_tavern:red_sofa",
+            "kaleidoscope_tavern:white_sofa",
+            "kaleidoscope_tavern:yellow_sofa"
+          ],
+          "state_property": "connection",
+          "topology": {
+            "outputs": {
+              "none": "single",
+              "left": "right",
+              "right": "left",
+              "both": "middle",
+              "front_left": "right_corner",
+              "front_left_with_right": "left",
+              "front_right": "left_corner",
+              "front_right_with_left": "right"
+            },
+            "compatibility": {
+              "left_perpendicular": [
+                "single",
+                "right",
+                "right_corner"
+              ],
+              "right_perpendicular": [
+                "single",
+                "left",
+                "left_corner"
+              ],
+              "front_left_excluded": "left_corner",
+              "front_right_excluded": "right_corner"
+            }
+          }
+        },
+        {
+          "type": "seat_block",
+          "seats": [
+            "0,-0.1,0 180"
+          ]
+        },
+        {
+          "type": "tint_source_block",
+          "drop_item": true
+        }
+      ]
+    },
     "kaleidoscope_tavern:chalkboard": {
       "states": {
         "properties": {
@@ -546,6 +2940,187 @@
                     ]
                   }
                 ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:table": {
+      "states": {
+        "properties": {
+          "position": {
+            "type": "int",
+            "default": 0,
+            "range": "0~3"
+          },
+          "table_axis": {
+            "type": "axis",
+            "default": "x",
+            "values": [
+              "x",
+              "z"
+            ]
+          }
+        },
+        "appearances": {
+          "appearance_0": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/34675ebc5b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_1": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/0711d6f122",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_2": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/af86474a16",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_3": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/811887aa8b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_4": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/3174c95b3a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_5": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/3074b35dfb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_6": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/table/2f4d4646ae",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          }
+        },
+        "variants": {
+          "position=0,table_axis=x": {
+            "appearance": "appearance_0"
+          },
+          "position=1,table_axis=x": {
+            "appearance": "appearance_1"
+          },
+          "position=2,table_axis=x": {
+            "appearance": "appearance_2"
+          },
+          "position=3,table_axis=x": {
+            "appearance": "appearance_3"
+          },
+          "position=0,table_axis=z": {
+            "appearance": "appearance_0"
+          },
+          "position=1,table_axis=z": {
+            "appearance": "appearance_4"
+          },
+          "position=2,table_axis=z": {
+            "appearance": "appearance_5"
+          },
+          "position=3,table_axis=z": {
+            "appearance": "appearance_6"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 2.0,
+        "resistance": 3.0,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wood.break",
+          "step": "minecraft:block.wood.step",
+          "place": "minecraft:block.wood.place",
+          "hit": "minecraft:block.wood.hit",
+          "fall": "minecraft:block.wood.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 13,
+        "instrument": "bass",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "item": "kaleidoscope_tavern:table"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:connected_block",
+        "mode": "table",
+        "connects": [
+          "kaleidoscope_tavern:table"
+        ],
+        "axis_property": "table_axis",
+        "state_property": "position",
+        "topology": {
+          "default_axis": "z",
+          "perpendicular_to_player": true,
+          "allow_cross_axis_singles": true,
+          "outputs": {
+            "none": 0,
+            "positive": 1,
+            "negative": 3,
+            "both": 2
+          }
+        }
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:table"
               }
             ]
           }
@@ -3618,6 +6193,446 @@
               {
                 "type": "item",
                 "item": "kaleidoscope_tavern:firefly_incense"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:bar_counter": {
+      "states": {
+        "properties": {
+          "connection": {
+            "type": "string",
+            "default": "single",
+            "values": [
+              "left",
+              "left_corner",
+              "middle",
+              "right",
+              "right_corner",
+              "single"
+            ]
+          },
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "east",
+              "north",
+              "south",
+              "west"
+            ]
+          }
+        },
+        "appearances": {
+          "appearance_0": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/ced9c7fb4d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_1": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/ced9c7fb4d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_2": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/ced9c7fb4d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_3": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/ced9c7fb4d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_4": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/e4c3e4395a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_5": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/e4c3e4395a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_6": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/e4c3e4395a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_7": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/e4c3e4395a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/bb1a9c3db9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_9": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/bb1a9c3db9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/bb1a9c3db9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_11": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/bb1a9c3db9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_12": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/5e041288be",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_13": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/5e041288be",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_14": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/5e041288be",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_15": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/5e041288be",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_16": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/8043a621af",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_17": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/8043a621af",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_18": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/8043a621af",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_19": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/8043a621af",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_20": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/fba778d59b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_21": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/fba778d59b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_22": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/fba778d59b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_23": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_counter/fba778d59b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "connection=left,facing=east": {
+            "appearance": "appearance_0"
+          },
+          "connection=left,facing=north": {
+            "appearance": "appearance_1"
+          },
+          "connection=left,facing=south": {
+            "appearance": "appearance_2"
+          },
+          "connection=left,facing=west": {
+            "appearance": "appearance_3"
+          },
+          "connection=left_corner,facing=east": {
+            "appearance": "appearance_4"
+          },
+          "connection=left_corner,facing=north": {
+            "appearance": "appearance_5"
+          },
+          "connection=left_corner,facing=south": {
+            "appearance": "appearance_6"
+          },
+          "connection=left_corner,facing=west": {
+            "appearance": "appearance_7"
+          },
+          "connection=middle,facing=east": {
+            "appearance": "appearance_8"
+          },
+          "connection=middle,facing=north": {
+            "appearance": "appearance_9"
+          },
+          "connection=middle,facing=south": {
+            "appearance": "appearance_10"
+          },
+          "connection=middle,facing=west": {
+            "appearance": "appearance_11"
+          },
+          "connection=right,facing=east": {
+            "appearance": "appearance_12"
+          },
+          "connection=right,facing=north": {
+            "appearance": "appearance_13"
+          },
+          "connection=right,facing=south": {
+            "appearance": "appearance_14"
+          },
+          "connection=right,facing=west": {
+            "appearance": "appearance_15"
+          },
+          "connection=right_corner,facing=east": {
+            "appearance": "appearance_16"
+          },
+          "connection=right_corner,facing=north": {
+            "appearance": "appearance_17"
+          },
+          "connection=right_corner,facing=south": {
+            "appearance": "appearance_18"
+          },
+          "connection=right_corner,facing=west": {
+            "appearance": "appearance_19"
+          },
+          "connection=single,facing=east": {
+            "appearance": "appearance_20"
+          },
+          "connection=single,facing=north": {
+            "appearance": "appearance_21"
+          },
+          "connection=single,facing=south": {
+            "appearance": "appearance_22"
+          },
+          "connection=single,facing=west": {
+            "appearance": "appearance_23"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wood.break",
+          "step": "minecraft:block.wood.step",
+          "place": "minecraft:block.wood.place",
+          "hit": "minecraft:block.wood.hit",
+          "fall": "minecraft:block.wood.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "map_color": 29,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "item": "kaleidoscope_tavern:bar_counter"
+      },
+      "behavior": {
+        "type": "kaleidoscope_tavern:connected_block",
+        "mode": "corner",
+        "connects": [
+          "kaleidoscope_tavern:bar_counter"
+        ],
+        "state_property": "connection",
+        "topology": {
+          "outputs": {
+            "none": "single",
+            "left": "right",
+            "right": "left",
+            "both": "middle",
+            "front_left": "right_corner",
+            "front_left_with_right": "left",
+            "front_right": "left_corner",
+            "front_right_with_left": "right"
+          },
+          "compatibility": {
+            "left_perpendicular": [
+              "single",
+              "right",
+              "right_corner"
+            ],
+            "right_perpendicular": [
+              "single",
+              "left",
+              "left_corner"
+            ],
+            "front_left_excluded": "left_corner",
+            "front_right_excluded": "right_corner"
+          }
+        }
+      },
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:bar_counter"
               }
             ]
           }
@@ -6960,6 +9975,180 @@
         "type": "kaleidoscope_tavern:hanging_grape_crop"
       }
     },
+    "kaleidoscope_tavern:pressing_tub": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "north",
+              "east",
+              "south",
+              "west"
+            ]
+          },
+          "waterlogged": {
+            "type": "boolean",
+            "default": "false"
+          }
+        },
+        "appearances": {
+          "ground_north_false": {
+            "state": "minecraft:cut_copper_slab[type=bottom,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "ground_north_true": {
+            "state": "minecraft:cut_copper_slab[type=bottom,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "ground_east_false": {
+            "state": "minecraft:cut_copper_slab[type=bottom,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "ground_east_true": {
+            "state": "minecraft:cut_copper_slab[type=bottom,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "ground_south_false": {
+            "state": "minecraft:cut_copper_slab[type=bottom,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "ground_south_true": {
+            "state": "minecraft:cut_copper_slab[type=bottom,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "ground_west_false": {
+            "state": "minecraft:cut_copper_slab[type=bottom,waterlogged=false]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "ground_west_true": {
+            "state": "minecraft:cut_copper_slab[type=bottom,waterlogged=true]",
+            "transparent": true,
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/pressing_tub/ff80d8a10a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=north,waterlogged=false": {
+            "appearance": "ground_north_false"
+          },
+          "facing=north,waterlogged=true": {
+            "appearance": "ground_north_true"
+          },
+          "facing=east,waterlogged=false": {
+            "appearance": "ground_east_false"
+          },
+          "facing=east,waterlogged=true": {
+            "appearance": "ground_east_true"
+          },
+          "facing=south,waterlogged=false": {
+            "appearance": "ground_south_false"
+          },
+          "facing=south,waterlogged=true": {
+            "appearance": "ground_south_true"
+          },
+          "facing=west,waterlogged=false": {
+            "appearance": "ground_west_false"
+          },
+          "facing=west,waterlogged=true": {
+            "appearance": "ground_west_true"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 0.8,
+        "resistance": 0.8,
+        "push_reaction": "BLOCK",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wood.break",
+          "step": "minecraft:block.wood.step",
+          "place": "minecraft:block.wood.place",
+          "hit": "minecraft:block.wood.hit",
+          "fall": "minecraft:block.wood.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "destroy_stages": {
+          "template": "internal:destroy_stages"
+        },
+        "map_color": 13,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "item": "kaleidoscope_tavern:pressing_tub"
+      },
+      "behaviors": {
+        "type": "kaleidoscope_tavern:pressing_tub_block"
+      }
+    },
     "kaleidoscope_tavern:tap": {
       "states": {
         "properties": {
@@ -7366,6 +10555,894 @@
         ]
       }
     },
+    "kaleidoscope_tavern:bar_cabinet": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "east",
+              "north",
+              "south",
+              "west"
+            ]
+          },
+          "position": {
+            "type": "string",
+            "default": "single",
+            "values": [
+              "left",
+              "middle",
+              "right",
+              "single"
+            ]
+          }
+        },
+        "appearances": {
+          "appearance_0": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/168d317b28",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_1": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/9d2d3e7a21",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_2": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/9651abf3e7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_3": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/12fa828aea",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_4": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/168d317b28",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_5": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/9d2d3e7a21",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_6": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/9651abf3e7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_7": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/12fa828aea",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/168d317b28",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_9": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/9d2d3e7a21",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/9651abf3e7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_11": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/12fa828aea",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_12": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/168d317b28",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_13": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/9d2d3e7a21",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_14": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/9651abf3e7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_15": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/bar_cabinet/12fa828aea",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=east,position=left": {
+            "appearance": "appearance_0"
+          },
+          "facing=east,position=middle": {
+            "appearance": "appearance_1"
+          },
+          "facing=east,position=right": {
+            "appearance": "appearance_2"
+          },
+          "facing=east,position=single": {
+            "appearance": "appearance_3"
+          },
+          "facing=north,position=left": {
+            "appearance": "appearance_4"
+          },
+          "facing=north,position=middle": {
+            "appearance": "appearance_5"
+          },
+          "facing=north,position=right": {
+            "appearance": "appearance_6"
+          },
+          "facing=north,position=single": {
+            "appearance": "appearance_7"
+          },
+          "facing=south,position=left": {
+            "appearance": "appearance_8"
+          },
+          "facing=south,position=middle": {
+            "appearance": "appearance_9"
+          },
+          "facing=south,position=right": {
+            "appearance": "appearance_10"
+          },
+          "facing=south,position=single": {
+            "appearance": "appearance_11"
+          },
+          "facing=west,position=left": {
+            "appearance": "appearance_12"
+          },
+          "facing=west,position=middle": {
+            "appearance": "appearance_13"
+          },
+          "facing=west,position=right": {
+            "appearance": "appearance_14"
+          },
+          "facing=west,position=single": {
+            "appearance": "appearance_15"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 2.5,
+        "resistance": 2.5,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wood.break",
+          "step": "minecraft:block.wood.step",
+          "place": "minecraft:block.wood.place",
+          "hit": "minecraft:block.wood.hit",
+          "fall": "minecraft:block.wood.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "destroy_stages": {
+          "template": "internal:destroy_stages"
+        },
+        "map_color": 13,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "item": "kaleidoscope_tavern:bar_cabinet"
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:connected_block",
+          "mode": "linear",
+          "connects": [
+            "kaleidoscope_tavern:bar_cabinet"
+          ],
+          "state_property": "position",
+          "topology": {
+            "outputs": {
+              "none": "single",
+              "left": "right",
+              "right": "left",
+              "both": "middle"
+            }
+          }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage",
+          "data_key": "kaleidoscope_tavern:storage_bar_cabinet",
+          "render_item_prefix": "kaleidoscope_tavern:_render/storage/",
+          "view_range": 1.25,
+          "refresh_properties": [
+            "facing"
+          ],
+          "orientations": {
+            "north": {
+              "position_yaw": 0,
+              "model_yaw": 0,
+              "local_x": "1-x",
+              "local_z": "z",
+              "reverse_slots": false
+            },
+            "east": {
+              "position_yaw": -90,
+              "model_yaw": -90,
+              "local_x": "1-z",
+              "local_z": "1-x",
+              "reverse_slots": true
+            },
+            "south": {
+              "position_yaw": 180,
+              "model_yaw": 180,
+              "local_x": "x",
+              "local_z": "1-z",
+              "reverse_slots": false
+            },
+            "west": {
+              "position_yaw": 90,
+              "model_yaw": 90,
+              "local_x": "z",
+              "local_z": "x",
+              "reverse_slots": true
+            }
+          },
+          "selector": {
+            "type": "split",
+            "axis": "x",
+            "segments": 2
+          },
+          "interaction": {
+            "allowed_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:champagne",
+              "kaleidoscope_tavern:dragon_breath_bottle",
+              "kaleidoscope_tavern:empty_bottle",
+              "kaleidoscope_tavern:glowflower_brew",
+              "kaleidoscope_tavern:honey_bottle",
+              "kaleidoscope_tavern:honey_wine",
+              "kaleidoscope_tavern:ice_wine",
+              "kaleidoscope_tavern:luminous_bride",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:molotov",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:plum_wine",
+              "kaleidoscope_tavern:polaris_sweet_white",
+              "kaleidoscope_tavern:red_queen",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sakura_wine",
+              "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+              "kaleidoscope_tavern:sherry",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vinegar",
+              "kaleidoscope_tavern:vodka",
+              "kaleidoscope_tavern:water_bottle",
+              "kaleidoscope_tavern:watermelon_juice",
+              "kaleidoscope_tavern:whiskey",
+              "kaleidoscope_tavern:wine",
+              "kaleidoscope_tavern:xp_bottle"
+            ],
+            "blocked_items": [],
+            "consume_in_creative": true,
+            "invalid_result": "pass",
+            "blocked_result": "fail",
+            "invalid_message": null,
+            "blocked_message": null,
+            "sounds": {
+              "put": {
+                "id": "minecraft:block.glass.place",
+                "volume_min": 0.8,
+                "volume_max": 1.0,
+                "pitch_min": 0.2,
+                "pitch_max": 0.4
+              },
+              "put_last": {
+                "id": "minecraft:block.glass.place",
+                "volume_min": 0.8,
+                "volume_max": 1.0,
+                "pitch_min": 0.8,
+                "pitch_max": 1.0
+              },
+              "take": {
+                "id": "minecraft:block.glass.place",
+                "volume_min": 0.8,
+                "volume_max": 1.0,
+                "pitch_min": 0.8,
+                "pitch_max": 1.0
+              }
+            },
+            "exclusive_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan"
+            ],
+            "exclusive_slot": 0,
+            "fallback_take": true,
+            "fallback_put": true
+          },
+          "slots": [
+            {
+              "position": "0.75,0.5125,0.5",
+              "axis_x_position": "0.25,0.5125,0.5",
+              "exclusive_position": "0.5,0.5125,0.5",
+              "exclusive_axis_x_position": "0.5,0.5125,0.5",
+              "scale": 0.9
+            },
+            {
+              "position": "0.25,0.5125,0.5",
+              "axis_x_position": "0.75,0.5125,0.5",
+              "scale": 0.9
+            }
+          ]
+        }
+      ],
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:bar_cabinet"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "kaleidoscope_tavern:glass_bar_cabinet": {
+      "states": {
+        "properties": {
+          "facing": {
+            "type": "horizontal_direction",
+            "default": "north",
+            "values": [
+              "east",
+              "north",
+              "south",
+              "west"
+            ]
+          },
+          "position": {
+            "type": "string",
+            "default": "single",
+            "values": [
+              "left",
+              "middle",
+              "right",
+              "single"
+            ]
+          }
+        },
+        "appearances": {
+          "appearance_0": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/dd06a67476",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_1": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/c75e5649a8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_2": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/16d881cbec",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_3": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/4d048a5587",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,90,0"
+            }
+          },
+          "appearance_4": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/dd06a67476",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_5": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/c75e5649a8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_6": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/16d881cbec",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_7": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/4d048a5587",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/dd06a67476",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_9": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/c75e5649a8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_10": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/16d881cbec",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_11": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/4d048a5587",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_12": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/dd06a67476",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_13": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/c75e5649a8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_14": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/16d881cbec",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          },
+          "appearance_15": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glass_bar_cabinet/4d048a5587",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,270,0"
+            }
+          }
+        },
+        "variants": {
+          "facing=east,position=left": {
+            "appearance": "appearance_0"
+          },
+          "facing=east,position=middle": {
+            "appearance": "appearance_1"
+          },
+          "facing=east,position=right": {
+            "appearance": "appearance_2"
+          },
+          "facing=east,position=single": {
+            "appearance": "appearance_3"
+          },
+          "facing=north,position=left": {
+            "appearance": "appearance_4"
+          },
+          "facing=north,position=middle": {
+            "appearance": "appearance_5"
+          },
+          "facing=north,position=right": {
+            "appearance": "appearance_6"
+          },
+          "facing=north,position=single": {
+            "appearance": "appearance_7"
+          },
+          "facing=south,position=left": {
+            "appearance": "appearance_8"
+          },
+          "facing=south,position=middle": {
+            "appearance": "appearance_9"
+          },
+          "facing=south,position=right": {
+            "appearance": "appearance_10"
+          },
+          "facing=south,position=single": {
+            "appearance": "appearance_11"
+          },
+          "facing=west,position=left": {
+            "appearance": "appearance_12"
+          },
+          "facing=west,position=middle": {
+            "appearance": "appearance_13"
+          },
+          "facing=west,position=right": {
+            "appearance": "appearance_14"
+          },
+          "facing=west,position=single": {
+            "appearance": "appearance_15"
+          }
+        }
+      },
+      "settings": {
+        "hardness": 2.5,
+        "resistance": 2.5,
+        "push_reaction": "NORMAL",
+        "is_redstone_conductor": false,
+        "is_suffocating": false,
+        "is_view_blocking": false,
+        "can_occlude": false,
+        "propagate_skylight": true,
+        "sounds": {
+          "break": "minecraft:block.wood.break",
+          "step": "minecraft:block.wood.step",
+          "place": "minecraft:block.wood.place",
+          "hit": "minecraft:block.wood.hit",
+          "fall": "minecraft:block.wood.fall"
+        },
+        "tags": [
+          "minecraft:mineable/axe"
+        ],
+        "destroy_stages": {
+          "template": "internal:destroy_stages"
+        },
+        "map_color": 13,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
+        "item": "kaleidoscope_tavern:glass_bar_cabinet"
+      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:connected_block",
+          "mode": "linear",
+          "connects": [
+            "kaleidoscope_tavern:glass_bar_cabinet"
+          ],
+          "state_property": "position",
+          "topology": {
+            "outputs": {
+              "none": "single",
+              "left": "right",
+              "right": "left",
+              "both": "middle"
+            }
+          }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage",
+          "data_key": "kaleidoscope_tavern:storage_glass_bar_cabinet",
+          "render_item_prefix": "kaleidoscope_tavern:_render/storage/",
+          "view_range": 1.25,
+          "refresh_properties": [
+            "facing"
+          ],
+          "orientations": {
+            "north": {
+              "position_yaw": 0,
+              "model_yaw": 0,
+              "local_x": "1-x",
+              "local_z": "z",
+              "reverse_slots": false
+            },
+            "east": {
+              "position_yaw": -90,
+              "model_yaw": -90,
+              "local_x": "1-z",
+              "local_z": "1-x",
+              "reverse_slots": true
+            },
+            "south": {
+              "position_yaw": 180,
+              "model_yaw": 180,
+              "local_x": "x",
+              "local_z": "1-z",
+              "reverse_slots": false
+            },
+            "west": {
+              "position_yaw": 90,
+              "model_yaw": 90,
+              "local_x": "z",
+              "local_z": "x",
+              "reverse_slots": true
+            }
+          },
+          "selector": {
+            "type": "split",
+            "axis": "x",
+            "segments": 2
+          },
+          "interaction": {
+            "allowed_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:champagne",
+              "kaleidoscope_tavern:dragon_breath_bottle",
+              "kaleidoscope_tavern:empty_bottle",
+              "kaleidoscope_tavern:glowflower_brew",
+              "kaleidoscope_tavern:honey_bottle",
+              "kaleidoscope_tavern:honey_wine",
+              "kaleidoscope_tavern:ice_wine",
+              "kaleidoscope_tavern:luminous_bride",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:molotov",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:plum_wine",
+              "kaleidoscope_tavern:polaris_sweet_white",
+              "kaleidoscope_tavern:red_queen",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sakura_wine",
+              "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+              "kaleidoscope_tavern:sherry",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vinegar",
+              "kaleidoscope_tavern:vodka",
+              "kaleidoscope_tavern:water_bottle",
+              "kaleidoscope_tavern:watermelon_juice",
+              "kaleidoscope_tavern:whiskey",
+              "kaleidoscope_tavern:wine",
+              "kaleidoscope_tavern:xp_bottle"
+            ],
+            "blocked_items": [],
+            "consume_in_creative": true,
+            "invalid_result": "pass",
+            "blocked_result": "fail",
+            "invalid_message": null,
+            "blocked_message": null,
+            "sounds": {
+              "put": {
+                "id": "minecraft:block.glass.place",
+                "volume_min": 0.8,
+                "volume_max": 1.0,
+                "pitch_min": 0.2,
+                "pitch_max": 0.4
+              },
+              "put_last": {
+                "id": "minecraft:block.glass.place",
+                "volume_min": 0.8,
+                "volume_max": 1.0,
+                "pitch_min": 0.8,
+                "pitch_max": 1.0
+              },
+              "take": {
+                "id": "minecraft:block.glass.place",
+                "volume_min": 0.8,
+                "volume_max": 1.0,
+                "pitch_min": 0.8,
+                "pitch_max": 1.0
+              }
+            },
+            "exclusive_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan"
+            ],
+            "exclusive_slot": 0,
+            "fallback_take": true,
+            "fallback_put": true
+          },
+          "slots": [
+            {
+              "position": "0.75,0.5125,0.5",
+              "axis_x_position": "0.25,0.5125,0.5",
+              "exclusive_position": "0.5,0.5125,0.5",
+              "exclusive_axis_x_position": "0.5,0.5125,0.5",
+              "scale": 0.9
+            },
+            {
+              "position": "0.25,0.5125,0.5",
+              "axis_x_position": "0.75,0.5125,0.5",
+              "scale": 0.9
+            }
+          ]
+        }
+      ],
+      "loot": {
+        "pools": [
+          {
+            "rolls": 1,
+            "conditions": [
+              {
+                "type": "survives_explosion"
+              }
+            ],
+            "entries": [
+              {
+                "type": "item",
+                "item": "kaleidoscope_tavern:glass_bar_cabinet"
+              }
+            ]
+          }
+        ]
+      }
+    },
     "kaleidoscope_tavern:cellar_cabinet": {
       "states": {
         "properties": {
@@ -7381,7 +11458,7 @@
           },
           "position": {
             "type": "string",
-            "default": "left",
+            "default": "single",
             "values": [
               "left",
               "middle",
@@ -7396,14 +11473,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/5771cda45d",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -7411,14 +11484,10 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/4e8b5129e2",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -7426,14 +11495,10 @@
             }
           },
           "appearance_2": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/c5ff0d993c",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -7441,14 +11506,10 @@
             }
           },
           "appearance_3": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/3c63f2b1ed",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -7456,130 +11517,94 @@
             }
           },
           "appearance_4": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/5771cda45d",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_5": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/4e8b5129e2",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_6": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/c5ff0d993c",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25
+              "view_range": 1.25,
+              "rotation": "0,180,0"
             }
           },
           "appearance_7": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/3c63f2b1ed",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "rotation": "0,180,0"
+            }
+          },
+          "appearance_8": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
-          "appearance_8": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/5771cda45d",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
-            }
-          },
           "appearance_9": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/4e8b5129e2",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_10": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/c5ff0d993c",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_11": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/3c63f2b1ed",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b",
               "display_transform": "none",
               "shadow_radius": 0,
-              "view_range": 1.25,
-              "rotation": "0,180,0"
+              "view_range": 1.25
             }
           },
           "appearance_12": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/5771cda45d",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/376ecd673a",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -7587,14 +11612,10 @@
             }
           },
           "appearance_13": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/4e8b5129e2",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/b2c7255e56",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -7602,14 +11623,10 @@
             }
           },
           "appearance_14": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/c5ff0d993c",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/eb16cbfaa8",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -7617,14 +11634,10 @@
             }
           },
           "appearance_15": {
-            "auto_state": {
-              "type": "solid",
-              "id": "kaleidoscope-tavern-cellar-cabinet-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/cellar_cabinet/3c63f2b1ed",
+              "item": "kaleidoscope_tavern:_render/cellar_cabinet/0e124aa00b",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -7755,13 +11768,298 @@
         },
         "item": "kaleidoscope_tavern:cellar_cabinet"
       },
-      "behavior": {
-        "type": "kaleidoscope_tavern:storage",
-        "kind": "cellar_cabinet",
-        "slots": 9,
-        "data_key": "kaleidoscope_tavern:storage_cellar_cabinet",
-        "blocklist": "kaleidoscope_tavern:cellar_cabinet_blocklist"
-      },
+      "behaviors": [
+        {
+          "type": "kaleidoscope_tavern:connected_block",
+          "mode": "linear",
+          "connects": [
+            "kaleidoscope_tavern:cellar_cabinet"
+          ],
+          "state_property": "position",
+          "topology": {
+            "outputs": {
+              "none": "single",
+              "left": "right",
+              "right": "left",
+              "both": "middle"
+            }
+          }
+        },
+        {
+          "type": "kaleidoscope_tavern:storage",
+          "data_key": "kaleidoscope_tavern:storage_cellar_cabinet",
+          "render_item_prefix": "kaleidoscope_tavern:_render/storage/",
+          "view_range": 1.25,
+          "refresh_properties": [
+            "facing",
+            "position"
+          ],
+          "orientations": {
+            "north": {
+              "position_yaw": 0,
+              "model_yaw": 0,
+              "local_x": "1-x",
+              "local_z": "z",
+              "reverse_slots": false
+            },
+            "east": {
+              "position_yaw": -90,
+              "model_yaw": 90,
+              "local_x": "1-z",
+              "local_z": "1-x",
+              "reverse_slots": false
+            },
+            "south": {
+              "position_yaw": 180,
+              "model_yaw": 180,
+              "local_x": "x",
+              "local_z": "1-z",
+              "reverse_slots": false
+            },
+            "west": {
+              "position_yaw": 90,
+              "model_yaw": 270,
+              "local_x": "z",
+              "local_z": "x",
+              "reverse_slots": false
+            }
+          },
+          "selector": {
+            "type": "grid",
+            "columns": 3,
+            "rows": 3,
+            "reverse_y": true,
+            "front_only": true
+          },
+          "interaction": {
+            "allowed_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:champagne",
+              "kaleidoscope_tavern:dragon_breath_bottle",
+              "kaleidoscope_tavern:empty_bottle",
+              "kaleidoscope_tavern:glowflower_brew",
+              "kaleidoscope_tavern:honey_bottle",
+              "kaleidoscope_tavern:honey_wine",
+              "kaleidoscope_tavern:ice_wine",
+              "kaleidoscope_tavern:luminous_bride",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:molotov",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:plum_wine",
+              "kaleidoscope_tavern:polaris_sweet_white",
+              "kaleidoscope_tavern:red_queen",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sakura_wine",
+              "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+              "kaleidoscope_tavern:sherry",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vinegar",
+              "kaleidoscope_tavern:vodka",
+              "kaleidoscope_tavern:water_bottle",
+              "kaleidoscope_tavern:watermelon_juice",
+              "kaleidoscope_tavern:whiskey",
+              "kaleidoscope_tavern:wine",
+              "kaleidoscope_tavern:xp_bottle"
+            ],
+            "blocked_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vodka"
+            ],
+            "consume_in_creative": true,
+            "invalid_result": "fail",
+            "blocked_result": "fail",
+            "invalid_message": "message.kaleidoscope_tavern.rack.not_drink",
+            "blocked_message": "message.kaleidoscope_tavern.rack.irregular",
+            "sounds": {
+              "put": {
+                "id": "minecraft:block.stone.place",
+                "volume_min": 1,
+                "volume_max": 1,
+                "pitch_min": 1,
+                "pitch_max": 1
+              },
+              "take": {
+                "id": "minecraft:entity.item_frame.remove_item",
+                "volume_min": 1,
+                "volume_max": 1,
+                "pitch_min": 1,
+                "pitch_max": 1
+              }
+            }
+          },
+          "slots": [
+            {
+              "position": "0.825,0.78,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.5,0.78,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.175,0.78,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.825,0.49,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.5,0.49,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.175,0.49,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.825,0.2,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.5,0.2,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            },
+            {
+              "position": "0.175,0.2,0.375",
+              "scale": 1,
+              "y_rotation": 0,
+              "x_rotation": -90
+            }
+          ],
+          "launch": {
+            "candidate_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:champagne",
+              "kaleidoscope_tavern:dragon_breath_bottle",
+              "kaleidoscope_tavern:empty_bottle",
+              "kaleidoscope_tavern:glowflower_brew",
+              "kaleidoscope_tavern:honey_bottle",
+              "kaleidoscope_tavern:honey_wine",
+              "kaleidoscope_tavern:ice_wine",
+              "kaleidoscope_tavern:luminous_bride",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:molotov",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:plum_wine",
+              "kaleidoscope_tavern:polaris_sweet_white",
+              "kaleidoscope_tavern:red_queen",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sakura_wine",
+              "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+              "kaleidoscope_tavern:sherry",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vinegar",
+              "kaleidoscope_tavern:vodka",
+              "kaleidoscope_tavern:water_bottle",
+              "kaleidoscope_tavern:watermelon_juice",
+              "kaleidoscope_tavern:whiskey",
+              "kaleidoscope_tavern:wine",
+              "kaleidoscope_tavern:xp_bottle"
+            ],
+            "projectile_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:champagne",
+              "kaleidoscope_tavern:glowflower_brew",
+              "kaleidoscope_tavern:honey_wine",
+              "kaleidoscope_tavern:ice_wine",
+              "kaleidoscope_tavern:luminous_bride",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:molotov",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:plum_wine",
+              "kaleidoscope_tavern:polaris_sweet_white",
+              "kaleidoscope_tavern:red_queen",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sakura_wine",
+              "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+              "kaleidoscope_tavern:sherry",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vinegar",
+              "kaleidoscope_tavern:vodka",
+              "kaleidoscope_tavern:watermelon_juice",
+              "kaleidoscope_tavern:whiskey",
+              "kaleidoscope_tavern:wine"
+            ],
+            "sound_items": [
+              "kaleidoscope_tavern:brandy",
+              "kaleidoscope_tavern:carignan",
+              "kaleidoscope_tavern:champagne",
+              "kaleidoscope_tavern:glowflower_brew",
+              "kaleidoscope_tavern:honey_wine",
+              "kaleidoscope_tavern:ice_wine",
+              "kaleidoscope_tavern:luminous_bride",
+              "kaleidoscope_tavern:madame_shexiang",
+              "kaleidoscope_tavern:miners_star",
+              "kaleidoscope_tavern:mother_snow",
+              "kaleidoscope_tavern:plum_wine",
+              "kaleidoscope_tavern:polaris_sweet_white",
+              "kaleidoscope_tavern:red_queen",
+              "kaleidoscope_tavern:riesling_dry_white",
+              "kaleidoscope_tavern:rum",
+              "kaleidoscope_tavern:sakura_wine",
+              "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+              "kaleidoscope_tavern:sherry",
+              "kaleidoscope_tavern:sunset_glow",
+              "kaleidoscope_tavern:sweet_berry_wine",
+              "kaleidoscope_tavern:vinegar",
+              "kaleidoscope_tavern:vodka",
+              "kaleidoscope_tavern:watermelon_juice",
+              "kaleidoscope_tavern:whiskey",
+              "kaleidoscope_tavern:wine"
+            ],
+            "sound": {
+              "id": "kaleidoscope_tavern:block.holder.pop",
+              "volume_min": 0.9,
+              "volume_max": 0.9,
+              "pitch_min": 1,
+              "pitch_max": 1
+            },
+            "factor_min": 0.5,
+            "factor_max": 2.5,
+            "vertical_factor": 0.1,
+            "origin_y": 0.5,
+            "origin_forward": 0.5,
+            "direction": "facing"
+          }
+        }
+      ],
       "loot": {
         "pools": [
           {
@@ -7801,14 +12099,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-tilted-rack-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/tilted_rack/0b95975b59",
+              "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -7816,14 +12110,10 @@
             }
           },
           "appearance_1": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-tilted-rack-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/tilted_rack/0b95975b59",
+              "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -7831,28 +12121,20 @@
             }
           },
           "appearance_2": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-tilted-rack-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/tilted_rack/0b95975b59",
+              "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_3": {
-            "auto_state": {
-              "type": "cactus",
-              "id": "kaleidoscope-tavern-tilted-rack-transparent"
-            },
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/tilted_rack/0b95975b59",
+              "item": "kaleidoscope_tavern:_render/tilted_rack/6a3ae088e9",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -7913,10 +12195,227 @@
       },
       "behavior": {
         "type": "kaleidoscope_tavern:storage",
-        "kind": "tilted_rack",
-        "slots": 3,
         "data_key": "kaleidoscope_tavern:storage_tilted_rack",
-        "blocklist": "kaleidoscope_tavern:tilted_rack_blocklist"
+        "render_item_prefix": "kaleidoscope_tavern:_render/storage/",
+        "view_range": 1.25,
+        "refresh_properties": [
+          "facing"
+        ],
+        "orientations": {
+          "north": {
+            "position_yaw": 0,
+            "model_yaw": 0,
+            "local_x": "1-x",
+            "local_z": "z",
+            "reverse_slots": false
+          },
+          "east": {
+            "position_yaw": -90,
+            "model_yaw": -90,
+            "local_x": "1-z",
+            "local_z": "1-x",
+            "reverse_slots": false
+          },
+          "south": {
+            "position_yaw": 180,
+            "model_yaw": 180,
+            "local_x": "x",
+            "local_z": "1-z",
+            "reverse_slots": false
+          },
+          "west": {
+            "position_yaw": 90,
+            "model_yaw": 90,
+            "local_x": "z",
+            "local_z": "x",
+            "reverse_slots": false
+          }
+        },
+        "selector": {
+          "type": "split",
+          "axis": "x",
+          "segments": 3
+        },
+        "interaction": {
+          "allowed_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:dragon_breath_bottle",
+            "kaleidoscope_tavern:empty_bottle",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_bottle",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:water_bottle",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine",
+            "kaleidoscope_tavern:xp_bottle"
+          ],
+          "blocked_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan"
+          ],
+          "consume_in_creative": true,
+          "invalid_result": "fail",
+          "blocked_result": "fail",
+          "invalid_message": "message.kaleidoscope_tavern.rack.not_drink",
+          "blocked_message": "message.kaleidoscope_tavern.rack.irregular",
+          "sounds": {
+            "put": {
+              "id": "minecraft:block.stone.place",
+              "volume_min": 1,
+              "volume_max": 1,
+              "pitch_min": 1,
+              "pitch_max": 1
+            },
+            "take": {
+              "id": "minecraft:entity.item_frame.remove_item",
+              "volume_min": 1,
+              "volume_max": 1,
+              "pitch_min": 1,
+              "pitch_max": 1
+            }
+          }
+        },
+        "slots": [
+          {
+            "position": "0.8325,0.524788,0.601453",
+            "scale": 0.9,
+            "x_rotation": 22.5
+          },
+          {
+            "position": "0.495,0.524788,0.605953",
+            "scale": 0.9,
+            "x_rotation": 22.5
+          },
+          {
+            "position": "0.1575,0.524788,0.610453",
+            "scale": 0.9,
+            "x_rotation": 22.5
+          }
+        ],
+        "launch": {
+          "candidate_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:dragon_breath_bottle",
+            "kaleidoscope_tavern:empty_bottle",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_bottle",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:water_bottle",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine",
+            "kaleidoscope_tavern:xp_bottle"
+          ],
+          "projectile_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine"
+          ],
+          "sound_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine"
+          ],
+          "sound": {
+            "id": "kaleidoscope_tavern:block.holder.pop",
+            "volume_min": 0.9,
+            "volume_max": 0.9,
+            "pitch_min": 1,
+            "pitch_max": 1
+          },
+          "factor_min": 0.5,
+          "factor_max": 1.5,
+          "vertical_factor": 0.75,
+          "origin_y": 0.875,
+          "origin_forward": -0.5,
+          "direction": "opposite"
+        }
       },
       "loot": {
         "pools": [
@@ -7957,11 +12456,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:cave_vines[age=1,berries=true]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/circular_rack/bf215250db",
+              "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -7969,34 +12467,31 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:cave_vines[age=1,berries=true]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/circular_rack/bf215250db",
-              "display_transform": "none",
-              "shadow_radius": 0,
-              "view_range": 1.25
-            }
-          },
-          "appearance_2": {
-            "state": "minecraft:cave_vines[age=1,berries=true]",
-            "transparent": true,
-            "entity_renderer": {
-              "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/circular_rack/bf215250db",
+              "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
               "rotation": "0,180,0"
             }
           },
-          "appearance_3": {
-            "state": "minecraft:cave_vines[age=1,berries=true]",
-            "transparent": true,
+          "appearance_2": {
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/circular_rack/bf215250db",
+              "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25
+            }
+          },
+          "appearance_3": {
+            "state": "minecraft:barrier",
+            "entity_renderer": {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/circular_rack/5a379d3770",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -8058,10 +12553,264 @@
       },
       "behavior": {
         "type": "kaleidoscope_tavern:storage",
-        "kind": "circular_rack",
-        "slots": 6,
         "data_key": "kaleidoscope_tavern:storage_circular_rack",
-        "blocklist": "kaleidoscope_tavern:circular_rack_blocklist"
+        "render_item_prefix": "kaleidoscope_tavern:_render/storage/",
+        "view_range": 1.25,
+        "refresh_properties": [
+          "facing"
+        ],
+        "orientations": {
+          "north": {
+            "position_yaw": 0,
+            "model_yaw": 0,
+            "local_x": "1-x",
+            "local_z": "z",
+            "reverse_slots": false
+          },
+          "east": {
+            "position_yaw": -90,
+            "model_yaw": -90,
+            "local_x": "1-z",
+            "local_z": "1-x",
+            "reverse_slots": false
+          },
+          "south": {
+            "position_yaw": 180,
+            "model_yaw": 180,
+            "local_x": "x",
+            "local_z": "1-z",
+            "reverse_slots": false
+          },
+          "west": {
+            "position_yaw": 90,
+            "model_yaw": 90,
+            "local_x": "z",
+            "local_z": "x",
+            "reverse_slots": false
+          }
+        },
+        "selector": {
+          "type": "radial",
+          "segments": 6,
+          "radial_offset": 4,
+          "radial_clockwise": true
+        },
+        "interaction": {
+          "allowed_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:dragon_breath_bottle",
+            "kaleidoscope_tavern:empty_bottle",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_bottle",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:water_bottle",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine",
+            "kaleidoscope_tavern:xp_bottle"
+          ],
+          "blocked_items": [],
+          "consume_in_creative": true,
+          "invalid_result": "fail",
+          "blocked_result": "fail",
+          "invalid_message": "message.kaleidoscope_tavern.rack.not_drink",
+          "blocked_message": "message.kaleidoscope_tavern.rack.irregular",
+          "sounds": {
+            "put": {
+              "id": "minecraft:block.stone.place",
+              "volume_min": 1,
+              "volume_max": 1,
+              "pitch_min": 1,
+              "pitch_max": 1
+            },
+            "take": {
+              "id": "minecraft:entity.item_frame.remove_item",
+              "volume_min": 1,
+              "volume_max": 1,
+              "pitch_min": 1,
+              "pitch_max": 1
+            }
+          }
+        },
+        "slots": [
+          {
+            "position": "0.5,0.535,0.125",
+            "scale": 0.82,
+            "y_rotation": 0,
+            "x_rotation": 0
+          },
+          {
+            "position": "0.875,0.535,0.3125",
+            "scale": 0.82,
+            "y_rotation": 22.5,
+            "x_rotation": 0
+          },
+          {
+            "position": "0.875,0.535,0.6875",
+            "scale": 0.82,
+            "y_rotation": -22.5,
+            "x_rotation": 0
+          },
+          {
+            "position": "0.5,0.535,0.875",
+            "scale": 0.82,
+            "y_rotation": 180,
+            "x_rotation": 0
+          },
+          {
+            "position": "0.125,0.535,0.6875",
+            "scale": 0.82,
+            "y_rotation": 157.5,
+            "x_rotation": 0
+          },
+          {
+            "position": "0.125,0.535,0.3125",
+            "scale": 0.82,
+            "y_rotation": -157.5,
+            "x_rotation": 0
+          }
+        ],
+        "launch": {
+          "candidate_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:dragon_breath_bottle",
+            "kaleidoscope_tavern:empty_bottle",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_bottle",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:water_bottle",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine",
+            "kaleidoscope_tavern:xp_bottle"
+          ],
+          "projectile_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine"
+          ],
+          "sound_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine"
+          ],
+          "sound": {
+            "id": "kaleidoscope_tavern:block.holder.pop",
+            "volume_min": 0.9,
+            "volume_max": 0.9,
+            "pitch_min": 1,
+            "pitch_max": 1
+          },
+          "factor_min": 0.5,
+          "factor_max": 2.5,
+          "vertical_factor": 0,
+          "origin_y": 0.5,
+          "origin_forward": 0,
+          "direction": "up"
+        },
+        "particle": {
+          "type": "END_ROD",
+          "chance": 392,
+          "min_x": 0.125,
+          "max_x": 0.375,
+          "alternate_min_x": 0.625,
+          "alternate_max_x": 0.875,
+          "min_y": 0,
+          "max_y": 1,
+          "min_z": 0.125,
+          "max_z": 0.375,
+          "alternate_min_z": 0.625,
+          "alternate_max_z": 0.875,
+          "offset_x": 0.01,
+          "offset_y": 0.01,
+          "offset_z": 0.01,
+          "speed": 1
+        }
       },
       "loot": {
         "pools": [
@@ -8102,11 +12851,10 @@
         },
         "appearances": {
           "appearance_0": {
-            "state": "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/holder/d532879009",
+              "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -8114,11 +12862,10 @@
             }
           },
           "appearance_1": {
-            "state": "minecraft:lightning_rod[facing=north,powered=false,waterlogged=false]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/holder/d532879009",
+              "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -8126,22 +12873,20 @@
             }
           },
           "appearance_2": {
-            "state": "minecraft:lightning_rod[facing=south,powered=false,waterlogged=false]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/holder/d532879009",
+              "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25
             }
           },
           "appearance_3": {
-            "state": "minecraft:lightning_rod[facing=west,powered=false,waterlogged=false]",
-            "transparent": true,
+            "state": "minecraft:barrier",
             "entity_renderer": {
               "type": "item_display",
-              "item": "kaleidoscope_tavern:_render/holder/d532879009",
+              "item": "kaleidoscope_tavern:_render/holder/7cd95fea9c",
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
@@ -8202,10 +12947,224 @@
       },
       "behavior": {
         "type": "kaleidoscope_tavern:storage",
-        "kind": "holder",
-        "slots": 1,
         "data_key": "kaleidoscope_tavern:storage_holder",
-        "blocklist": "kaleidoscope_tavern:holder_blocklist"
+        "render_item_prefix": "kaleidoscope_tavern:_render/storage/",
+        "view_range": 1.25,
+        "refresh_properties": [
+          "facing"
+        ],
+        "orientations": {
+          "north": {
+            "position_yaw": 0,
+            "model_yaw": 0,
+            "local_x": "1-x",
+            "local_z": "z",
+            "reverse_slots": false
+          },
+          "east": {
+            "position_yaw": -90,
+            "model_yaw": -90,
+            "local_x": "1-z",
+            "local_z": "1-x",
+            "reverse_slots": false
+          },
+          "south": {
+            "position_yaw": 180,
+            "model_yaw": 180,
+            "local_x": "x",
+            "local_z": "1-z",
+            "reverse_slots": false
+          },
+          "west": {
+            "position_yaw": 90,
+            "model_yaw": 90,
+            "local_x": "z",
+            "local_z": "x",
+            "reverse_slots": false
+          }
+        },
+        "selector": {
+          "type": "single"
+        },
+        "interaction": {
+          "allowed_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:dragon_breath_bottle",
+            "kaleidoscope_tavern:empty_bottle",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_bottle",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:water_bottle",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine",
+            "kaleidoscope_tavern:xp_bottle"
+          ],
+          "blocked_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vodka"
+          ],
+          "consume_in_creative": true,
+          "invalid_result": "fail",
+          "blocked_result": "fail",
+          "invalid_message": "message.kaleidoscope_tavern.rack.not_drink",
+          "blocked_message": "message.kaleidoscope_tavern.rack.irregular",
+          "sounds": {
+            "put": {
+              "id": "minecraft:block.stone.place",
+              "volume_min": 1,
+              "volume_max": 1,
+              "pitch_min": 1,
+              "pitch_max": 1
+            },
+            "take": {
+              "id": "minecraft:entity.item_frame.remove_item",
+              "volume_min": 1,
+              "volume_max": 1,
+              "pitch_min": 1,
+              "pitch_max": 1
+            }
+          }
+        },
+        "slots": [
+          {
+            "position": "0.5,0.460876,0.414124",
+            "scale": 0.95,
+            "y_rotation": 0,
+            "x_rotation": -45
+          }
+        ],
+        "launch": {
+          "candidate_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:dragon_breath_bottle",
+            "kaleidoscope_tavern:empty_bottle",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_bottle",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:water_bottle",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine",
+            "kaleidoscope_tavern:xp_bottle"
+          ],
+          "projectile_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:molotov",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine"
+          ],
+          "sound_items": [
+            "kaleidoscope_tavern:brandy",
+            "kaleidoscope_tavern:carignan",
+            "kaleidoscope_tavern:champagne",
+            "kaleidoscope_tavern:glowflower_brew",
+            "kaleidoscope_tavern:honey_wine",
+            "kaleidoscope_tavern:ice_wine",
+            "kaleidoscope_tavern:luminous_bride",
+            "kaleidoscope_tavern:madame_shexiang",
+            "kaleidoscope_tavern:miners_star",
+            "kaleidoscope_tavern:mother_snow",
+            "kaleidoscope_tavern:plum_wine",
+            "kaleidoscope_tavern:polaris_sweet_white",
+            "kaleidoscope_tavern:red_queen",
+            "kaleidoscope_tavern:riesling_dry_white",
+            "kaleidoscope_tavern:rum",
+            "kaleidoscope_tavern:sakura_wine",
+            "kaleidoscope_tavern:sauvignon_blanc_dry_white",
+            "kaleidoscope_tavern:sherry",
+            "kaleidoscope_tavern:sunset_glow",
+            "kaleidoscope_tavern:sweet_berry_wine",
+            "kaleidoscope_tavern:vinegar",
+            "kaleidoscope_tavern:vodka",
+            "kaleidoscope_tavern:watermelon_juice",
+            "kaleidoscope_tavern:whiskey",
+            "kaleidoscope_tavern:wine"
+          ],
+          "sound": {
+            "id": "kaleidoscope_tavern:block.holder.pop",
+            "volume_min": 0.9,
+            "volume_max": 0.9,
+            "pitch_min": 1,
+            "pitch_max": 1
+          },
+          "factor_min": 0.5,
+          "factor_max": 1.5,
+          "vertical_factor": 0.375,
+          "origin_y": 0.875,
+          "origin_forward": 0.5,
+          "direction": "facing"
+        }
       },
       "loot": {
         "pools": [

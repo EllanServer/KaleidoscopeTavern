@@ -30,10 +30,7 @@ import net.momirealms.craftengine.libraries.antigrieflib.Flag;
 import net.momirealms.craftengine.proxy.minecraft.core.MutableBlockPosProxy;
 import net.momirealms.craftengine.proxy.minecraft.core.Vec3iProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.BlockGetterProxy;
-import net.momirealms.craftengine.proxy.minecraft.world.level.LevelAccessorProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
-import net.momirealms.craftengine.proxy.minecraft.world.level.material.FluidStateProxy;
-import net.momirealms.craftengine.proxy.minecraft.world.level.material.FluidsProxy;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -66,7 +63,6 @@ public final class TrellisBehavior extends BukkitBlockBehavior
 
     private final Property<Direction.Axis> axisProperty;
     private final Property<String> typeProperty;
-    private final Property<Boolean> waterloggedProperty;
     private final IntegerProperty ageProperty;
     private final float spreadChance;
 
@@ -76,8 +72,6 @@ public final class TrellisBehavior extends BukkitBlockBehavior
                 section.path(), block, "axis", Direction.Axis.class);
         this.typeProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "type", String.class);
-        this.waterloggedProperty = BlockBehaviorFactory.getProperty(
-                section.path(), block, "waterlogged", Boolean.class);
         Property<?> age = block.getProperty("age");
         this.ageProperty = age instanceof IntegerProperty integer ? integer : null;
         this.spreadChance = section.getFloat("spread_chance", 0.25F);
@@ -102,11 +96,9 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         // Tavern adds only the neighbouring trellis connections.
         String type = TrellisConnectionSemantics.typeFor(
                 axisName(state.get(axisProperty)), x, y, z);
-        Object fluid = BlockGetterProxy.INSTANCE.getFluidState(
-                context.getLevel().minecraftWorld(), LocationUtils.toBlockPos(position));
-        return state.with(typeProperty, type).with(
-                waterloggedProperty,
-                FluidStateProxy.INSTANCE.getType(fluid) == FluidsProxy.WATER);
+        // CE's automatically attached WaterloggedBlockBehavior has already
+        // derived the fluid state. Tavern adds only connection topology.
+        return state.with(typeProperty, type);
     }
 
     @Override
@@ -124,11 +116,6 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         int y = Vec3iProxy.INSTANCE.getY(position);
         int z = Vec3iProxy.INSTANCE.getZ(position);
         ImmutableBlockState state = optional.get();
-        if (state.get(waterloggedProperty)) {
-            LevelAccessorProxy.INSTANCE.scheduleTick$1(
-                    args[updateShape$level], args[updateShape$blockPos],
-                    FluidsProxy.WATER, 5);
-        }
         boolean xConnected = axisHasTrellis(world, x, y, z, Direction.Axis.X);
         boolean yConnected = axisHasTrellis(world, x, y, z, Direction.Axis.Y);
         boolean zConnected = axisHasTrellis(world, x, y, z, Direction.Axis.Z);

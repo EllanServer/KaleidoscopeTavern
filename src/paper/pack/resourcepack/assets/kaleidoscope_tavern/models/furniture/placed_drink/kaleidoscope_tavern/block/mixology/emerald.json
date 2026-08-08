@@ -10,7 +10,8 @@
       "sprite": "kaleidoscope_tavern:block/mixology/emerald",
       "force_translucent": true
     },
-    "particle": "block/glass"
+    "particle": "block/glass",
+    "opaque_detail": "kaleidoscope_tavern:furniture/placed_drink/opaque/kaleidoscope_tavern/block/mixology/emerald"
   },
   "elements": [
     {
@@ -349,7 +350,7 @@
             10
           ],
           "rotation": 90,
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -359,7 +360,7 @@
             10
           ],
           "rotation": 270,
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -369,7 +370,7 @@
             10
           ],
           "rotation": 270,
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -379,7 +380,7 @@
             10
           ],
           "rotation": 270,
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -389,7 +390,7 @@
             10
           ],
           "rotation": 270,
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -399,7 +400,7 @@
             10
           ],
           "rotation": 270,
-          "texture": "#0"
+          "texture": "#opaque_detail"
         }
       }
     },
@@ -431,7 +432,7 @@
             5.5,
             6.5
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -440,7 +441,7 @@
             4,
             6.5
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -450,7 +451,7 @@
             6.5
           ],
           "rotation": 90,
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -459,7 +460,7 @@
             5.5,
             6.5
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -468,7 +469,7 @@
             3.5,
             4.5
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -477,7 +478,7 @@
             5.5,
             6.5
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         }
       }
     },
@@ -509,7 +510,7 @@
             3.5,
             15
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -518,7 +519,7 @@
             0,
             3
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -527,7 +528,7 @@
             6,
             15
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -536,7 +537,7 @@
             0,
             3
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -545,7 +546,7 @@
             2.5,
             0
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -554,7 +555,7 @@
             2.5,
             0
           ],
-          "texture": "#0"
+          "texture": "#opaque_detail"
         }
       }
     }

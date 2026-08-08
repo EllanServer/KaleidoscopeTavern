@@ -51,13 +51,9 @@ public final class StorageSemantics {
 
     public static FacingRotation facingRotation(
             Kind kind, float facingYaw, boolean facingAxisX) {
-        // CE's ItemDisplay yaw mirrors the east/west block-model mapping for
-        // these two asymmetric racks. The slot position still follows the
-        // physical block rotation; only the displayed bottle model is
-        // reflected to match the corrected carrier model.
-        if (facingAxisX && (kind == Kind.TILTED_RACK || kind == Kind.HOLDER)) {
-            return new FacingRotation(facingYaw, -facingYaw);
-        }
+        // Base furniture and packet-only bottle displays use the same CE/Minecraft
+        // yaw. Do not mirror east/west: that made the rack body and its contents
+        // face different directions.
         return new FacingRotation(facingYaw, facingYaw);
     }
 

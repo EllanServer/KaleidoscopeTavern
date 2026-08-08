@@ -1,4 +1,4 @@
-package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture;
+package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.visual;
 
 import net.momirealms.craftengine.core.item.Item;
 import org.joml.Quaternionf;
@@ -20,17 +20,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * 版本观察者共享）、新 generation 重新计算、无 SPAWN 可整代共享 packet 列表、
  * 空 diff 仍正确推进缓存状态。
  */
-class StationGenerationDiffTest {
+class DisplayVisualDiffGenerationTest {
 
     @Test
     void sameGenerationReturnsTheSameSharedOpsList() {
-        StationGenerationDiff diff = new StationGenerationDiff();
-        List<StationVisualFurnitureBehavior.Visual> previous = items(16);
-        List<StationVisualFurnitureBehavior.Visual> current = items(15);
+        DisplayVisualDiff.GenerationDiff diff = new DisplayVisualDiff.GenerationDiff();
+        List<DisplayVisual> previous = items(16);
+        List<DisplayVisual> current = items(15);
 
-        List<StationVisualDiff.Op> first =
+        List<DisplayVisualDiff.Op> first =
                 diff.forGeneration(7, previous, current, 17, 15);
-        List<StationVisualDiff.Op> second =
+        List<DisplayVisualDiff.Op> second =
                 diff.forGeneration(7, previous, current, 17, 15);
 
         // 两名跟上版本的观察者共享同一份 diff 实例。
@@ -41,13 +41,13 @@ class StationGenerationDiffTest {
 
     @Test
     void newGenerationRecomputesASeparateList() {
-        StationGenerationDiff diff = new StationGenerationDiff();
-        List<StationVisualFurnitureBehavior.Visual> previous = items(16);
-        List<StationVisualFurnitureBehavior.Visual> current = items(15);
+        DisplayVisualDiff.GenerationDiff diff = new DisplayVisualDiff.GenerationDiff();
+        List<DisplayVisual> previous = items(16);
+        List<DisplayVisual> current = items(15);
 
-        List<StationVisualDiff.Op> first =
+        List<DisplayVisualDiff.Op> first =
                 diff.forGeneration(7, previous, current, 17, 15);
-        List<StationVisualDiff.Op> second =
+        List<DisplayVisualDiff.Op> second =
                 diff.forGeneration(8, previous, current, 17, 15);
 
         assertNotSame(first, second);
@@ -55,9 +55,9 @@ class StationGenerationDiffTest {
 
     @Test
     void spawnPresentMarksPerPlayerBuild() {
-        StationGenerationDiff diff = new StationGenerationDiff();
+        DisplayVisualDiff.GenerationDiff diff = new DisplayVisualDiff.GenerationDiff();
         // 15 → 16 个槽位：多出 SPAWN，需要按玩家附加 ViewRange。
-        List<StationVisualDiff.Op> ops =
+        List<DisplayVisualDiff.Op> ops =
                 diff.forGeneration(7, items(15), items(16), 17, 16);
 
         assertFalse(ops.isEmpty());
@@ -66,10 +66,10 @@ class StationGenerationDiffTest {
 
     @Test
     void emptyDiffRemainsSharedEligible() {
-        StationGenerationDiff diff = new StationGenerationDiff();
-        List<StationVisualFurnitureBehavior.Visual> same = items(2);
+        DisplayVisualDiff.GenerationDiff diff = new DisplayVisualDiff.GenerationDiff();
+        List<DisplayVisual> same = items(2);
 
-        List<StationVisualDiff.Op> ops =
+        List<DisplayVisualDiff.Op> ops =
                 diff.forGeneration(7, same, same, 17, 2);
 
         assertTrue(ops.isEmpty());
@@ -79,20 +79,20 @@ class StationGenerationDiffTest {
     private static final Object CONTENT_A = new Object();
     private static final Map<Item, Object> CONTENT = new IdentityHashMap<>();
 
-    private static List<StationVisualFurnitureBehavior.Visual> items(int count) {
-        List<StationVisualFurnitureBehavior.Visual> result = new ArrayList<>(count);
+    private static List<DisplayVisual> items(int count) {
+        List<DisplayVisual> result = new ArrayList<>(count);
         for (int index = 0; index < count; index++) {
-            result.add(StationVisualFurnitureBehavior.Visual.of(
+            result.add(DisplayVisual.of(
                     item(), 0, 0, 0, 0, 0, 1, new Quaternionf(),
-                    StationVisualFurnitureBehavior.ITEM_TRANSFORM_FIXED));
+                    DisplayVisual.ITEM_TRANSFORM_FIXED));
         }
         return result;
     }
 
-    /** 与 StationVisualDiffTest 相同的 Item mock：内容相等而非同一实例。 */
+    /** 与 DisplayVisualDiffTest 相同的 Item mock：内容相等而非同一实例。 */
     private static Item item() {
         Item proxy = (Item) Proxy.newProxyInstance(
-                StationGenerationDiffTest.class.getClassLoader(),
+                DisplayVisualDiffGenerationTest.class.getClassLoader(),
                 new Class<?>[]{Item.class},
                 (handlerProxy, method, args) -> {
                     Object result = switch (method.getName()) {

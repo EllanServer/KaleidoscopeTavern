@@ -3,321 +3,241 @@
     "kaleidoscope_tavern:white_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.white_sofa>",
+        "dyed_color": "249,255,254"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/white_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:white_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:light_gray_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_gray_sofa>",
+        "dyed_color": "157,157,151"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/light_gray_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:light_gray_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:gray_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.gray_sofa>",
+        "dyed_color": "71,79,82"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/gray_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:gray_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:black_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.black_sofa>",
+        "dyed_color": "29,29,33"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/black_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:black_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:brown_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.brown_sofa>",
+        "dyed_color": "131,84,50"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/brown_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:brown_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:red_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.red_sofa>",
+        "dyed_color": "176,46,38"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/red_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:red_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:orange_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.orange_sofa>",
+        "dyed_color": "249,128,29"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/orange_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:orange_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:yellow_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.yellow_sofa>",
+        "dyed_color": "254,216,61"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/yellow_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:yellow_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:lime_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.lime_sofa>",
+        "dyed_color": "128,199,31"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/lime_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:lime_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:green_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.green_sofa>",
+        "dyed_color": "94,124,22"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/green_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:green_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:cyan_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.cyan_sofa>",
+        "dyed_color": "22,156,156"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/cyan_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:cyan_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:light_blue_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.light_blue_sofa>",
+        "dyed_color": "58,179,218"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/light_blue_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:light_blue_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:blue_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.blue_sofa>",
+        "dyed_color": "60,68,170"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/blue_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:blue_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:purple_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.purple_sofa>",
+        "dyed_color": "137,50,184"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/purple_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:purple_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:magenta_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.magenta_sofa>",
+        "dyed_color": "199,78,189"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/magenta_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:magenta_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:pink_sofa": {
       "material": "paper",
       "data": {
-        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>"
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.pink_sofa>",
+        "dyed_color": "243,139,170"
       },
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/pink_sofa"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:pink_sofa",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:_internal/sofa"
       }
     },
     "kaleidoscope_tavern:white_bar_stool": {
@@ -664,14 +584,8 @@
         "path": "kaleidoscope_tavern:item/table"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:table",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:table"
       }
     },
     "kaleidoscope_tavern:base_sandwich_board": {
@@ -1914,14 +1828,8 @@
         "path": "kaleidoscope_tavern:item/bar_counter"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:bar_counter",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:bar_counter"
       }
     },
     "kaleidoscope_tavern:stepladder": {
@@ -2140,20 +2048,26 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/pressing_tub"
       },
-      "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:pressing_tub",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          },
-          "wall": {
-            "rotation": "four",
-            "alignment": "center"
+      "behaviors": [
+        {
+          "type": "ground_block_item",
+          "block": "kaleidoscope_tavern:pressing_tub"
+        },
+        {
+          "type": "ceiling_block_item",
+          "block": "kaleidoscope_tavern:pressing_tub"
+        },
+        {
+          "type": "furniture_item",
+          "furniture": "kaleidoscope_tavern:_internal/wall_pressing_tub",
+          "rules": {
+            "wall": {
+              "rotation": "four",
+              "alignment": "center"
+            }
           }
         }
-      }
+      ]
     },
     "kaleidoscope_tavern:grape_bucket": {
       "material": "milk_bucket",
@@ -2319,14 +2233,8 @@
         "path": "kaleidoscope_tavern:item/bar_cabinet"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:bar_cabinet",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:bar_cabinet"
       }
     },
     "kaleidoscope_tavern:glass_bar_cabinet": {
@@ -2339,14 +2247,8 @@
         "path": "kaleidoscope_tavern:item/glass_bar_cabinet"
       },
       "behavior": {
-        "type": "furniture_item",
-        "furniture": "kaleidoscope_tavern:glass_bar_cabinet",
-        "rules": {
-          "ground": {
-            "rotation": "four",
-            "alignment": "center"
-          }
-        }
+        "type": "block_item",
+        "block": "kaleidoscope_tavern:glass_bar_cabinet"
       }
     },
     "kaleidoscope_tavern:cellar_cabinet": {
@@ -2459,6 +2361,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.signature_cocktail>",
@@ -2478,7 +2386,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2492,6 +2401,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.mystery_cocktail>",
@@ -2514,7 +2429,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2528,6 +2444,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.white_lady>",
@@ -2553,7 +2475,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2567,6 +2490,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.emerald>",
@@ -2593,7 +2522,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2607,6 +2537,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.brass_heart>",
@@ -2629,7 +2565,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2643,6 +2580,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.godfather>",
@@ -2665,7 +2608,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2679,6 +2623,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.grasshopper>",
@@ -2701,7 +2651,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2715,6 +2666,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.screwdriver>",
@@ -2737,7 +2694,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2751,6 +2709,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.mojito>",
@@ -2773,7 +2737,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2787,6 +2752,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.allium_garden>",
@@ -2809,7 +2780,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2823,6 +2795,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.depth_charge>",
@@ -2845,7 +2823,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2859,6 +2838,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.nether_special>",
@@ -2881,7 +2866,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2895,6 +2881,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.bloody_mary>",
@@ -2917,7 +2909,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2931,6 +2924,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.sculk_special>",
@@ -2953,7 +2952,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2997,7 +2997,7 @@
           "type": "kaleidoscope_tavern:shaker_item"
         },
         {
-          "type": "furniture_item",
+          "type": "kaleidoscope_tavern:sneak_place_drink",
           "furniture": "kaleidoscope_tavern:shaker",
           "rules": {
             "ground": {
@@ -3036,7 +3036,7 @@
           "minecraft:max_stack_size": 16,
           "minecraft:consumable": {
             "consume_seconds": 3600.0,
-            "animation": "spear",
+            "animation": "trident",
             "has_consume_particles": false
           }
         }
@@ -3061,7 +3061,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       }
     },
     "kaleidoscope_tavern:wine": {
@@ -3073,6 +3074,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16733695
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.wine>",
@@ -3092,7 +3099,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3111,6 +3119,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16733695
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.champagne>",
@@ -3130,7 +3144,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3149,6 +3164,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16777215
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.vodka>",
@@ -3168,7 +3189,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3189,6 +3211,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16733695
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.brandy>",
@@ -3208,7 +3236,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3231,6 +3260,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16733695
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.carignan>",
@@ -3250,7 +3285,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3273,6 +3309,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16733695
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.sakura_wine>",
@@ -3292,7 +3334,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3311,6 +3354,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16733525
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.plum_wine>",
@@ -3330,7 +3379,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3349,6 +3399,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16777215
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.whiskey>",
@@ -3368,7 +3424,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3387,6 +3444,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 5592575
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.ice_wine>",
@@ -3406,7 +3469,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3425,6 +3489,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 5592575
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.polaris_sweet_white>",
@@ -3444,7 +3514,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3463,6 +3534,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16755200
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.honey_wine>",
@@ -3482,7 +3559,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3501,6 +3579,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16733525
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.red_queen>",
@@ -3520,7 +3604,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3539,6 +3624,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16755200
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.miners_star>",
@@ -3558,7 +3649,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3579,6 +3671,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16777215
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.rum>",
@@ -3598,7 +3696,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3619,6 +3718,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 5635925
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.riesling_dry_white>",
@@ -3638,7 +3743,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3659,6 +3765,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16755200
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.sunset_glow>",
@@ -3678,7 +3790,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3699,6 +3812,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16755200
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.madame_shexiang>",
@@ -3718,7 +3837,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3739,6 +3859,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16733525
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.sweet_berry_wine>",
@@ -3758,7 +3884,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3779,6 +3906,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 5592575
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.sherry>",
@@ -3798,7 +3931,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3817,6 +3951,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 5592575
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.mother_snow>",
@@ -3836,7 +3976,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3857,6 +3998,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16777045
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.luminous_bride>",
@@ -3876,7 +4023,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3895,6 +4043,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 16777045
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.glowflower_brew>",
@@ -3914,7 +4068,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3933,6 +4088,12 @@
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane",
             "custom_color": 5635925
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.sauvignon_blanc_dry_white>",
@@ -3952,7 +4113,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "tags": [
@@ -3970,6 +4132,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.vinegar>",
@@ -3989,7 +4157,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_bottle"
@@ -4003,6 +4172,12 @@
           "minecraft:max_stack_size": 16,
           "minecraft:potion_contents": {
             "potion": "minecraft:mundane"
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
           }
         },
         "custom_name": "<!i><lang:block.kaleidoscope_tavern.watermelon_juice>",
@@ -4022,7 +4197,8 @@
             "rotation": "four",
             "alignment": "center"
           }
-        }
+        },
+        "sync_active_use": true
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_bottle"

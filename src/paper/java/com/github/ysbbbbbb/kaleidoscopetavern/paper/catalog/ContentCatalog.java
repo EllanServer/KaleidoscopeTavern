@@ -262,6 +262,10 @@ public final class ContentCatalog {
         return cocktailItems.contains(itemId);
     }
 
+    public Set<String> cocktailItems() {
+        return cocktailItems;
+    }
+
     public Set<String> tag(String tagId) {
         return tags.getOrDefault(tagId, Set.of());
     }

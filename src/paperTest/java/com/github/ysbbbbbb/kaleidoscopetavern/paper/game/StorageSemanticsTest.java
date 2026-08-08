@@ -55,14 +55,14 @@ class StorageSemanticsTest {
     }
 
     @Test
-    void asymmetricRackEastWestPositionAndModelRotationsRemainIndependent() {
-        for (StorageSemantics.Kind kind : new StorageSemantics.Kind[]{TILTED_RACK, HOLDER}) {
+    void rackBodiesAndStoredItemsUseTheSameFacingRotation() {
+        for (StorageSemantics.Kind kind : new StorageSemantics.Kind[]{
+                TILTED_RACK, HOLDER, CIRCULAR_RACK}) {
             assertFacingRotation(kind, 0F, false, 0F, 0F);
             assertFacingRotation(kind, 180F, false, 180F, 180F);
-            assertFacingRotation(kind, -90F, true, -90F, 90F);
-            assertFacingRotation(kind, 90F, true, 90F, -90F);
+            assertFacingRotation(kind, -90F, true, -90F, -90F);
+            assertFacingRotation(kind, 90F, true, 90F, 90F);
         }
-        assertFacingRotation(CIRCULAR_RACK, -90F, true, -90F, -90F);
     }
 
     @Test

@@ -149,6 +149,16 @@ tasks.register<Exec>("validatePack") {
     commandLine("python", "tools/validate_pack.py")
 }
 
+val validateServerStateBudget = tasks.register<Exec>("validateServerStateBudget") {
+    group = "verification"
+    description = "Guards the CraftEngine 2000-state pool with a 1000-state reserve for other projects."
+    workingDir = projectDir
+    commandLine(
+        "python", "tools/check_server_state_budget.py",
+        "--capacity", "2000", "--reserve", "1000"
+    )
+}
+
 tasks.named("check") {
-    dependsOn("validatePack", verifyPluginJar)
+    dependsOn("validatePack", validateServerStateBudget, verifyPluginJar)
 }

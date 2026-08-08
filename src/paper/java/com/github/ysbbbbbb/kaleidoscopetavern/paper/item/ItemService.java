@@ -9,6 +9,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineItems;
 import net.momirealms.craftengine.bukkit.item.BukkitItemDefinition;
 import net.momirealms.craftengine.core.util.Key;
@@ -32,6 +33,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionEffectTypeCategory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -60,6 +62,8 @@ public final class ItemService {
             Map.entry(0xFFFF55, "yellow"), Map.entry(0xFFFFFF, "white"));
 
     private final ContentCatalog catalog;
+    private final Map<String, Optional<ItemStack>> visualItemPrototypes =
+            new HashMap<>();
     private final NamespacedKey brewLevelKey;
     private final NamespacedKey signatureEffectsKey;
     private final NamespacedKey signatureColorKey;
@@ -88,14 +92,60 @@ public final class ItemService {
     }
 
     public Optional<ItemStack> build(String id, Player context) {
+        Optional<ItemStack> built = buildBase(id, context);
+        return built.isEmpty()
+                ? Optional.empty() : Optional.of(refreshLore(built.get()));
+    }
+
+    private static Optional<ItemStack> buildBase(String id, Player context) {
         BukkitItemDefinition custom = CraftEngineItems.byId(id);
         if (custom != null) {
             ItemStack stack = context == null ? custom.buildBukkitItem() : custom.buildBukkitItem(context);
-            return Optional.of(refreshLore(stack));
+            return Optional.of(stack);
         }
         String materialName = id.startsWith("minecraft:") ? id.substring("minecraft:".length()) : id;
         Material material = Material.matchMaterial(materialName.toUpperCase(Locale.ROOT));
         return material == null || material.isAir() ? Optional.empty() : Optional.of(new ItemStack(material));
+    }
+
+    /**
+     * Builds a static render helper without running gameplay lore/PDC repair.
+     * The cached prototype is never exposed: callers receive a clone they may
+     * freely mutate for display metadata.
+     */
+    public Optional<ItemStack> buildVisual(String id) {
+        Optional<ItemStack> prototype = visualItemPrototypes.get(id);
+        if (prototype == null) {
+            prototype = buildBase(id, null);
+            visualItemPrototypes.put(id, prototype);
+        }
+        return prototype.isEmpty()
+                ? Optional.empty() : Optional.of(prototype.get().clone());
+    }
+
+    /** Invalidates prototypes after CraftEngine reloads item definitions. */
+    public void clearVisualCache() {
+        visualItemPrototypes.clear();
+    }
+
+    /**
+     * Loads Minecraft's item Codec path before a player's first furniture placement.
+     * CraftEngine persists the exact source stack for lossless furniture drops;
+     * the first encode otherwise performs lazy class/JAR-manifest loading on the
+     * interaction tick. Serializing each cocktail once also seeds component
+     * encoder caches without retaining duplicate item stacks in this plugin.
+     */
+    public int warmCocktailFurnitureSerialization() {
+        int warmed = 0;
+        for (String itemId : catalog.cocktailItems()) {
+            Optional<ItemStack> built = build(itemId, null);
+            if (built.isEmpty()) {
+                continue;
+            }
+            BukkitAdaptor.adapt(built.get()).copyWithCount(1).toBytes();
+            warmed++;
+        }
+        return warmed;
     }
 
     public boolean consumeOne(Player player, ItemStack expected) {

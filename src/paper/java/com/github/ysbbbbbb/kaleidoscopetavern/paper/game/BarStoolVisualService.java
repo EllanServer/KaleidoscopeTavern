@@ -245,7 +245,7 @@ public final class BarStoolVisualService {
         String color = localId.substring(0, localId.length() - SUFFIX.length());
         Item render = renderItems.get(color);
         if (render == null) {
-            ItemStack stack = items.build(PREFIX + "_render/bar_stool_body/" + color, null)
+            ItemStack stack = items.buildVisual(PREFIX + "_render/bar_stool_body/" + color)
                     .orElse(null);
             if (stack == null) {
                 if (!missingRenderItemLogged) {

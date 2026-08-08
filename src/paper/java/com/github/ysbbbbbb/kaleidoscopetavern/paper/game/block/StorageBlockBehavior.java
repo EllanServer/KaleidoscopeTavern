@@ -1,14 +1,13 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.StorageSemantics;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.VirtualEntityIdentity;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
 import net.momirealms.craftengine.bukkit.entity.data.DisplayData;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
-import net.momirealms.craftengine.bukkit.util.DirectionUtils;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
 import net.momirealms.craftengine.bukkit.util.ItemStackUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
@@ -54,6 +53,7 @@ import net.momirealms.craftengine.proxy.minecraft.world.phys.Vec3Proxy;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.joml.Vector3f;
 
@@ -68,47 +68,29 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
- * Source-compatible CE block implementation for the four bottle racks that
- * were real Forge blocks: cellar cabinet, tilted rack, circular rack and
- * holder.
+ * Generic configuration-driven multi-slot storage block.
  *
- * <p>Facing, connection position and the redstone edge latch live in the CE
- * block state. The CE block entity owns exact one-item slots, persistence and
- * packet-only ItemDisplay visuals, so no furniture/PDC scan is involved.</p>
+ * <p>CraftEngine configuration owns the selector, slot transforms, item rules,
+ * sounds, facing transforms, launch parameters and particles. Java only
+ * supplies the reusable block-entity mechanism that CE 26.7.4's native
+ * single-slot display behavior cannot express.</p>
  */
 public final class StorageBlockBehavior extends BukkitBlockBehavior implements EntityBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "storage");
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
-    private static final int CIRCULAR_PARTICLE_CHANCE = 49 * 8;
     private static volatile Handler handler;
 
-    private final StorageSemantics.Kind kind;
-    private final int slots;
-    private final String dataKey;
+    private final StorageBlockConfig config;
     private final Property<Direction> facingProperty;
     private final Property<Boolean> poweredProperty;
-    private final Property<String> positionProperty;
 
     private StorageBlockBehavior(BlockDefinition block, ConfigSection section) {
         super(block);
-        this.kind = StorageSemantics.Kind.valueOf(
-                section.getNonEmptyString("kind").toUpperCase(Locale.ROOT));
-        this.slots = section.getInt("slots", 0);
-        if (slots < 1) {
-            throw new IllegalArgumentException(
-                    "Storage block slots must be positive at " + section.assemblePath("slots"));
-        }
-        this.dataKey = section.getNonEmptyString("data_key");
+        this.config = StorageBlockConfig.parse(section);
         this.facingProperty = BlockBehaviorFactory.getProperty(
                 section.path(), block, "facing", Direction.class);
-        this.poweredProperty = BlockBehaviorFactory.getProperty(
-                section.path(), block, "powered", Boolean.class);
-        this.positionProperty = BlockBehaviorFactory.getOptionalProperty(
-                block, "position", String.class);
-        if (kind == StorageSemantics.Kind.CELLAR_CABINET && positionProperty == null) {
-            throw new IllegalArgumentException(
-                    "Cellar cabinet storage requires a position property at " + section.path());
-        }
+        this.poweredProperty = BlockBehaviorFactory.getOptionalProperty(
+                block, "powered", Boolean.class);
     }
 
     public static void register() {
@@ -131,22 +113,13 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
     @Override
     public ImmutableBlockState updateStateForPlacement(
             BlockPlaceContext context, ImmutableBlockState state) {
-        BlockPos pos = context.getClickedPos();
-        Object level = context.getLevel().minecraftWorld();
-        ImmutableBlockState next = state.with(poweredProperty,
-                SignalGetterProxy.INSTANCE.hasNeighborSignal(level, LocationUtils.toBlockPos(pos)));
-        if (positionProperty == null) {
-            return next;
+        if (poweredProperty == null) {
+            return state;
         }
-
-        Direction facing = next.get(facingProperty);
-        boolean left = isMatchingCellar(
-                context.getLevel().storageWorld().getBlockStateAtIfLoaded(
-                        pos.relative(facing.clockWise())), facing);
-        boolean right = isMatchingCellar(
-                context.getLevel().storageWorld().getBlockStateAtIfLoaded(
-                        pos.relative(facing.counterClockWise())), facing);
-        return next.with(positionProperty, cellarPosition(left, right));
+        return state.with(poweredProperty,
+                SignalGetterProxy.INSTANCE.hasNeighborSignal(
+                        context.getLevel().minecraftWorld(),
+                        LocationUtils.toBlockPos(context.getClickedPos())));
     }
 
     @Override
@@ -154,8 +127,8 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         if (context.getHand() != InteractionHand.MAIN_HAND) {
             return InteractionResult.PASS;
         }
-        Player cePlayer = context.getPlayer();
-        if (cePlayer == null) {
+        Player player = context.getPlayer();
+        if (player == null) {
             return InteractionResult.PASS;
         }
 
@@ -163,7 +136,7 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         World world = (World) context.getLevel().platformWorld();
         Location location = new Location(world, pos.x(), pos.y(), pos.z());
         if (!BukkitCraftEngine.instance().antiGriefProvider().test(
-                (org.bukkit.entity.Player) cePlayer.platformPlayer(),
+                (org.bukkit.entity.Player) player.platformPlayer(),
                 Flag.OPEN_CONTAINER, location)) {
             return InteractionResult.FAIL;
         }
@@ -175,23 +148,121 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         Direction facing;
         try {
             facing = state.get(facingProperty);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException exception) {
             return InteractionResult.FAIL;
         }
-        int slot = clickedSlot(context, facing);
-        if (slot < 0 || slot >= slots) {
+        int selected = selectedSlot(context, facing);
+        if (selected < 0 || selected >= config.slots().size()) {
             return InteractionResult.FAIL;
         }
-        Handler current = handler;
-        if (current == null) {
-            return InteractionResult.FAIL;
+        return interact(controller, context, player, selected);
+    }
+
+    private int selectedSlot(UseOnContext context, Direction facing) {
+        if (config.selector().frontOnly() && context.getClickedFace() != facing) {
+            return -1;
         }
-        return current.interact(controller, context, slot);
+        BlockPos pos = context.getClickedPos();
+        Vec3d hit = context.getClickedLocation();
+        double relativeX = hit.x - pos.x();
+        double relativeY = hit.y - pos.y();
+        double relativeZ = hit.z - pos.z();
+        StorageBlockConfig.Orientation orientation = config.orientation(facing);
+        return config.selector().select(
+                orientation.sourceX(relativeX, relativeZ),
+                relativeY,
+                orientation.sourceZ(relativeX, relativeZ),
+                orientation.reverseSlots());
+    }
+
+    private InteractionResult interact(
+            Controller controller, UseOnContext context, Player player, int selected) {
+        StorageBlockConfig.Interaction rules = config.interaction();
+        Item hand = player.getItemInHand(context.getHand());
+        boolean emptyHand = hand == null || hand.isEmpty();
+        boolean containsExclusive = controller.containsExclusive();
+
+        if (emptyHand) {
+            if (containsExclusive) {
+                selected = rules.exclusiveSlot();
+            } else if (controller.item(selected).isEmpty() && rules.fallbackTake()) {
+                selected = controller.firstOccupiedSlot();
+            }
+            if (selected < 0) {
+                return InteractionResult.PASS;
+            }
+            Item taken = controller.take(selected);
+            if (taken.isEmpty()) {
+                return InteractionResult.PASS;
+            }
+            player.setItemInHand(context.getHand(), taken);
+            player.swingHand(context.getHand());
+            playSound(controller.location(), rules.takeSound());
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+
+        Key itemId = hand.id();
+        if (!config.isAllowed(itemId)) {
+            return reject(player, rules.invalidMessage(), rules.invalidResult());
+        }
+        if (config.isBlocked(itemId)) {
+            return reject(player, rules.blockedMessage(), rules.blockedResult());
+        }
+        if (containsExclusive) {
+            return InteractionResult.PASS;
+        }
+
+        boolean insertingExclusive = config.isExclusive(itemId);
+        if (insertingExclusive) {
+            if (controller.hasAny()) {
+                return InteractionResult.PASS;
+            }
+            selected = rules.exclusiveSlot();
+        } else if (!controller.item(selected).isEmpty() && rules.fallbackPut()) {
+            selected = controller.firstEmptySlot();
+        }
+        if (selected < 0 || !controller.item(selected).isEmpty()) {
+            return InteractionResult.PASS;
+        }
+
+        if (!controller.put(selected, hand.copyWithCount(1))) {
+            return InteractionResult.PASS;
+        }
+        if (rules.consumeInCreative() || !player.canInstabuild()) {
+            hand.shrink(1);
+        }
+        player.swingHand(context.getHand());
+        playSound(controller.location(),
+                hand.isEmpty() && rules.putLastSound() != null
+                        ? rules.putLastSound() : rules.putSound());
+        return InteractionResult.SUCCESS_AND_CANCEL;
+    }
+
+    private static InteractionResult reject(
+            Player player, String translationKey,
+            StorageBlockConfig.InteractionFailure result) {
+        if (translationKey != null && !translationKey.isBlank()) {
+            ((org.bukkit.entity.Player) player.platformPlayer())
+                    .sendActionBar(Component.translatable(translationKey));
+        }
+        return result == StorageBlockConfig.InteractionFailure.PASS
+                ? InteractionResult.PASS : InteractionResult.FAIL;
+    }
+
+    private static void playSound(
+            Location location, StorageBlockConfig.ConfiguredSound sound) {
+        if (sound == null || location.getWorld() == null) {
+            return;
+        }
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        location.getWorld().playSound(
+                location, sound.id(), SoundCategory.BLOCKS,
+                sound.sampleVolume(random), sound.samplePitch(random));
     }
 
     @Override
     public void neighborChanged(Object thisBlock, Object[] args) {
-        if (!ServerLevelProxy.CLASS.isInstance(args[1])) {
+        if (poweredProperty == null || !ServerLevelProxy.CLASS.isInstance(args[1])) {
             return;
         }
         BlockStateUtils.getOptionalCustomBlockState(args[0])
@@ -203,25 +274,21 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         boolean wasPowered;
         try {
             wasPowered = state.get(poweredProperty);
-        } catch (IllegalArgumentException e) {
-            // The custom state surfaced from neighborChanged may carry an
-            // incomplete property map; skip redstone handling rather than
-            // failing the whole block update.
+        } catch (IllegalArgumentException exception) {
             return;
         }
         if (powered == wasPowered) {
             return;
         }
 
-        if (powered) {
+        if (powered && config.launch() != null) {
             World bukkitWorld = LevelProxy.INSTANCE.getWorld(level);
             if (bukkitWorld != null) {
                 Controller controller = controller(
                         BukkitAdaptor.adapt(bukkitWorld).storageWorld(),
                         LocationUtils.fromBlockPos(minecraftPos));
-                Handler current = handler;
-                if (controller != null && current != null) {
-                    current.launch(controller);
+                if (controller != null) {
+                    controller.launchRandom();
                 }
             }
         }
@@ -229,62 +296,6 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                 level, minecraftPos,
                 state.with(poweredProperty, powered).customBlockState().minecraftState(),
                 UpdateFlags.UPDATE_CLIENTS);
-    }
-
-    @Override
-    public Object updateShape(Object thisBlock, Object[] args) {
-        if (positionProperty == null) {
-            return super.updateShape(thisBlock, args);
-        }
-        ImmutableBlockState state = BlockStateUtils.getOptionalCustomBlockState(args[0])
-                .orElse(null);
-        if (state == null) {
-            return args[0];
-        }
-
-        Direction facing = state.get(facingProperty);
-        Direction direction = DirectionUtils.fromNMSDirection(args[updateShape$direction]);
-        Direction left = facing.clockWise();
-        Direction right = facing.counterClockWise();
-        if (direction != left && direction != right) {
-            return args[0];
-        }
-
-        ImmutableBlockState neighbor = BlockStateUtils.getOptionalCustomBlockState(
-                args[updateShape$neighborState]).orElse(null);
-        boolean connected = isMatchingCellar(neighbor, facing);
-        String position = state.get(positionProperty);
-        String next = position;
-        if (direction == left) {
-            if (connected) {
-                next = switch (position) {
-                    case "single" -> "right";
-                    case "left" -> "middle";
-                    default -> position;
-                };
-            } else {
-                next = switch (position) {
-                    case "right" -> "single";
-                    case "middle" -> "left";
-                    default -> position;
-                };
-            }
-        } else if (connected) {
-            next = switch (position) {
-                case "single" -> "left";
-                case "right" -> "middle";
-                default -> position;
-            };
-        } else {
-            next = switch (position) {
-                case "left" -> "single";
-                case "middle" -> "right";
-                default -> position;
-            };
-        }
-        return next.equals(position)
-                ? args[0]
-                : state.with(positionProperty, next).customBlockState().minecraftState();
     }
 
     @Override
@@ -315,76 +326,9 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         // This behavior owns one controller and retrieves it by class.
     }
 
-    private int clickedSlot(UseOnContext context, Direction facing) {
-        if (kind == StorageSemantics.Kind.CELLAR_CABINET
-                && context.getClickedFace() != facing) {
-            return -1;
-        }
-        BlockPos pos = context.getClickedPos();
-        Vec3d hit = context.getClickedLocation();
-        double relativeX = hit.x - pos.x();
-        double relativeY = hit.y - pos.y();
-        double relativeZ = hit.z - pos.z();
-        double localX = switch (facing) {
-            case NORTH -> 1.0 - relativeX;
-            case SOUTH -> relativeX;
-            case EAST -> 1.0 - relativeZ;
-            case WEST -> relativeZ;
-            default -> 0.5;
-        };
-        double localZ = switch (facing) {
-            case NORTH -> relativeZ;
-            case SOUTH -> 1.0 - relativeZ;
-            case EAST -> 1.0 - relativeX;
-            case WEST -> relativeX;
-            default -> 0.5;
-        };
-        return switch (kind) {
-            case CELLAR_CABINET -> {
-                int column = ((int) (localX * 3)) % 3;
-                int row = 2 - ((int) (relativeY * 3)) % 3;
-                yield column + row * 3;
-            }
-            case TILTED_RACK -> localX < 1.0 / 3.0 ? 0
-                    : localX < 2.0 / 3.0 ? 1 : 2;
-            case CIRCULAR_RACK -> circularSlot(localX, localZ);
-            case HOLDER -> 0;
-            default -> -1;
-        };
-    }
-
-    private static int circularSlot(double localX, double localZ) {
-        double angle = Math.toDegrees(Math.atan2(localZ - 0.5, localX - 0.5));
-        angle = (angle + 360) % 360;
-        if (angle > 300) {
-            return 5;
-        }
-        if (angle > 240) {
-            return 0;
-        }
-        if (angle > 180) {
-            return 1;
-        }
-        if (angle > 120) {
-            return 2;
-        }
-        return angle > 60 ? 3 : 4;
-    }
-
-    private boolean isMatchingCellar(ImmutableBlockState state, Direction facing) {
-        return state != null
-                && state.owner().value().id().equals(blockDefinition.id())
-                && state.get(facingProperty) == facing;
-    }
-
-    private static String cellarPosition(boolean left, boolean right) {
-        if (left && right) {
-            return "middle";
-        }
-        if (left) {
-            return "right";
-        }
-        return right ? "left" : "single";
+    /** Returns the loaded controller at an exact CE block position. */
+    public static Controller findController(CEWorld world, BlockPos pos) {
+        return controller(world, pos);
     }
 
     private static Controller controller(CEWorld world, BlockPos pos) {
@@ -393,11 +337,9 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
     }
 
     public interface Handler {
-        InteractionResult interact(Controller controller, UseOnContext context, int slot);
-
-        void launch(Controller controller);
-
         Item visualItem(Controller controller, int slot);
+
+        void launch(Controller controller, Item item, StorageBlockConfig.Launch launch);
     }
 
     public static final class Controller extends BlockEntityController {
@@ -413,20 +355,21 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         private Controller(BlockEntity blockEntity, StorageBlockBehavior behavior) {
             super(blockEntity);
             this.behavior = behavior;
-            this.items = new Item[behavior.slots];
-            this.cachedVisuals = new Item[behavior.slots];
-            this.visualsDirty = new boolean[behavior.slots];
+            int slots = behavior.config.slots().size();
+            this.items = new Item[slots];
+            this.cachedVisuals = new Item[slots];
+            this.visualsDirty = new boolean[slots];
             Arrays.fill(items, Item.empty());
             Arrays.fill(visualsDirty, true);
-            this.element = new StorageVisualElement(this, behavior.slots);
+            this.element = new StorageVisualElement(this, slots);
         }
 
         public Key id() {
             return behavior.blockDefinition.id();
         }
 
-        public StorageSemantics.Kind kind() {
-            return behavior.kind;
+        public StorageBlockConfig config() {
+            return behavior.config;
         }
 
         public int slots() {
@@ -462,6 +405,34 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
             return occupiedSlots != 0;
         }
 
+        public boolean containsExclusive() {
+            for (Item item : items) {
+                if (item != null && !item.isEmpty()
+                        && behavior.config.isExclusive(item.id())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public int firstOccupiedSlot() {
+            for (int slot = 0; slot < items.length; slot++) {
+                if (!items[slot].isEmpty()) {
+                    return slot;
+                }
+            }
+            return -1;
+        }
+
+        public int firstEmptySlot() {
+            for (int slot = 0; slot < items.length; slot++) {
+                if (items[slot].isEmpty()) {
+                    return slot;
+                }
+            }
+            return -1;
+        }
+
         public Direction facing() {
             return effectiveState().get(behavior.facingProperty);
         }
@@ -492,41 +463,38 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         @Override
         public void preBlockStateChange(ImmutableBlockState newState) {
             ImmutableBlockState oldState = blockEntity.blockState;
-            Direction oldFacing;
-            Direction newFacing;
-            try {
-                oldFacing = oldState.get(behavior.facingProperty);
-                newFacing = newState.get(behavior.facingProperty);
-            } catch (IllegalArgumentException e) {
-                // The incoming state may lack the facing property; the visual
-                // arrangement cannot be recomputed, so keep the previous one.
-                return;
+            boolean changed = false;
+            for (String propertyName : behavior.config.refreshProperties()) {
+                Property<?> oldProperty = oldState.getProperty(propertyName);
+                Property<?> newProperty = newState.getProperty(propertyName);
+                if (oldProperty == null || newProperty == null
+                        || !Objects.equals(value(oldState, oldProperty),
+                        value(newState, newProperty))) {
+                    changed = true;
+                    break;
+                }
             }
-            boolean connectionChanged = behavior.positionProperty != null
-                    && !Objects.equals(
-                    oldState.get(behavior.positionProperty),
-                    newState.get(behavior.positionProperty));
-            if (!StorageSemantics.changesRenderedArrangement(
-                    behavior.kind, oldFacing != newFacing, connectionChanged)
-                    || blockEntity.world == null) {
+            if (!changed || blockEntity.world == null) {
                 return;
             }
             renderState = newState;
             try {
-                // CE replaces the cabinet's constant renderer when its
-                // connection appearance changes. Respawn the independent
-                // packet-only bottle displays in the same state transition.
                 updateTrackedPlayers();
             } finally {
                 renderState = null;
             }
         }
 
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        private static Object value(ImmutableBlockState state, Property property) {
+            return state.get(property);
+        }
+
         @Override
         public void loadCustomData(CompoundTag tag) {
             Arrays.fill(items, Item.empty());
             occupiedSlots = 0;
-            CompoundTag data = tag.getCompound(behavior.dataKey);
+            CompoundTag data = tag.getCompound(behavior.config.dataKey());
             if (data == null) {
                 invalidateVisuals();
                 return;
@@ -560,7 +528,7 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                             ItemStackUtils.saveMinecraftItemStackAsTag(item.minecraftItem()));
                 }
             }
-            tag.put(behavior.dataKey, data);
+            tag.put(behavior.config.dataKey(), data);
         }
 
         @Override
@@ -582,28 +550,62 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         @Override
         public <C extends BlockEntityController> BlockEntityTicker<C> createBlockEntityTicker(
                 CEWorld world, ImmutableBlockState blockState) {
-            return behavior.kind == StorageSemantics.Kind.CIRCULAR_RACK
-                    ? createTickerHelper(Controller::tickCircularRack) : null;
+            return behavior.config.particle() == null
+                    ? null : createTickerHelper(Controller::tickParticle);
         }
 
-        private static void tickCircularRack(
+        private static void tickParticle(
                 CEWorld world, BlockPos pos, ImmutableBlockState state, Controller controller) {
-            if (!controller.hasAny()
-                    || ThreadLocalRandom.current().nextInt(CIRCULAR_PARTICLE_CHANCE) != 0) {
+            StorageBlockConfig.ParticleEffect effect = controller.config().particle();
+            if (!controller.hasAny() || effect == null
+                    || ThreadLocalRandom.current().nextInt(effect.chance()) != 0) {
+                return;
+            }
+            Particle particle;
+            try {
+                particle = Particle.valueOf(effect.type().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException exception) {
                 return;
             }
             ThreadLocalRandom random = ThreadLocalRandom.current();
             World bukkitWorld = (World) world.world().platformWorld();
-            double x = random.nextBoolean()
-                    ? pos.x() + 0.125 + random.nextDouble(0, 0.25)
-                    : pos.x() + 0.875 - random.nextDouble(0, 0.25);
-            double z = random.nextBoolean()
-                    ? pos.z() + 0.125 + random.nextDouble(0, 0.25)
-                    : pos.z() + 0.875 - random.nextDouble(0, 0.25);
             Location point = new Location(
-                    bukkitWorld, x, pos.y() + random.nextDouble(), z);
+                    bukkitWorld,
+                    pos.x() + effect.sampleX(random),
+                    pos.y() + effect.sampleY(random),
+                    pos.z() + effect.sampleZ(random));
             bukkitWorld.spawnParticle(
-                    Particle.END_ROD, point, 0, 0.01, 0.01, 0.01, 1);
+                    particle, point, 0,
+                    effect.offsetX(), effect.offsetY(), effect.offsetZ(), effect.speed());
+        }
+
+        private void launchRandom() {
+            StorageBlockConfig.Launch launch = behavior.config.launch();
+            Handler current = handler;
+            if (launch == null || current == null) {
+                return;
+            }
+            List<Integer> candidates = new ArrayList<>();
+            for (int slot = 0; slot < items.length; slot++) {
+                Item item = items[slot];
+                if (item != null && !item.isEmpty()
+                        && launch.candidateItems().contains(item.id())) {
+                    candidates.add(slot);
+                }
+            }
+            if (candidates.isEmpty()) {
+                return;
+            }
+            int slot = candidates.get(
+                    ThreadLocalRandom.current().nextInt(candidates.size()));
+            Item item = items[slot];
+            if (!launch.projectileItems().contains(item.id())) {
+                return;
+            }
+            Item taken = take(slot);
+            if (!taken.isEmpty()) {
+                current.launch(this, taken, launch);
+            }
         }
 
         private void suppressContentDrops() {
@@ -658,8 +660,6 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
     }
 
     private static final class StorageVisualElement implements BlockEntityElement {
-        private static final float VIEW_RANGE = 1.25F;
-
         private final Controller controller;
         private final int[] entityIds;
         private final UUID[] entityUuids;
@@ -698,19 +698,24 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
             if (replace) {
                 packets.add(removePacket);
             }
-            boolean facingAxisX = controller.facing().axis() == Direction.Axis.X;
+            boolean axisX = controller.facing().axis() == Direction.Axis.X;
+            boolean exclusive = controller.containsExclusive();
+            int exclusiveSlot = controller.config().interaction().exclusiveSlot();
             for (int slot = 0; slot < entityIds.length; slot++) {
+                if (exclusive && slot != exclusiveSlot) {
+                    continue;
+                }
                 Item item = controller.visualItem(slot);
                 if (item == null || item.isEmpty()) {
                     continue;
                 }
-                StorageSemantics.Visual visual = StorageSemantics.visual(
-                        controller.kind(), slot, false, facingAxisX);
-                RenderPosition position = renderPosition(controller, visual);
+                StorageBlockConfig.SlotVisual visual = controller.config().slots().get(slot);
+                Vector3f sourcePosition = visual.position(axisX, exclusive);
+                RenderPosition position = renderPosition(controller, sourcePosition, visual);
                 packets.add(ClientboundAddEntityPacketProxy.INSTANCE.newInstance(
                         entityIds[slot], entityUuids[slot],
                         position.x(), position.y(), position.z(),
-                        visual.xRot(), position.yRot(),
+                        visual.xRotation(), position.yRot(),
                         EntityTypesProxy.ITEM_DISPLAY, 0, Vec3Proxy.ZERO, 0));
 
                 List<Object> metadata = new ArrayList<>(3);
@@ -719,7 +724,8 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                 DisplayData.ItemDisplayData.Scale.addEntityDataIfNotDefaultValue(
                         new Vector3f(visual.scale()), metadata);
                 DisplayData.ItemDisplayData.ViewRange.addEntityDataIfNotDefaultValue(
-                        (float) (VIEW_RANGE * player.displayEntityViewDistance()), metadata);
+                        (float) (controller.config().viewRange()
+                                * player.displayEntityViewDistance()), metadata);
                 packets.add(ClientboundSetEntityDataPacketProxy.INSTANCE.newInstance(
                         entityIds[slot], metadata));
             }
@@ -730,31 +736,21 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
     }
 
     private static RenderPosition renderPosition(
-            Controller controller, StorageSemantics.Visual visual) {
+            Controller controller, Vector3f source,
+            StorageBlockConfig.SlotVisual visual) {
         BlockPos pos = controller.pos();
-        Direction facing = controller.facing();
-        StorageSemantics.FacingRotation facingRotation = StorageSemantics.facingRotation(
-                controller.kind(), facingAngle(facing), facing.axis() == Direction.Axis.X);
-        double angle = Math.toRadians(facingRotation.positionYaw());
-        double dx = visual.centerX() - 0.5;
-        double dz = visual.centerZ() - 0.5;
+        StorageBlockConfig.Orientation orientation =
+                controller.config().orientation(controller.facing());
+        double angle = Math.toRadians(orientation.positionYaw());
+        double dx = source.x - 0.5;
+        double dz = source.z - 0.5;
         double rotatedX = Math.cos(angle) * dx + Math.sin(angle) * dz;
         double rotatedZ = -Math.sin(angle) * dx + Math.cos(angle) * dz;
         return new RenderPosition(
                 pos.x() + 0.5 + rotatedX,
-                pos.y() + visual.centerY(),
+                pos.y() + source.y,
                 pos.z() + 0.5 + rotatedZ,
-                facingRotation.modelYaw() + visual.yRot());
-    }
-
-    private static float facingAngle(Direction facing) {
-        return switch (facing) {
-            case NORTH -> 0;
-            case EAST -> -90;
-            case SOUTH -> 180;
-            case WEST -> 90;
-            default -> 0;
-        };
+                orientation.modelYaw() + visual.yRotation());
     }
 
     private record RenderPosition(double x, double y, double z, float yRot) {

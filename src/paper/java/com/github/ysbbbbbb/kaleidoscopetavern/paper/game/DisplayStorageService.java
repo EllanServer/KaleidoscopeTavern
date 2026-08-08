@@ -2,6 +2,7 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.StorageBlockBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.StorageBlockConfig;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StorageVisualFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
@@ -17,7 +18,6 @@ import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.Vec3d;
 import net.momirealms.craftengine.core.world.context.InteractEntityContext;
-import net.momirealms.craftengine.core.world.context.UseOnContext;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -46,19 +46,14 @@ public final class DisplayStorageService {
     private static final String EMPTY_GLASSWARE = PREFIX + "empty_glassware";
     private static final String MOLOTOV = PREFIX + "molotov";
     private static final String WATERMELON_JUICE = PREFIX + "watermelon_juice";
-    private static final Map<Key, StorageSpec> STORAGE = Map.ofEntries(
+    // Only migration-only/native CE furniture still uses this compatibility
+    // table. Active block storage is entirely described by each CE block's
+    // `kaleidoscope_tavern:storage` configuration.
+    private static final Map<Key, StorageSpec> LEGACY_FURNITURE_STORAGE = Map.ofEntries(
             Map.entry(Key.of(PREFIX + "bar_cabinet"), new StorageSpec(
                     2, null, StorageSemantics.Kind.BAR_CABINET)),
             Map.entry(Key.of(PREFIX + "glass_bar_cabinet"), new StorageSpec(
                     2, null, StorageSemantics.Kind.BAR_CABINET)),
-            Map.entry(Key.of(PREFIX + "cellar_cabinet"), new StorageSpec(
-                    9, PREFIX + "cellar_cabinet_blocklist", StorageSemantics.Kind.CELLAR_CABINET)),
-            Map.entry(Key.of(PREFIX + "tilted_rack"), new StorageSpec(
-                    3, PREFIX + "tilted_rack_blocklist", StorageSemantics.Kind.TILTED_RACK)),
-            Map.entry(Key.of(PREFIX + "circular_rack"), new StorageSpec(
-                    6, PREFIX + "circular_rack_blocklist", StorageSemantics.Kind.CIRCULAR_RACK)),
-            Map.entry(Key.of(PREFIX + "holder"), new StorageSpec(
-                    1, PREFIX + "holder_blocklist", StorageSemantics.Kind.HOLDER)),
             Map.entry(Key.of(PREFIX + "glassware_holder"), new StorageSpec(
                     4, null, StorageSemantics.Kind.GLASSWARE_HOLDER)));
 
@@ -86,19 +81,14 @@ public final class DisplayStorageService {
     private final StorageBlockBehavior.Handler storageBlockHandler =
             new StorageBlockBehavior.Handler() {
                 @Override
-                public InteractionResult interact(StorageBlockBehavior.Controller controller,
-                                                  UseOnContext context, int slot) {
-                    return interactStorageBlock(controller, context, slot);
-                }
-
-                @Override
-                public void launch(StorageBlockBehavior.Controller controller) {
-                    launchRandomBottle(controller);
-                }
-
-                @Override
                 public Item visualItem(StorageBlockBehavior.Controller controller, int slot) {
                     return storageBlockVisual(controller, slot);
+                }
+
+                @Override
+                public void launch(StorageBlockBehavior.Controller controller, Item item,
+                                   StorageBlockConfig.Launch launch) {
+                    launchConfiguredItem(controller, item, launch);
                 }
             };
 
@@ -134,63 +124,9 @@ public final class DisplayStorageService {
         StorageVisualFurnitureBehavior.unbind(storageVisualHandler);
     }
 
-    private InteractionResult interactStorageBlock(
-            StorageBlockBehavior.Controller controller, UseOnContext context, int selected) {
-        StorageSpec spec = STORAGE.get(controller.id());
-        if (spec == null || selected < 0 || selected >= spec.slots()) {
-            return InteractionResult.FAIL;
-        }
-        Player player = (Player) context.getPlayer().platformPlayer();
-        ItemStack hand = player.getInventory().getItemInMainHand();
-        Item stored = controller.item(selected);
-
-        if (hand.isEmpty()) {
-            if (stored == null || stored.isEmpty()) {
-                return InteractionResult.PASS;
-            }
-            Item taken = controller.take(selected);
-            if (taken.isEmpty()) {
-                return InteractionResult.PASS;
-            }
-            player.getInventory().setItemInMainHand(bukkitItem(taken));
-            context.getPlayer().swingHand(context.getHand());
-            playStorageSound(controller.location(), spec, true);
-            return InteractionResult.SUCCESS_AND_CANCEL;
-        }
-
-        String handId = items.id(hand);
-        if (!isBottle(handId)) {
-            player.sendActionBar(Component.translatable(
-                    "message.kaleidoscope_tavern.rack.not_drink"));
-            return InteractionResult.FAIL;
-        }
-        if (spec.blocklistTag() != null
-                && catalog.tag(spec.blocklistTag()).contains(handId)) {
-            player.sendActionBar(Component.translatable(
-                    "message.kaleidoscope_tavern.rack.irregular"));
-            return InteractionResult.FAIL;
-        }
-        if (stored != null && !stored.isEmpty()) {
-            // AbstractStorageBlock returned PASS for an occupied slot, allowing
-            // a drink bottle's ordinary use to continue.
-            return InteractionResult.PASS;
-        }
-
-        ItemStack one = hand.clone();
-        one.setAmount(1);
-        if (!controller.put(selected, BukkitAdaptor.adapt(one))) {
-            return InteractionResult.PASS;
-        }
-        // ItemStack#split consumed one even for creative players in the source.
-        hand.subtract(1);
-        context.getPlayer().swingHand(context.getHand());
-        playStorageSound(controller.location(), spec, false);
-        return InteractionResult.SUCCESS_AND_CANCEL;
-    }
-
     private InteractionResult interact(BukkitFurniture furniture,
                                        InteractEntityContext context) {
-        StorageSpec spec = STORAGE.get(furniture.id());
+        StorageSpec spec = LEGACY_FURNITURE_STORAGE.get(furniture.id());
         if (spec == null) {
             return InteractionResult.PASS;
         }
@@ -381,85 +317,54 @@ public final class DisplayStorageService {
     }
 
     private static void playCabinetSound(BukkitFurniture furniture, boolean taking) {
+        playCabinetSound(furniture.location(), taking);
+    }
+
+    private static void playCabinetSound(Location location, boolean taking) {
         float volume = ThreadLocalRandom.current().nextFloat() * 0.2F + 0.8F;
-        float pitch = ThreadLocalRandom.current().nextFloat() * 0.2F + (taking ? 0.8F : 0.2F);
-        furniture.location().getWorld().playSound(furniture.location(),
+        float pitch = ThreadLocalRandom.current().nextFloat() * 0.2F
+                + (taking ? 0.8F : 0.2F);
+        location.getWorld().playSound(location,
                 "minecraft:block.glass.place", SoundCategory.BLOCKS, volume, pitch);
     }
 
-    private void launchRandomBottle(StorageBlockBehavior.Controller controller) {
-        StorageSpec spec = STORAGE.get(controller.id());
-        if (spec == null) {
-            return;
-        }
-        List<Integer> launchable = new ArrayList<>();
-        for (int slot = 0; slot < spec.slots(); slot++) {
-            Item stored = controller.item(slot);
-            if (stored == null || stored.isEmpty()) {
-                continue;
-            }
-            String id = items.id(bukkitItem(stored));
-            // AbstractStorageBlock first chose among every BottleBlockItem.
-            // A selected plain bottle intentionally consumed the redstone
-            // edge without launching, so preserve that source behavior.
-            if (isBottle(id)) {
-                launchable.add(slot);
-            }
-        }
-        if (launchable.isEmpty()) {
-            return;
-        }
-        int slot = launchable.get(ThreadLocalRandom.current().nextInt(launchable.size()));
-        Item stored = controller.item(slot);
-        if (stored == null) {
-            return;
-        }
+    private void launchConfiguredItem(
+            StorageBlockBehavior.Controller controller,
+            Item stored,
+            StorageBlockConfig.Launch launch) {
         ItemStack projectileItem = bukkitItem(stored);
-        String projectileId = items.id(projectileItem);
-        boolean molotov = projectileId.equals(MOLOTOV);
-        boolean drink = isBottleDrink(projectileId);
-        if (!molotov && !drink) {
+        if (projectileItem.isEmpty()) {
             return;
         }
-        if (controller.take(slot).isEmpty()) {
-            return;
-        }
-        Location origin = launchOrigin(controller);
-        Vector velocity = launchVelocity(controller);
+        Location origin = controller.location();
+        Vector facing = horizontalDirection(controller.facing());
+        origin.add(facing.clone().multiply(launch.originForward()))
+                .add(0, launch.originY(), 0);
+
+        double factor = launch.factorMax() <= launch.factorMin()
+                ? launch.factorMin()
+                : ThreadLocalRandom.current().nextDouble(
+                        launch.factorMin(), launch.factorMax());
+        Vector velocity = switch (launch.direction()) {
+            case FACING -> facing.multiply(factor).setY(launch.verticalFactor() * factor);
+            case OPPOSITE -> facing.multiply(-factor).setY(launch.verticalFactor() * factor);
+            case UP -> new Vector(0, factor, 0);
+        };
         origin.getWorld().spawn(origin, ThrownPotion.class, potion -> {
             potion.setItem(projectileItem);
             potion.setVelocity(velocity);
         });
-        if (drink) {
-            origin.getWorld().playSound(origin,
-                    "kaleidoscope_tavern:block.holder.pop", SoundCategory.BLOCKS, 0.9F, 1.0F);
+        if (launch.sound() != null && launch.soundItems().contains(stored.id())) {
+            playConfiguredSound(origin, launch.sound());
         }
     }
 
-    private static Location launchOrigin(StorageBlockBehavior.Controller controller) {
-        Location location = controller.location();
-        Vector forward = horizontalDirection(controller.facing());
-        return switch (controller.kind()) {
-            case HOLDER -> location.add(forward.clone().multiply(0.5)).add(0, 0.875, 0);
-            case TILTED_RACK -> location.subtract(forward.clone().multiply(0.5)).add(0, 0.875, 0);
-            case CELLAR_CABINET -> location.add(forward.clone().multiply(0.5)).add(0, 0.5, 0);
-            default -> location.add(0, 0.5, 0);
-        };
-    }
-
-    private static Vector launchVelocity(StorageBlockBehavior.Controller controller) {
-        double factor = switch (controller.kind()) {
-            case CIRCULAR_RACK, CELLAR_CABINET ->
-                    ThreadLocalRandom.current().nextDouble(0.5, 2.5);
-            default -> ThreadLocalRandom.current().nextDouble(0.5, 1.5);
-        };
-        Vector forward = horizontalDirection(controller.facing());
-        return switch (controller.kind()) {
-            case CIRCULAR_RACK -> new Vector(0, factor, 0);
-            case TILTED_RACK -> forward.multiply(-factor).setY(0.75 * factor);
-            case HOLDER -> forward.multiply(factor).setY(0.375 * factor);
-            default -> forward.multiply(factor).setY(0.1 * factor);
-        };
+    private static void playConfiguredSound(
+            Location location, StorageBlockConfig.ConfiguredSound sound) {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        location.getWorld().playSound(
+                location, sound.id(), SoundCategory.BLOCKS,
+                sound.sampleVolume(random), sound.samplePitch(random));
     }
 
     private static Vector horizontalDirection(Direction direction) {
@@ -555,15 +460,15 @@ public final class DisplayStorageService {
                 || catalog.hasDrinkEffects(id) && !catalog.isCocktail(id);
     }
 
-    private Optional<ItemStack> storageRenderHelper(String storedId) {
+    private Optional<ItemStack> storageRenderHelper(String storedId, String prefix) {
         if (!storedId.startsWith(PREFIX)) {
             return Optional.empty();
         }
-        return items.build(PREFIX + "_render/storage/" + storedId.substring(PREFIX.length()), null);
+        return items.buildVisual(prefix + storedId.substring(PREFIX.length()));
     }
 
-    private Optional<ItemStack> storageRenderItem(ItemStack stored) {
-        Optional<ItemStack> optionalHelper = storageRenderHelper(items.id(stored));
+    private Optional<ItemStack> storageRenderItem(ItemStack stored, String prefix) {
+        Optional<ItemStack> optionalHelper = storageRenderHelper(items.id(stored), prefix);
         if (optionalHelper.isEmpty()) {
             return Optional.empty();
         }
@@ -596,7 +501,8 @@ public final class DisplayStorageService {
                     && catalog.tag(IRREGULAR_TAG).contains(items.id(bukkitItem(first)));
         }
         ItemStack storedStack = bukkitItem(stored);
-        ItemStack shown = storageRenderItem(storedStack).orElseGet(storedStack::clone);
+        ItemStack shown = storageRenderItem(
+                storedStack, PREFIX + "_render/storage/").orElseGet(storedStack::clone);
         shown.setAmount(1);
         StorageSemantics.Visual visual = StorageSemantics.visual(
                 spec.kind(), slot, irregular, facingAxisX(furniture));
@@ -616,7 +522,9 @@ public final class DisplayStorageService {
             return Item.empty();
         }
         ItemStack storedStack = bukkitItem(stored);
-        ItemStack shown = storageRenderItem(storedStack).orElseGet(storedStack::clone);
+        ItemStack shown = storageRenderItem(
+                storedStack, controller.config().renderItemPrefix())
+                .orElseGet(storedStack::clone);
         shown.setAmount(1);
         return BukkitAdaptor.adapt(shown);
     }
@@ -645,7 +553,7 @@ public final class DisplayStorageService {
     }
 
     private static StorageSpec storageSpec(BukkitFurniture furniture) {
-        return furniture == null ? null : STORAGE.get(furniture.id());
+        return furniture == null ? null : LEGACY_FURNITURE_STORAGE.get(furniture.id());
     }
 
     private void warnReflectionBridge() {

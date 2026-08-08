@@ -249,12 +249,54 @@ class TickingSchedulerTest {
         core.schedule("B", 5);
         core.schedule("C", 5);
 
+        assertEquals(1, core.schedulerStats().dueBucketCount());
+
         advanceTo(5);
 
         assertEquals(List.of("A", "B", "C"), order);
         assertEquals(1, a.tickCount);
         assertEquals(1, b.tickCount);
         assertEquals(1, c.tickCount);
+    }
+
+    @Test
+    void coalescesLargeSameTickBatchIntoOnePriorityQueueNode() {
+        int furnitureCount = 2_000;
+        List<FakeHost> hosts = new ArrayList<>(furnitureCount);
+        for (int index = 0; index < furnitureCount; index++) {
+            FakeHost furniture = host("batch-" + index);
+            furniture.shouldScheduleResult = false;
+            hosts.add(furniture);
+            core.schedule(furniture.id, 50);
+        }
+
+        TickingScheduler.SchedulerStats queued = core.schedulerStats();
+        assertEquals(furnitureCount, queued.queueSize());
+        assertEquals(furnitureCount, queued.liveQueuedRuns());
+        assertEquals(1, queued.dueBucketCount());
+
+        advanceTo(50);
+
+        for (FakeHost furniture : hosts) {
+            assertEquals(1, furniture.tickCount);
+        }
+        assertEquals(0, core.schedulerStats().dueBucketCount());
+        assertInvariant();
+    }
+
+    @Test
+    void postTickDecisionAvoidsRepeatingAnExpensiveScheduleCheck() {
+        FakeHost furniture = host("A");
+        furniture.postTickScheduleDecision = true;
+        furniture.nextDelay = 20;
+
+        core.schedule("A", 5);
+        advanceTo(5);
+
+        assertEquals(1, furniture.tickCount);
+        assertEquals(0, furniture.shouldScheduleCalls);
+        assertEquals(25, core.schedulerStats().nextLiveDueTick());
+        assertInvariant();
     }
 
     // ===== 11. 队头 stale 清理 =====
@@ -347,6 +389,29 @@ class TickingSchedulerTest {
         assertInvariant();
     }
 
+    // ===== 审查补充 4: nextDelay() 抛异常 =====
+
+    @Test
+    void nextDelayFailureStillCompletesTheRunAndAllowsRecovery() {
+        FakeHost a = host("A");
+        a.nextDelayFailure = new IllegalStateException("nextDelay boom");
+
+        core.schedule("A", 10);
+        advanceTo(10);
+
+        // 任务已出队执行，但延迟计算失败：不得按重调度处理。
+        assertEquals(1, a.tickCount);
+        assertEquals(1, a.failures.size());
+        assertEquals(0, core.schedulerStats().liveQueuedRuns());
+
+        // scheduledRun 已被 finishRunIfCurrent 清除，reconcile 可以重建任务。
+        a.nextDelayFailure = null;
+        core.schedule("A", 10);
+        advanceTo(20);
+        assertEquals(2, a.tickCount);
+        assertInvariant();
+    }
+
     // ===== 审查补充 8: 取消最早任务不延迟后续 live 任务 =====
 
     @Test
@@ -402,6 +467,75 @@ class TickingSchedulerTest {
         assertInvariant();
     }
 
+    // ===== 14. reconcile 两段式调度 =====
+
+    @Test
+    void reconcileFalseWithoutRunDoesNotTouchWakeOrQueue() {
+        FakeHost a = host("A");
+        a.shouldScheduleResult = false;   // desired=false
+
+        int wakeSchedulesBefore = wake.scheduleCount;
+        int queueSizeBefore = core.schedulerStats().queueSize();
+
+        assertEquals(TickingScheduler.ReconcileResult.UNCHANGED,
+                core.reconcile("A", false));
+
+        assertEquals(wakeSchedulesBefore, wake.scheduleCount);
+        assertEquals(queueSizeBefore, core.schedulerStats().queueSize());
+        assertInvariant();
+    }
+
+    @Test
+    void reconcileTrueWithExistingRunKeepsTheDueTickAndAddsNothing() {
+        FakeHost a = host("A");
+
+        core.schedule("A", 100);
+        long dueBefore = core.schedulerStats().nextLiveDueTick();
+
+        assertEquals(TickingScheduler.ReconcileResult.UNCHANGED,
+                core.reconcile("A", true));
+
+        assertEquals(dueBefore, core.schedulerStats().nextLiveDueTick());
+        assertEquals(1, core.schedulerStats().liveQueuedRuns());
+        assertInvariant();
+    }
+
+    @Test
+    void needsScheduleThenScheduleIfAbsentCreatesExactlyOneRun() {
+        FakeHost a = host("A");
+
+        assertEquals(TickingScheduler.ReconcileResult.NEEDS_SCHEDULE,
+                core.reconcile("A", true));
+        core.scheduleIfAbsent("A", 100);
+        core.scheduleIfAbsent("A", 50);   // 已有任务：忽略
+
+        assertEquals(1, core.schedulerStats().liveQueuedRuns());
+        assertEquals(100, core.schedulerStats().nextLiveDueTick());
+
+        advanceTo(100);
+        assertEquals(1, a.tickCount);
+        assertInvariant();
+    }
+
+    @Test
+    void reconcileFalseInvalidatesInFlightRunSoItNeverDispatches() {
+        FakeHost a = host("A");
+        a.shouldScheduleResult = false;
+
+        core.schedule("A", 50);
+        clock.tick = 50;
+        List<TickingScheduler.ScheduledRun> due = core.collectDue();   // 已出队 in-flight
+
+        assertEquals(TickingScheduler.ReconcileResult.CANCELLED,
+                core.reconcile("A", false));
+
+        core.dispatchCollected(due);
+        core.finishDispatch();
+
+        assertEquals(0, a.tickCount);
+        assertInvariant();
+    }
+
     // ===== 工具 =====
 
     private void advanceTo(long tick) {
@@ -421,6 +555,8 @@ class TickingSchedulerTest {
         TickingScheduler.SchedulerStats stats = core.schedulerStats();
         assertTrue(stats.liveQueuedRuns() >= 0);
         assertTrue(stats.staleQueuedRuns() >= 0);
+        assertTrue(stats.dueBucketCount() >= 0);
+        assertTrue(stats.dueBucketCount() <= stats.queueSize());
         assertEquals(stats.queueSize(), stats.liveQueuedRuns() + stats.staleQueuedRuns());
     }
 
@@ -483,11 +619,13 @@ class TickingSchedulerTest {
         boolean handlerBound = true;
         boolean handlerChanged;
         boolean shouldScheduleResult = true;
+        Boolean postTickScheduleDecision;
         int nextDelay = 1;
         Runnable tickAction = () -> {
         };
         RuntimeException tickFailure;
         RuntimeException shouldScheduleFailure;
+        RuntimeException nextDelayFailure;
 
         FakeHost(String id) {
             this.id = id;
@@ -522,6 +660,11 @@ class TickingSchedulerTest {
         }
 
         @Override
+        public Boolean postTickScheduleDecision(String id) {
+            return postTickScheduleDecision;
+        }
+
+        @Override
         public void onHandlerMissing(String id) {
             onHandlerMissingCount++;
         }
@@ -533,6 +676,9 @@ class TickingSchedulerTest {
 
         @Override
         public int nextDelay(String id) {
+            if (nextDelayFailure != null) {
+                throw nextDelayFailure;
+            }
             return nextDelay;
         }
 

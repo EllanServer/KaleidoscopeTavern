@@ -6,7 +6,8 @@
       "sprite": "kaleidoscope_tavern:block/mixology/brass_heart",
       "force_translucent": true
     },
-    "particle": "block/glass"
+    "particle": "block/glass",
+    "opaque_detail": "kaleidoscope_tavern:furniture/placed_drink/opaque/kaleidoscope_tavern/block/mixology/brass_heart"
   },
   "elements": [
     {
@@ -855,7 +856,7 @@
             7
           ],
           "rotation": 270,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -865,7 +866,7 @@
             7
           ],
           "rotation": 90,
-          "texture": "#1"
+          "texture": "#opaque_detail"
         }
       }
     },

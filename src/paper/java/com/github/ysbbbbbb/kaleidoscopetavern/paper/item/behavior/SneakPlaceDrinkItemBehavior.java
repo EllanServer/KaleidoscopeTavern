@@ -1,7 +1,9 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior;
 
 import net.momirealms.craftengine.bukkit.item.behavior.FurnitureItemBehavior;
+import net.momirealms.craftengine.core.entity.player.InteractionHand;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
 import net.momirealms.craftengine.core.util.Direction;
@@ -9,9 +11,10 @@ import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.BlockHitResult;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.Vec3d;
+import net.momirealms.craftengine.core.world.World;
 import net.momirealms.craftengine.core.world.context.UseOnContext;
-import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.EquipmentSlot;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,9 +27,14 @@ public final class SneakPlaceDrinkItemBehavior extends ItemBehavior {
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
 
     private final FurnitureItemBehavior furnitureItem;
+    private final boolean syncActiveUse;
 
-    private SneakPlaceDrinkItemBehavior(FurnitureItemBehavior furnitureItem) {
+    private SneakPlaceDrinkItemBehavior(
+            FurnitureItemBehavior furnitureItem,
+            boolean syncActiveUse
+    ) {
         this.furnitureItem = furnitureItem;
+        this.syncActiveUse = syncActiveUse;
     }
 
     /** Must run from the plugin's onLoad, before CraftEngine parses projects. */
@@ -34,8 +42,29 @@ public final class SneakPlaceDrinkItemBehavior extends ItemBehavior {
         if (REGISTERED.compareAndSet(false, true)) {
             ItemBehaviors.register(TYPE, (pack, path, id, section) ->
                     new SneakPlaceDrinkItemBehavior(
-                            FurnitureItemBehavior.FACTORY.create(pack, path, id, section)));
+                            FurnitureItemBehavior.FACTORY.create(pack, path, id, section),
+                            section.getBoolean("sync_active_use", false)));
         }
+    }
+
+    @Override
+    public InteractionResult use(World world, Player player, InteractionHand hand) {
+        if (syncActiveUse && player != null
+                && player.platformPlayer() instanceof org.bukkit.entity.Player bukkitPlayer) {
+            // CraftEngine's custom item callback can otherwise leave the use
+            // animation as client-only prediction. Start the native server
+            // state so nearby clients receive the raised-hand pose as well.
+            bukkitPlayer.startUsingItem(equipmentSlot(hand));
+        }
+
+        // Native item use still owns consumption and release handling.
+        return InteractionResult.PASS;
+    }
+
+    static EquipmentSlot equipmentSlot(InteractionHand hand) {
+        return hand == InteractionHand.OFF_HAND
+                ? EquipmentSlot.OFF_HAND
+                : EquipmentSlot.HAND;
     }
 
     @Override
@@ -47,11 +76,11 @@ public final class SneakPlaceDrinkItemBehavior extends ItemBehavior {
         }
 
         BlockPos clickedPos = context.getClickedPos();
-        World world = (World) context.getLevel().platformWorld();
-        Block clicked = world.getBlockAt(clickedPos.x(), clickedPos.y(), clickedPos.z());
+        org.bukkit.World bukkitWorld = (org.bukkit.World) context.getLevel().platformWorld();
+        Block clicked = bukkitWorld.getBlockAt(clickedPos.x(), clickedPos.y(), clickedPos.z());
         Block target = clicked.isReplaceable()
                 ? clicked
-                : world.getBlockAt(
+                : bukkitWorld.getBlockAt(
                         clickedPos.x() + context.getClickedFace().stepX(),
                         clickedPos.y() + context.getClickedFace().stepY(),
                         clickedPos.z() + context.getClickedFace().stepZ());

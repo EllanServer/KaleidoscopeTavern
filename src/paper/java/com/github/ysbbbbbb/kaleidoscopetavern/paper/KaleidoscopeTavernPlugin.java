@@ -13,16 +13,19 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BoardTextService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BottlePlacementService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.BottleFurnitureService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.DisplayStorageService;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.FurnitureConnectionService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.MolotovService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.PressingTubService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.ShakerVisualService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.StationService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.TapService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.BlockService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.ChalkboardBlockBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.ConnectedBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.GrapeSeasonGate;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.IncenseBlockBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.LegacySofaBlockMigrationService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.PressingTubBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.StorageBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TapBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TrellisBehavior;
@@ -32,7 +35,8 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.AnimatedItemF
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BoardTextFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BottleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.PressingTubFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LegacyConnectedBlockMigrationFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LegacyPressingTubMigrationFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StateFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
@@ -62,6 +66,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -77,8 +82,13 @@ import java.util.logging.Level;
 public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listener, TabExecutor {
     private static final String NAMESPACE = "kaleidoscope_tavern";
     private static final int EXPECTED_ITEMS = 660; // 157 public items + 503 private render helpers
-    private static final int EXPECTED_BLOCKS = 38;
-    private static final int EXPECTED_FURNITURE = 136;
+    private static final int EXPECTED_BLOCKS = 60; // + sofas, table, counter and two cabinets
+    private static final int EXPECTED_FURNITURE = 137; // includes one-release migration-only definitions
+    // 已验证的 CraftEngine minor 版本。低于 26.7 直接拒绝启动（使用了
+    // PrioritizedFallOnHandler / BlockEntityElement Experimental / NMS proxy 等
+    // 非稳定 API），高于已验证 minor 仅警告。
+    private static final int MIN_CE_MAJOR = 26;
+    private static final int MIN_CE_MINOR = 7;
 
     private PackInstaller.Result packResult;
     private CustomCropsInstaller.Result customCropsResult;
@@ -86,6 +96,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     private ContentCatalog catalog;
     private ItemService items;
     private StationService stations;
+    private PressingTubService pressingTubs;
     private EffectService effects;
     private BoardTextService boards;
     private TapService taps;
@@ -93,8 +104,8 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     private AmbientFurnitureService ambientFurniture;
     private BarStoolVisualService barStoolVisuals;
     private ShakerVisualService shakerVisuals;
-    private FurnitureConnectionService furnitureConnections;
     private BottleFurnitureService bottleFurniture;
+    private LegacySofaBlockMigrationService legacySofaBlocks;
     private BlockService blocks;
     private EffectHudPlaceholder effectHudPlaceholder;
 
@@ -107,14 +118,17 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             WildGrapevineBehavior.register();
             IncenseBlockBehavior.register();
             ChalkboardBlockBehavior.register();
+            ConnectedBlockBehavior.register();
             StorageBlockBehavior.register();
+            PressingTubBlockBehavior.register();
             TapBlockBehavior.register();
             StateFurnitureBehavior.register();
+            LegacyConnectedBlockMigrationFurnitureBehavior.register();
+            LegacyPressingTubMigrationFurnitureBehavior.register();
             AnimatedItemFurnitureBehavior.register();
             BoardTextFurnitureBehavior.register();
             BottleFurnitureBehavior.register();
             LifecycleFurnitureBehavior.register();
-            PressingTubFurnitureBehavior.register();
             TickingFurnitureBehavior.register();
             StationInteractionFurnitureBehavior.register();
             StationVisualFurnitureBehavior.register();
@@ -142,6 +156,12 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+        // fail-fast：低于已验证的 CraftEngine 版本拒绝启动。
+        verifyCraftEngineVersion();
+        if (!isEnabled()) {
+            return;
+        }
+        IncenseBlockBehavior.prewarmRuntime();
         try {
             CustomCropsBridge.requireReady();
         } catch (RuntimeException | LinkageError exception) {
@@ -159,18 +179,29 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
 
         GrapeSeasonGate.configure(getConfig(), getLogger());
         items = new ItemService(this, catalog);
+        try {
+            items.warmCocktailFurnitureSerialization();
+        } catch (RuntimeException | LinkageError exception) {
+            // Placement remains functional; this only moves CraftEngine's
+            // lazy item-codec initialization away from the first interaction.
+            getLogger().log(Level.WARNING,
+                    "Unable to warm cocktail furniture item serialization", exception);
+        }
         Messages messages = new Messages(this);
         shakerVisuals = new ShakerVisualService(this, catalog, items);
-        stations = new StationService(this, catalog, items, messages, shakerVisuals);
+        pressingTubs = new PressingTubService(this, catalog, items);
+        stations = new StationService(
+                this, catalog, items, messages, shakerVisuals, pressingTubs);
         effects = new EffectService(this, catalog, items);
         boards = new BoardTextService(this);
         taps = new TapService(this, stations, items);
         displayStorage = new DisplayStorageService(this, catalog, items);
         ambientFurniture = new AmbientFurnitureService();
         barStoolVisuals = new BarStoolVisualService(this, items);
-        furnitureConnections = new FurnitureConnectionService(this);
+        legacySofaBlocks = new LegacySofaBlockMigrationService(this);
 
         getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(legacySofaBlocks, this);
         blocks = new BlockService(catalog);
         getServer().getPluginManager().registerEvents(new MolotovService(this, items), this);
         getServer().getPluginManager().registerEvents(new BottlePlacementService(this, catalog, items), this);
@@ -181,8 +212,11 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         getServer().getPluginManager().registerEvents(stations, this);
         getServer().getPluginManager().registerEvents(effects, this);
         TickingFurnitureBehavior.start(this);
+        LegacyConnectedBlockMigrationFurnitureBehavior.bind(this);
+        LegacyPressingTubMigrationFurnitureBehavior.bind(this);
         blocks.start();
         stations.start();
+        pressingTubs.start();
         effects.start();
         bottleFurniture.start();
         boards.start();
@@ -191,7 +225,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         ambientFurniture.start();
         barStoolVisuals.start();
         shakerVisuals.start();
-        furnitureConnections.start();
+        legacySofaBlocks.start();
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             effectHudPlaceholder = new EffectHudPlaceholder(this, effects);
@@ -217,15 +251,25 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
 
     @Override
     public void onDisable() {
+        // Stop dispatching new migration tasks before the scheduler is torn
+        // down; already queued tasks are cancelled with the plugin.
+        LegacyConnectedBlockMigrationFurnitureBehavior.unbind(this);
+        LegacyPressingTubMigrationFurnitureBehavior.unbind(this);
         if (effectHudPlaceholder != null) {
             effectHudPlaceholder.unregister();
             effectHudPlaceholder = null;
+        }
+        if (legacySofaBlocks != null) {
+            legacySofaBlocks.stop();
         }
         if (blocks != null) {
             blocks.stop();
         }
         if (stations != null) {
             stations.stop();
+        }
+        if (pressingTubs != null) {
+            pressingTubs.stop();
         }
         if (effects != null) {
             effects.stop();
@@ -251,9 +295,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (shakerVisuals != null) {
             shakerVisuals.stop();
         }
-        if (furnitureConnections != null) {
-            furnitureConnections.stop();
-        }
         TickingFurnitureBehavior.stop();
     }
 
@@ -263,11 +304,61 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     }
 
     private void refreshRuntimeContent(boolean startup) {
+        if (items != null) {
+            items.clearVisualCache();
+        }
         int trellisShapes = TrellisBlockShape.install();
         if (trellisShapes == 0) {
             getLogger().warning("No trellis carrier shapes were available after CraftEngine loading");
         }
+        // 结构、状态笛卡尔积、carrier、原生行为与物品路由都由
+        // validate_pack.py 在构建期校验；运行时只检查 CE 已加载的内容数量。
         verifyContent(startup);
+        if (legacySofaBlocks != null) {
+            legacySofaBlocks.rescanLoadedChunks();
+        }
+    }
+
+    /** 启动时 fail-fast：拒绝低于已验证的 CraftEngine minor 版本。 */
+    private void verifyCraftEngineVersion() {
+        Plugin craftEngine = getServer().getPluginManager().getPlugin("CraftEngine");
+        if (craftEngine == null) {
+            getLogger().severe("未找到 CraftEngine 插件（depend 声明），插件无法启动。");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        int[] parts = parseVersion(craftEngine.getPluginMeta().getVersion());
+        if (parts.length < 2) {
+            getLogger().warning("无法解析 CraftEngine 版本 "
+                    + craftEngine.getPluginMeta().getVersion() + "，跳过版本校验。");
+            return;
+        }
+        if (parts[0] < MIN_CE_MAJOR
+                || (parts[0] == MIN_CE_MAJOR && parts[1] < MIN_CE_MINOR)) {
+            getLogger().severe("CraftEngine " + craftEngine.getPluginMeta().getVersion()
+                    + " 低于已验证的 " + MIN_CE_MAJOR + "." + MIN_CE_MINOR
+                    + "（压榨桶使用 PrioritizedFallOnHandler / BlockEntityElement "
+                    + "Experimental / NMS proxy 等非稳定 API），拒绝启动。");
+            getServer().getPluginManager().disablePlugin(this);
+        } else if (parts[1] > MIN_CE_MINOR) {
+            getLogger().warning("CraftEngine " + craftEngine.getPluginMeta().getVersion()
+                    + " 高于已验证的 " + MIN_CE_MAJOR + "." + MIN_CE_MINOR
+                    + "，压榨桶 BlockEntityElement 属于 Experimental API，"
+                    + "建议实测后再正式启用。");
+        }
+    }
+
+    private static int[] parseVersion(String version) {
+        String[] segments = version.split("\\.");
+        int[] parts = new int[segments.length];
+        for (int index = 0; index < segments.length; index++) {
+            try {
+                parts[index] = Integer.parseInt(segments[index].replaceAll("[^0-9].*$", ""));
+            } catch (NumberFormatException exception) {
+                return new int[]{};
+            }
+        }
+        return parts;
     }
 
     @Override
@@ -296,6 +387,10 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             if (stations != null) {
                 stations.stop();
                 stations.start();
+            }
+            if (pressingTubs != null) {
+                pressingTubs.stop();
+                pressingTubs.start();
             }
             if (effects != null) {
                 effects.stop();
@@ -527,6 +622,38 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
                 + "，酒桶 " + catalog.barrelRecipes().size()
                 + "，摇壶 " + catalog.shakerRecipes().size()
                 + "，饮用效果 " + catalog.effectEntryCount()));
+        EffectService.EffectStats effectStats = effects.effectStats();
+        sender.sendMessage(Component.text("效果追踪：事件 " + effectStats.trackEvents()
+                + "，命中 " + effectStats.trackHits()
+                + "，批处理 " + effectStats.trackFlushes()
+                + "，metadata 构建 " + effectStats.metadataBuilds()));
+        if (legacySofaBlocks != null) {
+            LegacySofaBlockMigrationService.MigrationStats sofaMigration =
+                    legacySofaBlocks.stats();
+            if (sofaMigration.migrated() > 0 || sofaMigration.failures() > 0) {
+                sender.sendMessage(Component.text("旧彩色沙发方块迁移：成功 "
+                        + sofaMigration.migrated() + "，失败 "
+                        + sofaMigration.failures()));
+            }
+        }
+        LegacyConnectedBlockMigrationFurnitureBehavior.MigrationStats connectedMigration =
+                LegacyConnectedBlockMigrationFurnitureBehavior.stats();
+        if (connectedMigration.migrated() > 0 || connectedMigration.conflicts() > 0
+                || connectedMigration.failures() > 0) {
+            sender.sendMessage(Component.text("旧连接家具迁移：成功 "
+                    + connectedMigration.migrated() + "，冲突 "
+                    + connectedMigration.conflicts() + "，失败 "
+                    + connectedMigration.failures()));
+        }
+        LegacyPressingTubMigrationFurnitureBehavior.MigrationStats migration =
+                LegacyPressingTubMigrationFurnitureBehavior.stats();
+        if (migration.loaded() > 0 || migration.migrated() > 0
+                || migration.conflicts() > 0 || migration.failures() > 0) {
+            sender.sendMessage(Component.text("旧压榨桶迁移：已加载 " + migration.loaded()
+                    + "，成功迁移 " + migration.migrated()
+                    + "，冲突 " + migration.conflicts()
+                    + "，失败 " + migration.failures()));
+        }
         if (packResult != null) {
             sender.sendMessage(Component.text("内容包目录：" + packResult.target()));
         }

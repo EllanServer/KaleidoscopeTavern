@@ -48,6 +48,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class IncenseBlockBehavior extends BukkitBlockBehavior implements EntityBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "incense");
+    private static final int MEAN_PARTICLE_INTERVAL = 49;
+    private static final int PARTICLE_DELAY_BOUND = MEAN_PARTICLE_INTERVAL * 2 - 1;
+    private static final int DAMAGE_INTERVAL = 120;
+    private static final int PARTICLE_PHASE_SALT = 0x4B1D_5EED;
+    private static final int DAMAGE_PHASE_SALT = 0x51A7_0F1D;
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static final DamageSource MAGIC_DAMAGE =
             DamageSource.builder(DamageType.MAGIC).build();
@@ -75,8 +80,14 @@ public final class IncenseBlockBehavior extends BukkitBlockBehavior implements E
 
     public static void register() {
         if (REGISTERED.compareAndSet(false, true)) {
+            Controller.prewarm();
             BlockBehaviors.register(TYPE, IncenseBlockBehavior::new);
         }
+    }
+
+    /** Moves Bukkit's lazy entity-tag bridge off the first damage pulse. */
+    public static void prewarmRuntime() {
+        undeadTag();
     }
 
     @Override
@@ -114,7 +125,7 @@ public final class IncenseBlockBehavior extends BukkitBlockBehavior implements E
                 level, args[2], next.customBlockState().minecraftState(),
                 UpdateFlags.UPDATE_CLIENTS);
         if (wasOpen != powered) {
-            World world = (World) net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy
+            World world = net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy
                     .INSTANCE.getWorld(level);
             if (world != null) {
                 playToggleSound(new Location(world,
@@ -143,25 +154,37 @@ public final class IncenseBlockBehavior extends BukkitBlockBehavior implements E
                 SoundCategory.BLOCKS, 1.0F, 1.0F);
     }
 
-    private void tick(CEWorld ceWorld, BlockPos pos, ImmutableBlockState state) {
+    private void tick(CEWorld ceWorld, BlockPos pos, ImmutableBlockState state,
+                      Controller controller) {
         World world = (World) ceWorld.world().platformWorld();
         if (world == null) {
             return;
         }
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        if (random.nextInt(49) == 0) {
-            spawnParticles(world, pos, state.get(openProperty), random);
+
+        boolean particleDue = controller.takeParticleDue();
+        boolean damageDue = controller.takeDamageDue();
+        if (!particleDue && !damageDue) {
+            return;
         }
-        if (state.get(openProperty) && world.getGameTime() % 120L == 0L) {
+
+        boolean open = state.get(openProperty);
+        if (particleDue) {
+            ThreadLocalRandom random = ThreadLocalRandom.current();
+            controller.scheduleNextParticle(random);
+            spawnParticles(world, pos, open, random);
+        }
+        if (damageDue && open) {
             hurtNearbyUndead(world, pos);
         }
     }
 
     private void spawnParticles(World world, BlockPos pos, boolean open,
                                 ThreadLocalRandom random) {
-        Location center = new Location(world, pos.x() + 0.5, pos.y() + 0.5, pos.z() + 0.5);
+        double centerX = pos.x() + 0.5;
+        double centerY = pos.y() + 0.5;
+        double centerZ = pos.z() + 0.5;
         if (random.nextInt(3) == 0) {
-            world.spawnParticle(smallParticle, center, 0,
+            world.spawnParticle(smallParticle, centerX, centerY, centerZ, 0,
                     random.nextGaussian() * 0.01,
                     0.02 + random.nextDouble() * 0.01,
                     random.nextGaussian() * 0.01, 1);
@@ -170,11 +193,13 @@ public final class IncenseBlockBehavior extends BukkitBlockBehavior implements E
             return;
         }
         for (int index = 0; index < 5; index++) {
-            Location point = center.clone().add(
-                    random.nextDouble(-16.0, 16.0),
-                    largeParticleYOffset + random.nextDouble() * largeParticleYRange,
-                    random.nextDouble(-16.0, 16.0));
-            world.spawnParticle(largeParticle, point, 1, 0, 0, 0, 0);
+            world.spawnParticle(
+                    largeParticle,
+                    centerX + random.nextDouble(-16.0, 16.0),
+                    centerY + largeParticleYOffset
+                            + random.nextDouble() * largeParticleYRange,
+                    centerZ + random.nextDouble(-16.0, 16.0),
+                    1, 0, 0, 0, 0);
         }
     }
 
@@ -213,23 +238,61 @@ public final class IncenseBlockBehavior extends BukkitBlockBehavior implements E
         }
     }
 
-    private static final class Controller extends BlockEntityController {
+    private static final class Controller extends BlockEntityController
+            implements BlockEntityTicker<Controller> {
         private final IncenseBlockBehavior behavior;
+        private int particleDelay;
+        private int damageDelay;
 
         private Controller(BlockEntity blockEntity, IncenseBlockBehavior behavior) {
             super(blockEntity);
             this.behavior = behavior;
+            int positionHash = blockEntity.pos.hashCode();
+            this.particleDelay = Math.floorMod(
+                    positionHash ^ PARTICLE_PHASE_SALT, MEAN_PARTICLE_INTERVAL);
+            this.damageDelay = Math.floorMod(
+                    Integer.rotateLeft(positionHash, 13) ^ DAMAGE_PHASE_SALT,
+                    DAMAGE_INTERVAL);
+        }
+
+        private static void prewarm() {
+            // Loads the controller and ticker interface before the first live
+            // incense block entity is constructed.
+        }
+
+        private boolean takeParticleDue() {
+            if (particleDelay > 0) {
+                particleDelay--;
+                return false;
+            }
+            return true;
+        }
+
+        private void scheduleNextParticle(ThreadLocalRandom random) {
+            // Uniform 1..97 tick gaps preserve the previous mean interval of
+            // 49 ticks while reducing random draws by roughly 49x.
+            particleDelay = random.nextInt(PARTICLE_DELAY_BOUND);
+        }
+
+        private boolean takeDamageDue() {
+            if (damageDelay > 0) {
+                damageDelay--;
+                return false;
+            }
+            damageDelay = DAMAGE_INTERVAL - 1;
+            return true;
         }
 
         @Override
         public <C extends BlockEntityController> BlockEntityTicker<C> createBlockEntityTicker(
                 CEWorld world, ImmutableBlockState blockState) {
-            return createTickerHelper(Controller::tick);
+            return createTickerHelper(this);
         }
 
-        private static void tick(CEWorld world, BlockPos pos, ImmutableBlockState state,
-                                 Controller controller) {
-            controller.behavior.tick(world, pos, state);
+        @Override
+        public void tick(CEWorld world, BlockPos pos, ImmutableBlockState state,
+                         Controller controller) {
+            controller.behavior.tick(world, pos, state, controller);
         }
     }
 }

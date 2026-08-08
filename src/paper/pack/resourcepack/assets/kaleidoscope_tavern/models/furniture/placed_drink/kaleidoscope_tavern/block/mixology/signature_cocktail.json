@@ -10,7 +10,8 @@
       "sprite": "kaleidoscope_tavern:block/mixology/signature_cocktail",
       "force_translucent": true
     },
-    "particle": "block/glass"
+    "particle": "block/glass",
+    "opaque_detail": "kaleidoscope_tavern:furniture/placed_drink/opaque/kaleidoscope_tavern/block/mixology/signature_cocktail"
   },
   "elements": [
     {
@@ -922,7 +923,7 @@
             2,
             12
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -931,7 +932,7 @@
             2,
             12
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -940,7 +941,7 @@
             2,
             12
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -949,7 +950,7 @@
             2,
             12
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -958,7 +959,7 @@
             2,
             9.5
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -967,7 +968,7 @@
             2,
             9.5
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         }
       }
     },
@@ -1001,7 +1002,7 @@
             8,
             8
           ],
-          "texture": "#1",
+          "texture": "#opaque_detail",
           "tintindex": 0
         },
         "south": {
@@ -1011,7 +1012,7 @@
             8,
             8
           ],
-          "texture": "#1",
+          "texture": "#opaque_detail",
           "tintindex": 0
         }
       }
@@ -1046,7 +1047,7 @@
             8,
             8
           ],
-          "texture": "#1",
+          "texture": "#opaque_detail",
           "tintindex": 0
         },
         "west": {
@@ -1056,7 +1057,7 @@
             8,
             8
           ],
-          "texture": "#1",
+          "texture": "#opaque_detail",
           "tintindex": 0
         }
       }

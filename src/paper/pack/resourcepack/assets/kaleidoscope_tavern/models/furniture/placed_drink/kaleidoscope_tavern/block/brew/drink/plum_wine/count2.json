@@ -6,10 +6,7 @@
     32
   ],
   "textures": {
-    "0": {
-      "sprite": "kaleidoscope_tavern:block/brew/plum_wine",
-      "force_translucent": true
-    },
+    "0": "kaleidoscope_tavern:block/brew/plum_wine",
     "particle": "kaleidoscope_tavern:block/brew/plum_wine"
   },
   "elements": [

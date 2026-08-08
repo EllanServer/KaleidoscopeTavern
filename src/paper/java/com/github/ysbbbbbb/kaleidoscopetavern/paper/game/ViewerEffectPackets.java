@@ -1,26 +1,23 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game;
 
+import net.momirealms.craftengine.bukkit.entity.data.LivingEntityData;
 import net.momirealms.craftengine.proxy.bukkit.craftbukkit.entity.CraftEntityProxy;
-import net.momirealms.craftengine.proxy.bukkit.craftbukkit.CraftWorldProxy;
 import net.momirealms.craftengine.proxy.minecraft.network.chat.ComponentProxy;
 import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.ClientboundSetEntityDataPacketProxy;
 import net.momirealms.craftengine.proxy.minecraft.network.syncher.EntityDataSerializersProxy;
 import net.momirealms.craftengine.proxy.minecraft.network.syncher.SynchedEntityDataProxy;
-import net.momirealms.craftengine.proxy.minecraft.server.level.ServerLevelProxy;
 import net.momirealms.craftengine.proxy.minecraft.server.level.ServerPlayerProxy;
 import net.momirealms.craftengine.proxy.minecraft.server.network.ServerPlayerConnectionProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.entity.EntityProxy;
 import org.bukkit.Color;
 import org.bukkit.Particle;
-import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,70 +60,41 @@ final class ViewerEffectPackets {
     }
 
     /**
-     * Builds the two LivingEntity metadata values used by the client to render
-     * potion swirls. The server-owned particle list is retained and Tavern's
-     * cached particle options are appended without mutating the real entity.
+     * 读取实体真实的 LivingEntity 效果粒子 metadata（纯原版状态）。由
+     * {@link net.momirealms.craftengine.bukkit.entity.data.LivingEntityData} 提供
+     * 与 CE 固定版本绑定的 accessor，不需要 Tavern 自行扫描字段 ID。
      */
-    static List<Object> effectParticleMetadata(Entity target, Collection<Object> customParticles) {
-        Object targetHandle = CraftEntityProxy.INSTANCE.getEntity(target);
-        Object entityData = EntityProxy.INSTANCE.getEntityData(targetHandle);
-        List<Object> packed = SynchedEntityDataProxy.INSTANCE.packAll(entityData);
-        Object serverParticles = findDataValueBySerializer(
-                packed, EntityDataSerializersProxy.PARTICLES);
-        if (serverParticles == null) {
-            throw new IllegalStateException(
-                    "Paper 26.2 LivingEntity effect-particle metadata is missing");
-        }
-
-        Object rawParticles = SynchedEntityDataProxy.DataValueProxy.INSTANCE
-                .getValue(serverParticles);
-        if (!(rawParticles instanceof List<?> vanillaParticles)) {
-            throw new IllegalStateException(
-                    "Paper 26.2 LivingEntity effect-particle metadata is not a list");
-        }
-
-        int particleId = SynchedEntityDataProxy.DataValueProxy.INSTANCE.getId(serverParticles);
-        // Paper 26.2 defines DATA_EFFECT_AMBIENCE_ID immediately after
-        // DATA_EFFECT_PARTICLES; validate both its id and serializer at runtime.
-        Object serverAmbient = findDataValue(packed, particleId + 1);
-        if (serverAmbient == null
-                || SynchedEntityDataProxy.DataValueProxy.INSTANCE.getSerializer(serverAmbient)
-                != EntityDataSerializersProxy.BOOLEAN
-                || !(SynchedEntityDataProxy.DataValueProxy.INSTANCE
-                .getValue(serverAmbient) instanceof Boolean)) {
-            throw new IllegalStateException(
-                    "Paper 26.2 LivingEntity effect-ambient metadata is missing");
-        }
-        if (customParticles.isEmpty()) {
-            return List.of(serverParticles, serverAmbient);
-        }
-
-        List<Object> mergedParticles = new ArrayList<>(
-                vanillaParticles.size() + customParticles.size());
-        mergedParticles.addAll(vanillaParticles);
-        mergedParticles.addAll(customParticles);
-        Object particles = SynchedEntityDataProxy.DataValueProxy.INSTANCE.newInstance(
-                particleId, EntityDataSerializersProxy.PARTICLES,
-                List.copyOf(mergedParticles));
-        // Archived Tavern effects are non-ambient MobEffectInstances.
-        Object ambient = SynchedEntityDataProxy.DataValueProxy.INSTANCE.newInstance(
-                particleId + 1, EntityDataSerializersProxy.BOOLEAN, false);
-        return List.of(particles, ambient);
+    @SuppressWarnings("unchecked")
+    static List<Object> readEffectParticles(LivingEntity living) {
+        Object handle = CraftEntityProxy.INSTANCE.getEntity(living);
+        Object data = EntityProxy.INSTANCE.getEntityData(handle);
+        return List.copyOf(SynchedEntityDataProxy.INSTANCE.get(
+                data, LivingEntityData.EffectParticles.entityDataAccessor()));
     }
 
-    static void sendEffectParticleMetadata(Player viewer, Entity target, List<Object> metadata) {
-        sendDataValues(viewer, CraftEntityProxy.INSTANCE.getEntity(target), metadata);
+    static boolean readEffectAmbience(LivingEntity living) {
+        Object handle = CraftEntityProxy.INSTANCE.getEntity(living);
+        Object data = EntityProxy.INSTANCE.getEntityData(handle);
+        return SynchedEntityDataProxy.INSTANCE.get(
+                data, LivingEntityData.EffectAmbience.entityDataAccessor());
     }
 
-    static void sendEffectParticleMetadata(Collection<Player> viewers, Player self,
-                                           Entity target, List<Object> metadata) {
-        Object targetHandle = CraftEntityProxy.INSTANCE.getEntity(target);
-        for (Player viewer : viewers) {
-            sendDataValues(viewer, targetHandle, metadata);
-        }
-        if (self != null && !viewers.contains(self)) {
-            sendDataValues(self, targetHandle, metadata);
-        }
+    /**
+     * 把合并后的粒子列表写入实体真实的 SynchedEntityData。force=true 让原版
+     * 实体追踪器在下一个实体 tick 广播 dirty metadata；此后才开始追踪该实体
+     * 的玩家会从 addPairing 的初始 metadata 中直接拿到完整列表，不再需要
+     * PlayerTrackEntityEvent 重放。
+     */
+    static void setEffectParticleMetadata(LivingEntity living,
+                                          List<Object> particles, boolean ambient) {
+        Object handle = CraftEntityProxy.INSTANCE.getEntity(living);
+        Object data = EntityProxy.INSTANCE.getEntityData(handle);
+        SynchedEntityDataProxy.INSTANCE.set(
+                data, LivingEntityData.EffectParticles.entityDataAccessor(),
+                List.copyOf(particles), true);
+        SynchedEntityDataProxy.INSTANCE.set(
+                data, LivingEntityData.EffectAmbience.entityDataAccessor(),
+                ambient, true);
     }
 
     /**
@@ -139,26 +107,6 @@ final class ViewerEffectPackets {
             return ParticleBridge.CREATE_PARTICLE_PARAM.invoke(Particle.ENTITY_EFFECT, color);
         } catch (Throwable error) {
             throw packetBridgeFailure("create ENTITY_EFFECT particle data", error);
-        }
-    }
-
-    /**
-     * Uses Paper's own receiver-aware particle path with an already converted
-     * native option. This retains its world, visibility and 32-block distance
-     * checks while avoiding the hot CraftParticle registry/data conversion.
-     */
-    static void sendEntityEffectParticle(World world, Collection<Player> receivers,
-                                         Object particle, double x, double y, double z) {
-        List<Object> handles = new ArrayList<>(receivers.size());
-        for (Player receiver : receivers) {
-            handles.add(CraftEntityProxy.INSTANCE.getEntity(receiver));
-        }
-        try {
-            ParticleBridge.SEND_PARTICLES_SOURCE.invoke(
-                    CraftWorldProxy.INSTANCE.getWorld(world), handles, null, particle,
-                    false, false, x, y, z, 1, 0.0, 0.0, 0.0, 0.0);
-        } catch (Throwable error) {
-            throw packetBridgeFailure("send ENTITY_EFFECT particle", error);
         }
     }
 
@@ -184,15 +132,6 @@ final class ViewerEffectPackets {
         return null;
     }
 
-    private static Object findDataValueBySerializer(List<Object> values, Object serializer) {
-        for (Object value : values) {
-            if (SynchedEntityDataProxy.DataValueProxy.INSTANCE.getSerializer(value) == serializer) {
-                return value;
-            }
-        }
-        return null;
-    }
-
     private static IllegalStateException packetBridgeFailure(String action, Throwable error) {
         if (error instanceof Error fatal) {
             throw fatal;
@@ -203,7 +142,6 @@ final class ViewerEffectPackets {
     /** Resolve the pinned Paper bridge only if custom-effect particles exist. */
     private static final class ParticleBridge {
         private static final MethodHandle CREATE_PARTICLE_PARAM = createParticleParam();
-        private static final MethodHandle SEND_PARTICLES_SOURCE = sendParticlesSource();
 
         private static MethodHandle createParticleParam() {
             try {
@@ -216,20 +154,5 @@ final class ViewerEffectPackets {
             }
         }
 
-        private static MethodHandle sendParticlesSource() {
-            for (Method method : ServerLevelProxy.CLASS.getMethods()) {
-                if (method.getName().equals("sendParticlesSource")
-                        && method.getParameterCount() == 13
-                        && method.getParameterTypes()[0] == List.class) {
-                    try {
-                        return MethodHandles.publicLookup().unreflect(method);
-                    } catch (IllegalAccessException error) {
-                        throw new ExceptionInInitializerError(error);
-                    }
-                }
-            }
-            throw new ExceptionInInitializerError(
-                    "Paper 26.2 receiver-aware sendParticlesSource method is missing");
-        }
     }
 }

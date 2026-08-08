@@ -7,6 +7,7 @@ import net.momirealms.craftengine.core.item.behavior.ItemBehavior;
 import net.momirealms.craftengine.core.item.behavior.ItemBehaviors;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.World;
+import net.momirealms.craftengine.core.world.context.UseOnContext;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,7 +40,28 @@ public final class ShakerItemBehavior extends ItemBehavior {
     }
 
     @Override
+    public InteractionResult useOnBlock(UseOnContext context) {
+        // The following furniture_item behavior is an intentional fallback:
+        // Shift + right-click places the shaker, while ordinary right-click on
+        // a non-interactable block must enter the same portable mixing path as
+        // right-clicking air. Without this override, CompositeItemBehavior sees
+        // PASS here and the furniture behavior consumes every block click.
+        if (!shouldUsePortableOnBlock(context.isSecondaryUseActive())) {
+            return InteractionResult.PASS;
+        }
+        return dispatch(context.getPlayer(), context.getHand());
+    }
+
+    @Override
     public InteractionResult use(World world, Player player, InteractionHand hand) {
+        return dispatch(player, hand);
+    }
+
+    static boolean shouldUsePortableOnBlock(boolean secondaryUseActive) {
+        return !secondaryUseActive;
+    }
+
+    private static InteractionResult dispatch(Player player, InteractionHand hand) {
         Handler current = handler;
         return current == null || player == null
                 ? InteractionResult.PASS

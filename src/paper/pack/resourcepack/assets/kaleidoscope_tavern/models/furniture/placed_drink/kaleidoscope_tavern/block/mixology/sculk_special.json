@@ -10,7 +10,8 @@
       "sprite": "kaleidoscope_tavern:block/mixology/sculk_special",
       "force_translucent": true
     },
-    "particle": "minecraft:block/glass"
+    "particle": "minecraft:block/glass",
+    "opaque_detail": "kaleidoscope_tavern:furniture/placed_drink/opaque/kaleidoscope_tavern/block/mixology/sculk_special"
   },
   "elements": [
     {
@@ -869,7 +870,7 @@
             16,
             16
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         }
       }
     },
@@ -901,7 +902,7 @@
             8,
             15.5
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -910,7 +911,7 @@
             0,
             2
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -919,7 +920,7 @@
             5.5,
             15.5
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -928,7 +929,7 @@
             0,
             2
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -937,7 +938,7 @@
             2.5,
             0
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -946,7 +947,7 @@
             2.5,
             0
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         }
       }
     },
@@ -978,7 +979,7 @@
             5.5,
             15.5
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "east": {
           "uv": [
@@ -987,7 +988,7 @@
             0,
             2
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "south": {
           "uv": [
@@ -996,7 +997,7 @@
             8,
             15.5
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "west": {
           "uv": [
@@ -1005,7 +1006,7 @@
             0,
             2
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "up": {
           "uv": [
@@ -1014,7 +1015,7 @@
             2.5,
             0
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         },
         "down": {
           "uv": [
@@ -1023,7 +1024,7 @@
             2.5,
             0
           ],
-          "texture": "#1"
+          "texture": "#opaque_detail"
         }
       }
     }

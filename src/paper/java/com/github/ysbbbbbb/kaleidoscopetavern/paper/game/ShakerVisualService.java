@@ -314,8 +314,8 @@ public final class ShakerVisualService {
         if (baseRender != null && lidRender != null) {
             return true;
         }
-        ItemStack base = items.build(BASE_ITEM, null).orElse(null);
-        ItemStack lid = items.build(LID_ITEM, null).orElse(null);
+        ItemStack base = items.buildVisual(BASE_ITEM).orElse(null);
+        ItemStack lid = items.buildVisual(LID_ITEM).orElse(null);
         if (base == null || lid == null) {
             if (!missingRenderItemLogged) {
                 missingRenderItemLogged = true;
