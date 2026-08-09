@@ -44,13 +44,14 @@ public final class BarrelSemantics {
     }
 
     /** Whether the source's next 97-tick barrel check can change gameplay state. */
-    static boolean needsTick(boolean open, int level, int fluidAmount, int capacity) {
+    static boolean needsTick(boolean open, int level, int fluidAmount, int capacity,
+                             boolean inputsReady) {
         if (open) {
             return false;
         }
         int brewLevel = Math.clamp(level, 0, 6);
         return brewLevel >= 1 && brewLevel < 6
-                || brewLevel == 0 && fluidAmount >= capacity;
+                || brewLevel == 0 && fluidAmount >= capacity && inputsReady;
     }
 
     /** Mirrors Minecraft's {@code StringUtil.formatTickDuration}. */

@@ -42,13 +42,14 @@ class BarrelSemanticsTest {
     @Test
     void onlyPendingOrActiveClosedBarrelsNeedSparseTicks() {
         int capacity = 4_000;
-        assertFalse(BarrelSemantics.needsTick(true, 0, capacity, capacity));
-        assertFalse(BarrelSemantics.needsTick(false, 0, capacity - 1, capacity));
-        assertTrue(BarrelSemantics.needsTick(false, 0, capacity, capacity));
-        assertTrue(BarrelSemantics.needsTick(false, 1, 0, capacity));
-        assertTrue(BarrelSemantics.needsTick(false, 5, 0, capacity));
-        assertFalse(BarrelSemantics.needsTick(false, 6, 0, capacity));
-        assertFalse(BarrelSemantics.needsTick(false, 99, capacity, capacity));
+        assertFalse(BarrelSemantics.needsTick(true, 0, capacity, capacity, true));
+        assertFalse(BarrelSemantics.needsTick(false, 0, capacity - 1, capacity, true));
+        assertFalse(BarrelSemantics.needsTick(false, 0, capacity, capacity, false));
+        assertTrue(BarrelSemantics.needsTick(false, 0, capacity, capacity, true));
+        assertTrue(BarrelSemantics.needsTick(false, 1, 0, capacity, false));
+        assertTrue(BarrelSemantics.needsTick(false, 5, 0, capacity, false));
+        assertFalse(BarrelSemantics.needsTick(false, 6, 0, capacity, true));
+        assertFalse(BarrelSemantics.needsTick(false, 99, capacity, capacity, true));
     }
 
     @Test

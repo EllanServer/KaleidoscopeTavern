@@ -40,6 +40,28 @@ public final class StationRecipeRegistry {
                 : Optional.ofNullable(byIngredients.get(IngredientKey.of(ingredients)));
     }
 
+    /**
+     * Whether a full, closed barrel has all inputs needed to resolve its batch.
+     *
+     * <p>An exact recipe is ready immediately. A strict ingredient prefix waits
+     * for the missing inputs instead of entering the sparse ticker and turning
+     * into vinegar. A combination that can no longer become any recipe is
+     * complete for the configured fallback result.</p>
+     */
+    public boolean canBeginBarrel(String fluid, List<String> ingredients) {
+        if (fluid == null || fluid.isBlank()) {
+            return false;
+        }
+        IngredientKey key = IngredientKey.of(ingredients);
+        Map<IngredientKey, BarrelRecipe> exact =
+                snapshot.barrelByIngredients().get(fluid);
+        if (exact != null && exact.containsKey(key)) {
+            return true;
+        }
+        Set<IngredientKey> candidates = snapshot.barrelPartial().get(fluid);
+        return candidates == null || !candidates.contains(key);
+    }
+
     public Optional<BarrelRecipe> barrelById(String recipeId) {
         return Optional.ofNullable(snapshot.barrelById().get(recipeId));
     }
@@ -83,6 +105,7 @@ public final class StationRecipeRegistry {
                             List<BarrelRecipe> barrelRecipes,
                             Map<String, BarrelRecipe> barrelById,
                             Map<String, Map<IngredientKey, BarrelRecipe>> barrelByIngredients,
+                            Map<String, Set<IngredientKey>> barrelPartial,
                             ShakerSpecialResults specialResults,
                             List<ShakerRecipe> shakerRecipes,
                             Map<IngredientKey, ShakerRecipe> shakerByIngredients,
@@ -92,6 +115,7 @@ public final class StationRecipeRegistry {
             Map<String, BarrelRecipe> byId = new LinkedHashMap<>();
             Map<String, Map<IngredientKey, BarrelRecipe>> barrelIngredients =
                     new LinkedHashMap<>();
+            Map<String, Set<IngredientKey>> barrelPartial = new LinkedHashMap<>();
             for (BarrelRecipe recipe : barrel) {
                 BarrelRecipe previous = byId.putIfAbsent(recipe.id(), recipe);
                 if (previous != null) {
@@ -105,6 +129,8 @@ public final class StationRecipeRegistry {
                 Map<IngredientKey, BarrelRecipe> exact = barrelIngredients.computeIfAbsent(
                         recipe.fluid(), ignored -> new LinkedHashMap<>());
                 keys.forEach(key -> exact.putIfAbsent(key, recipe));
+                barrelPartial.computeIfAbsent(recipe.fluid(), ignored -> new LinkedHashSet<>())
+                        .addAll(ingredientKeys(content, recipe.ingredients(), true));
             }
             if (byId.containsKey(source.fallback().id())) {
                 throw new IllegalArgumentException(
@@ -112,6 +138,8 @@ public final class StationRecipeRegistry {
             }
             barrelIngredients.replaceAll(
                     (fluid, index) -> Collections.unmodifiableMap(index));
+            barrelPartial.replaceAll(
+                    (fluid, index) -> Collections.unmodifiableSet(index));
             Map<String, ShakerRecipe> shakerIds = new LinkedHashMap<>();
             List<ShakerRecipe> shaker = List.copyOf(source.shakerRecipes());
             Map<IngredientKey, ShakerRecipe> shakerIngredients = new LinkedHashMap<>();
@@ -132,6 +160,7 @@ public final class StationRecipeRegistry {
             return new Snapshot(
                     source.fallback(), barrel, Map.copyOf(byId),
                     Collections.unmodifiableMap(barrelIngredients),
+                    Collections.unmodifiableMap(barrelPartial),
                     source.specialResults(), shaker,
                     Collections.unmodifiableMap(shakerIngredients),
                     Collections.unmodifiableSet(shakerPartials));

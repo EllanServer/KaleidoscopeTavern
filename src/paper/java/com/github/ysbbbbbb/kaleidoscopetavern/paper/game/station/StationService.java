@@ -781,6 +781,9 @@ public final class StationService implements Listener {
         String fluid = state.string("barrel_fluid", "");
         List<ItemStack> stored = barrelIngredients(state);
         List<String> ingredientIds = stored.stream().map(items::id).toList();
+        if (!recipes.canBeginBarrel(fluid, ingredientIds)) {
+            return false;
+        }
         Optional<BarrelRecipe> optional = recipes.barrel(fluid, ingredientIds);
         String result;
         String recipeId;
@@ -1100,10 +1103,18 @@ public final class StationService implements Listener {
             return false;
         }
         FurnitureState state = new FurnitureState(furniture);
+        int level = state.integer("barrel_level");
+        int amount = state.integer("barrel_amount");
+        boolean inputsReady = false;
+        if (level <= 0 && amount >= BARREL_CAPACITY) {
+            String fluid = state.string("barrel_fluid", "");
+            List<String> ingredientIds = barrelIngredients(state).stream()
+                    .map(items::id)
+                    .toList();
+            inputsReady = recipes.canBeginBarrel(fluid, ingredientIds);
+        }
         return BarrelSemantics.needsTick(false,
-                state.integer("barrel_level"),
-                state.integer("barrel_amount"),
-                BARREL_CAPACITY);
+                level, amount, BARREL_CAPACITY, inputsReady);
     }
 
     private void refreshStationVisuals(BukkitFurniture furniture) {

@@ -37,6 +37,15 @@ final class StationRecipeConfigurationTest {
         assertEquals(0xFF55FF, defaults.barrelRecipes().stream()
                 .filter(recipe -> recipe.id().equals("kaleidoscope_tavern:brandy"))
                 .findFirst().orElseThrow().tapColor().orElseThrow());
+        StationRecipeRegistry registry = new StationRecipeRegistry(content, defaults);
+        assertTrue(registry.canBeginBarrel(
+                "kaleidoscope_tavern:grape_juice", List.of()));
+        assertFalse(registry.canBeginBarrel("minecraft:water", List.of()));
+        assertFalse(registry.canBeginBarrel(
+                "kaleidoscope_tavern:green_grape_juice", List.of("minecraft:sugar")));
+        assertTrue(registry.canBeginBarrel(
+                "kaleidoscope_tavern:green_grape_juice",
+                List.of("minecraft:sugar", "minecraft:gunpowder")));
         assertTrue(Files.isRegularFile(directory.resolve("barrel.yml")));
         assertTrue(Files.isRegularFile(directory.resolve("shaker.yml")));
 
@@ -64,6 +73,11 @@ final class StationRecipeConfigurationTest {
                 registry.barrel("minecraft:water", List.of("minecraft:apple"))
                         .orElseThrow().tapColor().orElseThrow());
         assertEquals(0xA0B0C0, registry.fallback().tapColor().orElseThrow());
+        assertFalse(registry.canBeginBarrel("minecraft:water", List.of()));
+        assertTrue(registry.canBeginBarrel(
+                "minecraft:water", List.of("minecraft:apple")));
+        assertTrue(registry.canBeginBarrel(
+                "minecraft:water", List.of("minecraft:dirt")));
         assertEquals("kaleidoscope_tavern:brass_heart",
                 registry.shaker(List.of("minecraft:dirt", "minecraft:stone"))
                         .orElseThrow().result());
