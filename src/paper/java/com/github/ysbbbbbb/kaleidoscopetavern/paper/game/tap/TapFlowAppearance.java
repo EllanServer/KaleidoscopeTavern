@@ -7,6 +7,8 @@ public record TapFlowAppearance(Style style, int rgb) {
     public static final TapFlowAppearance WATER = new TapFlowAppearance(Style.WATER, 0);
     public static final TapFlowAppearance LAVA = new TapFlowAppearance(Style.LAVA, 0);
     public static final TapFlowAppearance HONEY = new TapFlowAppearance(Style.HONEY, 0);
+    public static final TapFlowAppearance OBSIDIAN_TEAR = new TapFlowAppearance(
+            Style.OBSIDIAN_TEAR, 0);
 
     public TapFlowAppearance {
         Objects.requireNonNull(style, "style");
@@ -26,6 +28,7 @@ public record TapFlowAppearance(Style style, int rgb) {
         WATER,
         LAVA,
         HONEY,
+        OBSIDIAN_TEAR,
         COLOR
     }
 }

@@ -16,6 +16,8 @@ final class TapParticleEmitter {
             TapFlowAppearance.LAVA);
     private static final TapParticleEmitter HONEY = new TapParticleEmitter(
             TapFlowAppearance.HONEY);
+    private static final TapParticleEmitter OBSIDIAN_TEAR = new TapParticleEmitter(
+            TapFlowAppearance.OBSIDIAN_TEAR);
 
     private final TapFlowAppearance appearance;
     private final Color coloredDropColor;
@@ -33,6 +35,7 @@ final class TapParticleEmitter {
             case WATER -> WATER;
             case LAVA -> LAVA;
             case HONEY -> HONEY;
+            case OBSIDIAN_TEAR -> OBSIDIAN_TEAR;
             case COLOR -> new TapParticleEmitter(appearance);
         };
     }
@@ -48,6 +51,9 @@ final class TapParticleEmitter {
             case HONEY -> emitNative(
                     world, origin, tick, Particle.DRIPPING_HONEY,
                     Particle.FALLING_HONEY);
+            case OBSIDIAN_TEAR -> emitNative(
+                    world, origin, tick, Particle.DRIPPING_OBSIDIAN_TEAR,
+                    Particle.FALLING_OBSIDIAN_TEAR);
             case COLOR -> emitColored(world, origin, tick);
         }
     }

@@ -101,6 +101,7 @@ public final class TapAppearanceConfigLoader {
             case "water" -> TapFlowAppearance.WATER;
             case "lava" -> TapFlowAppearance.LAVA;
             case "honey" -> TapFlowAppearance.HONEY;
+            case "obsidian-tear" -> TapFlowAppearance.OBSIDIAN_TEAR;
             default -> {
                 if (!encoded.matches("#[0-9a-fA-F]{6}")) {
                     throw invalidAppearance(path, output, encoded);
@@ -114,6 +115,7 @@ public final class TapAppearanceConfigLoader {
     private static IOException invalidAppearance(
             Path path, DirectOutput output, String encoded) {
         return new IOException(path + " 的 outputs." + output.key()
-                + " 必须是 water、lava、honey 或 #RRGGBB，实际为 " + encoded);
+                + " 必须是 water、lava、honey、obsidian-tear 或 #RRGGBB，实际为 "
+                + encoded);
     }
 }

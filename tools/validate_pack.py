@@ -1842,8 +1842,9 @@ def validate() -> dict[str, int]:
             'water: "water"',
             'lava: "lava"',
             'honey: "honey"',
-            'dragon-breath: "#AA00AA"',
-            'watermelon: "#FF5555"'):
+            'dragon-breath: "obsidian-tear"',
+            'TODO: 等 Minecraft/Paper 提供原生红色或可着色的滴落液体粒子后',
+            'watermelon: "water"'):
         if required_token not in tap_default_text:
             raise AssertionError(
                 f"Bundled tap.yml is missing direct output {required_token}")
@@ -2632,8 +2633,11 @@ def validate() -> dict[str, int]:
             "case WATER -> emitNative(",
             "case LAVA -> emitNative(",
             "case HONEY -> emitNative(",
+            "case OBSIDIAN_TEAR -> emitNative(",
             "case COLOR -> emitColored(",
             "Color.fromRGB(appearance.rgb())",
+            "Particle.DRIPPING_OBSIDIAN_TEAR",
+            "Particle.FALLING_OBSIDIAN_TEAR",
             "COLORED_DROP_INTERVAL_TICKS = 2",
             "new Particle.Trail(",
             "Particle.TRAIL"):

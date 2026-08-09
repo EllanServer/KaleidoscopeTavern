@@ -15,6 +15,7 @@ class TapFlowAppearanceTest {
         assertEquals(0, TapFlowAppearance.WATER.rgb());
         assertEquals(0, TapFlowAppearance.LAVA.rgb());
         assertEquals(0, TapFlowAppearance.HONEY.rgb());
+        assertEquals(0, TapFlowAppearance.OBSIDIAN_TEAR.rgb());
     }
 
     @Test

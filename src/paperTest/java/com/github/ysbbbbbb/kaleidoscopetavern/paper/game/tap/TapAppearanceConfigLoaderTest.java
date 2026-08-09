@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TapAppearanceConfigLoaderTest {
     @Test
-    void installsColoredDirectOutputsAndKeepsNativeFluids(@TempDir Path directory)
+    void installsConfiguredDirectOutputsAndKeepsNativeFluids(@TempDir Path directory)
             throws IOException {
         TapAppearanceConfigLoader loader = new TapAppearanceConfigLoader(
                 getClass().getClassLoader(), directory);
@@ -26,8 +26,10 @@ class TapAppearanceConfigLoaderTest {
         assertEquals(TapFlowAppearance.WATER, config.appearance(DirectOutput.WATER));
         assertEquals(TapFlowAppearance.LAVA, config.appearance(DirectOutput.LAVA));
         assertEquals(TapFlowAppearance.HONEY, config.appearance(DirectOutput.HONEY));
-        assertEquals(0xAA00AA, config.appearance(DirectOutput.DRAGON_BREATH).rgb());
-        assertEquals(0xFF5555, config.appearance(DirectOutput.WATERMELON).rgb());
+        assertEquals(TapFlowAppearance.OBSIDIAN_TEAR,
+                config.appearance(DirectOutput.DRAGON_BREATH));
+        assertEquals(TapFlowAppearance.WATER,
+                config.appearance(DirectOutput.WATERMELON));
     }
 
     @Test
