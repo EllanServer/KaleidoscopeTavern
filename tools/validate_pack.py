@@ -61,7 +61,7 @@ def expected_shaker_use_cycle(*, first_person: bool) -> dict[str, Any]:
     return {
         "type": "minecraft:range_dispatch",
         "property": "use_cycle",
-        "period": round(SHAKER_USE_PERIOD_TICKS, 6),
+        "source": round(SHAKER_USE_PERIOD_TICKS, 6),
         "entries": entries,
         "fallback": dict(entries[0]["model"]),
     }

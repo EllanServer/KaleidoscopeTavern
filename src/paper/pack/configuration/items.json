@@ -3160,7 +3160,7 @@
                 "model": {
                   "type": "minecraft:range_dispatch",
                   "property": "use_cycle",
-                  "period": 4.18879,
+                  "source": 4.18879,
                   "entries": [
                     {
                       "threshold": 0.0,
@@ -3595,7 +3595,7 @@
                 "model": {
                   "type": "minecraft:range_dispatch",
                   "property": "use_cycle",
-                  "period": 4.18879,
+                  "source": 4.18879,
                   "entries": [
                     {
                       "threshold": 0.0,

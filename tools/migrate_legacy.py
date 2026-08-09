@@ -3320,7 +3320,9 @@ def shaker_use_cycle_model(*, first_person: bool) -> dict[str, Any]:
     return {
         "type": "minecraft:range_dispatch",
         "property": "use_cycle",
-        "period": round(SHAKER_USE_PERIOD_TICKS, 6),
+        # CraftEngine's configuration key is `source`; it serializes this as
+        # vanilla 26.2's strictly-positive `period` field in the resource pack.
+        "source": round(SHAKER_USE_PERIOD_TICKS, 6),
         "entries": entries,
         "fallback": deepcopy(entries[0]["model"]),
     }
