@@ -34,6 +34,9 @@ final class StationRecipeConfigurationTest {
 
         assertEquals(24, defaults.barrelRecipes().size());
         assertEquals(12, defaults.shakerRecipes().size());
+        assertEquals(0xFF55FF, defaults.barrelRecipes().stream()
+                .filter(recipe -> recipe.id().equals("kaleidoscope_tavern:brandy"))
+                .findFirst().orElseThrow().tapColor().orElseThrow());
         assertTrue(Files.isRegularFile(directory.resolve("barrel.yml")));
         assertTrue(Files.isRegularFile(directory.resolve("shaker.yml")));
 
@@ -57,6 +60,10 @@ final class StationRecipeConfigurationTest {
         assertEquals("kaleidoscope_tavern:brandy",
                 registry.barrel("minecraft:water", List.of("minecraft:apple"))
                         .orElseThrow().result());
+        assertEquals(0x123ABC,
+                registry.barrel("minecraft:water", List.of("minecraft:apple"))
+                        .orElseThrow().tapColor().orElseThrow());
+        assertEquals(0xA0B0C0, registry.fallback().tapColor().orElseThrow());
         assertEquals("kaleidoscope_tavern:brass_heart",
                 registry.shaker(List.of("minecraft:dirt", "minecraft:stone"))
                         .orElseThrow().result());
@@ -76,6 +83,18 @@ final class StationRecipeConfigurationTest {
         registry.replace(loader.load());
         assertFalse(registry.shaker(List.of("minecraft:stone", "minecraft:dirt")).isPresent());
         assertTrue(registry.shaker(List.of("minecraft:cobblestone", "minecraft:dirt")).isPresent());
+    }
+
+    @Test
+    void rejectsMalformedTapColors(@TempDir Path directory) throws IOException {
+        Files.writeString(directory.resolve("barrel.yml"),
+                CUSTOM_BARREL.replace("#123ABC", "purple"), StandardCharsets.UTF_8);
+        Files.writeString(directory.resolve("shaker.yml"), customShaker("minecraft:stone"),
+                StandardCharsets.UTF_8);
+
+        StationRecipeLoader loader = new StationRecipeLoader(
+                getClass().getClassLoader(), directory);
+        assertThrows(IOException.class, loader::load);
     }
 
     private static String customShaker(String firstIngredient) {
@@ -98,11 +117,13 @@ final class StationRecipeConfigurationTest {
             fallback:
               id: "example:fallback"
               result: "kaleidoscope_tavern:vinegar"
+              tap-color: "#A0B0C0"
               unit-ticks: 80
               output: 3
             recipes:
               - id: "example:apple_wine"
                 result: "kaleidoscope_tavern:brandy"
+                tap-color: "#123ABC"
                 carrier: "item=kaleidoscope_tavern:empty_bottle"
                 fluid: "minecraft:water"
                 ingredients:

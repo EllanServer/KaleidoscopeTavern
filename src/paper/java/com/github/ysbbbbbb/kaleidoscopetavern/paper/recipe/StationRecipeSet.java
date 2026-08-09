@@ -5,6 +5,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.Shake
 
 import java.util.List;
 import java.util.Objects;
+import java.util.OptionalInt;
 
 /** Immutable data model decoded from barrel.yml and shaker.yml. */
 public record StationRecipeSet(BarrelFallback fallback,
@@ -18,10 +19,16 @@ public record StationRecipeSet(BarrelFallback fallback,
         shakerRecipes = List.copyOf(shakerRecipes);
     }
 
-    public record BarrelFallback(String id, String result, int unitTicks, int output) {
+    public record BarrelFallback(String id, String result, int unitTicks, int output,
+                                 OptionalInt tapColor) {
+        public BarrelFallback(String id, String result, int unitTicks, int output) {
+            this(id, result, unitTicks, output, OptionalInt.empty());
+        }
+
         public BarrelFallback {
             Objects.requireNonNull(id, "id");
             Objects.requireNonNull(result, "result");
+            tapColor = Objects.requireNonNull(tapColor, "tapColor");
         }
     }
 

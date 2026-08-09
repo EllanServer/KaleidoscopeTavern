@@ -40,6 +40,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -208,9 +209,13 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
 
     private void setOpen(Object level, BlockPos pos, ImmutableBlockState state,
                          boolean open, int flags) {
+        // A loaded block entity controller survives `ce reload`, while CE
+        // rebuilds its Property instances. Resolve the current generation by
+        // name so an old controller never applies a stale property identity.
+        Property<Boolean> currentOpenProperty = state.getProperty(openProperty.name());
         LevelWriterProxy.INSTANCE.setBlock(
                 level, LocationUtils.toBlockPos(pos),
-                state.with(openProperty, open).customBlockState().minecraftState(), flags);
+                state.with(currentOpenProperty, open).customBlockState().minecraftState(), flags);
     }
 
     private static void playToggleSound(Location location, boolean open) {
@@ -235,8 +240,13 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
         void finish(Block tapBlock, BlockFace facing, @Nullable Player player);
     }
 
-    public record StartResult(boolean extracting, boolean hot) {
-        public static final StartResult EMPTY = new StartResult(false, false);
+    public record StartResult(boolean extracting, TapFlowAppearance appearance) {
+        public static final StartResult EMPTY = new StartResult(
+                false, TapFlowAppearance.WATER);
+
+        public StartResult {
+            Objects.requireNonNull(appearance, "appearance");
+        }
     }
 
     private enum Cycle {
@@ -249,9 +259,12 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
         private final TapBlockBehavior behavior;
         private Cycle cycle = Cycle.DEFAULT;
         private int ticks;
-        private boolean hot;
+        private TapParticleEmitter particles = TapParticleEmitter.forAppearance(
+                TapFlowAppearance.WATER);
         private boolean open;
+        private Direction facing;
         private UUID actorId;
+        private Location dripOrigin;
 
         private Controller(BlockEntity blockEntity, TapBlockBehavior behavior) {
             super(blockEntity);
@@ -265,15 +278,21 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
                     ? StartResult.EMPTY : current.start(tapBlock, bukkitFace(facing), player);
             cycle = result.extracting() ? Cycle.TAKE : Cycle.EMPTY;
             ticks = 0;
-            hot = result.hot();
+            particles = TapParticleEmitter.forAppearance(result.appearance());
+            this.facing = facing;
             actorId = player == null ? null : player.getUniqueId();
+            dripOrigin = new Location(tapBlock.getWorld(),
+                    tapBlock.getX() + 0.5, tapBlock.getY() + 0.25,
+                    tapBlock.getZ() + 0.5);
         }
 
         private void reset() {
             cycle = Cycle.DEFAULT;
             ticks = 0;
-            hot = false;
+            particles = TapParticleEmitter.forAppearance(TapFlowAppearance.WATER);
+            facing = null;
             actorId = null;
+            dripOrigin = null;
         }
 
         @Override
@@ -283,7 +302,9 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
 
         @Override
         public void preBlockStateChange(ImmutableBlockState newState) {
-            open = newState.get(behavior.openProperty);
+            Property<Boolean> currentOpenProperty = newState.getProperty(
+                    behavior.openProperty.name());
+            open = newState.get(currentOpenProperty);
         }
 
         @Override
@@ -312,8 +333,8 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
 
             ticks++;
             World bukkitWorld = (World) world.world().platformWorld();
-            Location drip = new Location(bukkitWorld,
-                    pos.x() + 0.5, pos.y() + 0.25, pos.z() + 0.5);
+            Location drip = Objects.requireNonNull(
+                    dripOrigin, "active tap cycle has no particle origin");
             if (cycle == Cycle.EMPTY) {
                 if (ticks % 2 == 0) {
                     bukkitWorld.spawnParticle(
@@ -328,22 +349,12 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
                 return;
             }
 
-            if (ticks <= TAKE_PARTICLE_TICKS) {
-                bukkitWorld.spawnParticle(
-                        hot ? Particle.DRIPPING_LAVA : Particle.DRIPPING_WATER,
-                        drip, 1, 0, 0, 0, 0);
-            }
-            if (ticks <= TAKE_PARTICLE_TICKS + DRIP_LIFETIME_TICKS) {
-                bukkitWorld.spawnParticle(
-                        hot ? Particle.FALLING_DRIPSTONE_LAVA
-                                : Particle.FALLING_DRIPSTONE_WATER,
-                        drip, 1, 0, 0, 0, 0);
-            }
+            particles.emit(bukkitWorld, drip, ticks);
             if (ticks < TAKE_TICKS) {
                 return;
             }
 
-            Direction facing = state.get(behavior.facingProperty);
+            Direction finishingFacing = facing;
             UUID finishingActor = actorId;
             reset();
             behavior.setOpen(world.world().minecraftWorld(), pos, state, false,
@@ -353,7 +364,7 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
             if (current != null) {
                 current.finish(
                         bukkitWorld.getBlockAt(pos.x(), pos.y(), pos.z()),
-                        bukkitFace(facing),
+                        bukkitFace(finishingFacing),
                         finishingActor == null ? null : Bukkit.getPlayer(finishingActor));
             }
         }

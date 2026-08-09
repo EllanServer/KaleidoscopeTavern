@@ -850,7 +850,7 @@ def generated_station_recipe_rows(name: str) -> list[dict[str, Any]]:
             current["ingredients"].append(json.loads(line.removeprefix("      - ")))
             continue
         reading_ingredients = False
-        for key in ("result", "carrier", "fluid"):
+        for key in ("result", "tap-color", "carrier", "fluid"):
             prefix = f"    {key}: "
             if line.startswith(prefix):
                 current[key] = json.loads(line.removeprefix(prefix))
@@ -1797,6 +1797,7 @@ def validate() -> dict[str, int]:
             "SparrowYaml.builder()",
             ".setAllowDuplicateKeys(false)",
             'requiredInt(document, "config-version"',
+            'optionalRgb(row, "tap-color"',
             "MAX_BARREL_INGREDIENTS = 4",
             "MAX_SHAKER_INGREDIENTS = 3"):
         if required_token not in recipe_parser_source:
@@ -1806,12 +1807,46 @@ def validate() -> dict[str, int]:
     for required_token in (
             "new StationRecipeLoader(",
             "new StationRecipeRegistry(",
-            "stationRecipes.replace(stationRecipeLoader.load())",
+            "var nextRecipes = stationRecipeLoader.load()",
+            "stationRecipes.replace(nextRecipes)",
             "继续使用上一份有效配置"):
         if required_token not in plugin_source:
             raise AssertionError(
                 "Station recipe startup/reload must retain create-only defaults and atomic replace; "
                 f"missing token: {required_token}")
+
+    tap_config_loader_source = (
+        game_package / "tap/TapAppearanceConfigLoader.java"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            "SparrowYaml.builder()",
+            ".setAllowDuplicateKeys(false)",
+            'RESOURCE = "visuals/tap.yml"',
+            "TapFlowAppearance.colored("):
+        if required_token not in tap_config_loader_source:
+            raise AssertionError(
+                "Direct tap appearances must remain strict Sparrow YAML configuration; "
+                f"missing token: {required_token}")
+    for required_token in (
+            "new TapAppearanceConfigLoader(",
+            "new TapAppearanceRegistry(",
+            "tapAppearances.replace(nextTapAppearances)"):
+        if required_token not in plugin_source:
+            raise AssertionError(
+                "Tap appearance startup/reload must publish a validated atomic snapshot; "
+                f"missing token: {required_token}")
+    tap_default_text = (
+        ROOT / "src/paper/resources/visuals/tap.yml"
+    ).read_text(encoding="utf-8-sig")
+    for required_token in (
+            'water: "water"',
+            'lava: "lava"',
+            'honey: "honey"',
+            'dragon-breath: "#AA00AA"',
+            'watermelon: "#FF5555"'):
+        if required_token not in tap_default_text:
+            raise AssertionError(
+                f"Bundled tap.yml is missing direct output {required_token}")
 
     state_behavior_source = (
         game_package / "furniture" / "StateFurnitureBehavior.java"
@@ -2426,6 +2461,8 @@ def validate() -> dict[str, int]:
         encoding="utf-8-sig")
     tap_block_source = (game_package / "tap/TapBlockBehavior.java").read_text(
         encoding="utf-8-sig")
+    tap_particle_source = (game_package / "tap/TapParticleEmitter.java").read_text(
+        encoding="utf-8-sig")
     tap_semantics_source = (game_package / "tap/TapSemantics.java").read_text(
         encoding="utf-8-sig")
     for required_token in (
@@ -2551,6 +2588,9 @@ def validate() -> dict[str, int]:
             "tapBlock.getRelative(facing.getOppositeFace())",
             "tapBlock.getRelative(BlockFace.DOWN)",
             "findConnectedBarrel(tapBlock, facing)",
+            "stations.tapOutputColor(barrel)",
+            "appearances.appearance(DirectOutput.DRAGON_BREATH)",
+            "appearances.appearance(DirectOutput.WATERMELON)",
             "TapBlockBehavior.bind(this)",
             "TapBlockBehavior.unbind(this)"):
         if required_token not in tap_source:
@@ -2579,13 +2619,33 @@ def validate() -> dict[str, int]:
             "private boolean open;",
             "this.open = blockEntity.blockState.get(behavior.openProperty)",
             "public void preBlockStateChange(ImmutableBlockState newState)",
-            "open = newState.get(behavior.openProperty)",
+            "behavior.openProperty.name()",
+            "state.getProperty(openProperty.name())",
             "if (!open)",
+            "particles.emit(bukkitWorld, drip, ticks)",
             "current.finish("):
         if required_token not in tap_block_source:
             raise AssertionError(
                 "TapBlockBehavior must own source-equivalent state, redstone and timing; "
                 f"missing token: {required_token}")
+    for required_token in (
+            "case WATER -> emitNative(",
+            "case LAVA -> emitNative(",
+            "case HONEY -> emitNative(",
+            "case COLOR -> emitColored(",
+            "Color.fromRGB(appearance.rgb())",
+            "COLORED_DROP_INTERVAL_TICKS = 2",
+            "new Particle.Trail(",
+            "Particle.TRAIL"):
+        if required_token not in tap_particle_source:
+            raise AssertionError(
+                "Tap particle adapter must preserve native fluids and render configured "
+                f"wine RGB values; missing token: {required_token}")
+    for stale_token in ("Particle.DUST", "new Particle.DustOptions"):
+        if stale_token in tap_particle_source:
+            raise AssertionError(
+                "Configured tap colors must use moving liquid beads instead of expanding "
+                f"powder particles; stale token: {stale_token}")
     for stale_token in (
             "extends WaterloggedBlockBehavior", "waterloggedProperty",
             "FluidStateProxy", "FluidsProxy",
@@ -3839,14 +3899,14 @@ def validate() -> dict[str, int]:
             raise AssertionError(f"{name}: expected {expected} rows, found {count}")
         catalog_counts[name] = count
     expected_barrel_defaults = [
-        {
+        ({
             "id": row[0],
             "result": row[1],
-            "carrier": row[2],
-            "fluid": row[3],
-            "ingredients": [] if not row[4] else row[4].split(";"),
-            "unit-ticks": int(row[5]),
-        }
+            "carrier": row[3],
+            "fluid": row[4],
+            "ingredients": [] if not row[5] else row[5].split(";"),
+            "unit-ticks": int(row[6]),
+        } | ({"tap-color": row[2]} if row[2] else {}))
         for row in tsv_rows("barrel.tsv")
     ]
     expected_shaker_defaults = [

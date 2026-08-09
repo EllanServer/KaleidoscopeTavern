@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -70,7 +71,9 @@ final class StationRecipeParser {
         if (output > 64) {
             throw new IOException(path + " 的 fallback.output 不能大于 64");
         }
-        return new BarrelFallback(id, result, unitTicks, output);
+        return new BarrelFallback(
+                id, result, unitTicks, output,
+                optionalRgb(section, "tap-color", path, "fallback"));
     }
 
     private static List<BarrelRecipe> barrelRecipes(YamlDocument yaml, Path path)
@@ -96,7 +99,8 @@ final class StationRecipeParser {
                     row, "ingredients", path, owner, 0, MAX_BARREL_INGREDIENTS);
             int unitTicks = positiveInt(row, "unit-ticks", path, owner);
             recipes.add(new BarrelRecipe(
-                    id, result, carrier, fluid, unitTicks, ingredients));
+                    id, result, carrier, fluid, unitTicks, ingredients,
+                    optionalRgb(row, "tap-color", path, owner)));
         }
         return List.copyOf(recipes);
     }
@@ -220,6 +224,25 @@ final class StationRecipeParser {
             throw new IOException(path + " 的 " + owner + '.' + key + " 必须是正整数");
         }
         return value;
+    }
+
+    private static OptionalInt optionalRgb(
+            SectionNode section, String key, Path path, String owner) throws IOException {
+        if (section.getNodeOrNull(key) == null) {
+            return OptionalInt.empty();
+        }
+        String encoded;
+        try {
+            encoded = section.get(String.class, key);
+        } catch (RuntimeException exception) {
+            throw new IOException(path + " 的 " + owner + '.' + key
+                    + " 必须是 #RRGGBB 字符串", exception);
+        }
+        if (encoded == null || !encoded.matches("#[0-9a-fA-F]{6}")) {
+            throw new IOException(path + " 的 " + owner + '.' + key
+                    + " 必须使用 #RRGGBB 格式");
+        }
+        return OptionalInt.of(Integer.parseInt(encoded.substring(1), 16));
     }
 
     private static int requiredInt(

@@ -68,6 +68,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -1034,6 +1035,24 @@ public final class StationService implements Listener {
         return barrel != null && barrel.isValid() && barrel.id().equals(BARREL_KEY)
                 && TapSemantics.isHotBarrelOutput(
                         new FurnitureState(barrel).string("barrel_result"));
+    }
+
+    /** Resolves an operator-configured tap color, then the generated item color tag. */
+    public OptionalInt tapOutputColor(BukkitFurniture barrel) {
+        if (barrel == null || !barrel.isValid() || !barrel.id().equals(BARREL_KEY)) {
+            return OptionalInt.empty();
+        }
+        FurnitureState state = new FurnitureState(barrel);
+        String recipeId = state.string("barrel_recipe");
+        Optional<BarrelRecipe> recipe = recipes.barrelById(recipeId);
+        if (recipe.isPresent() && recipe.get().tapColor().isPresent()) {
+            return recipe.get().tapColor();
+        }
+        BarrelFallback fallback = recipes.fallback();
+        if (fallback.id().equals(recipeId) && fallback.tapColor().isPresent()) {
+            return fallback.tapColor();
+        }
+        return catalog.cocktailColor(state.string("barrel_result"));
     }
 
     public boolean transferTapOutput(BukkitFurniture barrel, Player context,

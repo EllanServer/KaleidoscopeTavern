@@ -148,7 +148,8 @@ public final class ContentCatalog {
                     Selector.parse(required(row, "carrier")),
                     required(row, "fluid"),
                     positiveInt(row, "unit_ticks"),
-                    selectors(row.getOrDefault("ingredients", ""))));
+                    selectors(row.getOrDefault("ingredients", "")),
+                    optionalRgb(row, "tap_color")));
         }
 
         List<ShakerRecipe> shaker = new ArrayList<>();
@@ -430,6 +431,18 @@ public final class ContentCatalog {
         return value;
     }
 
+    private static OptionalInt optionalRgb(Map<String, String> row, String key)
+            throws IOException {
+        String encoded = row.get(key);
+        if (encoded == null || encoded.isBlank()) {
+            return OptionalInt.empty();
+        }
+        if (!encoded.matches("#[0-9a-fA-F]{6}")) {
+            throw new IOException(key + " must use #RRGGBB format");
+        }
+        return OptionalInt.of(Integer.parseInt(encoded.substring(1), 16));
+    }
+
     private static int parseInt(Map<String, String> row, String key) throws IOException {
         try {
             return Integer.parseInt(required(row, key));
@@ -482,8 +495,18 @@ public final class ContentCatalog {
     public record PressingRecipe(String id, Selector ingredient, String fluid, int amount, String bucket) {
     }
 
-    public record BarrelRecipe(String id, String result, Selector carrier, String fluid, int unitTicks,
-                               List<Selector> ingredients) {
+    public record BarrelRecipe(String id, String result, Selector carrier, String fluid,
+                               int unitTicks, List<Selector> ingredients,
+                               OptionalInt tapColor) {
+        public BarrelRecipe(String id, String result, Selector carrier, String fluid,
+                            int unitTicks, List<Selector> ingredients) {
+            this(id, result, carrier, fluid, unitTicks, ingredients, OptionalInt.empty());
+        }
+
+        public BarrelRecipe {
+            ingredients = List.copyOf(ingredients);
+            tapColor = Objects.requireNonNull(tapColor, "tapColor");
+        }
     }
 
     public record ShakerRecipe(String id, String result, List<Selector> ingredients) {

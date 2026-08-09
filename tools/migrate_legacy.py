@@ -530,6 +530,7 @@ def write_station_recipe_defaults(barrel_rows: list[list[Any]],
         "# 首次启动时复制到 plugins/KaleidoscopeTavern/recipes/barrel.yml。",
         "# 数据目录中的副本不会被插件升级覆盖；修改后执行 /kt reload。",
         "# selector 支持 item=<命名空间:物品> 与 tag=<命名空间:标签>。",
+        "# tap-color 可选，使用 #RRGGBB 指定龙头灌装时的酒液颜色。",
         "config-version: 1",
         "",
         "# 满桶内容没有匹配 recipes 时生成的保底产物。",
@@ -541,10 +542,14 @@ def write_station_recipe_defaults(barrel_rows: list[list[Any]],
         "",
         "recipes:",
     ]
-    for recipe_id, result, carrier, fluid, ingredients, unit_ticks in barrel_rows:
+    for recipe_id, result, tap_color, carrier, fluid, ingredients, unit_ticks in barrel_rows:
         barrel_lines.extend([
             f"  - id: {yaml_scalar(recipe_id)}",
             f"    result: {yaml_scalar(result)}",
+        ])
+        if tap_color:
+            barrel_lines.append(f"    tap-color: {yaml_scalar(tap_color)}")
+        barrel_lines.extend([
             f"    carrier: {yaml_scalar(carrier)}",
             f"    fluid: {yaml_scalar(fluid)}",
         ])
@@ -4558,6 +4563,14 @@ def drink_color(item_tags: list[str]) -> int | None:
     return None
 
 
+def configured_drink_color(tags: dict[str, list[str]], item_id: str) -> int | None:
+    """Resolve the same tag-owned RGB used by generated drink items."""
+    for name, rgb in DRINK_COLORS.items():
+        if item_id in tags.get(f"{NAMESPACE}:cocktail_ingredient_{name}", []):
+            return rgb
+    return None
+
+
 def is_drink(item_id: str, effect_drink_ids: set[str]) -> bool:
     return (item_id in effect_drink_ids
             or item_id in EFFECTLESS_DRINKS
@@ -4924,9 +4937,12 @@ def build_runtime_catalogs(tags: dict[str, list[str]], effect_rows: list[list[An
     barrel_rows: list[list[Any]] = []
     for path in sorted((RECIPES / "barrel").glob("*.json")):
         data = read_json(path)
+        result_id = data["result"]["item"]
+        tap_color = configured_drink_color(tags, result_id)
         barrel_rows.append([
             f"{NAMESPACE}:{path.stem}",
-            data["result"]["item"],
+            result_id,
+            "" if tap_color is None else f"#{tap_color:06X}",
             selector(data["carrier"]),
             data["fluid"],
             ";".join(selector(entry) for entry in data.get("ingredients", [])),
@@ -4954,7 +4970,7 @@ def build_runtime_catalogs(tags: dict[str, list[str]], effect_rows: list[list[An
     )
     write_tsv(
         CATALOG / "barrel.tsv",
-        ("recipe", "result", "carrier", "fluid", "ingredients", "unit_ticks"),
+        ("recipe", "result", "tap_color", "carrier", "fluid", "ingredients", "unit_ticks"),
         barrel_rows,
     )
     write_tsv(

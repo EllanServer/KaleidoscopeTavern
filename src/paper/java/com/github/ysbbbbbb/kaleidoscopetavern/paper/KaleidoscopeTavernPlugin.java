@@ -41,6 +41,8 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.storage.DisplayStorageS
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.storage.StorageBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.storage.StorageInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.storage.StorageVisualFurnitureBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.tap.TapAppearanceConfigLoader;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.tap.TapAppearanceRegistry;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.tap.TapBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.tap.TapService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
@@ -95,6 +97,8 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     private ContentCatalog catalog;
     private StationRecipeLoader stationRecipeLoader;
     private StationRecipeRegistry stationRecipes;
+    private TapAppearanceConfigLoader tapAppearanceLoader;
+    private TapAppearanceRegistry tapAppearances;
     private ItemService items;
     private StationService stations;
     private PressingTubService pressingTubs;
@@ -172,8 +176,12 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             stationRecipeLoader = new StationRecipeLoader(
                     getClassLoader(), getDataFolder().toPath().resolve("recipes"));
             stationRecipes = new StationRecipeRegistry(catalog, stationRecipeLoader.load());
+            tapAppearanceLoader = new TapAppearanceConfigLoader(
+                    getClassLoader(), getDataFolder().toPath().resolve("visuals"));
+            tapAppearances = new TapAppearanceRegistry(tapAppearanceLoader.load());
         } catch (IOException | IllegalArgumentException exception) {
-            getLogger().log(Level.SEVERE, "运行时目录或自定义酒类配方损坏，插件无法启动", exception);
+            getLogger().log(Level.SEVERE,
+                    "运行时目录、自定义酒类配方或龙头外观配置损坏，插件无法启动", exception);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -195,7 +203,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
                 this, catalog, stationRecipes, items, messages, shakerVisuals, pressingTubs);
         effects = new EffectService(this, catalog, items);
         boards = new BoardTextService(this);
-        taps = new TapService(this, stations, items);
+        taps = new TapService(this, stations, items, tapAppearances);
         displayStorage = new DisplayStorageService(this, catalog, items);
         ambientFurniture = new AmbientFurnitureService();
         barStoolVisuals = new BarStoolVisualService(this, items);
@@ -369,13 +377,16 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (args[0].equalsIgnoreCase("reload")) {
             reloadConfig();
             GrapeSeasonGate.configure(getConfig(), getLogger());
-            boolean recipesReloaded = true;
+            boolean runtimeConfigsReloaded = true;
             try {
-                stationRecipes.replace(stationRecipeLoader.load());
+                var nextRecipes = stationRecipeLoader.load();
+                var nextTapAppearances = tapAppearanceLoader.load();
+                stationRecipes.replace(nextRecipes);
+                tapAppearances.replace(nextTapAppearances);
             } catch (IOException | IllegalArgumentException exception) {
-                recipesReloaded = false;
+                runtimeConfigsReloaded = false;
                 getLogger().log(Level.SEVERE,
-                        "酒桶/鸡尾酒配方重载失败；继续使用上一份有效配置", exception);
+                        "酒桶/鸡尾酒配方或龙头外观重载失败；继续使用上一份有效配置", exception);
             }
             if (stations != null) {
                 stations.stop();
@@ -398,9 +409,9 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
                 getLogger().log(Level.SEVERE, "CustomCrops 重载失败", exception);
             }
             sender.sendMessage(Component.text(dispatched
-                    && cropsReloaded && recipesReloaded
-                    ? "已重载本插件配置、酒类配方、CraftEngine 与 CustomCrops 内容。"
-                    : "重载未全部成功；无效酒类配方会继续使用上一份有效配置，请检查日志。"));
+                    && cropsReloaded && runtimeConfigsReloaded
+                    ? "已重载本插件配置、酒类配方、龙头外观、CraftEngine 与 CustomCrops 内容。"
+                    : "重载未全部成功；无效运行时配置会继续使用上一份有效配置，请检查日志。"));
             return true;
         }
         sender.sendMessage(Component.text("用法：/" + label + " <status|give|reload|recipes>"));

@@ -1,0 +1,11 @@
+# 首次启动时复制到 plugins/KaleidoscopeTavern/visuals/tap.yml。
+# 数据目录中的副本不会被插件升级覆盖；修改后执行 /kt reload。
+# 可使用原生 water、lava、honey 粒子，或使用 #RRGGBB 自定义液体颜色。
+config-version: 1
+
+outputs:
+  water: "water"
+  lava: "lava"
+  honey: "honey"
+  dragon-breath: "#AA00AA"
+  watermelon: "#FF5555"

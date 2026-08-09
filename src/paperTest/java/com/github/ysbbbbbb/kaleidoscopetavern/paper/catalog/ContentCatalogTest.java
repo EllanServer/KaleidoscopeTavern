@@ -183,6 +183,9 @@ final class ContentCatalogTest {
     void usesTheForgeChatFormattingIngredientColors() {
         assertEquals(0xFF55FF,
                 catalog.cocktailColor("kaleidoscope_tavern:brandy").orElseThrow());
+        assertEquals(0xFF55FF,
+                catalog.barrelById("kaleidoscope_tavern:brandy")
+                        .orElseThrow().tapColor().orElseThrow());
         assertEquals(0xFFFFFF, catalog.cocktailColor("minecraft:potion").orElseThrow());
         assertTrue(catalog.cocktailColor("minecraft:stone").isEmpty());
     }

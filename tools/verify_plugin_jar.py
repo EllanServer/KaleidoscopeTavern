@@ -28,6 +28,7 @@ REQUIRED_ENTRIES = (
     "customcrops/contents/crops/kaleidoscope_tavern.yml",
     "recipes/barrel.yml",
     "recipes/shaker.yml",
+    "visuals/tap.yml",
     "net/momirealms/sparrow/yaml/SparrowYaml.class",
     "customnameplates/bossbar-tavern-effects.yml",
     "tavern-pack/resourcepack/assets/kaleidoscope_tavern/font/custom_effects_hud.json",

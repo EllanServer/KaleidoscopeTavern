@@ -3,6 +3,7 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.tap;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.station.BarrelSemantics;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.station.StationService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.tap.TapAppearanceConfig.DirectOutput;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
@@ -29,6 +30,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /** Business layer for the CE tap block's source/destination pipeline. */
@@ -47,13 +49,16 @@ public final class TapService implements TapBlockBehavior.Handler {
     private final JavaPlugin plugin;
     private final StationService stations;
     private final ItemService items;
+    private final TapAppearanceRegistry appearances;
     private final boolean infiniteLavaFromTap;
     private final LavaCauldronLevelStore lavaCauldronLevels;
 
-    public TapService(JavaPlugin plugin, StationService stations, ItemService items) {
+    public TapService(JavaPlugin plugin, StationService stations, ItemService items,
+                      TapAppearanceRegistry appearances) {
         this.plugin = plugin;
         this.stations = stations;
         this.items = items;
+        this.appearances = Objects.requireNonNull(appearances, "appearances");
         this.infiniteLavaFromTap = plugin.getConfig()
                 .getBoolean("gameplay.infinite-lava-from-tap", false);
         this.lavaCauldronLevels = new LavaCauldronLevelStore(plugin);
@@ -77,7 +82,7 @@ public final class TapService implements TapBlockBehavior.Handler {
         TapPlan plan = resolve(tapBlock, facing, player);
         return plan == null
                 ? TapBlockBehavior.StartResult.EMPTY
-                : new TapBlockBehavior.StartResult(true, plan.hot());
+                : new TapBlockBehavior.StartResult(true, plan.appearance());
     }
 
     @Override
@@ -100,33 +105,40 @@ public final class TapService implements TapBlockBehavior.Handler {
         if (source.getType() == Material.WATER_CAULDRON
                 || source.getBlockData() instanceof Waterlogged waterlogged && waterlogged.isWaterlogged()) {
             if (canFillWaterCauldron(destination)) {
-                return new TapPlan(Kind.FILL_WATER_CAULDRON, source, destination, null, null, false);
+                return new TapPlan(Kind.FILL_WATER_CAULDRON, source, destination,
+                        null, null, appearances.appearance(DirectOutput.WATER));
             }
             if (bottle != null) {
-                return new TapPlan(Kind.BOTTLE_WATER, source, destination, null, bottle, false);
+                return new TapPlan(Kind.BOTTLE_WATER, source, destination,
+                        null, bottle, appearances.appearance(DirectOutput.WATER));
             }
         }
         if (source.getType() == Material.LAVA_CAULDRON) {
             if (destination.getType() == Material.CAULDRON
                     && (infiniteLavaFromTap
                     || lavaCauldronLevels.level(source) == TapSemantics.FULL_LAVA_CAULDRON_LEVEL)) {
-                return new TapPlan(Kind.FILL_LAVA_CAULDRON, source, destination, null, null, true);
+                return new TapPlan(Kind.FILL_LAVA_CAULDRON, source, destination,
+                        null, null, appearances.appearance(DirectOutput.LAVA));
             }
             if (bottle != null) {
-                return new TapPlan(Kind.BOTTLE_MOLOTOV, source, destination, null, bottle, true);
+                return new TapPlan(Kind.BOTTLE_MOLOTOV, source, destination,
+                        null, bottle, appearances.appearance(DirectOutput.LAVA));
             }
         }
         if ((source.getType() == Material.BEEHIVE || source.getType() == Material.BEE_NEST)
                 && source.getBlockData() instanceof Beehive beehive && beehive.getHoneyLevel() > 0
                 && bottle != null) {
-            return new TapPlan(Kind.BOTTLE_HONEY, source, destination, null, bottle, true);
+            return new TapPlan(Kind.BOTTLE_HONEY, source, destination,
+                    null, bottle, appearances.appearance(DirectOutput.HONEY));
         }
         if ((source.getType() == Material.DRAGON_HEAD || source.getType() == Material.DRAGON_WALL_HEAD)
                 && bottle != null) {
-            return new TapPlan(Kind.BOTTLE_DRAGON_BREATH, source, destination, null, bottle, false);
+            return new TapPlan(Kind.BOTTLE_DRAGON_BREATH, source, destination,
+                    null, bottle, appearances.appearance(DirectOutput.DRAGON_BREATH));
         }
         if (source.getType() == Material.MELON && bottle != null) {
-            return new TapPlan(Kind.BOTTLE_WATERMELON, source, destination, null, bottle, false);
+            return new TapPlan(Kind.BOTTLE_WATERMELON, source, destination,
+                    null, bottle, appearances.appearance(DirectOutput.WATERMELON));
         }
         Optional<BukkitFurniture> barrel = findConnectedBarrel(tapBlock, facing);
         if (barrel.isPresent()) {
@@ -139,11 +151,21 @@ public final class TapService implements TapBlockBehavior.Handler {
                     ? bottle : findDroppedBottleCarrier(destination).orElse(null);
             if (barrelCarrier != null) {
                 return new TapPlan(Kind.BOTTLE_BARREL, source, destination,
-                        barrel.get(), barrelCarrier, stations.isTapOutputHot(barrel.get()));
+                        barrel.get(), barrelCarrier, barrelAppearance(barrel.get()));
             }
             showMissingCarrier(feedback, destination);
         }
         return null;
+    }
+
+    private TapFlowAppearance barrelAppearance(BukkitFurniture barrel) {
+        if (stations.isTapOutputHot(barrel)) {
+            return appearances.appearance(DirectOutput.LAVA);
+        }
+        var color = stations.tapOutputColor(barrel);
+        return color.isPresent()
+                ? TapFlowAppearance.colored(color.getAsInt())
+                : TapFlowAppearance.WATER;
     }
 
     private static void showBarrelFailure(Player player, BarrelSemantics.TapExtractStatus status) {
@@ -426,7 +448,8 @@ public final class TapService implements TapBlockBehavior.Handler {
     }
 
     private record TapPlan(Kind kind, Block source, Block destination,
-                           BukkitFurniture barrel, BottleCarrier bottle, boolean hot) {
+                           BukkitFurniture barrel, BottleCarrier bottle,
+                           TapFlowAppearance appearance) {
         private int lavaSourceLevels() {
             return switch (kind) {
                 case BOTTLE_MOLOTOV -> 1;

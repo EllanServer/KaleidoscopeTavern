@@ -1,6 +1,7 @@
 # 首次启动时复制到 plugins/KaleidoscopeTavern/recipes/barrel.yml。
 # 数据目录中的副本不会被插件升级覆盖；修改后执行 /kt reload。
 # selector 支持 item=<命名空间:物品> 与 tag=<命名空间:标签>。
+# tap-color 可选，使用 #RRGGBB 指定龙头灌装时的酒液颜色。
 config-version: 1
 
 # 满桶内容没有匹配 recipes 时生成的保底产物。
@@ -13,6 +14,7 @@ fallback:
 recipes:
   - id: "kaleidoscope_tavern:brandy"
     result: "kaleidoscope_tavern:brandy"
+    tap-color: "#FF55FF"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:grape_juice"
     ingredients:
@@ -20,6 +22,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:carignan"
     result: "kaleidoscope_tavern:carignan"
+    tap-color: "#FF55FF"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:grape_juice"
     ingredients:
@@ -27,6 +30,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:champagne"
     result: "kaleidoscope_tavern:champagne"
+    tap-color: "#FF55FF"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:grape_juice"
     ingredients:
@@ -34,6 +38,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:glowflower_brew"
     result: "kaleidoscope_tavern:glowflower_brew"
+    tap-color: "#FFFF55"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:glow_berries_juice"
     ingredients:
@@ -41,6 +46,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:honey_wine"
     result: "kaleidoscope_tavern:honey_wine"
+    tap-color: "#FFAA00"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:gold_grape_juice"
     ingredients:
@@ -48,12 +54,14 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:ice_wine"
     result: "kaleidoscope_tavern:ice_wine"
+    tap-color: "#5555FF"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:ice_grape_juice"
     ingredients: []
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:luminous_bride"
     result: "kaleidoscope_tavern:luminous_bride"
+    tap-color: "#FFFF55"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:glow_berries_juice"
     ingredients:
@@ -61,6 +69,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:madame_shexiang"
     result: "kaleidoscope_tavern:madame_shexiang"
+    tap-color: "#FFAA00"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:gold_grape_juice"
     ingredients:
@@ -68,6 +77,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:miners_star"
     result: "kaleidoscope_tavern:miners_star"
+    tap-color: "#FFAA00"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:gold_grape_juice"
     ingredients:
@@ -81,6 +91,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:mother_snow"
     result: "kaleidoscope_tavern:mother_snow"
+    tap-color: "#5555FF"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:ice_grape_juice"
     ingredients:
@@ -88,6 +99,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:plum_wine"
     result: "kaleidoscope_tavern:plum_wine"
+    tap-color: "#FF5555"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:sweet_berries_juice"
     ingredients:
@@ -95,6 +107,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:polaris_sweet_white"
     result: "kaleidoscope_tavern:polaris_sweet_white"
+    tap-color: "#5555FF"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:ice_grape_juice"
     ingredients:
@@ -102,6 +115,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:red_queen"
     result: "kaleidoscope_tavern:red_queen"
+    tap-color: "#FF5555"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:sweet_berries_juice"
     ingredients:
@@ -109,6 +123,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:riesling_dry_white"
     result: "kaleidoscope_tavern:riesling_dry_white"
+    tap-color: "#55FF55"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:green_grape_juice"
     ingredients:
@@ -117,6 +132,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:rum"
     result: "kaleidoscope_tavern:rum"
+    tap-color: "#FFFFFF"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "minecraft:water"
     ingredients:
@@ -124,6 +140,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:sakura_wine"
     result: "kaleidoscope_tavern:sakura_wine"
+    tap-color: "#FF55FF"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:grape_juice"
     ingredients:
@@ -131,6 +148,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:sauvignon_blanc_dry_white"
     result: "kaleidoscope_tavern:sauvignon_blanc_dry_white"
+    tap-color: "#55FF55"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:green_grape_juice"
     ingredients:
@@ -139,6 +157,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:sherry"
     result: "kaleidoscope_tavern:sherry"
+    tap-color: "#5555FF"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:ice_grape_juice"
     ingredients:
@@ -146,6 +165,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:sunset_glow"
     result: "kaleidoscope_tavern:sunset_glow"
+    tap-color: "#FFAA00"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:gold_grape_juice"
     ingredients:
@@ -153,6 +173,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:sweet_berry_wine"
     result: "kaleidoscope_tavern:sweet_berry_wine"
+    tap-color: "#FF5555"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:sweet_berries_juice"
     ingredients:
@@ -160,6 +181,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:vodka"
     result: "kaleidoscope_tavern:vodka"
+    tap-color: "#FFFFFF"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "minecraft:water"
     ingredients:
@@ -167,6 +189,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:whiskey"
     result: "kaleidoscope_tavern:whiskey"
+    tap-color: "#FFFFFF"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "minecraft:water"
     ingredients:
@@ -174,6 +197,7 @@ recipes:
     unit-ticks: 2400
   - id: "kaleidoscope_tavern:wine"
     result: "kaleidoscope_tavern:wine"
+    tap-color: "#FF55FF"
     carrier: "item=kaleidoscope_tavern:empty_bottle"
     fluid: "kaleidoscope_tavern:grape_juice"
     ingredients: []
