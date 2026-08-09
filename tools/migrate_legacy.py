@@ -4562,6 +4562,18 @@ def is_drink(item_id: str, effect_drink_ids: set[str]) -> bool:
             or item_id == "signature_cocktail")
 
 
+def configure_ce_consumable(
+    config: dict[str, Any],
+    consumable: dict[str, Any],
+) -> None:
+    """Give CraftEngine ownership of both use state and the client arm pose."""
+    server_components = config["data"].setdefault("components", {})
+    server_components["minecraft:consumable"] = dict(consumable)
+    config.setdefault("client_bound_data", {}).setdefault("components", {})[
+        "minecraft:consumable"
+    ] = dict(consumable)
+
+
 def material_for(item_id: str, drink_ids: set[str], block_ids: set[str]) -> str:
     if is_drink(item_id, drink_ids):
         return "potion"
@@ -4667,27 +4679,25 @@ def build_items(
             # potion material default. CraftEngine then exposes the same drink
             # duration and pose to both the using client and the server-side
             # active-hand state mirrored to nearby players.
-            components["minecraft:consumable"] = {
+            configure_ce_consumable(config, {
                 "consume_seconds": 1.6,
                 "animation": "drink",
                 "sound": "minecraft:entity.generic.drink",
                 "has_consume_particles": False,
-            }
+            })
             config["data"]["custom_name"] = config["data"]["item_name"]
             # Drink effects are implemented by the Paper service rather than
             # potion_contents. Hide only that vanilla tooltip section so it
             # cannot claim "No Effects" while retaining custom lore and names.
             config["data"]["hide_tooltip"] = ["minecraft:potion_contents"]
         if item_id == "shaker":
-            config["data"].setdefault("components", {}).update({
-                "minecraft:max_stack_size": 1,
-                "minecraft:consumable": {
-                    "consume_seconds": 3_600.0,
-                    # The item model owns the motion through using_item and
-                    # use_cycle; no built-in eating/brush animation is wanted.
-                    "animation": "none",
-                    "has_consume_particles": False,
-                },
+            config["data"].setdefault("components", {})["minecraft:max_stack_size"] = 1
+            configure_ce_consumable(config, {
+                "consume_seconds": 3_600.0,
+                # The item model owns the motion through using_item and
+                # use_cycle; no built-in eating/brush animation is wanted.
+                "animation": "none",
+                "has_consume_particles": False,
             })
             # GUI/item-frame views keep the authored icon. Held views delegate
             # their entire shake cycle to CraftEngine's native item-model
@@ -4736,11 +4746,11 @@ def build_items(
                 },
             }
         if item_id == "molotov":
-            config["data"].setdefault("components", {})["minecraft:consumable"] = {
+            configure_ce_consumable(config, {
                 "consume_seconds": 3_600.0,
                 "animation": "trident",
                 "has_consume_particles": False,
-            }
+            })
             # The trident technique: swap to the cocked-back display model
             # while the throw charges, because the TRIDENT pose alone is nearly
             # invisible on a flat item.
@@ -4784,10 +4794,10 @@ def build_items(
             }
             # Since 1.21.2 edibility needs an explicit consumable component;
             # the former sweet_berries base supplied it implicitly.
-            config["data"].setdefault("components", {})["minecraft:consumable"] = {
+            configure_ce_consumable(config, {
                 "consume_seconds": 1.6,
                 "animation": "eat",
-            }
+            })
         if item_id in SOFA_BLOCKS:
             # All sixteen public ids remain distinct items, recipes and names.
             # CE copies the exact placed item into tint_source_block, so colour
@@ -4808,11 +4818,6 @@ def build_items(
                 "furniture": f"{NAMESPACE}:{item_id}",
                 "rules": furniture_placement[item_id],
             }
-            if is_drink(item_id, drink_ids) or item_id == "molotov":
-                # Explicitly seed the server's active-hand state from the CE
-                # air-use callback. This makes the use pose visible in third
-                # person instead of remaining only local client prediction.
-                furniture_behavior["sync_active_use"] = True
             if item_id.startswith("string_lights_"):
                 # The source block had an empty collision shape. Ignore only
                 # the player who is placing it while retaining CE's native

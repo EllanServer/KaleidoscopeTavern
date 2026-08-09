@@ -1229,16 +1229,18 @@ def validate() -> dict[str, int]:
     for token in (
             "if (!context.isSecondaryUseActive())",
             "return InteractionResult.PASS;",
-            'section.getBoolean("sync_active_use", false)',
-            "bukkitPlayer.startUsingItem(equipmentSlot(hand));",
-            "InteractionHand.OFF_HAND",
             "Vec3d.atBottomCenterOf(targetPos)",
             "Direction.UP",
             "return InteractionResult.SUCCESS_AND_CANCEL;"):
         if token not in item_behavior_source:
             raise AssertionError(
-                "Vessel CE behavior must preserve target-centred placement, synchronize "
-                "active use, preserve normal item use and own rejected sneak placement")
+                "Vessel CE behavior must preserve target-centred placement, preserve "
+                "normal CE item use and own rejected sneak placement")
+    for stale_token in ("sync_active_use", "startUsingItem(", "EquipmentSlot"):
+        if stale_token in item_behavior_source:
+            raise AssertionError(
+                "CraftEngine's consumable component must exclusively own active-use state; "
+                f"vessel placement still contains plugin-side token {stale_token}")
     for token in (
             "event.getAction() != Action.RIGHT_CLICK_BLOCK",
             "!event.getPlayer().isSneaking()"):
@@ -3897,29 +3899,35 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{item_id}: drinks must remain consumable items with CE-owned sneak placement")
         expected_rotation = expected_vessel_rotation(item_id)
-        if (len(item_behaviors) != 1
-                or item_behaviors[0].get("furniture") != item_id
-                or item_behaviors[0].get("rules") != {
-                    "ground": {
-                        "rotation": expected_rotation,
-                        "alignment": "center",
-                    }
-                }
-                or item_behaviors[0].get("sync_active_use") is not True):
+        expected_drink_placement = {
+            "type": f"{NAMESPACE}:sneak_place_drink",
+            "furniture": item_id,
+            "rules": {
+                "ground": {
+                    "rotation": expected_rotation,
+                    "alignment": "center",
+                },
+            },
+        }
+        if item_behaviors != [expected_drink_placement]:
             raise AssertionError(
-                f"{item_id}: CE drink placement target/rules or active-use sync drifted "
-                "from the released vessel placement semantics")
+                f"{item_id}: CE drink placement target/rules drifted from the released "
+                "vessel placement semantics or restored plugin-side active-use state")
         components = item.get("data", {}).get("components", {})
         if components.get("minecraft:max_stack_size") != 16:
             raise AssertionError(f"{item_id}: bottle/glassware stack size must remain 16")
-        if components.get("minecraft:consumable") != {
+        expected_consumable = {
                 "consume_seconds": 1.6,
                 "animation": "drink",
                 "sound": "minecraft:entity.generic.drink",
                 "has_consume_particles": False,
-                }:
+                }
+        if (components.get("minecraft:consumable") != expected_consumable
+                or item.get("client_bound_data", {}).get("components", {}).get(
+                    "minecraft:consumable") != expected_consumable):
             raise AssertionError(
-                f"{item_id}: drinks must declare the complete server-visible drink use contract")
+                f"{item_id}: CE must own the server active-use contract and expose the same "
+                "drink animation component to observer clients")
         data = item.get("data", {})
         if data.get("custom_name") != data.get("item_name"):
             raise AssertionError(
@@ -3963,12 +3971,10 @@ def validate() -> dict[str, int]:
                     "ground": {"rotation": rotation, "alignment": "center"}
                 },
         }
-        if item_id in drink_ids or item_id == f"{NAMESPACE}:molotov":
-            expected_placement_behavior["sync_active_use"] = True
         if placement_behaviors != [expected_placement_behavior]:
             raise AssertionError(
                 f"{item_id}: portable vessels must delegate sneak placement through "
-                "the generic native-CE furniture adapter with the correct active-use policy")
+                "the generic native-CE furniture adapter without plugin-side use state")
 
     for item_id in EFFECTLESS_DRINKS:
         replacement = items[item_id].get("settings", {}).get("consume_replacement")
@@ -4039,7 +4045,12 @@ def validate() -> dict[str, int]:
                 or grape_item.get("data", {}).get("components", {}).get("minecraft:consumable") != {
                     "consume_seconds": 1.6,
                     "animation": "eat",
-                }):
+                }
+                or grape_item.get("client_bound_data", {}).get("components", {}).get(
+                    "minecraft:consumable") != {
+                        "consume_seconds": 1.6,
+                        "animation": "eat",
+                    }):
             raise AssertionError(
                 f"{grape_id}: grapes must stay non-placeable plain food "
                 "(paper base with explicit food/consumable components)")
@@ -4059,13 +4070,16 @@ def validate() -> dict[str, int]:
 
     molotov_item = items[f"{NAMESPACE}:molotov"]
     molotov_components = molotov_item.get("data", {}).get("components", {})
+    expected_molotov_consumable = {
+        "consume_seconds": 3_600.0,
+        "animation": "trident",
+        "has_consume_particles": False,
+    }
     if (molotov_item.get("material") != "paper"
             or molotov_components.get("minecraft:max_stack_size") != 16
-            or molotov_components.get("minecraft:consumable") != {
-                "consume_seconds": 3_600.0,
-                "animation": "trident",
-                "has_consume_particles": False,
-            }):
+            or molotov_components.get("minecraft:consumable") != expected_molotov_consumable
+            or molotov_item.get("client_bound_data", {}).get("components", {}).get(
+                "minecraft:consumable") != expected_molotov_consumable):
         raise AssertionError(
             "Molotov must retain its 72,000-tick trident charge instead of instant splash-potion use")
     molotov_model = molotov_item.get("model", {})
@@ -4078,13 +4092,16 @@ def validate() -> dict[str, int]:
 
     shaker_item = items[f"{NAMESPACE}:shaker"]
     shaker_components = shaker_item.get("data", {}).get("components", {})
+    expected_shaker_consumable = {
+        "consume_seconds": 3_600.0,
+        "animation": "none",
+        "has_consume_particles": False,
+    }
     if (shaker_item.get("material") != "paper"
             or shaker_components.get("minecraft:max_stack_size") != 1
-            or shaker_components.get("minecraft:consumable") != {
-                "consume_seconds": 3_600.0,
-                "animation": "none",
-                "has_consume_particles": False,
-            }):
+            or shaker_components.get("minecraft:consumable") != expected_shaker_consumable
+            or shaker_item.get("client_bound_data", {}).get("components", {}).get(
+                "minecraft:consumable") != expected_shaker_consumable):
         raise AssertionError(
             "Shaker must retain active-use timing for its CE-native model animation")
     shaker_model = shaker_item.get("model", {})

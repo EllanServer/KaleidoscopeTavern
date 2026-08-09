@@ -1925,6 +1925,14 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/grape"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "eat"
+          }
+        }
+      },
       "behavior": {
         "type": "compostable_item",
         "chance": 0.5
@@ -1960,6 +1968,14 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/ice_grape"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "eat"
+          }
+        }
+      },
       "behavior": {
         "type": "compostable_item",
         "chance": 0.5
@@ -1994,6 +2010,14 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/gold_grape"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "eat"
+          }
+        }
+      },
       "behavior": {
         "type": "compostable_item",
         "chance": 0.5
@@ -2027,6 +2051,14 @@
       "model": {
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/green_grape"
+      },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "eat"
+          }
+        }
       },
       "behavior": {
         "type": "compostable_item",
@@ -2378,6 +2410,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/signature_cocktail"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:signature_cocktail",
@@ -2386,8 +2428,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2421,6 +2462,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/mystery_cocktail"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:mystery_cocktail",
@@ -2429,8 +2480,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2467,6 +2517,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/white_lady"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:white_lady",
@@ -2475,8 +2535,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2514,6 +2573,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/emerald"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:emerald",
@@ -2522,8 +2591,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2557,6 +2625,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/brass_heart"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:brass_heart",
@@ -2565,8 +2643,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2600,6 +2677,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/godfather"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:godfather",
@@ -2608,8 +2695,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2643,6 +2729,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/grasshopper"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:grasshopper",
@@ -2651,8 +2747,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2686,6 +2781,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/screwdriver"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:screwdriver",
@@ -2694,8 +2799,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2729,6 +2833,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/mojito"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:mojito",
@@ -2737,8 +2851,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2772,6 +2885,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/allium_garden"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:allium_garden",
@@ -2780,8 +2903,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2815,6 +2937,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/depth_charge"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:depth_charge",
@@ -2823,8 +2955,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2858,6 +2989,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/nether_special"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:nether_special",
@@ -2866,8 +3007,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2901,6 +3041,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/bloody_mary"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:bloody_mary",
@@ -2909,8 +3059,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -2944,6 +3093,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sculk_special"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:sculk_special",
@@ -2952,8 +3111,7 @@
             "rotation": "sixteen",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_glassware"
@@ -3876,6 +4034,15 @@
           }
         }
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 3600.0,
+            "animation": "none",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behaviors": [
         {
           "type": "kaleidoscope_tavern:shaker_item"
@@ -3937,6 +4104,15 @@
           "path": "kaleidoscope_tavern:item/molotov"
         }
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 3600.0,
+            "animation": "trident",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:molotov",
@@ -3945,8 +4121,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       }
     },
     "kaleidoscope_tavern:wine": {
@@ -3975,6 +4150,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/wine"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:wine",
@@ -3983,8 +4168,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4020,6 +4204,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/champagne"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:champagne",
@@ -4028,8 +4222,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4065,6 +4258,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/vodka"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:vodka",
@@ -4073,8 +4276,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4112,6 +4314,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/brandy"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:brandy",
@@ -4120,8 +4332,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4161,6 +4372,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/carignan"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:carignan",
@@ -4169,8 +4390,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4210,6 +4430,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sakura_wine"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:sakura_wine",
@@ -4218,8 +4448,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4255,6 +4484,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/plum_wine"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:plum_wine",
@@ -4263,8 +4502,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4300,6 +4538,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/whiskey"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:whiskey",
@@ -4308,8 +4556,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4345,6 +4592,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/ice_wine"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:ice_wine",
@@ -4353,8 +4610,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4390,6 +4646,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/polaris_sweet_white"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:polaris_sweet_white",
@@ -4398,8 +4664,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4435,6 +4700,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/honey_wine"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:honey_wine",
@@ -4443,8 +4718,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4480,6 +4754,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/red_queen"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:red_queen",
@@ -4488,8 +4772,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4525,6 +4808,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/miners_star"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:miners_star",
@@ -4533,8 +4826,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4572,6 +4864,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/rum"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:rum",
@@ -4580,8 +4882,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4619,6 +4920,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/riesling_dry_white"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:riesling_dry_white",
@@ -4627,8 +4938,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4666,6 +4976,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sunset_glow"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:sunset_glow",
@@ -4674,8 +4994,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4713,6 +5032,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/madame_shexiang"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:madame_shexiang",
@@ -4721,8 +5050,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4760,6 +5088,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sweet_berry_wine"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:sweet_berry_wine",
@@ -4768,8 +5106,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4807,6 +5144,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sherry"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:sherry",
@@ -4815,8 +5162,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4852,6 +5198,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/mother_snow"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:mother_snow",
@@ -4860,8 +5216,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4899,6 +5254,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/luminous_bride"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:luminous_bride",
@@ -4907,8 +5272,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4944,6 +5308,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/glowflower_brew"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:glowflower_brew",
@@ -4952,8 +5326,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -4989,6 +5362,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/sauvignon_blanc_dry_white"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:sauvignon_blanc_dry_white",
@@ -4997,8 +5380,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "tags": [
@@ -5033,6 +5415,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/vinegar"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:vinegar",
@@ -5041,8 +5433,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_bottle"
@@ -5073,6 +5464,16 @@
         "type": "minecraft:model",
         "path": "kaleidoscope_tavern:item/watermelon_juice"
       },
+      "client_bound_data": {
+        "components": {
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "drink",
+            "sound": "minecraft:entity.generic.drink",
+            "has_consume_particles": false
+          }
+        }
+      },
       "behavior": {
         "type": "kaleidoscope_tavern:sneak_place_drink",
         "furniture": "kaleidoscope_tavern:watermelon_juice",
@@ -5081,8 +5482,7 @@
             "rotation": "four",
             "alignment": "center"
           }
-        },
-        "sync_active_use": true
+        }
       },
       "settings": {
         "consume_replacement": "kaleidoscope_tavern:empty_bottle"
