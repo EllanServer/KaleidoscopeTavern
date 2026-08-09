@@ -2152,8 +2152,8 @@ def validate() -> dict[str, int]:
     shaker_hud_target_source = (
         game_package / "shaker/ShakerHudTargetResolver.java"
     ).read_text(encoding="utf-8-sig")
-    shaker_hud_cache_source = (
-        game_package / "shaker/ShakerHudTargetCache.java"
+    shaker_ingredient_hud_source = (
+        game_package / "shaker/ShakerIngredientHudController.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             'FONT_KEY = "kaleidoscope_tavern:shaker_hud"',
@@ -2182,42 +2182,63 @@ def validate() -> dict[str, int]:
                 f"Shaker HUD {filename} must preserve source pixels via even-height padding; "
                 f"expected {expected_size}, got {actual_size}")
     for required_token in (
-            "ingredientHudTargets.beginPoll()",
-            "ingredientHudTargets.resolve(player, loaded)",
+            "new ShakerIngredientHudController(",
+            "ingredientHud.start()",
+            "ingredientHud.stop()",
+            "ingredientHud.suppress(player)",
+            "ingredientHud.resume(player)",
+            "ingredientHud.furnitureAvailable(furniture)",
+            "ingredientHud.furnitureUnavailable(owner)",
+            "ingredientHud.furnitureChanged(furniture)",
             "ingredientHudSubtitles",
-            "nextIngredientHudViewers",
             "items.shakerIngredients(shaker)",
             "ShakerSemantics.ingredientColor(",
             "ShakerHudSemantics.progressSubtitle(ticks)",
-            "ShakerHudSemantics.ingredientSubtitle(colors)",
-            "ensureIngredientHudTask()",
-            "stopIngredientHudTaskIfIdle()"):
+            "ShakerHudSemantics.ingredientSubtitle(colors)"):
         if required_token not in shaker_visual_service_source:
             raise AssertionError(
                 "Loaded shakers must drive their source-compatible progress and ingredient HUD; "
                 f"missing token: {required_token}")
     for required_token in (
             "LifecycleFurnitureBehavior.hasNearby(",
-            "CraftEngineFurniture.rayTrace(player, TARGET_RANGE)",
-            "cache.reusable(",
-            "cache.record("):
+            "CraftEngineFurniture.rayTrace(player, TARGET_RANGE)"):
         if required_token not in shaker_hud_target_source:
             raise AssertionError(
                 "Shaker HUD targeting must prefilter through the lifecycle index and delegate "
                 f"the exact collider ray to CraftEngine; missing token: {required_token}")
     for required_token in (
-            "MAX_REUSE_TICKS = 20L",
-            "Double.doubleToLongBits(",
-            "Float.floatToIntBits(",
-            "void endPoll()"):
-        if required_token not in shaker_hud_cache_source:
+            "implements Listener",
+            "PlayerTrackEntityEvent",
+            "PlayerUntrackEntityEvent",
+            "subtitleProvider.apply(furniture).isEmpty()",
+            "furniture.bukkitEntity().getTrackedBy()",
+            "ownersByPlayer",
+            "playersByOwner",
+            "TARGET_REFRESH_PERIOD_TICKS = 2L",
+            "plugin, this::refreshTrackedPlayers",
+            "if (targetTask == null && !ownersByPlayer.isEmpty())",
+            "if (targetTask != null && ownersByPlayer.isEmpty())",
+            "isTracked(playerId, target.uuid())",
+            "HandlerList.unregisterAll(this)",
+            "void furnitureAvailable(",
+            "void furnitureUnavailable(",
+            "void furnitureChanged(",
+            "Duration.ofDays(1)"):
+        if required_token not in shaker_ingredient_hud_source:
             raise AssertionError(
-                "Shaker HUD targeting must cache unchanged player views without leaking "
-                f"offline entries; missing token: {required_token}")
-    for stale_token in ("getTargetEntity(", "getNearbyEntities("):
-        if stale_token in shaker_visual_service_source + shaker_hud_target_source:
+                "Shaker ingredient HUD must use Paper entity tracking as its interest set, "
+                "run exact targeting only while candidates exist, and clean offline state; "
+                f"missing token: {required_token}")
+    for stale_token in (
+            "getTargetEntity(", "getNearbyEntities(", "tickIngredientHud(",
+            "ingredientHudTask", "beginPoll()", "endPoll()", "MAX_REUSE_TICKS",
+            "PlayerMoveEvent", "runTaskLater(", "flushDirty"):
+        if stale_token in (shaker_visual_service_source
+                           + shaker_hud_target_source
+                           + shaker_ingredient_hud_source):
             raise AssertionError(
-                "Shaker HUD must not scan the world's general entity set on every poll; "
+                "Shaker HUD must not retain its former global poll/cache or lossy "
+                "PlayerMoveEvent path; "
                 f"stale token: {stale_token}")
     bar_stool_visual_source = (
         game_package / "decor/BarStoolVisualService.java"

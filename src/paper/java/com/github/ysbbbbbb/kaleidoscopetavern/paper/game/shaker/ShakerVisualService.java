@@ -33,7 +33,7 @@ public final class ShakerVisualService {
     private static final String BASE_ITEM = "kaleidoscope_tavern:_render/shaker_base";
     private static final String LID_ITEM = "kaleidoscope_tavern:_render/shaker_lid";
     private static final float LID_PIVOT_Y_PIXELS = 12.16667F;
-    private static final Title.Times HUD_TIMES = Title.Times.times(
+    private static final Title.Times MIX_HUD_TIMES = Title.Times.times(
             Duration.ZERO, Duration.ofMillis(250), Duration.ZERO);
 
     private final JavaPlugin plugin;
@@ -43,14 +43,10 @@ public final class ShakerVisualService {
     private final Map<UUID, Float> animations = new HashMap<>();
     private final Map<UUID, Optional<Component>> ingredientHudSubtitles = new HashMap<>();
     private final Set<UUID> mixingHudViewers = new HashSet<>();
-    private Set<UUID> ingredientHudViewers = new HashSet<>();
-    private Set<UUID> nextIngredientHudViewers = new HashSet<>();
-    private final ShakerHudTargetResolver ingredientHudTargets =
-            new ShakerHudTargetResolver(SHAKER);
+    private final ShakerIngredientHudController ingredientHud;
     private final AnimatedItemFurnitureBehavior.Handler visualHandler = this::visuals;
     private final LifecycleFurnitureBehavior.Handler lifecycleHandler;
     private BukkitTask animationTask;
-    private BukkitTask ingredientHudTask;
     private Item baseRender;
     private Item lidRender;
     private boolean missingRenderItemLogged;
@@ -59,14 +55,16 @@ public final class ShakerVisualService {
         this.plugin = plugin;
         this.catalog = catalog;
         this.items = items;
+        this.ingredientHud = new ShakerIngredientHudController(
+                plugin, loaded, new ShakerHudTargetResolver(SHAKER),
+                this::ingredientSubtitle);
         this.lifecycleHandler = new LifecycleFurnitureBehavior.Handler() {
             @Override
             public void onReady(BukkitFurniture furniture,
                                 LifecycleFurnitureBehavior.ReadyReason reason) {
                 loaded.put(furniture.uuid(), furniture);
                 ingredientHudSubtitles.remove(furniture.uuid());
-                ingredientHudTargets.invalidate();
-                ensureIngredientHudTask();
+                ingredientHud.furnitureAvailable(furniture);
             }
 
             @Override
@@ -76,14 +74,14 @@ public final class ShakerVisualService {
                 loaded.remove(owner, furniture);
                 animations.remove(owner);
                 ingredientHudSubtitles.remove(owner);
-                ingredientHudTargets.invalidate();
+                ingredientHud.furnitureUnavailable(owner);
                 stopAnimationTaskIfIdle();
-                stopIngredientHudTaskIfIdle();
             }
         };
     }
 
     public void start() {
+        ingredientHud.start();
         AnimatedItemFurnitureBehavior.bind(
                 AnimatedItemFurnitureBehavior.Channel.SHAKER, visualHandler);
         LifecycleFurnitureBehavior.bind(
@@ -103,28 +101,23 @@ public final class ShakerVisualService {
             animationTask.cancel();
             animationTask = null;
         }
-        if (ingredientHudTask != null) {
-            ingredientHudTask.cancel();
-            ingredientHudTask = null;
-        }
-        clearAllHud();
         AnimatedItemFurnitureBehavior.unbind(
                 AnimatedItemFurnitureBehavior.Channel.SHAKER, visualHandler);
         LifecycleFurnitureBehavior.unbind(
                 LifecycleFurnitureBehavior.Channel.SHAKER, lifecycleHandler);
+        ingredientHud.stop();
+        clearMixingHud();
         loaded.clear();
         ingredientHudSubtitles.clear();
-        ingredientHudTargets.invalidate();
         baseRender = null;
         lidRender = null;
     }
 
     public void beginMix(Player player) {
         UUID playerId = player.getUniqueId();
-        ingredientHudViewers.remove(playerId);
-        nextIngredientHudViewers.remove(playerId);
+        ingredientHud.suppress(player);
         mixingHudViewers.add(playerId);
-        showHud(player, ShakerHudSemantics.progressSubtitle(0));
+        showMixHud(player, ShakerHudSemantics.progressSubtitle(0));
     }
 
     public void updateMix(Player player, int ticks) {
@@ -133,13 +126,14 @@ public final class ShakerVisualService {
             return;
         }
         mixingHudViewers.add(player.getUniqueId());
-        showHud(player, ShakerHudSemantics.progressSubtitle(ticks));
+        showMixHud(player, ShakerHudSemantics.progressSubtitle(ticks));
     }
 
     public void endMix(Player player) {
         if (mixingHudViewers.remove(player.getUniqueId()) && player.isOnline()) {
             player.clearTitle();
         }
+        ingredientHud.resume(player);
     }
 
     public void animatePut(BukkitFurniture furniture) {
@@ -147,6 +141,7 @@ public final class ShakerVisualService {
             return;
         }
         ingredientHudSubtitles.remove(furniture.uuid());
+        ingredientHud.furnitureChanged(furniture);
         animations.put(furniture.uuid(), 0F);
         AnimatedItemFurnitureBehavior.updateTransforms(furniture);
         ensureAnimationTask();
@@ -158,6 +153,7 @@ public final class ShakerVisualService {
             return;
         }
         ingredientHudSubtitles.remove(furniture.uuid());
+        ingredientHud.furnitureUnavailable(furniture.uuid());
         animations.remove(furniture.uuid());
         stopAnimationTaskIfIdle();
     }
@@ -174,61 +170,6 @@ public final class ShakerVisualService {
             animationTask.cancel();
             animationTask = null;
         }
-    }
-
-    private void ensureIngredientHudTask() {
-        if (ingredientHudTask == null && !loaded.isEmpty()) {
-            ingredientHudTask = plugin.getServer().getScheduler().runTaskTimer(
-                    plugin, this::tickIngredientHud, 1L, 2L);
-        }
-    }
-
-    private void stopIngredientHudTaskIfIdle() {
-        if (ingredientHudTask != null && loaded.isEmpty()) {
-            ingredientHudTask.cancel();
-            ingredientHudTask = null;
-            clearIngredientHud();
-        }
-    }
-
-    private void tickIngredientHud() {
-        Set<UUID> shownNow = nextIngredientHudViewers;
-        shownNow.clear();
-        ingredientHudTargets.beginPoll();
-        try {
-            for (Player player : plugin.getServer().getOnlinePlayers()) {
-                UUID playerId = player.getUniqueId();
-                if (mixingHudViewers.contains(playerId)) {
-                    continue;
-                }
-                BukkitFurniture shaker = ingredientHudTargets.resolve(player, loaded);
-                if (shaker == null) {
-                    continue;
-                }
-                Optional<Component> subtitle = ingredientSubtitle(shaker);
-                if (subtitle.isEmpty()) {
-                    continue;
-                }
-                showHud(player, subtitle.orElseThrow());
-                shownNow.add(playerId);
-            }
-        } finally {
-            ingredientHudTargets.endPoll();
-        }
-
-        for (UUID playerId : ingredientHudViewers) {
-            if (!shownNow.contains(playerId)) {
-                Player player = plugin.getServer().getPlayer(playerId);
-                if (player == null) {
-                    continue;
-                }
-                player.clearTitle();
-            }
-        }
-        Set<UUID> previous = ingredientHudViewers;
-        ingredientHudViewers = shownNow;
-        nextIngredientHudViewers = previous;
-        nextIngredientHudViewers.clear();
     }
 
     private Optional<Component> ingredientSubtitle(BukkitFurniture furniture) {
@@ -260,29 +201,16 @@ public final class ShakerVisualService {
         return colors;
     }
 
-    private static void showHud(Player player, Component subtitle) {
-        player.showTitle(Title.title(Component.empty(), subtitle, HUD_TIMES));
+    private static void showMixHud(Player player, Component subtitle) {
+        player.showTitle(Title.title(Component.empty(), subtitle, MIX_HUD_TIMES));
     }
 
-    private void clearIngredientHud() {
+    private void clearMixingHud() {
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            if (ingredientHudViewers.contains(player.getUniqueId())) {
+            if (mixingHudViewers.contains(player.getUniqueId())) {
                 player.clearTitle();
             }
         }
-        ingredientHudViewers.clear();
-        nextIngredientHudViewers.clear();
-    }
-
-    private void clearAllHud() {
-        for (Player player : plugin.getServer().getOnlinePlayers()) {
-            UUID playerId = player.getUniqueId();
-            if (ingredientHudViewers.contains(playerId) || mixingHudViewers.contains(playerId)) {
-                player.clearTitle();
-            }
-        }
-        ingredientHudViewers.clear();
-        nextIngredientHudViewers.clear();
         mixingHudViewers.clear();
     }
 
