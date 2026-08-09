@@ -31,6 +31,42 @@ CIRCULAR_RACK_CARRIER_STATE = (
 )
 
 
+def shaker_x_transform(rotation_degrees: float, translation_y: float = 0.0) -> list[float]:
+    angle = math.radians(rotation_degrees)
+    cosine = round(math.cos(angle), 8)
+    sine = round(math.sin(angle), 8)
+    return [
+        1.0, 0.0, 0.0, 0.0,
+        0.0, cosine, -sine, round(translation_y, 8),
+        0.0, sine, cosine, 0.0,
+        0.0, 0.0, 0.0, 1.0,
+    ]
+
+
+def expected_shaker_use_cycle(*, first_person: bool) -> dict[str, Any]:
+    entries: list[dict[str, Any]] = []
+    for index in range(SHAKER_USE_FRAMES):
+        cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES
+        wave = math.sin(-cycle * 1.5)
+        rotation = -15.0 if first_person else math.degrees(wave * 0.25)
+        translation_y = -wave * 0.15 if first_person else 0.0
+        entries.append({
+            "threshold": round(cycle, 6),
+            "model": {
+                "type": "minecraft:model",
+                "path": f"{NAMESPACE}:item/shaker_3d",
+                "transformation": shaker_x_transform(rotation, translation_y),
+            },
+        })
+    return {
+        "type": "minecraft:range_dispatch",
+        "property": "use_cycle",
+        "period": round(SHAKER_USE_PERIOD_TICKS, 6),
+        "entries": entries,
+        "fallback": dict(entries[0]["model"]),
+    }
+
+
 def holder_carrier_state(facing: str) -> str:
     if facing not in {"north", "east", "south", "west"}:
         raise AssertionError(f"Unsupported holder facing: {facing}")
@@ -4064,68 +4100,39 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Shaker must use the 2D icon only in GUI/FIXED display contexts")
     use_condition = shaker_model.get("fallback", {})
-    use_cycle = use_condition.get("on_true", {})
-    expected_entries = [
-        {
-            "threshold": round(SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES, 6),
-            "model": {
-                "type": "minecraft:model",
-                "path": f"{NAMESPACE}:item/shaker_shaking/frame_{index:02d}",
+    expected_use_model = {
+        "type": "minecraft:select",
+        "property": "display_context",
+        "cases": [
+            {
+                "when": ["firstperson_lefthand", "firstperson_righthand"],
+                "model": expected_shaker_use_cycle(first_person=True),
             },
-        }
-        for index in range(SHAKER_USE_FRAMES)
-    ]
+            {
+                "when": ["thirdperson_lefthand", "thirdperson_righthand"],
+                "model": expected_shaker_use_cycle(first_person=False),
+            },
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "path": f"{NAMESPACE}:item/shaker_3d",
+        },
+    }
     if (use_condition.get("type") != "minecraft:condition"
             or use_condition.get("property") != "minecraft:using_item"
             or use_condition.get("on_false") != {
                 "type": "minecraft:model",
                 "path": f"{NAMESPACE}:item/shaker_3d",
             }
-            or use_cycle.get("type") != "minecraft:range_dispatch"
-            or use_cycle.get("property") != "use_cycle"
-            or use_cycle.get("period") != round(SHAKER_USE_PERIOD_TICKS, 6)
-            or use_cycle.get("entries") != expected_entries
-            or use_cycle.get("fallback") != {
-                "type": "minecraft:model",
-                "path": f"{NAMESPACE}:item/shaker_shaking/frame_00",
-            }):
+            or use_condition.get("on_true") != expected_use_model):
         raise AssertionError(
-            "Shaker held motion must be delegated to CE using_item + use_cycle models")
+            "Shaker held motion must use 26.2 item-model transformations")
     for index in range(SHAKER_USE_FRAMES):
-        cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES
-        wave = math.sin(-cycle * 1.5)
-        arm_pitch = round(math.degrees(wave * 0.25), 5)
-        first_person_y = round(2.75 - wave * 2.4, 5)
-        frame = asset_json(
-            f"{NAMESPACE}:item/shaker_shaking/frame_{index:02d}", "models")
-        expected_display = {
-            "thirdperson_righthand": {
-                "rotation": [arm_pitch, 0, 0],
-                "translation": [0, -0.25, 0],
-                "scale": [0.5, 0.5, 0.5],
-            },
-            "thirdperson_lefthand": {
-                "rotation": [arm_pitch, 0, 0],
-                "translation": [0, -0.25, 0],
-                "scale": [0.5, 0.5, 0.5],
-            },
-            "firstperson_righthand": {
-                "rotation": [-15, 0, 0],
-                "translation": [0, first_person_y, 0],
-                "scale": [0.5, 0.5, 0.5],
-            },
-            "firstperson_lefthand": {
-                "rotation": [-15, 0, 0],
-                "translation": [0, first_person_y, 0],
-                "scale": [0.5, 0.5, 0.5],
-            },
-        }
-        if frame != {
-                "parent": f"{NAMESPACE}:item/shaker_3d",
-                "display": expected_display,
-                }:
+        if asset_json(
+                f"{NAMESPACE}:item/shaker_shaking/frame_{index:02d}",
+                "models") is not None:
             raise AssertionError(
-                f"Shaker use-cycle frame {index:02d} no longer matches archived sine motion")
+                "Shaker must not generate legacy per-frame model files")
 
     barrel_variants = furniture[f"{NAMESPACE}:barrel"]["variants"]
     if set(barrel_variants) != {"ground", "ground_closed"}:

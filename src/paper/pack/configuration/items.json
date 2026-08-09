@@ -2991,126 +2991,883 @@
           "type": "minecraft:condition",
           "property": "minecraft:using_item",
           "on_true": {
-            "type": "minecraft:range_dispatch",
-            "property": "use_cycle",
-            "period": 4.18879,
-            "entries": [
+            "type": "minecraft:select",
+            "property": "display_context",
+            "cases": [
               {
-                "threshold": 0.0,
+                "when": [
+                  "firstperson_lefthand",
+                  "firstperson_righthand"
+                ],
                 "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_00"
+                  "type": "minecraft:range_dispatch",
+                  "property": "use_cycle",
+                  "period": 4.18879,
+                  "entries": [
+                    {
+                      "threshold": 0.0,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          0.0,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 0.261799,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          0.05740251,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 0.523599,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          0.10606602,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 0.785398,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          0.13858193,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 1.047198,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          0.15,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 1.308997,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          0.13858193,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 1.570796,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          0.10606602,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 1.832596,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          0.05740251,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 2.094395,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          0.0,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 2.356194,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          -0.05740251,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 2.617994,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          -0.10606602,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 2.879793,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          -0.13858193,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 3.141593,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          -0.15,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 3.403392,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          -0.13858193,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 3.665191,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          -0.10606602,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 3.926991,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96592583,
+                          0.25881905,
+                          -0.05740251,
+                          0.0,
+                          -0.25881905,
+                          0.96592583,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    }
+                  ],
+                  "fallback": {
+                    "type": "minecraft:model",
+                    "path": "kaleidoscope_tavern:item/shaker_3d",
+                    "transformation": [
+                      1.0,
+                      0.0,
+                      0.0,
+                      0.0,
+                      0.0,
+                      0.96592583,
+                      0.25881905,
+                      0.0,
+                      0.0,
+                      -0.25881905,
+                      0.96592583,
+                      0.0,
+                      0.0,
+                      0.0,
+                      0.0,
+                      1.0
+                    ]
+                  }
                 }
               },
               {
-                "threshold": 0.261799,
+                "when": [
+                  "thirdperson_lefthand",
+                  "thirdperson_righthand"
+                ],
                 "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_01"
-                }
-              },
-              {
-                "threshold": 0.523599,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_02"
-                }
-              },
-              {
-                "threshold": 0.785398,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_03"
-                }
-              },
-              {
-                "threshold": 1.047198,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_04"
-                }
-              },
-              {
-                "threshold": 1.308997,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_05"
-                }
-              },
-              {
-                "threshold": 1.570796,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_06"
-                }
-              },
-              {
-                "threshold": 1.832596,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_07"
-                }
-              },
-              {
-                "threshold": 2.094395,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_08"
-                }
-              },
-              {
-                "threshold": 2.356194,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_09"
-                }
-              },
-              {
-                "threshold": 2.617994,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_10"
-                }
-              },
-              {
-                "threshold": 2.879793,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_11"
-                }
-              },
-              {
-                "threshold": 3.141593,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_12"
-                }
-              },
-              {
-                "threshold": 3.403392,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_13"
-                }
-              },
-              {
-                "threshold": 3.665191,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_14"
-                }
-              },
-              {
-                "threshold": 3.926991,
-                "model": {
-                  "type": "minecraft:model",
-                  "path": "kaleidoscope_tavern:item/shaker_shaking/frame_15"
+                  "type": "minecraft:range_dispatch",
+                  "property": "use_cycle",
+                  "period": 4.18879,
+                  "entries": [
+                    {
+                      "threshold": 0.0,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          -0.0,
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 0.261799,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.99542703,
+                          0.09552498,
+                          0.0,
+                          0.0,
+                          -0.09552498,
+                          0.99542703,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 0.523599,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.98441565,
+                          0.17585742,
+                          0.0,
+                          0.0,
+                          -0.17585742,
+                          0.98441565,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 0.785398,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.97344483,
+                          0.22892176,
+                          0.0,
+                          0.0,
+                          -0.22892176,
+                          0.97344483,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 1.047198,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96891242,
+                          0.24740396,
+                          0.0,
+                          0.0,
+                          -0.24740396,
+                          0.96891242,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 1.308997,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.97344483,
+                          0.22892176,
+                          0.0,
+                          0.0,
+                          -0.22892176,
+                          0.97344483,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 1.570796,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.98441565,
+                          0.17585742,
+                          0.0,
+                          0.0,
+                          -0.17585742,
+                          0.98441565,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 1.832596,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.99542703,
+                          0.09552498,
+                          0.0,
+                          0.0,
+                          -0.09552498,
+                          0.99542703,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 2.094395,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          -0.0,
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 2.356194,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.99542703,
+                          -0.09552498,
+                          0.0,
+                          0.0,
+                          0.09552498,
+                          0.99542703,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 2.617994,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.98441565,
+                          -0.17585742,
+                          0.0,
+                          0.0,
+                          0.17585742,
+                          0.98441565,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 2.879793,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.97344483,
+                          -0.22892176,
+                          0.0,
+                          0.0,
+                          0.22892176,
+                          0.97344483,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 3.141593,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.96891242,
+                          -0.24740396,
+                          0.0,
+                          0.0,
+                          0.24740396,
+                          0.96891242,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 3.403392,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.97344483,
+                          -0.22892176,
+                          0.0,
+                          0.0,
+                          0.22892176,
+                          0.97344483,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 3.665191,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.98441565,
+                          -0.17585742,
+                          0.0,
+                          0.0,
+                          0.17585742,
+                          0.98441565,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    },
+                    {
+                      "threshold": 3.926991,
+                      "model": {
+                        "type": "minecraft:model",
+                        "path": "kaleidoscope_tavern:item/shaker_3d",
+                        "transformation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.99542703,
+                          -0.09552498,
+                          0.0,
+                          0.0,
+                          0.09552498,
+                          0.99542703,
+                          0.0,
+                          0.0,
+                          0.0,
+                          0.0,
+                          1.0
+                        ]
+                      }
+                    }
+                  ],
+                  "fallback": {
+                    "type": "minecraft:model",
+                    "path": "kaleidoscope_tavern:item/shaker_3d",
+                    "transformation": [
+                      1.0,
+                      0.0,
+                      0.0,
+                      0.0,
+                      0.0,
+                      1.0,
+                      0.0,
+                      0.0,
+                      0.0,
+                      -0.0,
+                      1.0,
+                      0.0,
+                      0.0,
+                      0.0,
+                      0.0,
+                      1.0
+                    ]
+                  }
                 }
               }
             ],
             "fallback": {
               "type": "minecraft:model",
-              "path": "kaleidoscope_tavern:item/shaker_shaking/frame_00"
+              "path": "kaleidoscope_tavern:item/shaker_3d"
             }
           },
           "on_false": {

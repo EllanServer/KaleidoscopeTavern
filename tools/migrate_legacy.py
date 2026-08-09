@@ -3288,64 +3288,42 @@ def create_shaker_hud_assets() -> None:
     )
 
 
-def shaker_use_model_entries() -> list[dict[str, Any]]:
-    """CraftEngine/vanilla range-dispatch entries for the native use cycle."""
+def shaker_x_transform(rotation_degrees: float, translation_y: float = 0.0) -> list[float]:
+    """Minecraft 26.1+ item-model transformation as a row-major matrix."""
+    angle = math.radians(rotation_degrees)
+    cosine = round(math.cos(angle), 8)
+    sine = round(math.sin(angle), 8)
     return [
-        {
-            "threshold": round(
-                SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES, 6
-            ),
-            "model": {
-                "type": "minecraft:model",
-                "path": f"{NAMESPACE}:item/shaker_shaking/frame_{index:02d}",
-            },
-        }
-        for index in range(SHAKER_USE_FRAMES)
+        1.0, 0.0, 0.0, 0.0,
+        0.0, cosine, -sine, round(translation_y, 8),
+        0.0, sine, cosine, 0.0,
+        0.0, 0.0, 0.0, 1.0,
     ]
 
 
-def create_shaker_use_models() -> None:
-    """Generate CE-native held-item poses matching ShakerAnimation's sine wave.
-
-    The archived client code used ``sin(ticks * 1.5)`` for both the arm pitch
-    and the first-person vertical motion. ``use_cycle`` exposes that clock to
-    the resource pack, so no Paper equipment packets or Java animation loop are
-    needed.
-    """
-    model_root = (
-        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/item/"
-        "shaker_shaking"
-    )
+def shaker_use_cycle_model(*, first_person: bool) -> dict[str, Any]:
+    """Build a 26.2 use-cycle model without legacy per-frame model files."""
+    entries: list[dict[str, Any]] = []
     for index in range(SHAKER_USE_FRAMES):
         cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES
         wave = math.sin(-cycle * 1.5)
-        arm_pitch = round(math.degrees(wave * 0.25), 5)
-        first_person_y = round(2.75 - wave * 2.4, 5)
-        write_json(model_root / f"frame_{index:02d}.json", {
-            "parent": f"{NAMESPACE}:item/shaker_3d",
-            "display": {
-                "thirdperson_righthand": {
-                    "rotation": [arm_pitch, 0, 0],
-                    "translation": [0, -0.25, 0],
-                    "scale": [0.5, 0.5, 0.5],
-                },
-                "thirdperson_lefthand": {
-                    "rotation": [arm_pitch, 0, 0],
-                    "translation": [0, -0.25, 0],
-                    "scale": [0.5, 0.5, 0.5],
-                },
-                "firstperson_righthand": {
-                    "rotation": [-15, 0, 0],
-                    "translation": [0, first_person_y, 0],
-                    "scale": [0.5, 0.5, 0.5],
-                },
-                "firstperson_lefthand": {
-                    "rotation": [-15, 0, 0],
-                    "translation": [0, first_person_y, 0],
-                    "scale": [0.5, 0.5, 0.5],
-                },
+        rotation = -15.0 if first_person else math.degrees(wave * 0.25)
+        translation_y = -wave * 0.15 if first_person else 0.0
+        entries.append({
+            "threshold": round(cycle, 6),
+            "model": {
+                "type": "minecraft:model",
+                "path": f"{NAMESPACE}:item/shaker_3d",
+                "transformation": shaker_x_transform(rotation, translation_y),
             },
         })
+    return {
+        "type": "minecraft:range_dispatch",
+        "property": "use_cycle",
+        "period": round(SHAKER_USE_PERIOD_TICKS, 6),
+        "entries": entries,
+        "fallback": deepcopy(entries[0]["model"]),
+    }
 
 
 def trellis_wax_events() -> list[dict[str, Any]]:
@@ -4728,15 +4706,27 @@ def build_items(
                     "type": "minecraft:condition",
                     "property": "minecraft:using_item",
                     "on_true": {
-                        "type": "minecraft:range_dispatch",
-                        "property": "use_cycle",
-                        "period": round(SHAKER_USE_PERIOD_TICKS, 6),
-                        "entries": shaker_use_model_entries(),
+                        "type": "minecraft:select",
+                        "property": "display_context",
+                        "cases": [
+                            {
+                                "when": [
+                                    "firstperson_lefthand",
+                                    "firstperson_righthand",
+                                ],
+                                "model": shaker_use_cycle_model(first_person=True),
+                            },
+                            {
+                                "when": [
+                                    "thirdperson_lefthand",
+                                    "thirdperson_righthand",
+                                ],
+                                "model": shaker_use_cycle_model(first_person=False),
+                            },
+                        ],
                         "fallback": {
                             "type": "minecraft:model",
-                            "path": (
-                                f"{NAMESPACE}:item/shaker_shaking/frame_00"
-                            ),
+                            "path": f"{NAMESPACE}:item/shaker_3d",
                         },
                     },
                     "on_false": {
@@ -5033,7 +5023,6 @@ def main() -> None:
     create_worldgen_features()
     create_bar_stool_body_models()
     create_shaker_models()
-    create_shaker_use_models()
     add_runtime_render_items(render_items)
     items = build_items(
         item_ids,
