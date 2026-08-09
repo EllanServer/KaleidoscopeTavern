@@ -3,8 +3,8 @@
 
 The Forge source tree is intentionally kept as the auditable migration input.  It
 is not part of the Paper source set.  Running this script is deterministic and
-only rewrites generated files under ``src/paper/pack`` and
-``src/paper/resources/catalog``.
+only rewrites generated files under ``src/paper/pack``,
+``src/paper/resources/catalog`` and ``src/paper/resources/recipes``.
 """
 
 from __future__ import annotations
@@ -23,6 +23,8 @@ from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 NAMESPACE = "kaleidoscope_tavern"
+SHAKER_USE_PERIOD_TICKS = math.tau / 1.5
+SHAKER_USE_FRAMES = 16
 HANGING_GRAPE_CROPS = {"grape_crop", "ice_grape_crop", "gold_grape_crop"}
 # BlockLootTables: blocks without an item form still drop their recoverable
 # parts — grapevine trellises return the trellis plus the vine, and wild
@@ -53,6 +55,7 @@ GENERATED = ROOT / "src/generated/resources"
 MAIN_RESOURCES = ROOT / "src/main/resources"
 CONFIGURATION = ROOT / "src/paper/pack/configuration"
 CATALOG = ROOT / "src/paper/resources/catalog"
+RECIPE_DEFAULTS = ROOT / "src/paper/resources/recipes"
 
 ITEM_REGISTER = JAVA_INIT / "ModItems.java"
 BLOCK_REGISTER = JAVA_INIT / "ModBlocks.java"
@@ -510,6 +513,78 @@ def write_tsv(path: Path, header: Iterable[str], rows: Iterable[Iterable[Any]]) 
         for row in rows:
             cells = [str(cell).replace("\t", " ").replace("\r", " ").replace("\n", " ") for cell in row]
             stream.write("\t".join(cells) + "\n")
+
+
+def yaml_scalar(value: Any) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int):
+        return str(value)
+    return json.dumps(str(value), ensure_ascii=False)
+
+
+def write_station_recipe_defaults(barrel_rows: list[list[Any]],
+                                  shaker_rows: list[list[Any]]) -> None:
+    """Write operator-editable defaults mirrored from the archived recipes."""
+    barrel_lines = [
+        "# 首次启动时复制到 plugins/KaleidoscopeTavern/recipes/barrel.yml。",
+        "# 数据目录中的副本不会被插件升级覆盖；修改后执行 /kt reload。",
+        "# selector 支持 item=<命名空间:物品> 与 tag=<命名空间:标签>。",
+        "config-version: 1",
+        "",
+        "# 满桶内容没有匹配 recipes 时生成的保底产物。",
+        "fallback:",
+        f"  id: {yaml_scalar(f'{NAMESPACE}:empty')}",
+        f"  result: {yaml_scalar(f'{NAMESPACE}:vinegar')}",
+        "  unit-ticks: 2400",
+        "  output: 16",
+        "",
+        "recipes:",
+    ]
+    for recipe_id, result, carrier, fluid, ingredients, unit_ticks in barrel_rows:
+        barrel_lines.extend([
+            f"  - id: {yaml_scalar(recipe_id)}",
+            f"    result: {yaml_scalar(result)}",
+            f"    carrier: {yaml_scalar(carrier)}",
+            f"    fluid: {yaml_scalar(fluid)}",
+        ])
+        selector_values = str(ingredients).split(";") if ingredients else []
+        if selector_values:
+            barrel_lines.append("    ingredients:")
+            barrel_lines.extend(
+                f"      - {yaml_scalar(entry)}" for entry in selector_values)
+        else:
+            barrel_lines.append("    ingredients: []")
+        barrel_lines.append(f"    unit-ticks: {int(unit_ticks)}")
+
+    shaker_lines = [
+        "# 首次启动时复制到 plugins/KaleidoscopeTavern/recipes/shaker.yml。",
+        "# 数据目录中的副本不会被插件升级覆盖；修改后执行 /kt reload。",
+        "# 配方按书写顺序匹配；每份配方可使用 1 至 3 个 selector。",
+        "config-version: 1",
+        "",
+        "# 摇动时间进入特殊区间时使用的产物；signature 也用于普通配方未命中时。",
+        "special-results:",
+        f"  mystery: {yaml_scalar(f'{NAMESPACE}:mystery_cocktail')}",
+        f"  signature: {yaml_scalar(f'{NAMESPACE}:signature_cocktail')}",
+        "",
+        "recipes:",
+    ]
+    for recipe_id, result, ingredients in shaker_rows:
+        shaker_lines.extend([
+            f"  - id: {yaml_scalar(recipe_id)}",
+            f"    result: {yaml_scalar(result)}",
+            "    ingredients:",
+        ])
+        shaker_lines.extend(
+            f"      - {yaml_scalar(entry)}" for entry in str(ingredients).split(";")
+        )
+
+    RECIPE_DEFAULTS.mkdir(parents=True, exist_ok=True)
+    (RECIPE_DEFAULTS / "barrel.yml").write_text(
+        "\n".join(barrel_lines) + "\n", encoding="utf-8", newline="\n")
+    (RECIPE_DEFAULTS / "shaker.yml").write_text(
+        "\n".join(shaker_lines) + "\n", encoding="utf-8", newline="\n")
 
 
 def registry_ids(path: Path, owner: str) -> list[str]:
@@ -3146,10 +3221,10 @@ def create_custom_effect_hud_assets() -> None:
 def create_shaker_hud_assets() -> None:
     """Convert the archived shaker overlay into title-font HUD glyphs.
 
-    Minecraft renders subtitle glyphs at twice their bitmap-font size.  The
-    source overlay's 181x17 bar and 11x13 pointer are therefore reduced by
-    half with nearest-neighbour sampling; their final in-game geometry remains
-    the same while the font advances can layer the pointer over the bar.
+    Minecraft renders subtitle glyphs at twice their bitmap-font size. Pad the
+    odd-height source crops to an even height and let the bitmap provider scale
+    them to half-size. The title renderer restores them to their exact original
+    pixels without the previous destructive downsample/upscale round trip.
     """
     try:
         from PIL import Image
@@ -3170,12 +3245,12 @@ def create_shaker_hud_assets() -> None:
         ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/textures/font/shaker"
     )
     texture_root.mkdir(parents=True, exist_ok=True)
-    overlay.crop((0, 0, 181, 17)).resize(
-        (90, 9), Image.Resampling.NEAREST
-    ).save(texture_root / "bar.png")
-    overlay.crop((181, 0, 192, 13)).resize(
-        (6, 7), Image.Resampling.NEAREST
-    ).save(texture_root / "pointer.png")
+    bar = Image.new("RGBA", (181, 18), (0, 0, 0, 0))
+    bar.paste(overlay.crop((0, 0, 181, 17)), (0, 0))
+    bar.save(texture_root / "bar.png")
+    pointer = Image.new("RGBA", (11, 14), (0, 0, 0, 0))
+    pointer.paste(overlay.crop((181, 0, 192, 13)), (0, 0))
+    pointer.save(texture_root / "pointer.png")
 
     # Space advances are expressed in font units; subtitle rendering doubles
     # them on screen.  Half-unit entries retain every one-pixel source offset.
@@ -3211,6 +3286,66 @@ def create_shaker_hud_assets() -> None:
         ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/font/shaker_hud.json",
         {"providers": providers},
     )
+
+
+def shaker_use_model_entries() -> list[dict[str, Any]]:
+    """CraftEngine/vanilla range-dispatch entries for the native use cycle."""
+    return [
+        {
+            "threshold": round(
+                SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES, 6
+            ),
+            "model": {
+                "type": "minecraft:model",
+                "path": f"{NAMESPACE}:item/shaker_shaking/frame_{index:02d}",
+            },
+        }
+        for index in range(SHAKER_USE_FRAMES)
+    ]
+
+
+def create_shaker_use_models() -> None:
+    """Generate CE-native held-item poses matching ShakerAnimation's sine wave.
+
+    The archived client code used ``sin(ticks * 1.5)`` for both the arm pitch
+    and the first-person vertical motion. ``use_cycle`` exposes that clock to
+    the resource pack, so no Paper equipment packets or Java animation loop are
+    needed.
+    """
+    model_root = (
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/item/"
+        "shaker_shaking"
+    )
+    for index in range(SHAKER_USE_FRAMES):
+        cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES
+        wave = math.sin(-cycle * 1.5)
+        arm_pitch = round(math.degrees(wave * 0.25), 5)
+        first_person_y = round(2.75 - wave * 2.4, 5)
+        write_json(model_root / f"frame_{index:02d}.json", {
+            "parent": f"{NAMESPACE}:item/shaker_3d",
+            "display": {
+                "thirdperson_righthand": {
+                    "rotation": [arm_pitch, 0, 0],
+                    "translation": [0, -0.25, 0],
+                    "scale": [0.5, 0.5, 0.5],
+                },
+                "thirdperson_lefthand": {
+                    "rotation": [arm_pitch, 0, 0],
+                    "translation": [0, -0.25, 0],
+                    "scale": [0.5, 0.5, 0.5],
+                },
+                "firstperson_righthand": {
+                    "rotation": [-15, 0, 0],
+                    "translation": [0, first_person_y, 0],
+                    "scale": [0.5, 0.5, 0.5],
+                },
+                "firstperson_lefthand": {
+                    "rotation": [-15, 0, 0],
+                    "translation": [0, first_person_y, 0],
+                    "scale": [0.5, 0.5, 0.5],
+                },
+            },
+        })
 
 
 def trellis_wax_events() -> list[dict[str, Any]]:
@@ -4040,10 +4175,14 @@ def table_furniture_variant_name(base: str, facing: str) -> str:
 def furniture_rules(block_id: str, variant_names: list[str]) -> dict[str, Any]:
     anchors = [name for name in ("ground", "wall", "ceiling") if name in variant_names]
     rules: dict[str, Any] = {}
-    # Forge BlockItem placement always occupied the target block centre.  Only
-    # sandwich boards used ROTATION_16; bottles, paintings and other small
-    # furniture retained horizontal cardinal facing.
-    rotation = "sixteen" if block_id.endswith("_sandwich_board") else "four"
+    # Forge BlockItem placement always occupied the target block centre. The
+    # released 1.2.0 GlasswareBlock and sandwich boards used ROTATION_16;
+    # ordinary bottles and the remaining furniture retained cardinal facing.
+    rotation = (
+        "sixteen"
+        if block_id in COCKTAILS or block_id.endswith("_sandwich_board")
+        else "four"
+    )
     for anchor in anchors:
         rules[anchor] = {"rotation": rotation, "alignment": "center"}
     return rules
@@ -4566,16 +4705,15 @@ def build_items(
                 "minecraft:max_stack_size": 1,
                 "minecraft:consumable": {
                     "consume_seconds": 3_600.0,
-                    # NONE retains the active-use timer without the brush
-                    # animation's continuous left/right first-person sway.
+                    # The item model owns the motion through using_item and
+                    # use_cycle; no built-in eating/brush animation is wanted.
                     "animation": "none",
                     "has_consume_particles": False,
                 },
             })
-            # This is the vanilla item-model equivalent of the source
-            # forge:separate_transforms wrapper: inventory/item-frame views
-            # use the authored icon, while held/dropped/head views retain the
-            # complete cuboid model and its original display transforms.
+            # GUI/item-frame views keep the authored icon. Held views delegate
+            # their entire shake cycle to CraftEngine's native item-model
+            # pipeline, preserving the archived sin(ticks * 1.5) cadence.
             config["model"] = {
                 "type": "minecraft:select",
                 "property": "display_context",
@@ -4587,8 +4725,24 @@ def build_items(
                     },
                 }],
                 "fallback": {
-                    "type": "minecraft:model",
-                    "path": f"{NAMESPACE}:item/shaker_3d",
+                    "type": "minecraft:condition",
+                    "property": "minecraft:using_item",
+                    "on_true": {
+                        "type": "minecraft:range_dispatch",
+                        "property": "use_cycle",
+                        "period": round(SHAKER_USE_PERIOD_TICKS, 6),
+                        "entries": shaker_use_model_entries(),
+                        "fallback": {
+                            "type": "minecraft:model",
+                            "path": (
+                                f"{NAMESPACE}:item/shaker_shaking/frame_00"
+                            ),
+                        },
+                    },
+                    "on_false": {
+                        "type": "minecraft:model",
+                        "path": f"{NAMESPACE}:item/shaker_3d",
+                    },
                 },
             }
         if item_id == "molotov":
@@ -4811,6 +4965,7 @@ def build_runtime_catalogs(tags: dict[str, list[str]], effect_rows: list[list[An
         ("recipe", "result", "ingredients"),
         shaker_rows,
     )
+    write_station_recipe_defaults(barrel_rows, shaker_rows)
     write_tsv(
         CATALOG / "drink-effects.tsv",
         ("item", "level", "effect", "duration_ticks", "amplifier", "probability"),
@@ -4878,6 +5033,7 @@ def main() -> None:
     create_worldgen_features()
     create_bar_stool_body_models()
     create_shaker_models()
+    create_shaker_use_models()
     add_runtime_render_items(render_items)
     items = build_items(
         item_ids,

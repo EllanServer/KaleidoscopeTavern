@@ -7,7 +7,7 @@
 - **代码**：[BSD 3-Clause](LICENSE-CODE)，版权归 Kaleidoscope Official Production Team 所有。
 - **素材**（贴图、模型、音效等美术资源）：[CC BY-NC-SA 4.0](LICENSE-ASSETS)——署名、非商业性使用、相同方式共享。
 - **素材来源与修改说明**：[ASSET-CREDITS.md](ASSET-CREDITS.md)。代码许可证不会覆盖或放宽素材的非商业限制。
-- **第三方组件**：[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。CraftEngine、CustomCrops、Paper 与可选的 PlaceholderAPI 均由服务器分别安装，其类不会打入本插件 JAR。
+- **第三方组件**：[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。Sparrow YAML 作为配方解析器内嵌；CraftEngine、CustomCrops、Paper 与可选的 PlaceholderAPI 仍由服务器分别安装，其类不会打入本插件 JAR。
 - **上游致谢**：本项目源自 [KaleidoscopeTavern](https://github.com/KaleidoscopeMods/KaleidoscopeTavern)（作者 ysbbbbbb、tartaric_acid），并依赖 [CraftEngine](https://github.com/Xiao-MoMi/craft-engine) 与 [CustomCrops](https://github.com/Xiao-MoMi/Custom-Crops) 运行。
 
 ## 兼容范围
@@ -18,6 +18,7 @@
 | Java | **25** |
 | CraftEngine | **26.7.4** |
 | CustomCrops | **3.6.52** |
+| Sparrow YAML | **1.0.7（内嵌）** |
 
 本项目以 CraftEngine 官方 Wiki 的 [自定义方块](https://xiao-momi.github.io/craft-engine-wiki/configuration/block/)、[家具](https://xiao-momi.github.io/craft-engine-wiki/configuration/furniture/) 和 [API](https://xiao-momi.github.io/craft-engine-wiki/api/) 模型为准，并没有把所有旧 Forge `Block` 机械地迁成 CE 方块。
 
@@ -36,7 +37,7 @@
 - 物品态：葡萄仍是可食用物，果汁桶仍可饮用、清除状态并返还桶；藤条保留燃料值，瓶装酒、杯具与燃烧瓶保留 16 个堆叠上限；
 - 压榨桶：地面型可放入原料并踩踏压榨，壁挂倾倒型不可踩踏；不匹配的原料会被挤出，满 1000 mB 后可用桶取出；
 - 酒桶：保留 3×3×3 家具占位，支持 4 桶基液、至多 4 种原料及离线计时的 6 档陈酿品质；
-- 调酒器：摆放后装入三份原料，可原地计时摇制，也可潜行空手取回并在手中摇制；原料与成品随物品保存，签名鸡尾酒会合并效果与颜色；
+- 调酒器：摆放后装入一至三份配方原料（默认配方为三份），潜行空手取回后在手中摇制；原料与成品随物品保存，签名鸡尾酒会合并效果与颜色；
 - 龙头：读取后方水/岩浆/蜂巢/龙首/西瓜或邻近 CE 酒桶，并向下方炼药锅或 CE 空瓶家具灌装；
 - 酒瓶：饮品正常右键仍会饮用，潜行时才摆成家具；原版药水、水瓶、蜂蜜瓶、龙息与经验瓶也可摆放，药水颜色及完整 `ItemStack` 数据会保留，同类瓶可叠放四层并被投射物击碎；
 - 酒架与酒柜：酒窖柜、倾斜酒架、圆形酒架和酒瓶托架使用 CE 方块状态与方块实体 NBT 保存槽位，限制瓶装酒/杯具类型；收到红石上升沿后会随机发射其中一瓶；其余吧台柜仍沿用 CE 家具展示槽；
@@ -57,7 +58,7 @@
 5. 启动服务端。插件会在依赖启用前，把内置 CE 项目同步到 `plugins/CraftEngine/resources/kaleidoscope_tavern/`，并把葡萄定义同步到 `plugins/CustomCrops/contents/crops/kaleidoscope_tavern.yml`。
 6. 按 CraftEngine 的资源包部署方式让客户端加载生成的资源包，并执行 `/kt status` 检查内容数量。
 
-本插件不再嵌入 Sparrow-Heart，也不再保留仅用于调试高亮的代码。CustomCrops 自身如何管理其运行库由 CustomCrops 负责，Tavern JAR 不会再打入一份重复副本。
+本插件不再嵌入 Sparrow-Heart，也不再保留仅用于调试高亮的代码。配方文件仅内嵌轻量的 [Sparrow YAML](https://github.com/Xiao-MoMi/sparrow-yaml) 解析器；CustomCrops 自身如何管理其运行库由 CustomCrops 负责，Tavern JAR 不会再打入一份重复副本。
 
 插件只删除自己清单中记录的过期文件，不会清理 CraftEngine 的其他项目。若关闭 `pack.install-on-startup`，则需要自行把 JAR 内的 `tavern-pack/` 放入 CraftEngine 资源目录。
 
@@ -67,7 +68,7 @@
 
 ### 与 Forge 原版的已声明偏差
 
-全子系统(效果/酒瓶/压榨/酒桶/摇酒器/水龙头/存储/座椅/文字板/葡萄/世界生成)已逐项对照归档源码审计。以下为有意保留的偏差：家具类装饰不可含水(CE 家具为实体)；副手对着占用槽不会触发喝酒(家具交互模型差异)；创造喝果汁桶不退空桶(原版 use_remainder 语义)；野生葡萄藤世界生成经 CraftEngine 的 configured/placed feature 注入真实区块生成管线(`configuration/worldgen.json`:1/12 区块 × 1–5 条 × 链长 1–7,橡树/白桦树叶下悬挂),分布模型仍是 Forge"蜂巢树装饰器"的近似；酒桶龙头载体暂仅支持空瓶(当前全部配方即空瓶)；摇酒进度条与手持摇动动画为客户端渲染,服务端以 brush 手势与音效节奏近似；迁至 CE events 的手部交互(灯串染色、藤架涂蜡/脱蜡、野藤剪毛、香炉开关)仅响应主手,避免主副手交互事件在同一刻各触发一次；黑板暂不支持天花板悬挂，地面或墙面点击会放置同一套 2×1 直立方块；其选择/碰撞厚度使用 CE 已释放的原版关闭铁门状态近似原模组 1/16 薄板。
+全子系统(效果/酒瓶/压榨/酒桶/摇酒器/水龙头/存储/座椅/文字板/葡萄/世界生成)已逐项对照归档源码审计。以下为有意保留的偏差：家具类装饰不可含水(CE 家具为实体)；副手对着占用槽不会触发喝酒(家具交互模型差异)；创造喝果汁桶不退空桶(原版 use_remainder 语义)；野生葡萄藤世界生成经 CraftEngine 的 configured/placed feature 注入真实区块生成管线(`configuration/worldgen.json`:1/12 区块 × 1–5 条 × 链长 1–7,橡树/白桦树叶下悬挂),分布模型仍是 Forge"蜂巢树装饰器"的近似；酒桶龙头载体暂仅支持空瓶(当前全部配方即空瓶)；雪克杯手持摇动由 CraftEngine 原生 `using_item + use_cycle` 物品模型驱动，进度条使用原模组 181×17 与 11×13 素材的无损像素映射，原版客户端仍无法复刻 Forge 对玩家手臂骨骼的专用渲染钩子；迁至 CE events 的手部交互(灯串染色、藤架涂蜡/脱蜡、野藤剪毛、香炉开关)仅响应主手,避免主副手交互事件在同一刻各触发一次；黑板暂不支持天花板悬挂，地面或墙面点击会放置同一套 2×1 直立方块；其选择/碰撞厚度使用 CE 已释放的原版关闭铁门状态近似原模组 1/16 薄板。
 
 效果行为与视觉均复刻自归档 Forge 源码：属性修改（步高、交互距离）、击杀回血、缴械、经验流失、灵视脉冲、音爆等逻辑此前已迁移；环境粒子按 ModEffects 注册的原色由服务端补发 `ENTITY_EFFECT` 漩涡（隐身实体按原版规则降频）。两处原版客户端协议内的近似/限制：穿草隐身时原模组在客户端取消整个玩家渲染，服务端以 invisible 标志近似（装备仍可见）；微醺的镜头摇晃属于客户端渲染事件，无法在原版客户端复刻。
 
@@ -81,11 +82,21 @@ corner 排版基于零和偏移：BossBar 文本以屏幕中心为锚，按 `eff
 
 占位符：`%kaleidoscopetavern_effect_hud%`（完整 MiniMessage 行，随 `style` 输出 corner 或 line 排版，与内置 BossBar 内容一致）、`%kaleidoscopetavern_effect_count%`（酒效数量，用于隐藏条件）。字形来自 CraftEngine 分发的 `kaleidoscope_tavern:custom_effects`（line）与 `kaleidoscope_tavern:custom_effects_hud`（corner）位图字体，无需在 CustomNameplates 中另行注册 image。
 
+### 自定义酒类配方
+
+首次启动会生成 `plugins/KaleidoscopeTavern/recipes/barrel.yml` 与
+`plugins/KaleidoscopeTavern/recipes/shaker.yml`。前者管理酒桶配方、醋保底产物与发酵时间，后者管理
+雪克杯/鸡尾酒配方以及神秘、招牌鸡尾酒的特殊结果。已有文件不会在升级时被覆盖；`ingredients` 与
+`carrier` 支持 `item=<命名空间:物品>` 或 `tag=<命名空间:标签>` selector，删除列表项即可禁用对应配方。
+
+保存后执行 `/kt reload`。插件会先完整解析两份文件，再原子替换运行时配方；任一文件无效时会保留上一份
+有效配置，并在日志中给出具体字段。`/kt recipes <barrel|shaker>` 显示当前实际生效的配置。
+
 ### 命令
 
 - `/kt status`：显示 CE 物品、方块、家具和玩法目录的加载数量；
 - `/kt give <物品ID> [数量] [玩家]`：发放公共 CE 物品；
-- `/kt reload`：重载本插件配置，并重载 CraftEngine 与 CustomCrops 内容；
+- `/kt reload`：原子重载酒桶/鸡尾酒配方、本插件配置，并重载 CraftEngine 与 CustomCrops 内容；
 - 权限：`kaleidoscopetavern.admin`（默认仅 OP）。
 
 ## 构建与校验
@@ -98,7 +109,7 @@ corner 排版基于零和偏移：BossBar 文本以屏幕中心为锚，按 `eff
 
 - Java 25 编译与 JUnit 配方语义测试；
 - `tools/validate_pack.py`，校验 CE 引用、模型、变体、配方、TSV 目录及 CustomCrops 阶段映射；
-- `tools/verify_plugin_jar.py`，确认成品同时内置 CE 项目、资源包和托管作物配置，且没有误嵌入 CustomCrops/Sparrow-Heart 类；
+- `tools/verify_plugin_jar.py`，确认成品同时内置 CE 项目、资源包、托管作物配置与 Sparrow YAML，并且没有误嵌入 CustomCrops/Sparrow-Heart 类；
 - 打包完整 CraftEngine 项目、资源包与 CustomCrops 葡萄定义。
 
 需要从保留的 Forge 数据生成器重新生成全部 CE 配置时：

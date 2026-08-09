@@ -16,7 +16,10 @@ CONFIG = ROOT / "src/paper/pack/configuration"
 CATALOG = ROOT / "src/paper/resources/catalog"
 CUSTOM_CROPS = ROOT / "src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml"
 PLUGIN_CONFIG = ROOT / "src/paper/resources/config.yml"
+RECIPE_DEFAULTS = ROOT / "src/paper/resources/recipes"
 NAMESPACE = "kaleidoscope_tavern"
+SHAKER_USE_PERIOD_TICKS = math.tau / 1.5
+SHAKER_USE_FRAMES = 16
 WALL_PRESSING_TUB = "_internal/wall_pressing_tub"
 WALL_PRESSING_TUB_ID = f"{NAMESPACE}:{WALL_PRESSING_TUB}"
 EFFECTLESS_DRINKS = {f"{NAMESPACE}:watermelon_juice"}
@@ -119,6 +122,9 @@ EXPECTED_CONSUMABLE_COCKTAILS = {
     "brass_heart", "godfather", "grasshopper", "screwdriver", "mojito",
     "allium_garden", "depth_charge", "nether_special", "bloody_mary",
     "sculk_special",
+}
+EXPECTED_ROTATION_16_GLASSWARE = EXPECTED_CONSUMABLE_COCKTAILS | {
+    "empty_glassware",
 }
 SIMPLE_BOTTLES = {
     "water_bottle", "honey_bottle", "dragon_breath_bottle",
@@ -334,7 +340,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     "GlasswareBlock.java": (("drink/BottleFurnitureService.java", "onProjectileHit"),),
     "GlasswareHolderBlock.java": (("storage/DisplayStorageService.java", "GLASSWARE_HOLDER"),),
     "GrapeCropBlock.java": (
-        ("grape/HangingGrapeCropBehavior.java", "addGrowthPoints"),
+        ("src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml", "grow-conditions:"),
         ("grape/HangingGrapeCropBehavior.java", "CustomCropsBridge.removeCrop"),
         ("src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml", "harvest_with_shears"),
     ),
@@ -525,11 +531,16 @@ BLOCK_ENTITY_COVERAGE = {
         ("shaker/ShakerVisualService.java", "animatePut"),
     ),
     "SignatureCocktailBlockEntity.java": (
-        ("station/StationService.java", "signature_cocktail"),
+        ("src/paper/resources/recipes/shaker.yml", "signature_cocktail"),
         ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/ItemService.java",
          "signatureColor"),
     ),
 }
+
+
+def expected_vessel_rotation(item_id: str) -> str:
+    path = item_id.rsplit(":", 1)[-1]
+    return "sixteen" if path in EXPECTED_ROTATION_16_GLASSWARE else "four"
 
 
 def nested_strings(value: Any):
@@ -575,6 +586,14 @@ def asset_json(resource_id: str, folder: str, roots=ASSET_ROOTS) -> dict[str, An
             with candidate.open("r", encoding="utf-8-sig") as stream:
                 return json.load(stream)
     return None
+
+
+def png_dimensions(path: Path) -> tuple[int, int]:
+    header = path.read_bytes()[:24]
+    if (len(header) != 24 or header[:8] != b"\x89PNG\r\n\x1a\n"
+            or header[12:16] != b"IHDR"):
+        raise AssertionError(f"{path}: missing a valid PNG IHDR header")
+    return int.from_bytes(header[16:20], "big"), int.from_bytes(header[20:24], "big")
 
 
 def assert_ordered_model_bounds(resource_id: str, owner: str) -> None:
@@ -759,6 +778,53 @@ def tsv_rows(name: str) -> list[list[str]]:
     rows = [line.split("\t") for line in lines[1:] if line]
     if any(len(row) != width for row in rows):
         raise AssertionError(f"{name} contains a malformed row")
+    return rows
+
+
+def generated_station_recipe_rows(name: str) -> list[dict[str, Any]]:
+    """Parse the small deterministic subset emitted for bundled defaults.
+
+    Runtime files are decoded by Sparrow YAML. This dependency-free parser is
+    intentionally limited to the generator's quoted scalars so validatePack can
+    prove that editable defaults still mirror the archived TSV migration input.
+    """
+    path = RECIPE_DEFAULTS / name
+    lines = path.read_text(encoding="utf-8-sig").splitlines()
+    if "config-version: 1" not in lines:
+        raise AssertionError(f"{name}: missing config-version: 1")
+    rows: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
+    reading_ingredients = False
+    for line in lines:
+        if line.startswith("  - id: "):
+            if current is not None:
+                rows.append(current)
+            current = {
+                "id": json.loads(line.removeprefix("  - id: ")),
+                "ingredients": [],
+            }
+            reading_ingredients = False
+            continue
+        if current is None:
+            continue
+        if line.startswith("    ingredients:"):
+            reading_ingredients = True
+            continue
+        if reading_ingredients and line.startswith("      - "):
+            current["ingredients"].append(json.loads(line.removeprefix("      - ")))
+            continue
+        reading_ingredients = False
+        for key in ("result", "carrier", "fluid"):
+            prefix = f"    {key}: "
+            if line.startswith(prefix):
+                current[key] = json.loads(line.removeprefix(prefix))
+                break
+        else:
+            prefix = "    unit-ticks: "
+            if line.startswith(prefix):
+                current["unit-ticks"] = int(line.removeprefix(prefix))
+    if current is not None:
+        rows.append(current)
     return rows
 
 
@@ -1130,12 +1196,13 @@ def validate() -> dict[str, int]:
             'section.getBoolean("sync_active_use", false)',
             "bukkitPlayer.startUsingItem(equipmentSlot(hand));",
             "InteractionHand.OFF_HAND",
+            "Vec3d.atBottomCenterOf(targetPos)",
             "Direction.UP",
             "return InteractionResult.SUCCESS_AND_CANCEL;"):
         if token not in item_behavior_source:
             raise AssertionError(
-                "Vessel CE behavior must synchronize active use, preserve normal item use "
-                "and own rejected sneak placement")
+                "Vessel CE behavior must preserve target-centred placement, synchronize "
+                "active use, preserve normal item use and own rejected sneak placement")
     for token in (
             "event.getAction() != Action.RIGHT_CLICK_BLOCK",
             "!event.getPlayer().isSneaking()"):
@@ -1661,13 +1728,52 @@ def validate() -> dict[str, int]:
             "shakerPartial.contains(IngredientKey.of(proposed))"):
         if required_token not in catalog_source:
             raise AssertionError(
-                "Custom station recipes must use immutable precomputed indexes; "
+                "Bundled migration recipes must use immutable precomputed indexes; "
                 f"missing token: {required_token}")
     for stale_token in ("barrelRecipes.stream()", "shakerRecipes.stream()"):
         if stale_token in catalog_source:
             raise AssertionError(
-                "Runtime station recipe lookup must not linearly scan recipe lists; "
+                "Bundled migration recipe lookup must not linearly scan recipe lists; "
                 f"stale token found: {stale_token}")
+    recipe_package = game_package.parent / "recipe"
+    recipe_registry_source = (recipe_package / "StationRecipeRegistry.java").read_text(
+        encoding="utf-8-sig")
+    for required_token in (
+            "snapshot.barrelByIngredients().get(fluid)",
+            "snapshot.shakerByIngredients().get(IngredientKey.of(ingredients))",
+            "snapshot.shakerPartial().contains(IngredientKey.of(proposed))",
+            "snapshot = Snapshot.create(content",
+            "Collections.unmodifiableMap(shakerIngredients)"):
+        if required_token not in recipe_registry_source:
+            raise AssertionError(
+                "Operator station recipes must publish immutable precomputed indexes; "
+                f"missing token: {required_token}")
+    for stale_token in ("private boolean matchNext", "private boolean matches"):
+        if stale_token in recipe_registry_source:
+            raise AssertionError(
+                "Operator station recipe lookup must not linearly backtrack at runtime; "
+                f"stale token found: {stale_token}")
+    recipe_parser_source = (recipe_package / "StationRecipeParser.java").read_text(
+        encoding="utf-8-sig")
+    for required_token in (
+            "SparrowYaml.builder()",
+            ".setAllowDuplicateKeys(false)",
+            'requiredInt(document, "config-version"',
+            "MAX_BARREL_INGREDIENTS = 4",
+            "MAX_SHAKER_INGREDIENTS = 3"):
+        if required_token not in recipe_parser_source:
+            raise AssertionError(
+                "Station recipe configuration must remain strict and Sparrow YAML-driven; "
+                f"missing token: {required_token}")
+    for required_token in (
+            "new StationRecipeLoader(",
+            "new StationRecipeRegistry(",
+            "stationRecipes.replace(stationRecipeLoader.load())",
+            "继续使用上一份有效配置"):
+        if required_token not in plugin_source:
+            raise AssertionError(
+                "Station recipe startup/reload must retain create-only defaults and atomic replace; "
+                f"missing token: {required_token}")
 
     state_behavior_source = (
         game_package / "furniture" / "StateFurnitureBehavior.java"
@@ -1973,6 +2079,7 @@ def validate() -> dict[str, int]:
             "BAR_GLYPH = '\\uE400'",
             "POINTER_GLYPH = '\\uE401'",
             "INGREDIENT_GLYPH = '\\uE402'",
+            "BAR_GLYPH_ADVANCE_PIXELS = 184",
             "BAR_ADVANCE_PIXELS = 182",
             "Math.round(Math.max(0, ticks) * 1.5F)",
             "static Component ingredientSubtitle(List<Integer> colors)"):
@@ -1980,6 +2087,19 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Shaker HUD must retain the archived overlay geometry and tintable markers; "
                 f"missing token: {required_token}")
+    shaker_texture_root = (
+        ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/textures/font/shaker"
+    )
+    expected_shaker_hud_sizes = {
+        "bar.png": (181, 18),
+        "pointer.png": (11, 14),
+    }
+    for filename, expected_size in expected_shaker_hud_sizes.items():
+        actual_size = png_dimensions(shaker_texture_root / filename)
+        if actual_size != expected_size:
+            raise AssertionError(
+                f"Shaker HUD {filename} must preserve source pixels via even-height padding; "
+                f"expected {expected_size}, got {actual_size}")
     for required_token in (
             "player.getTargetEntity(5)",
             "CraftEngineFurniture.getLoadedFurnitureByCollider(target)",
@@ -3480,7 +3600,7 @@ def validate() -> dict[str, int]:
             behaviors = behavior if isinstance(behavior, list) else [behavior]
             behavior_types = {entry.get("type") for entry in behaviors if isinstance(entry, dict)}
             if behavior_types != {f"{NAMESPACE}:hanging_grape_crop"}:
-                raise AssertionError(f"{stage_id}: crop lifecycle must be owned by CustomCrops")
+                raise AssertionError(f"{stage_id}: hanging crop survival guard is missing")
             if "states" in blocks[stage_id]:
                 raise AssertionError(f"{stage_id}: CustomCrops stages must be addressable by block id")
             settings = blocks[stage_id].get("settings", {})
@@ -3509,11 +3629,95 @@ def validate() -> dict[str, int]:
     if (len(bone_meal_sections) != 3
             or any("type: swing-hand" not in section for section in bone_meal_sections)):
         raise AssertionError("Every managed grape bone-meal action must swing the player's hand")
-    if custom_crops_text.count("ignore-random-tick: true") != 3:
+
+    crop_sections: dict[str, str] = {}
+    for crop_id in crop_models:
+        match = re.search(
+            rf"(?ms)^{re.escape(crop_id)}:\n(?P<body>(?:(?!^[a-z0-9_]+:).)*)",
+            custom_crops_text,
+        )
+        if match is None:
+            raise AssertionError(f"{crop_id}: managed CustomCrops section is missing")
+        crop_sections[crop_id] = match.group(0)
+
+    expected_seasons = {
+        "kaleidoscope_tavern_grape": "value: [Summer, Autumn]",
+        "kaleidoscope_tavern_ice_grape": "value: [Winter]",
+        "kaleidoscope_tavern_gold_grape": "value: [Summer]",
+    }
+    for crop_id, section in crop_sections.items():
+        required = (
+            "ignore-random-tick: false",
+            "ignore-scheduled-tick: false",
+            "grow-conditions:",
+            expected_seasons[crop_id],
+            "value: 0.125",
+            "value: 0.142857142857",
+        )
+        missing = [token for token in required if token not in section]
+        if missing:
+            raise AssertionError(
+                f"{crop_id}: CustomCrops must own ticking, seasons and growth rolls; "
+                f"missing={missing}"
+            )
+
+    favored_growth = {
+        "kaleidoscope_tavern_ice_grape": (
+            "favored_two_points:", "favored_one_point:",
+            "type: temperature", "value: '-10~0'",
+            "value: minecraft:snowy_beach",
+        ),
+        "kaleidoscope_tavern_gold_grape": (
+            "favored_two_points:", "favored_one_point:",
+            "type: temperature", "value: '2~10'",
+        ),
+    }
+    for crop_id, required in favored_growth.items():
+        section = crop_sections[crop_id]
+        missing = [token for token in (*required,
+                                      "value: 0.366666666667",
+                                      "value: 0.578947368421")
+                   if token not in section]
+        if missing:
+            raise AssertionError(
+                f"{crop_id}: CustomCrops favored-climate growth is incomplete; missing={missing}")
+
+    plugin_config_text = PLUGIN_CONFIG.read_text(encoding="utf-8-sig")
+    if re.search(r"(?m)^  hanging-(?:gold-|ice-)?grape:", plugin_config_text):
         raise AssertionError(
-            "Every managed grape crop must delegate vanilla random ticks to CraftEngine")
-    if "grow-conditions:" in custom_crops_text or "kaleidoscope-tavern-growth-roll" in custom_crops_text:
-        raise AssertionError("CustomCrops must not add a second grape random-growth scheduler")
+            "Hanging grape seasons must live only in the managed CustomCrops crop file")
+
+    hanging_behavior = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/grape/"
+        "HangingGrapeCropBehavior.java"
+    ).read_text(encoding="utf-8-sig")
+    forbidden_growth_code = (
+        "RandomTickBlock", "randomTick(", "canRandomlyTick(",
+        "addGrowthPoints", "GrapeGrowthSemantics", "GrapeSeasonGate",
+    )
+    duplicated = [token for token in forbidden_growth_code if token in hanging_behavior]
+    if duplicated:
+        raise AssertionError(
+            "Hanging grape lifecycle must be configured in CustomCrops, not Java; "
+            f"found={duplicated}"
+        )
+    paper_java = ROOT / "src/paper/java"
+    configured_growth_api = ("addPointToCrop(", "addGrowthPoints(", "GrapeGrowthSemantics")
+    growth_code_owners = {
+        path.relative_to(ROOT).as_posix(): [
+            token for token in configured_growth_api
+            if token in path.read_text(encoding="utf-8-sig")
+        ]
+        for path in paper_java.rglob("*.java")
+    }
+    growth_code_owners = {
+        path: tokens for path, tokens in growth_code_owners.items() if tokens
+    }
+    if growth_code_owners:
+        raise AssertionError(
+            "CustomCrops-configurable grape growth APIs must not be implemented in Java; "
+            f"found={growth_code_owners}"
+        )
 
     for item_id, item in {**items, **render_items}.items():
         models = set(item_model_paths(item.get("model", {})))
@@ -3596,6 +3800,45 @@ def validate() -> dict[str, int]:
         if expected is not None and count != expected:
             raise AssertionError(f"{name}: expected {expected} rows, found {count}")
         catalog_counts[name] = count
+    expected_barrel_defaults = [
+        {
+            "id": row[0],
+            "result": row[1],
+            "carrier": row[2],
+            "fluid": row[3],
+            "ingredients": [] if not row[4] else row[4].split(";"),
+            "unit-ticks": int(row[5]),
+        }
+        for row in tsv_rows("barrel.tsv")
+    ]
+    expected_shaker_defaults = [
+        {
+            "id": row[0],
+            "result": row[1],
+            "ingredients": row[2].split(";"),
+        }
+        for row in tsv_rows("shaker.tsv")
+    ]
+    if generated_station_recipe_rows("barrel.yml") != expected_barrel_defaults:
+        raise AssertionError(
+            "Bundled barrel.yml defaults no longer mirror catalog/barrel.tsv")
+    if generated_station_recipe_rows("shaker.yml") != expected_shaker_defaults:
+        raise AssertionError(
+            "Bundled shaker.yml defaults no longer mirror catalog/shaker.tsv")
+    barrel_default_text = (RECIPE_DEFAULTS / "barrel.yml").read_text(encoding="utf-8-sig")
+    shaker_default_text = (RECIPE_DEFAULTS / "shaker.yml").read_text(encoding="utf-8-sig")
+    for token in (
+            'id: "kaleidoscope_tavern:empty"',
+            'result: "kaleidoscope_tavern:vinegar"',
+            "unit-ticks: 2400",
+            "output: 16"):
+        if token not in barrel_default_text:
+            raise AssertionError(f"barrel.yml fallback is missing {token}")
+    for token in (
+            'mystery: "kaleidoscope_tavern:mystery_cocktail"',
+            'signature: "kaleidoscope_tavern:signature_cocktail"'):
+        if token not in shaker_default_text:
+            raise AssertionError(f"shaker.yml special-results is missing {token}")
     effect_rows = tsv_rows("drink-effects.tsv")
     if len({row[0] for row in effect_rows}) != 37:
         raise AssertionError("Expected drink effects for 37 items")
@@ -3617,15 +3860,19 @@ def validate() -> dict[str, int]:
                 or behavior_types != {f"{NAMESPACE}:sneak_place_drink"}):
             raise AssertionError(
                 f"{item_id}: drinks must remain consumable items with CE-owned sneak placement")
+        expected_rotation = expected_vessel_rotation(item_id)
         if (len(item_behaviors) != 1
                 or item_behaviors[0].get("furniture") != item_id
                 or item_behaviors[0].get("rules") != {
-                    "ground": {"rotation": "four", "alignment": "center"}
+                    "ground": {
+                        "rotation": expected_rotation,
+                        "alignment": "center",
+                    }
                 }
                 or item_behaviors[0].get("sync_active_use") is not True):
             raise AssertionError(
                 f"{item_id}: CE drink placement target/rules or active-use sync drifted "
-                "from BottleBlockItem")
+                "from the released vessel placement semantics")
         components = item.get("data", {}).get("components", {})
         if components.get("minecraft:max_stack_size") != 16:
             raise AssertionError(f"{item_id}: bottle/glassware stack size must remain 16")
@@ -3662,9 +3909,6 @@ def validate() -> dict[str, int]:
         for vessel_id in EXPECTED_BOTTLE_FURNITURE | {"shaker"}
         if f"{NAMESPACE}:{vessel_id}" in items
     }
-    expected_ground_rule = {
-        "ground": {"rotation": "four", "alignment": "center"}
-    }
     for item_id in public_vessel_ids:
         item = items[item_id]
         item_behaviors = (
@@ -3675,10 +3919,13 @@ def validate() -> dict[str, int]:
             if behavior.get("furniture") == item_id
         ]
         placement_type = f"{NAMESPACE}:sneak_place_drink"
+        rotation = expected_vessel_rotation(item_id)
         expected_placement_behavior = {
                 "type": placement_type,
                 "furniture": item_id,
-                "rules": expected_ground_rule,
+                "rules": {
+                    "ground": {"rotation": rotation, "alignment": "center"}
+                },
         }
         if item_id in drink_ids or item_id == f"{NAMESPACE}:molotov":
             expected_placement_behavior["sync_active_use"] = True
@@ -3803,24 +4050,82 @@ def validate() -> dict[str, int]:
                 "has_consume_particles": False,
             }):
         raise AssertionError(
-            "Shaker must retain active-use timing without the brush animation's lateral sway")
-    if shaker_item.get("model") != {
-            "type": "minecraft:select",
-            "property": "display_context",
-            "cases": [{
+            "Shaker must retain active-use timing for its CE-native model animation")
+    shaker_model = shaker_item.get("model", {})
+    if (shaker_model.get("type") != "minecraft:select"
+            or shaker_model.get("property") != "display_context"
+            or shaker_model.get("cases") != [{
                 "when": ["gui", "fixed"],
                 "model": {
                     "type": "minecraft:model",
                     "path": f"{NAMESPACE}:item/shaker",
                 },
-            }],
-            "fallback": {
-                "type": "minecraft:model",
-                "path": f"{NAMESPACE}:item/shaker_3d",
-            },
-            }:
+            }]):
         raise AssertionError(
             "Shaker must use the 2D icon only in GUI/FIXED display contexts")
+    use_condition = shaker_model.get("fallback", {})
+    use_cycle = use_condition.get("on_true", {})
+    expected_entries = [
+        {
+            "threshold": round(SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES, 6),
+            "model": {
+                "type": "minecraft:model",
+                "path": f"{NAMESPACE}:item/shaker_shaking/frame_{index:02d}",
+            },
+        }
+        for index in range(SHAKER_USE_FRAMES)
+    ]
+    if (use_condition.get("type") != "minecraft:condition"
+            or use_condition.get("property") != "minecraft:using_item"
+            or use_condition.get("on_false") != {
+                "type": "minecraft:model",
+                "path": f"{NAMESPACE}:item/shaker_3d",
+            }
+            or use_cycle.get("type") != "minecraft:range_dispatch"
+            or use_cycle.get("property") != "use_cycle"
+            or use_cycle.get("period") != round(SHAKER_USE_PERIOD_TICKS, 6)
+            or use_cycle.get("entries") != expected_entries
+            or use_cycle.get("fallback") != {
+                "type": "minecraft:model",
+                "path": f"{NAMESPACE}:item/shaker_shaking/frame_00",
+            }):
+        raise AssertionError(
+            "Shaker held motion must be delegated to CE using_item + use_cycle models")
+    for index in range(SHAKER_USE_FRAMES):
+        cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES
+        wave = math.sin(-cycle * 1.5)
+        arm_pitch = round(math.degrees(wave * 0.25), 5)
+        first_person_y = round(2.75 - wave * 2.4, 5)
+        frame = asset_json(
+            f"{NAMESPACE}:item/shaker_shaking/frame_{index:02d}", "models")
+        expected_display = {
+            "thirdperson_righthand": {
+                "rotation": [arm_pitch, 0, 0],
+                "translation": [0, -0.25, 0],
+                "scale": [0.5, 0.5, 0.5],
+            },
+            "thirdperson_lefthand": {
+                "rotation": [arm_pitch, 0, 0],
+                "translation": [0, -0.25, 0],
+                "scale": [0.5, 0.5, 0.5],
+            },
+            "firstperson_righthand": {
+                "rotation": [-15, 0, 0],
+                "translation": [0, first_person_y, 0],
+                "scale": [0.5, 0.5, 0.5],
+            },
+            "firstperson_lefthand": {
+                "rotation": [-15, 0, 0],
+                "translation": [0, first_person_y, 0],
+                "scale": [0.5, 0.5, 0.5],
+            },
+        }
+        if frame != {
+                "parent": f"{NAMESPACE}:item/shaker_3d",
+                "display": expected_display,
+                }:
+            raise AssertionError(
+                f"Shaker use-cycle frame {index:02d} no longer matches archived sine motion")
 
     barrel_variants = furniture[f"{NAMESPACE}:barrel"]["variants"]
     if set(barrel_variants) != {"ground", "ground_closed"}:

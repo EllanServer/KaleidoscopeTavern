@@ -1,0 +1,180 @@
+# 首次启动时复制到 plugins/KaleidoscopeTavern/recipes/barrel.yml。
+# 数据目录中的副本不会被插件升级覆盖；修改后执行 /kt reload。
+# selector 支持 item=<命名空间:物品> 与 tag=<命名空间:标签>。
+config-version: 1
+
+# 满桶内容没有匹配 recipes 时生成的保底产物。
+fallback:
+  id: "kaleidoscope_tavern:empty"
+  result: "kaleidoscope_tavern:vinegar"
+  unit-ticks: 2400
+  output: 16
+
+recipes:
+  - id: "kaleidoscope_tavern:brandy"
+    result: "kaleidoscope_tavern:brandy"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:grape_juice"
+    ingredients:
+      - "item=minecraft:apple"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:carignan"
+    result: "kaleidoscope_tavern:carignan"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:grape_juice"
+    ingredients:
+      - "item=minecraft:sweet_berries"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:champagne"
+    result: "kaleidoscope_tavern:champagne"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:grape_juice"
+    ingredients:
+      - "item=minecraft:sugar"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:glowflower_brew"
+    result: "kaleidoscope_tavern:glowflower_brew"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:glow_berries_juice"
+    ingredients:
+      - "item=minecraft:glowstone_dust"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:honey_wine"
+    result: "kaleidoscope_tavern:honey_wine"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:gold_grape_juice"
+    ingredients:
+      - "item=minecraft:honeycomb"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:ice_wine"
+    result: "kaleidoscope_tavern:ice_wine"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:ice_grape_juice"
+    ingredients: []
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:luminous_bride"
+    result: "kaleidoscope_tavern:luminous_bride"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:glow_berries_juice"
+    ingredients:
+      - "item=minecraft:glow_ink_sac"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:madame_shexiang"
+    result: "kaleidoscope_tavern:madame_shexiang"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:gold_grape_juice"
+    ingredients:
+      - "item=minecraft:gold_nugget"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:miners_star"
+    result: "kaleidoscope_tavern:miners_star"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:gold_grape_juice"
+    ingredients:
+      - "item=minecraft:iron_nugget"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:molotov"
+    result: "kaleidoscope_tavern:molotov"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "minecraft:lava"
+    ingredients: []
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:mother_snow"
+    result: "kaleidoscope_tavern:mother_snow"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:ice_grape_juice"
+    ingredients:
+      - "item=minecraft:ice"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:plum_wine"
+    result: "kaleidoscope_tavern:plum_wine"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:sweet_berries_juice"
+    ingredients:
+      - "item=minecraft:sugar"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:polaris_sweet_white"
+    result: "kaleidoscope_tavern:polaris_sweet_white"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:ice_grape_juice"
+    ingredients:
+      - "item=minecraft:packed_ice"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:red_queen"
+    result: "kaleidoscope_tavern:red_queen"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:sweet_berries_juice"
+    ingredients:
+      - "item=minecraft:redstone"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:riesling_dry_white"
+    result: "kaleidoscope_tavern:riesling_dry_white"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:green_grape_juice"
+    ingredients:
+      - "item=minecraft:gunpowder"
+      - "item=minecraft:sugar"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:rum"
+    result: "kaleidoscope_tavern:rum"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "minecraft:water"
+    ingredients:
+      - "item=minecraft:sugar_cane"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:sakura_wine"
+    result: "kaleidoscope_tavern:sakura_wine"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:grape_juice"
+    ingredients:
+      - "item=minecraft:pink_petals"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:sauvignon_blanc_dry_white"
+    result: "kaleidoscope_tavern:sauvignon_blanc_dry_white"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:green_grape_juice"
+    ingredients:
+      - "item=minecraft:sugar_cane"
+      - "item=minecraft:sugar"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:sherry"
+    result: "kaleidoscope_tavern:sherry"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:ice_grape_juice"
+    ingredients:
+      - "item=minecraft:blue_ice"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:sunset_glow"
+    result: "kaleidoscope_tavern:sunset_glow"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:gold_grape_juice"
+    ingredients:
+      - "item=minecraft:blaze_powder"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:sweet_berry_wine"
+    result: "kaleidoscope_tavern:sweet_berry_wine"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:sweet_berries_juice"
+    ingredients:
+      - "item=minecraft:sweet_berries"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:vodka"
+    result: "kaleidoscope_tavern:vodka"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "minecraft:water"
+    ingredients:
+      - "item=minecraft:potato"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:whiskey"
+    result: "kaleidoscope_tavern:whiskey"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "minecraft:water"
+    ingredients:
+      - "item=minecraft:wheat"
+    unit-ticks: 2400
+  - id: "kaleidoscope_tavern:wine"
+    result: "kaleidoscope_tavern:wine"
+    carrier: "item=kaleidoscope_tavern:empty_bottle"
+    fluid: "kaleidoscope_tavern:grape_juice"
+    ingredients: []
+    unit-ticks: 2400

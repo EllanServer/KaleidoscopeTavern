@@ -7,12 +7,12 @@ import java.util.Set;
 
 /**
  * Season gating semantics mirroring the Forge build's SereneSeasons block
- * tags ({@code datagen/tag/TagBlock}): the plain grapevine trellis climbs in
- * spring and summer, gold in summer, ice in winter; hanging grapes ripen in
- * summer and autumn, gold in summer, ice in winter. Wild grapevines are
- * intentionally absent because they never carried a season tag. Matching
- * SereneSeasons, only random-tick growth is gated; bone meal stays
- * unrestricted.
+ * tags ({@code datagen/tag/TagBlock}) for trellis propagation: the plain
+ * grapevine trellis climbs in spring and summer, gold in summer, and ice in
+ * winter. Hanging crop seasons belong to the managed CustomCrops crop file.
+ * Wild grapevines are intentionally absent because they never carried a
+ * season tag. Matching SereneSeasons, only random-tick propagation is gated;
+ * bone meal stays unrestricted.
  */
 public final class GrapeSeasonSemantics {
 
@@ -24,14 +24,11 @@ public final class GrapeSeasonSemantics {
         WINTER
     }
 
-    /** The six season-tagged plants from the Forge tag data. */
+    /** The three structural plants whose propagation is not a CustomCrops crop tick. */
     public enum Plant {
         GRAPEVINE_TRELLIS("grapevine-trellis", Season.SPRING, Season.SUMMER),
         GOLD_GRAPEVINE_TRELLIS("gold-grapevine-trellis", Season.SUMMER),
-        ICE_GRAPEVINE_TRELLIS("ice-grapevine-trellis", Season.WINTER),
-        HANGING_GRAPE("hanging-grape", Season.SUMMER, Season.AUTUMN),
-        HANGING_GOLD_GRAPE("hanging-gold-grape", Season.SUMMER),
-        HANGING_ICE_GRAPE("hanging-ice-grape", Season.WINTER);
+        ICE_GRAPEVINE_TRELLIS("ice-grapevine-trellis", Season.WINTER);
 
         private final String configKey;
         private final EnumSet<Season> defaults;
@@ -62,15 +59,6 @@ public final class GrapeSeasonSemantics {
             case "kaleidoscope_tavern:gold_grapevine_trellis" -> Plant.GOLD_GRAPEVINE_TRELLIS;
             case "kaleidoscope_tavern:ice_grapevine_trellis" -> Plant.ICE_GRAPEVINE_TRELLIS;
             default -> null;
-        };
-    }
-
-    /** Hanging grape crop variety to gated plant. */
-    public static Plant plantForVariety(GrapeGrowthSemantics.Variety variety) {
-        return switch (variety) {
-            case NORMAL -> Plant.HANGING_GRAPE;
-            case GOLD -> Plant.HANGING_GOLD_GRAPE;
-            case ICE -> Plant.HANGING_ICE_GRAPE;
         };
     }
 

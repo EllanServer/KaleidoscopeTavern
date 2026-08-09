@@ -17,6 +17,8 @@ REQUIRED_ENTRIES = (
     "META-INF/LICENSE-ASSETS",
     "META-INF/ASSET-CREDITS.md",
     "META-INF/THIRD-PARTY-NOTICES.md",
+    "META-INF/third-party-licenses/SPARROW-YAML-GPL-3.0.txt",
+    "META-INF/third-party-licenses/SNAKEYAML-APACHE-2.0.txt",
     "tavern-pack/pack.yml",
     "tavern-pack/configuration/blocks.json",
     "tavern-pack/configuration/furniture.json",
@@ -24,6 +26,9 @@ REQUIRED_ENTRIES = (
     "tavern-pack/configuration/render-items.json",
     "tavern-pack/configuration/worldgen.json",
     "customcrops/contents/crops/kaleidoscope_tavern.yml",
+    "recipes/barrel.yml",
+    "recipes/shaker.yml",
+    "net/momirealms/sparrow/yaml/SparrowYaml.class",
     "customnameplates/bossbar-tavern-effects.yml",
     "tavern-pack/resourcepack/assets/kaleidoscope_tavern/font/custom_effects_hud.json",
     "tavern-pack/resourcepack/assets/kaleidoscope_tavern/textures/font/hud_effect/slightly_tipsy.png",
@@ -53,7 +58,6 @@ def main() -> int:
         forbidden_prefixes = (
             "net/momirealms/craftengine/",
             "net/momirealms/customcrops/",
-            "net/momirealms/sparrow/",
             "me/clip/placeholderapi/",
             "io/papermc/paper/",
             "org/bukkit/",
@@ -68,6 +72,17 @@ def main() -> int:
                 "Runtime dependencies must remain separate plugins; embedded class found: "
                 + embedded[0]
             )
+        unexpected_sparrow = sorted(
+            name for name in names
+            if name.endswith(".class")
+            and name.startswith("net/momirealms/sparrow/")
+            and not name.startswith("net/momirealms/sparrow/yaml/")
+        )
+        if unexpected_sparrow:
+            raise SystemExit(
+                "Only sparrow-yaml may be embedded; unexpected class found: "
+                + unexpected_sparrow[0]
+            )
 
         legal_markers = {
             "META-INF/LICENSE-CODE": (
@@ -78,6 +93,14 @@ def main() -> int:
                 "Creative Commons Attribution-NonCommercial-ShareAlike 4.0",
                 "https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode",
             ),
+            "META-INF/third-party-licenses/SPARROW-YAML-GPL-3.0.txt": (
+                "GNU GENERAL PUBLIC LICENSE",
+                "Version 3, 29 June 2007",
+            ),
+            "META-INF/third-party-licenses/SNAKEYAML-APACHE-2.0.txt": (
+                "Apache License",
+                "Version 2.0, January 2004",
+            ),
             "META-INF/ASSET-CREDITS.md": (
                 "KaleidoscopeMods/KaleidoscopeTavern",
                 "NonCommercial",
@@ -86,7 +109,11 @@ def main() -> int:
             "META-INF/THIRD-PARTY-NOTICES.md": (
                 "CraftEngine",
                 "CustomCrops",
+                "Sparrow YAML",
+                "SnakeYAML Engine",
                 "GPL-3.0",
+                "Apache License 2.0",
+                "bundled",
                 "not bundled",
             ),
         }

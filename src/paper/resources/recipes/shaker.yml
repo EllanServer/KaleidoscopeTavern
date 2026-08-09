@@ -1,0 +1,83 @@
+# 首次启动时复制到 plugins/KaleidoscopeTavern/recipes/shaker.yml。
+# 数据目录中的副本不会被插件升级覆盖；修改后执行 /kt reload。
+# 配方按书写顺序匹配；每份配方可使用 1 至 3 个 selector。
+config-version: 1
+
+# 摇动时间进入特殊区间时使用的产物；signature 也用于普通配方未命中时。
+special-results:
+  mystery: "kaleidoscope_tavern:mystery_cocktail"
+  signature: "kaleidoscope_tavern:signature_cocktail"
+
+recipes:
+  - id: "kaleidoscope_tavern:allium_garden"
+    result: "kaleidoscope_tavern:allium_garden"
+    ingredients:
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_light_purple"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_light_purple"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_light_purple"
+  - id: "kaleidoscope_tavern:bloody_mary"
+    result: "kaleidoscope_tavern:bloody_mary"
+    ingredients:
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_red"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_red"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_red"
+  - id: "kaleidoscope_tavern:brass_heart"
+    result: "kaleidoscope_tavern:brass_heart"
+    ingredients:
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_gold"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_gold"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_gold"
+  - id: "kaleidoscope_tavern:depth_charge"
+    result: "kaleidoscope_tavern:depth_charge"
+    ingredients:
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_blue"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_light_purple"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_white"
+  - id: "kaleidoscope_tavern:emerald"
+    result: "kaleidoscope_tavern:emerald"
+    ingredients:
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_green"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_green"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_green"
+  - id: "kaleidoscope_tavern:godfather"
+    result: "kaleidoscope_tavern:godfather"
+    ingredients:
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_red"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_red"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_gold"
+  - id: "kaleidoscope_tavern:grasshopper"
+    result: "kaleidoscope_tavern:grasshopper"
+    ingredients:
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_green"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_green"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_white"
+  - id: "kaleidoscope_tavern:mojito"
+    result: "kaleidoscope_tavern:mojito"
+    ingredients:
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_white"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_white"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_green"
+  - id: "kaleidoscope_tavern:nether_special"
+    result: "kaleidoscope_tavern:nether_special"
+    ingredients:
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_red"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_green"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_blue"
+  - id: "kaleidoscope_tavern:screwdriver"
+    result: "kaleidoscope_tavern:screwdriver"
+    ingredients:
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_yellow"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_yellow"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_gold"
+  - id: "kaleidoscope_tavern:sculk_special"
+    result: "kaleidoscope_tavern:sculk_special"
+    ingredients:
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_blue"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_blue"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_light_purple"
+  - id: "kaleidoscope_tavern:white_lady"
+    result: "kaleidoscope_tavern:white_lady"
+    ingredients:
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_white"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_green"
+      - "tag=kaleidoscope_tavern:cocktail_ingredient_yellow"

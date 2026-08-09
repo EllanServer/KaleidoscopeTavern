@@ -21,8 +21,11 @@ final class ShakerHudSemantics {
     static final char POINTER_GLYPH = '\uE401';
     static final char INGREDIENT_GLYPH = '\uE402';
 
-    // The generated glyphs are half-size because vanilla renders title
-    // subtitles at 2x. These are their final on-screen advances in GUI pixels.
+    // The source sprites are padded to even heights and rendered at half font
+    // size because subtitles are 2x. The bar's bitmap advance is 184 pixels
+    // (181 visible pixels + vanilla's glyph spacing); the composed line is
+    // pulled back to the archived overlay's 182-pixel centering width.
+    static final int BAR_GLYPH_ADVANCE_PIXELS = 184;
     static final int BAR_ADVANCE_PIXELS = 182;
     static final int POINTER_ADVANCE_PIXELS = 14;
     static final int INGREDIENT_ADVANCE_PIXELS = 18;
@@ -45,7 +48,7 @@ final class ShakerHudSemantics {
     static ProgressLayout progressLayout(int ticks) {
         int pointerOffset = pointerOffsetPixels(ticks);
         StringBuilder glyphs = new StringBuilder().append(BAR_GLYPH);
-        int advance = BAR_ADVANCE_PIXELS;
+        int advance = BAR_GLYPH_ADVANCE_PIXELS;
         advance += appendOffset(glyphs, pointerOffset - advance);
         glyphs.append(POINTER_GLYPH);
         advance += POINTER_ADVANCE_PIXELS;

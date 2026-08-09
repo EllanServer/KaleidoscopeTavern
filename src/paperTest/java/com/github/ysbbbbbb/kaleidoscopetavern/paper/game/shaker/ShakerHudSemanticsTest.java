@@ -29,6 +29,7 @@ class ShakerHudSemanticsTest {
 
     @Test
     void layeredProgressLineKeepsAStableCenteredAdvance() {
+        assertEquals(184, ShakerHudSemantics.BAR_GLYPH_ADVANCE_PIXELS);
         for (int ticks : List.of(0, 18, 19, 68, 69, 88, 89, 98, 99, 110)) {
             ShakerHudSemantics.ProgressLayout layout =
                     ShakerHudSemantics.progressLayout(ticks);

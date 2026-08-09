@@ -7,11 +7,7 @@ import java.util.List;
 
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.GrapeSeasonSemantics.Plant.GOLD_GRAPEVINE_TRELLIS;
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.GrapeSeasonSemantics.Plant.GRAPEVINE_TRELLIS;
-import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.GrapeSeasonSemantics.Plant.HANGING_GOLD_GRAPE;
-import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.GrapeSeasonSemantics.Plant.HANGING_GRAPE;
-import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.GrapeSeasonSemantics.Plant.HANGING_ICE_GRAPE;
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.GrapeSeasonSemantics.Plant.ICE_GRAPEVINE_TRELLIS;
-import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.GrapeSeasonSemantics.Season.AUTUMN;
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.GrapeSeasonSemantics.Season.SPRING;
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.GrapeSeasonSemantics.Season.SUMMER;
 import static com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.GrapeSeasonSemantics.Season.WINTER;
@@ -28,9 +24,6 @@ class GrapeSeasonSemanticsTest {
         assertEquals(EnumSet.of(SPRING, SUMMER), GRAPEVINE_TRELLIS.defaultSeasons());
         assertEquals(EnumSet.of(SUMMER), GOLD_GRAPEVINE_TRELLIS.defaultSeasons());
         assertEquals(EnumSet.of(WINTER), ICE_GRAPEVINE_TRELLIS.defaultSeasons());
-        assertEquals(EnumSet.of(SUMMER, AUTUMN), HANGING_GRAPE.defaultSeasons());
-        assertEquals(EnumSet.of(SUMMER), HANGING_GOLD_GRAPE.defaultSeasons());
-        assertEquals(EnumSet.of(WINTER), HANGING_ICE_GRAPE.defaultSeasons());
     }
 
     @Test
@@ -44,16 +37,6 @@ class GrapeSeasonSemanticsTest {
         // The bare carrier trellis and other blocks are never season-gated.
         assertNull(GrapeSeasonSemantics.plantForTrellis("kaleidoscope_tavern:trellis"));
         assertNull(GrapeSeasonSemantics.plantForTrellis("kaleidoscope_tavern:wild_grapevine"));
-    }
-
-    @Test
-    void mapsHangingGrapeVarieties() {
-        assertEquals(HANGING_GRAPE,
-                GrapeSeasonSemantics.plantForVariety(GrapeGrowthSemantics.Variety.NORMAL));
-        assertEquals(HANGING_GOLD_GRAPE,
-                GrapeSeasonSemantics.plantForVariety(GrapeGrowthSemantics.Variety.GOLD));
-        assertEquals(HANGING_ICE_GRAPE,
-                GrapeSeasonSemantics.plantForVariety(GrapeGrowthSemantics.Variety.ICE));
     }
 
     @Test

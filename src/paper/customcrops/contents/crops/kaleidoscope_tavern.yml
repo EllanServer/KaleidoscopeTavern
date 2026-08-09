@@ -7,10 +7,10 @@ kaleidoscope_tavern_grape:
   type: BLOCK
   pot-whitelist: []
   seed: kaleidoscope_tavern:_customcrops/grape_seed
-  # CraftEngine's hanging-grape behavior owns vanilla random ticks so growth
-  # cadence does not depend on CustomCrops' global random-tick-speed setting.
-  ignore-random-tick: true
-  ignore-scheduled-tick: true
+  # Let the server owner's CustomCrops world tick mode select random or
+  # scheduled growth. Tavern does not run a second crop-growth scheduler.
+  ignore-random-tick: false
+  ignore-scheduled-tick: false
   random-rotation: false
   max-points: 5
   points:
@@ -92,6 +92,29 @@ kaleidoscope_tavern_grape:
               min: 1
               max: 1
             chance: 0.3
+  # GrowCondition entries are checked in order. 0.125 for +2 followed by
+  # 1/7 for +1 yields the source distribution per CustomCrops tick:
+  # 12.5% +2, 12.5% +1, 75% no growth. suitable-season also supplies the
+  # native CustomCrops greenhouse exemption.
+  grow-conditions:
+    two_points:
+      point: 2
+      conditions:
+        suitable_season:
+          type: suitable-season
+          value: [Summer, Autumn]
+        growth_roll:
+          type: random
+          value: 0.125
+    one_point:
+      point: 1
+      conditions:
+        suitable_season:
+          type: suitable-season
+          value: [Summer, Autumn]
+        growth_roll:
+          type: random
+          value: 0.142857142857
   custom-bone-meal:
     bone_meal:
       item: BONE_MEAL
@@ -129,10 +152,8 @@ kaleidoscope_tavern_ice_grape:
   type: BLOCK
   pot-whitelist: []
   seed: kaleidoscope_tavern:_customcrops/ice_grape_seed
-  # See the normal grape definition: source-compatible random ticks are
-  # supplied by the CraftEngine block behavior.
-  ignore-random-tick: true
-  ignore-scheduled-tick: true
+  ignore-random-tick: false
+  ignore-scheduled-tick: false
   random-rotation: false
   max-points: 5
   points:
@@ -214,6 +235,67 @@ kaleidoscope_tavern_ice_grape:
               min: 1
               max: 1
             chance: 0.3
+  # The first two entries provide the ordinary 25% distribution. In frozen
+  # climates the two later entries are reached only after that 75% miss;
+  # 11/30 and 11/19 then add 27.5% to each outcome, producing the source's
+  # favored 40% +2, 40% +1, 20% no-growth distribution. CustomCrops 3.6.52
+  # accepts integer temperature ranges, so -10~0 plus snowy_beach covers the
+  # vanilla biomes below the source threshold of 0.15.
+  grow-conditions:
+    two_points:
+      point: 2
+      conditions:
+        suitable_season:
+          type: suitable-season
+          value: [Winter]
+        growth_roll:
+          type: random
+          value: 0.125
+    one_point:
+      point: 1
+      conditions:
+        suitable_season:
+          type: suitable-season
+          value: [Winter]
+        growth_roll:
+          type: random
+          value: 0.142857142857
+    favored_two_points:
+      point: 2
+      conditions:
+        suitable_season:
+          type: suitable-season
+          value: [Winter]
+        favored_climate:
+          type: '||'
+          value:
+            frozen_temperature:
+              type: temperature
+              value: '-10~0'
+            snowy_beach:
+              type: biome
+              value: minecraft:snowy_beach
+        growth_roll:
+          type: random
+          value: 0.366666666667
+    favored_one_point:
+      point: 1
+      conditions:
+        suitable_season:
+          type: suitable-season
+          value: [Winter]
+        favored_climate:
+          type: '||'
+          value:
+            frozen_temperature:
+              type: temperature
+              value: '-10~0'
+            snowy_beach:
+              type: biome
+              value: minecraft:snowy_beach
+        growth_roll:
+          type: random
+          value: 0.578947368421
   custom-bone-meal:
     bone_meal:
       item: BONE_MEAL
@@ -251,10 +333,8 @@ kaleidoscope_tavern_gold_grape:
   type: BLOCK
   pot-whitelist: []
   seed: kaleidoscope_tavern:_customcrops/gold_grape_seed
-  # See the normal grape definition: source-compatible random ticks are
-  # supplied by the CraftEngine block behavior.
-  ignore-random-tick: true
-  ignore-scheduled-tick: true
+  ignore-random-tick: false
+  ignore-scheduled-tick: false
   random-rotation: false
   max-points: 5
   points:
@@ -336,6 +416,52 @@ kaleidoscope_tavern_gold_grape:
               min: 1
               max: 1
             chance: 0.3
+  # Vanilla biomes above the source temperature threshold of 1.0 use a base
+  # temperature of 2.0. The favored entries extend the ordinary distribution
+  # to the same 40% +2, 40% +1, 20% no-growth result as the source block.
+  grow-conditions:
+    two_points:
+      point: 2
+      conditions:
+        suitable_season:
+          type: suitable-season
+          value: [Summer]
+        growth_roll:
+          type: random
+          value: 0.125
+    one_point:
+      point: 1
+      conditions:
+        suitable_season:
+          type: suitable-season
+          value: [Summer]
+        growth_roll:
+          type: random
+          value: 0.142857142857
+    favored_two_points:
+      point: 2
+      conditions:
+        suitable_season:
+          type: suitable-season
+          value: [Summer]
+        favored_temperature:
+          type: temperature
+          value: '2~10'
+        growth_roll:
+          type: random
+          value: 0.366666666667
+    favored_one_point:
+      point: 1
+      conditions:
+        suitable_season:
+          type: suitable-season
+          value: [Summer]
+        favored_temperature:
+          type: temperature
+          value: '2~10'
+        growth_roll:
+          type: random
+          value: 0.578947368421
   custom-bone-meal:
     bone_meal:
       item: BONE_MEAL

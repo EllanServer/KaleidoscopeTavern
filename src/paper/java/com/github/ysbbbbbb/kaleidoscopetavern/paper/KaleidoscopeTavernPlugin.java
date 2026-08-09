@@ -48,6 +48,8 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.EffectHudPlaceho
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.pack.CustomCropsInstaller;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.pack.PackInstaller;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.recipe.StationRecipeLoader;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.recipe.StationRecipeRegistry;
 import net.kyori.adventure.text.Component;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
@@ -91,6 +93,8 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     private CustomCropsInstaller.Result customCropsResult;
     private Throwable loadFailure;
     private ContentCatalog catalog;
+    private StationRecipeLoader stationRecipeLoader;
+    private StationRecipeRegistry stationRecipes;
     private ItemService items;
     private StationService stations;
     private PressingTubService pressingTubs;
@@ -165,8 +169,11 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         }
         try {
             catalog = ContentCatalog.load(getClassLoader());
-        } catch (IOException exception) {
-            getLogger().log(Level.SEVERE, "运行时配方目录损坏，插件无法启动", exception);
+            stationRecipeLoader = new StationRecipeLoader(
+                    getClassLoader(), getDataFolder().toPath().resolve("recipes"));
+            stationRecipes = new StationRecipeRegistry(catalog, stationRecipeLoader.load());
+        } catch (IOException | IllegalArgumentException exception) {
+            getLogger().log(Level.SEVERE, "运行时目录或自定义酒类配方损坏，插件无法启动", exception);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -185,7 +192,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         shakerVisuals = new ShakerVisualService(this, catalog, items);
         pressingTubs = new PressingTubService(this, catalog, items);
         stations = new StationService(
-                this, catalog, items, messages, shakerVisuals, pressingTubs);
+                this, catalog, stationRecipes, items, messages, shakerVisuals, pressingTubs);
         effects = new EffectService(this, catalog, items);
         boards = new BoardTextService(this);
         taps = new TapService(this, stations, items);
@@ -362,6 +369,14 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         if (args[0].equalsIgnoreCase("reload")) {
             reloadConfig();
             GrapeSeasonGate.configure(getConfig(), getLogger());
+            boolean recipesReloaded = true;
+            try {
+                stationRecipes.replace(stationRecipeLoader.load());
+            } catch (IOException | IllegalArgumentException exception) {
+                recipesReloaded = false;
+                getLogger().log(Level.SEVERE,
+                        "酒桶/鸡尾酒配方重载失败；继续使用上一份有效配置", exception);
+            }
             if (stations != null) {
                 stations.stop();
                 stations.start();
@@ -383,9 +398,9 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
                 getLogger().log(Level.SEVERE, "CustomCrops 重载失败", exception);
             }
             sender.sendMessage(Component.text(dispatched
-                    && cropsReloaded
-                    ? "已重载本插件、CraftEngine 与 CustomCrops 内容。"
-                    : "本插件配置已重载，但至少一个依赖内容重载失败，请检查日志。"));
+                    && cropsReloaded && recipesReloaded
+                    ? "已重载本插件配置、酒类配方、CraftEngine 与 CustomCrops 内容。"
+                    : "重载未全部成功；无效酒类配方会继续使用上一份有效配置，请检查日志。"));
             return true;
         }
         sender.sendMessage(Component.text("用法：/" + label + " <status|give|reload|recipes>"));
@@ -433,10 +448,10 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             case PRESSING -> catalog.pressingRecipes()
                     .subList(window.fromInclusive(), window.toExclusive())
                     .forEach(recipe -> sender.sendMessage(pressingRecipeLine(recipe, context)));
-            case BARREL -> catalog.barrelRecipes()
+            case BARREL -> stationRecipes.barrelRecipes()
                     .subList(window.fromInclusive(), window.toExclusive())
                     .forEach(recipe -> sender.sendMessage(barrelRecipeLine(recipe, context)));
-            case SHAKER -> catalog.shakerRecipes()
+            case SHAKER -> stationRecipes.shakerRecipes()
                     .subList(window.fromInclusive(), window.toExclusive())
                     .forEach(recipe -> sender.sendMessage(shakerRecipeLine(recipe, context)));
         }
@@ -522,9 +537,9 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
 
     private int recipeCount(RecipeType type) {
         return switch (type) {
-            case BARREL -> catalog.barrelRecipes().size();
+            case BARREL -> stationRecipes.barrelRecipes().size();
             case PRESSING -> catalog.pressingRecipes().size();
-            case SHAKER -> catalog.shakerRecipes().size();
+            case SHAKER -> stationRecipes.shakerRecipes().size();
         };
     }
 
@@ -597,9 +612,10 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
                 + "，方块 " + counts.blocks + '/' + EXPECTED_BLOCKS
                 + "，家具 " + counts.furniture + '/' + EXPECTED_FURNITURE));
         sender.sendMessage(Component.text("玩法目录：压榨 " + catalog.pressingRecipes().size()
-                + "，酒桶 " + catalog.barrelRecipes().size()
-                + "，摇壶 " + catalog.shakerRecipes().size()
+                + "，酒桶 " + stationRecipes.barrelRecipes().size()
+                + "，摇壶 " + stationRecipes.shakerRecipes().size()
                 + "，饮用效果 " + catalog.effectEntryCount()));
+        sender.sendMessage(Component.text("酒类配方目录：" + stationRecipeLoader.directory()));
         EffectService.EffectStats effectStats = effects.effectStats();
         sender.sendMessage(Component.text("效果追踪：事件 " + effectStats.trackEvents()
                 + "，命中 " + effectStats.trackHits()

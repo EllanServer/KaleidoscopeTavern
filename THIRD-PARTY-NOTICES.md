@@ -1,9 +1,29 @@
 # Third-Party Notices
 
-Kaleidoscope Tavern builds against third-party APIs but does not bundle their
-plugin or server classes in the release JAR. Server operators must obtain and
-install runtime dependencies separately and comply with each upstream license.
-The build's JAR audit rejects embedded classes from these APIs.
+Kaleidoscope Tavern embeds Sparrow YAML for its operator-owned configuration
+files. It also builds against third-party server APIs whose classes are not
+bundled in the release JAR; server operators must install those runtime
+dependencies separately. The build audits both boundaries.
+
+## Bundled runtime library
+
+### Sparrow YAML
+
+- Module used: `sparrow-yaml`
+- Version used by this project: 1.0.7
+- Project: https://github.com/Xiao-MoMi/sparrow-yaml
+- License: GNU General Public License v3.0 (GPL-3.0)
+- License text: `META-INF/third-party-licenses/SPARROW-YAML-GPL-3.0.txt`
+- Distribution: bundled in the plugin JAR to parse barrel and shaker recipe YAML
+
+### SnakeYAML Engine (relocated by Sparrow YAML)
+
+- Module used: `snakeyaml-engine`
+- Version embedded upstream: 3.1-SNAPSHOT-forked
+- Project: https://bitbucket.org/snakeyaml/snakeyaml-engine/
+- License: Apache License 2.0
+- License text: `META-INF/third-party-licenses/SNAKEYAML-APACHE-2.0.txt`
+- Distribution: bundled inside the Sparrow YAML artifact under its relocated package
 
 ## Required runtime and compile-only dependencies
 

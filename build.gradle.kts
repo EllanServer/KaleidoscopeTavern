@@ -12,6 +12,12 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.momirealms.net/releases/")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
+    maven("https://repo.catnies.top/releases")
+}
+
+val embeddedLibraries = configurations.create("embeddedLibraries") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
 }
 
 dependencies {
@@ -24,6 +30,8 @@ dependencies {
     compileOnly("net.momirealms:craft-engine-bukkit-proxy:${providers.gradleProperty("craft_engine_proxy_version").get()}")
     // The HUD placeholder for CustomNameplates and other PlaceholderAPI users.
     compileOnly("me.clip:placeholderapi:${providers.gradleProperty("placeholder_api_version").get()}")
+    implementation("net.momirealms:sparrow-yaml:${providers.gradleProperty("sparrow_yaml_version").get()}")
+    embeddedLibraries("net.momirealms:sparrow-yaml:${providers.gradleProperty("sparrow_yaml_version").get()}")
 
     testImplementation(platform("org.junit:junit-bom:5.14.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -69,6 +77,9 @@ tasks.processResources {
         "THIRD-PARTY-NOTICES.md"
     )) {
         into("META-INF")
+    }
+    from("THIRD-PARTY-LICENSES") {
+        into("META-INF/third-party-licenses")
     }
 
     from("src/paper/pack") {
@@ -117,6 +128,11 @@ tasks.jar {
             "Implementation-Version" to project.version,
             "Required-CustomCrops-Version" to customCropsVersion.get()
         )
+    }
+    from(embeddedLibraries.map { library ->
+        if (library.isDirectory) library else zipTree(library)
+    }) {
+        exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
     }
 }
 

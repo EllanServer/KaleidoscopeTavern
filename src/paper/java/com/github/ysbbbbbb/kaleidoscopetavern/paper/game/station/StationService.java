@@ -15,6 +15,9 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.shaker.ShakerVisualServ
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.tap.TapSemantics;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.visual.DisplayVisual;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.recipe.StationRecipeRegistry;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.recipe.StationRecipeSet.BarrelFallback;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.recipe.StationRecipeSet.ShakerSpecialResults;
 import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
@@ -87,6 +90,7 @@ public final class StationService implements Listener {
 
     private final JavaPlugin plugin;
     private final ContentCatalog catalog;
+    private final StationRecipeRegistry recipes;
     private final ItemService items;
     private final Messages messages;
     private final ShakerVisualService shakerVisuals;
@@ -123,11 +127,13 @@ public final class StationService implements Listener {
                 }
             };
 
-    public StationService(JavaPlugin plugin, ContentCatalog catalog, ItemService items,
+    public StationService(JavaPlugin plugin, ContentCatalog catalog,
+                          StationRecipeRegistry recipes, ItemService items,
                           Messages messages, ShakerVisualService shakerVisuals,
                           PressingTubService pressingTubs) {
         this.plugin = plugin;
         this.catalog = catalog;
+        this.recipes = recipes;
         this.items = items;
         this.messages = messages;
         this.shakerVisuals = shakerVisuals;
@@ -393,15 +399,15 @@ public final class StationService implements Listener {
         if (!items.id(shaker).equals(SHAKER)) {
             return InteractionResult.PASS;
         }
-        // The migrated shaker uses a long consumable component solely to
-        // expose the original brush-style use animation. Always suppress the
-        // vanilla item use; only a valid three-ingredient shaker is started
-        // explicitly below.
+        // The long consumable component exposes the native CE using_item /
+        // use_cycle model clock. Always suppress vanilla consumption; only a
+        // complete configured recipe (or the source-compatible three-item
+        // fallback) starts explicitly below.
         if (items.shakerResult(shaker) != null) {
             return InteractionResult.SUCCESS_AND_CANCEL;
         }
-        int ingredientCount = items.shakerIngredients(shaker).size();
-        if (ingredientCount != 3) {
+        List<ItemStack> ingredients = items.shakerIngredients(shaker);
+        if (!canMixShaker(ingredients)) {
             player.sendActionBar(net.kyori.adventure.text.Component.translatable(
                     "message.kaleidoscope_tavern.shaker.amount_too_low"));
             return InteractionResult.SUCCESS_AND_CANCEL;
@@ -411,7 +417,7 @@ public final class StationService implements Listener {
             ItemStack current = handItem(player, hand);
             if (!player.isOnline() || !items.id(current).equals(SHAKER)
                     || items.shakerResult(current) != null
-                    || items.shakerIngredients(current).size() != 3) {
+                    || !canMixShaker(items.shakerIngredients(current))) {
                 return;
             }
             portableShakers.put(
@@ -442,7 +448,7 @@ public final class StationService implements Listener {
             return;
         }
         List<ItemStack> ingredients = items.shakerIngredients(shaker);
-        if (ingredients.size() != 3) {
+        if (!canMixShaker(ingredients)) {
             return;
         }
         ticks = Math.max(0, ticks);
@@ -458,6 +464,10 @@ public final class StationService implements Listener {
         setHandItem(player, hand, shaker);
         player.getWorld().playSound(player.getLocation(),
                 "kaleidoscope_tavern:item.shaker.end", SoundCategory.PLAYERS, 1.0F, 1.0F);
+    }
+
+    private boolean canMixShaker(List<ItemStack> ingredients) {
+        return recipes.canMixShaker(ingredients.stream().map(items::id).toList());
     }
 
     private void tickPortableShakers() {
@@ -770,7 +780,7 @@ public final class StationService implements Listener {
         String fluid = state.string("barrel_fluid", "");
         List<ItemStack> stored = barrelIngredients(state);
         List<String> ingredientIds = stored.stream().map(items::id).toList();
-        Optional<BarrelRecipe> optional = catalog.barrel(fluid, ingredientIds);
+        Optional<BarrelRecipe> optional = recipes.barrel(fluid, ingredientIds);
         String result;
         String recipeId;
         int unitTicks;
@@ -784,10 +794,11 @@ public final class StationService implements Listener {
                     : Math.min(MAX_BARREL_STACK, stored.stream()
                     .mapToInt(ItemStack::getAmount).min().orElse(1));
         } else {
-            result = NAMESPACE + "vinegar";
-            recipeId = NAMESPACE + "empty";
-            unitTicks = 2400;
-            outputCount = MAX_BARREL_STACK;
+            BarrelFallback fallback = recipes.fallback();
+            result = fallback.result();
+            recipeId = fallback.id();
+            unitTicks = fallback.unitTicks();
+            outputCount = fallback.output();
         }
         state.putString("barrel_recipe", recipeId);
         state.putString("barrel_result", result);
@@ -816,9 +827,6 @@ public final class StationService implements Listener {
             return takeShaker(player, furniture,
                     shakerItem(furniture, player).orElse(null));
         }
-        if (!catalog.tag(NAMESPACE + "cocktail_ingredient").contains(handId)) {
-            return false;
-        }
         Optional<ItemStack> source = shakerItem(furniture, player);
         if (source.isEmpty()) {
             messages.send(player, "pack-missing");
@@ -828,6 +836,11 @@ public final class StationService implements Listener {
         List<ItemStack> ingredients = new ArrayList<>(items.shakerIngredients(shaker));
         if (items.shakerResult(shaker) != null || ingredients.size() >= 3) {
             return true;
+        }
+        List<String> currentIds = ingredients.stream().map(items::id).toList();
+        if (!catalog.tag(NAMESPACE + "cocktail_ingredient").contains(handId)
+                && !recipes.mayBeShakerIngredient(currentIds, handId)) {
+            return false;
         }
         if (catalog.hasDrinkEffects(handId) && items.brewLevel(hand) < 4) {
             player.sendMessage(net.kyori.adventure.text.Component.translatable(
@@ -862,21 +875,22 @@ public final class StationService implements Listener {
 
     private Optional<ItemStack> buildShakerResult(Player player, List<ItemStack> ingredients, int ticks) {
         String resultId;
-        boolean signature = false;
+        boolean inheritIngredients = false;
         List<String> ids = ingredients.stream().map(items::id).toList();
+        ShakerSpecialResults specialResults = recipes.specialResults();
         switch (ShakerSemantics.resultBand(ticks)) {
-            case MYSTERY -> resultId = NAMESPACE + "mystery_cocktail";
+            case MYSTERY -> resultId = specialResults.mystery();
             case SIGNATURE -> {
-                resultId = NAMESPACE + "signature_cocktail";
-                signature = true;
+                resultId = specialResults.signature();
+                inheritIngredients = true;
             }
             case HAND_RECIPE -> {
-                Optional<ContentCatalog.ShakerRecipe> recipe = catalog.shaker(ids);
+                Optional<ContentCatalog.ShakerRecipe> recipe = recipes.shaker(ids);
                 if (recipe.isPresent()) {
                     resultId = recipe.get().result();
                 } else {
-                    resultId = NAMESPACE + "signature_cocktail";
-                    signature = true;
+                    resultId = specialResults.signature();
+                    inheritIngredients = true;
                 }
             }
             case NONE -> {
@@ -889,7 +903,7 @@ public final class StationService implements Listener {
             return Optional.empty();
         }
         ItemStack result = built.get();
-        if (signature) {
+        if (inheritIngredients) {
             List<List<EffectSpec>> sources = ingredients.stream().map(this::effectsOfIngredient).toList();
             int color = averageColor(ingredients);
             result = items.withSignature(result, items.mergeEffects(sources), color);
@@ -1007,10 +1021,11 @@ public final class StationService implements Listener {
             return BarrelSemantics.TapExtractStatus.INVALID_CONTAINER;
         }
         FurnitureState state = new FurnitureState(barrel);
-        String recipeId = state.string("barrel_recipe");
-        boolean carrierRecipeValid = state.string("barrel_result") != null
-                && (recipeId == null || recipeId.equals(NAMESPACE + "empty")
-                || catalog.barrelById(recipeId).isPresent());
+        String resultId = state.string("barrel_result");
+        // A reload may remove or rename the source recipe while a barrel is
+        // already aging. Its persisted result remains extractable; build()
+        // below still rejects an output item that no longer exists.
+        boolean carrierRecipeValid = resultId != null && !resultId.isBlank();
         return BarrelSemantics.tapExtractStatus(
                 isBarrelBrewing(state), state.integer("barrel_output"), carrierRecipeValid);
     }
