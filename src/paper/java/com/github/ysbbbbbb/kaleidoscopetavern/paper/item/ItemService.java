@@ -2,7 +2,7 @@ package com.github.ysbbbbbb.kaleidoscopetavern.paper.item;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.ShakerSemantics;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.shaker.ShakerSemantics;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.TooltipDisplay;
 import net.kyori.adventure.text.Component;

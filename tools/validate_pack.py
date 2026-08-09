@@ -253,21 +253,21 @@ SOURCE_STATE_OWNERS = {
 # concrete Paper implementation; a newly added source renderer cannot pass CI
 # without an explicit migration decision.
 RENDERER_COVERAGE = {
-    "BarCabinetBlockEntityRender.java": ("block/StorageBlockConfig.java", "record SlotVisual"),
-    "BarrelBlockEntityRender.java": ("StationService.java", "BarrelSemantics"),
-    "BarStoolBlockEntityRender.java": ("BarStoolVisualService.java", "getBodyYaw"),
-    "CellarCabinetBlockEntityRender.java": ("block/StorageBlockConfig.java", "record Orientation"),
+    "BarCabinetBlockEntityRender.java": ("storage/StorageBlockConfig.java", "record SlotVisual"),
+    "BarrelBlockEntityRender.java": ("station/StationService.java", "BarrelSemantics"),
+    "BarStoolBlockEntityRender.java": ("decor/BarStoolVisualService.java", "getBodyYaw"),
+    "CellarCabinetBlockEntityRender.java": ("storage/StorageBlockConfig.java", "record Orientation"),
     "ChalkboardBlockEntityRender.java": (
-        "block/ChalkboardBlockBehavior.java", "class BlockTextElement"),
-    "CircularRackBlockEntityRender.java": ("block/StorageBlockConfig.java", "record SlotVisual"),
-    "GlasswareHolderBlockEntityRender.java": ("DisplayStorageService.java", "StorageSemantics"),
-    "HolderBlockEntityRender.java": ("block/StorageBlockConfig.java", "record SlotVisual"),
-    "PressingTubBlockEntityRender.java": ("PressingTubVisualFactory.java", "visuals"),
-    "SandwichBlockEntityRender.java": ("BoardTextService.java", "sandwich"),
-    "ShakerBlockEntityRender.java": ("ShakerVisualService.java", "ShakerAnimationSemantics"),
-    "StorageBlockEntityRender.java": ("block/StorageBlockBehavior.java", "renderPosition("),
-    "TextBlockEntityRender.java": ("BoardTextService.java", "boardVisuals"),
-    "TiltedRackBlockEntityRender.java": ("block/StorageBlockConfig.java", "record SlotVisual"),
+        "board/ChalkboardBlockBehavior.java", "class BlockTextElement"),
+    "CircularRackBlockEntityRender.java": ("storage/StorageBlockConfig.java", "record SlotVisual"),
+    "GlasswareHolderBlockEntityRender.java": ("storage/DisplayStorageService.java", "StorageSemantics"),
+    "HolderBlockEntityRender.java": ("storage/StorageBlockConfig.java", "record SlotVisual"),
+    "PressingTubBlockEntityRender.java": ("pressing/PressingTubVisualFactory.java", "visuals"),
+    "SandwichBlockEntityRender.java": ("board/BoardTextService.java", "sandwich"),
+    "ShakerBlockEntityRender.java": ("shaker/ShakerVisualService.java", "ShakerAnimationSemantics"),
+    "StorageBlockEntityRender.java": ("storage/StorageBlockBehavior.java", "renderPosition("),
+    "TextBlockEntityRender.java": ("board/BoardTextService.java", "boardVisuals"),
+    "TiltedRackBlockEntityRender.java": ("storage/StorageBlockConfig.java", "record SlotVisual"),
 }
 
 # Runtime semantics need the same closed-world treatment as renderers. These
@@ -283,111 +283,111 @@ RUNTIME_METHODS = (
 )
 RUNTIME_BEHAVIOR_COVERAGE = {
     "AbstractStorageBlock.java": (
-        ("block/StorageBlockBehavior.java", "public void neighborChanged"),
-        ("block/StorageBlockBehavior.java", "private InteractionResult interact("),
-        ("block/StorageBlockBehavior.java", "private void launchRandom()"),
-        ("block/StorageBlockConfig.java", "record Interaction("),
+        ("storage/StorageBlockBehavior.java", "public void neighborChanged"),
+        ("storage/StorageBlockBehavior.java", "private InteractionResult interact("),
+        ("storage/StorageBlockBehavior.java", "private void launchRandom()"),
+        ("storage/StorageBlockConfig.java", "record Interaction("),
     ),
     "BarCabinetBlock.java": (
-        ("block/ConnectedBlockBehavior.java", "private ImmutableBlockState updateLinear("),
-        ("block/StorageBlockConfig.java", "boolean fallbackPut"),
+        ("decor/ConnectedBlockBehavior.java", "private ImmutableBlockState updateLinear("),
+        ("storage/StorageBlockConfig.java", "boolean fallbackPut"),
         ("src/paper/pack/configuration/blocks.json", '"exclusive_items"'),
     ),
     "BarStoolBlock.java": (
         ("tools/migrate_legacy.py", "_bar_stool"),
-        ("BarStoolVisualService.java", "onMount"),
+        ("decor/BarStoolVisualService.java", "onMount"),
     ),
-    "BarrelBlock.java": (("StationService.java", "interactBarrel"),),
+    "BarrelBlock.java": (("station/StationService.java", "interactBarrel"),),
     "BottleBlock.java": (
-        ("furniture/BottleFurnitureBehavior.java", "useOnFurniture"),
-        ("BottleFurnitureService.java", "private InteractionResult interact"),
+        ("drink/BottleFurnitureBehavior.java", "useOnFurniture"),
+        ("drink/BottleFurnitureService.java", "private InteractionResult interact"),
     ),
     "BottleBlockDispenseBehavior.java": (
-        ("BottlePlacementService.java", "onDispenseBottle"),
+        ("drink/BottlePlacementService.java", "onDispenseBottle"),
     ),
     "CellarCabinetBlock.java": (
-        ("block/ConnectedBlockBehavior.java", "private ImmutableBlockState updateLinear("),
-        ("block/StorageBlockConfig.java", "boolean frontOnly"),
+        ("decor/ConnectedBlockBehavior.java", "private ImmutableBlockState updateLinear("),
+        ("storage/StorageBlockConfig.java", "boolean frontOnly"),
         ("src/paper/pack/configuration/blocks.json", '"selector"'),
     ),
     "ChalkboardBlock.java": (
-        ("block/ChalkboardBlockBehavior.java", "private void tryMerge("),
-        ("block/ChalkboardBlockBehavior.java", "private void removeOtherParts("),
-        ("BoardTextService.java", "private InteractionResult interactChalkboard("),
+        ("board/ChalkboardBlockBehavior.java", "private void tryMerge("),
+        ("board/ChalkboardBlockBehavior.java", "private void removeOtherParts("),
+        ("board/BoardTextService.java", "private InteractionResult interactChalkboard("),
     ),
     "CircularRackBlock.java": (
-        ("block/StorageBlockConfig.java", "record ParticleEffect("),
-        ("block/StorageBlockBehavior.java", "private static void tickParticle("),
+        ("storage/StorageBlockConfig.java", "record ParticleEffect("),
+        ("storage/StorageBlockBehavior.java", "private static void tickParticle("),
         ("src/paper/pack/configuration/blocks.json", '"alternate_min_x"'),
     ),
     "CocktailBlockItem.java": (
-        ("EffectService.java", "onConsume"),
-        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+        ("effect/EffectService.java", "onConsume"),
+        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/drink/"
          "SneakPlaceDrinkItemBehavior.java", "useOnBlock"),
     ),
-    "DrinkBlock.java": (("BottleFurnitureService.java", "onProjectileHit"),),
+    "DrinkBlock.java": (("drink/BottleFurnitureService.java", "onProjectileHit"),),
     "DrinkBlockItem.java": (
-        ("EffectService.java", "onConsume"),
-        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+        ("effect/EffectService.java", "onConsume"),
+        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/drink/"
          "SneakPlaceDrinkItemBehavior.java", "useOnBlock"),
     ),
-    "GlasswareBlock.java": (("BottleFurnitureService.java", "onProjectileHit"),),
-    "GlasswareHolderBlock.java": (("DisplayStorageService.java", "GLASSWARE_HOLDER"),),
+    "GlasswareBlock.java": (("drink/BottleFurnitureService.java", "onProjectileHit"),),
+    "GlasswareHolderBlock.java": (("storage/DisplayStorageService.java", "GLASSWARE_HOLDER"),),
     "GrapeCropBlock.java": (
-        ("block/HangingGrapeCropBehavior.java", "addGrowthPoints"),
-        ("block/HangingGrapeCropBehavior.java", "CustomCropsBridge.removeCrop"),
+        ("grape/HangingGrapeCropBehavior.java", "addGrowthPoints"),
+        ("grape/HangingGrapeCropBehavior.java", "CustomCropsBridge.removeCrop"),
         ("src/paper/customcrops/contents/crops/kaleidoscope_tavern.yml", "harvest_with_shears"),
     ),
     "GrapevineItem.java": (
-        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/grape/"
          "GrapevineItemBehavior.java", "useOnBlock"),
         ("block/BlockService.java", "useGrapevineOnBlock"),
         ("tools/migrate_legacy.py", '"fuel_time"'),
     ),
     "GrapevineTrellisBlock.java": (
         ("tools/migrate_legacy.py", "grapevine_trellis_shear_events"),
-        ("block/TrellisBehavior.java", "implements BonemealableBlock"),
-        ("block/TrellisBehavior.java", "public static boolean grow"),
+        ("grape/TrellisBehavior.java", "implements BonemealableBlock"),
+        ("grape/TrellisBehavior.java", "public static boolean grow"),
     ),
     "HolderBlock.java": (
-        ("block/StorageBlockConfig.java", "record Launch("),
-        ("block/StorageBlockConfig.java", "case SINGLE ->"),
+        ("storage/StorageBlockConfig.java", "record Launch("),
+        ("storage/StorageBlockConfig.java", "case SINGLE ->"),
         ("src/paper/pack/configuration/blocks.json", '"origin_forward"'),
     ),
     "IncenseBlock.java": (
         ("src/paper/pack/configuration/blocks.json", "minecraft:copper_lantern"),
         ("tools/migrate_legacy.py", "incense_toggle_events"),
-        ("block/IncenseBlockBehavior.java", "updateStateForPlacement"),
-        ("block/IncenseBlockBehavior.java", "neighborChanged"),
-        ("block/IncenseBlockBehavior.java", "spawnParticles"),
+        ("effect/IncenseBlockBehavior.java", "updateStateForPlacement"),
+        ("effect/IncenseBlockBehavior.java", "neighborChanged"),
+        ("effect/IncenseBlockBehavior.java", "spawnParticles"),
     ),
     "JuiceBucketItem.java": (("tools/migrate_legacy.py", "milk_bucket"),),
-    "MolotovBlock.java": (("MolotovService.java", "onProjectileHit"),),
+    "MolotovBlock.java": (("molotov/MolotovService.java", "onProjectileHit"),),
     "MolotovBlockItem.java": (
-        ("MolotovService.java", "onStopUsing"),
+        ("molotov/MolotovService.java", "onStopUsing"),
         ("tools/migrate_legacy.py", "consume_seconds"),
     ),
     "MysteryCocktailBlock.java": (
-        ("AmbientFurnitureService.java", "tickMysteryCocktail"),
+        ("decor/AmbientFurnitureService.java", "tickMysteryCocktail"),
         ("furniture/TickingFurnitureBehavior.java", "MYSTERY_PARTICLE"),
     ),
     "PressingTubBlock.java": (
-        ("block/PressingTubBlockBehavior.java", "void fallOn(Object thisBlock, Object[] args)"),
+        ("pressing/PressingTubBlockBehavior.java", "void fallOn(Object thisBlock, Object[] args)"),
         ("tools/migrate_legacy.py", '"type": "ground_block_item"'),
         ("tools/migrate_legacy.py", "WALL_PRESSING_TUB_ID"),
-        ("PressingTubService.java", "interactPress"),
-        ("PressingTubService.java", "boolean press"),
+        ("pressing/PressingTubService.java", "interactPress"),
+        ("pressing/PressingTubService.java", "boolean press"),
     ),
-    "SandwichBoardBlock.java": (("BoardTextService.java", "transformSandwichBoard"),),
-    "ShakerBlock.java": (("StationService.java", "interactShaker"),),
+    "SandwichBoardBlock.java": (("board/BoardTextService.java", "transformSandwichBoard"),),
+    "ShakerBlock.java": (("station/StationService.java", "interactShaker"),),
     "ShakerItem.java": (
-        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+        ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/shaker/"
          "ShakerItemBehavior.java", "InteractionResult use(World world"),
-        ("StationService.java", "usePortableShaker"),
-        ("ShakerSemantics.java", "AUTO_RELEASE_AFTER_TICKS"),
+        ("station/StationService.java", "usePortableShaker"),
+        ("shaker/ShakerSemantics.java", "AUTO_RELEASE_AFTER_TICKS"),
     ),
     "SofaBlock.java": (
-        ("block/ConnectedBlockBehavior.java", "private ImmutableBlockState updateCorner("),
+        ("decor/ConnectedBlockBehavior.java", "private ImmutableBlockState updateCorner("),
         ("tools/migrate_legacy.py", '"type": "seat_block"'),
     ),
     "StringLightsBlock.java": (
@@ -402,78 +402,78 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "TapBlock.java": (
         ("src/paper/pack/configuration/blocks.json", "minecraft:lightning_rod"),
-        ("block/TapBlockBehavior.java", "updateStateForPlacement"),
-        ("block/TapBlockBehavior.java", "neighborChanged"),
-        ("block/TapBlockBehavior.java", "useOnBlock"),
-        ("block/TapBlockBehavior.java", "TAKE_TICKS = 30"),
-        ("TapService.java", "TapBlockBehavior.bind(this)"),
-        ("TapSemantics.java", "isBarrelConnection"),
+        ("tap/TapBlockBehavior.java", "updateStateForPlacement"),
+        ("tap/TapBlockBehavior.java", "neighborChanged"),
+        ("tap/TapBlockBehavior.java", "useOnBlock"),
+        ("tap/TapBlockBehavior.java", "TAKE_TICKS = 30"),
+        ("tap/TapService.java", "TapBlockBehavior.bind(this)"),
+        ("tap/TapSemantics.java", "isBarrelConnection"),
     ),
     "TiltedRackBlock.java": (
-        ("block/StorageBlockConfig.java", "case SPLIT ->"),
-        ("block/StorageBlockConfig.java", "public enum LaunchDirection"),
+        ("storage/StorageBlockConfig.java", "case SPLIT ->"),
+        ("storage/StorageBlockConfig.java", "public enum LaunchDirection"),
         ("src/paper/pack/configuration/blocks.json", '"x_rotation"'),
     ),
     "TrellisBlock.java": (
         ("block/BlockService.java", "useGrapevineOnBlock"),
-        ("block/TrellisBehavior.java", "updateStateForPlacement"),
+        ("grape/TrellisBehavior.java", "updateStateForPlacement"),
         ("src/paper/pack/configuration/blocks.json", "item.axe.wax_off"),
     ),
     "WildGrapevineBlock.java": (
         ("src/paper/pack/configuration/blocks.json", "entity.sheep.shear"),
-        ("block/WildGrapevineBehavior.java", "implements BonemealableBlock"),
-        ("block/WildGrapevineBehavior.java", "isValidBonemealTarget"),
-        ("block/WildGrapevineBehavior.java", "randomTick"),
+        ("grape/WildGrapevineBehavior.java", "implements BonemealableBlock"),
+        ("grape/WildGrapevineBehavior.java", "isValidBonemealTarget"),
+        ("grape/WildGrapevineBehavior.java", "randomTick"),
     ),
 }
 
 TAP_BEHAVIOR_COVERAGE = {
-    "BarrelTapBehavior.java": ("TapService.java", "BOTTLE_BARREL"),
-    "BeehiveTapBehavior.java": ("TapService.java", "BOTTLE_HONEY"),
-    "DragonHeadTapBehavior.java": ("TapService.java", "BOTTLE_DRAGON_BREATH"),
-    "LavaCauldronTapBehavior.java": ("TapService.java", "FILL_LAVA_CAULDRON"),
-    "WaterCauldronTapBehavior.java": ("TapService.java", "FILL_WATER_CAULDRON"),
-    "WaterloggedBehavior.java": ("TapService.java", "BOTTLE_WATER"),
-    "WatermelonTapBehavior.java": ("TapService.java", "BOTTLE_WATERMELON"),
+    "BarrelTapBehavior.java": ("tap/TapService.java", "BOTTLE_BARREL"),
+    "BeehiveTapBehavior.java": ("tap/TapService.java", "BOTTLE_HONEY"),
+    "DragonHeadTapBehavior.java": ("tap/TapService.java", "BOTTLE_DRAGON_BREATH"),
+    "LavaCauldronTapBehavior.java": ("tap/TapService.java", "FILL_LAVA_CAULDRON"),
+    "WaterCauldronTapBehavior.java": ("tap/TapService.java", "FILL_WATER_CAULDRON"),
+    "WaterloggedBehavior.java": ("tap/TapService.java", "BOTTLE_WATER"),
+    "WatermelonTapBehavior.java": ("tap/TapService.java", "BOTTLE_WATERMELON"),
 }
 
 TICKING_BLOCK_ENTITY_COVERAGE = {
-    "BarrelBlockEntity.java": ("StationService.java", "barrelTickingHandler"),
-    "BarStoolBlockEntity.java": ("BarStoolVisualService.java", "tickOccupied"),
-    "TapBlockEntity.java": ("block/TapBlockBehavior.java", "TAKE_PARTICLE_TICKS = 5"),
-    "TextBlockEntity.java": ("BoardTextService.java", "validateEditDistance"),
+    "BarrelBlockEntity.java": ("station/StationService.java", "barrelTickingHandler"),
+    "BarStoolBlockEntity.java": ("decor/BarStoolVisualService.java", "tickOccupied"),
+    "TapBlockEntity.java": ("tap/TapBlockBehavior.java", "TAKE_PARTICLE_TICKS = 5"),
+    "TextBlockEntity.java": ("board/BoardTextService.java", "validateEditDistance"),
 }
 
 # Non-block runtime systems are part of source parity too. Keeping these
 # manifests closed prevents a future effect, event hook, projectile, seat, or
 # persistent block entity from being copied as assets while losing behavior.
 EFFECT_BEHAVIOR_COVERAGE = {
-    "ArdentHeatEffect.java": (("EffectService.java", "ardentHeat"),),
+    "ArdentHeatEffect.java": (("effect/EffectService.java", "ardentHeat"),),
     "BaseEffect.java": (
-        ("EffectService.java", "slightly_tipsy"),
-        ("EffectService.java", "bloody_mary"),
-        ("EffectService.java", "tomb_raider"),
+        ("effect/EffectService.java", "slightly_tipsy"),
+        ("effect/EffectService.java", "bloody_mary"),
+        ("effect/EffectService.java", "tomb_raider"),
     ),
-    "GrassStealthEffect.java": (("EffectService.java", "grassStealth"),),
-    "HighHeelsEffect.java": (("EffectService.java", "Attribute.STEP_HEIGHT"),),
-    "LongReachEffect.java": (("EffectService.java", "Attribute.BLOCK_INTERACTION_RANGE"),),
-    "ShriekAttackEffect.java": (("EffectService.java", "DamageType.SONIC_BOOM"),),
-    "UpsideDownEffect.java": (("EffectService.java", "upside_down"),),
-    "VisionEffect.java": (("EffectService.java", "void vision"),),
-    "XpDrainEffect.java": (("EffectService.java", "xpDrain"),),
-    "ZenithEffect.java": (("EffectService.java", "zenith"),),
+    "GrassStealthEffect.java": (("effect/EffectService.java", "grassStealth"),),
+    "HighHeelsEffect.java": (("effect/EffectService.java", "Attribute.STEP_HEIGHT"),),
+    "LongReachEffect.java": (("effect/EffectService.java", "Attribute.BLOCK_INTERACTION_RANGE"),),
+    "ShriekAttackEffect.java": (("effect/EffectService.java", "DamageType.SONIC_BOOM"),),
+    "UpsideDownEffect.java": (("effect/EffectService.java", "upside_down"),),
+    "VisionEffect.java": (("effect/EffectService.java", "void vision"),),
+    "XpDrainEffect.java": (("effect/EffectService.java", "xpDrain"),),
+    "ZenithEffect.java": (("effect/EffectService.java", "zenith"),),
 }
 
 EVENT_BEHAVIOR_COVERAGE = {
     "AddFeaturesEvent.java": (("src/paper/pack/configuration/worldgen.json", "wild_grapevine"),),
-    "ChangeTargetEvent.java": (("EffectService.java", "onTarget"),),
+    "ChangeTargetEvent.java": (("effect/EffectService.java", "onTarget"),),
     "EffectEvent.java": (
-        ("EffectService.java", "onDeath"),
-        ("EffectService.java", "onDamage"),
-        ("EffectService.java", "ardentHeat"),
+        ("effect/EffectService.java", "onDeath"),
+        ("effect/EffectService.java", "onDamage"),
+        ("effect/EffectService.java", "ardentHeat"),
     ),
     "VanillaBottlePlaceEvent.java": (
-        ("BottlePlacementService.java", "onPlaceVanillaBottle"),
+        ("drink/BottlePlacementService.java", "onPlaceVanillaBottle"),
     ),
 }
 
@@ -482,50 +482,50 @@ ENTITY_BEHAVIOR_COVERAGE = {
         ("tools/migrate_legacy.py", "_sofa"),
         ("tools/migrate_legacy.py", "_bar_stool"),
     ),
-    "ThrownMolotovEntity.java": (("MolotovService.java", "spreadFire"),),
+    "ThrownMolotovEntity.java": (("molotov/MolotovService.java", "spreadFire"),),
 }
 
 BLOCK_ENTITY_COVERAGE = {
-    "BarCabinetBlockEntity.java": (("block/StorageBlockBehavior.java", "private final Item[] items"),),
-    "BarrelBlockEntity.java": (("StationService.java", "barrel_items"),),
-    "CellarCabinetBlockEntity.java": (("block/StorageBlockBehavior.java", "private final Item[] items"),),
-    "DrinkBlockEntity.java": (("BottleFurnitureService.java", "storedItems"),),
-    "PotionBottleBlockEntity.java": (("BottleFurnitureService.java", "sourceItem"),),
+    "BarCabinetBlockEntity.java": (("storage/StorageBlockBehavior.java", "private final Item[] items"),),
+    "BarrelBlockEntity.java": (("station/StationService.java", "barrel_items"),),
+    "CellarCabinetBlockEntity.java": (("storage/StorageBlockBehavior.java", "private final Item[] items"),),
+    "DrinkBlockEntity.java": (("drink/BottleFurnitureService.java", "storedItems"),),
+    "PotionBottleBlockEntity.java": (("drink/BottleFurnitureService.java", "sourceItem"),),
     "PressingTubBlockEntity.java": (
-        ("block/PressingTubBlockBehavior.java",
+        ("pressing/PressingTubBlockBehavior.java",
          'private static final String DATA_KEY = "kaleidoscope_tavern:press"'),
     ),
     "TapBlockEntity.java": (
-        ("block/TapBlockBehavior.java", "private Cycle cycle"),
-        ("block/TapBlockBehavior.java", "DRIP_LIFETIME_TICKS = 18"),
+        ("tap/TapBlockBehavior.java", "private Cycle cycle"),
+        ("tap/TapBlockBehavior.java", "DRIP_LIFETIME_TICKS = 18"),
     ),
     "BarStoolBlockEntity.java": (
-        ("BarStoolVisualService.java", "AnimatedItemFurnitureBehavior.updatePosition"),
+        ("decor/BarStoolVisualService.java", "AnimatedItemFurnitureBehavior.updatePosition"),
     ),
     "ChalkboardBlockEntity.java": (
-        ("block/ChalkboardBlockBehavior.java", "private static final String DATA_KEY"),
-        ("BoardTextService.java", "controller.isLarge() ? 1_500 : 350"),
+        ("board/ChalkboardBlockBehavior.java", "private static final String DATA_KEY"),
+        ("board/BoardTextService.java", "controller.isLarge() ? 1_500 : 350"),
     ),
     "CircularRackBlockEntity.java": (
-        ("block/StorageBlockBehavior.java", "private final Item[] items"),
-        ("block/StorageBlockBehavior.java", "private static void tickParticle("),
+        ("storage/StorageBlockBehavior.java", "private final Item[] items"),
+        ("storage/StorageBlockBehavior.java", "private static void tickParticle("),
     ),
-    "GlasswareHolderBlockEntity.java": (("DisplayStorageService.java", "GLASSWARE_HOLDER"),),
-    "HolderBlockEntity.java": (("block/StorageBlockBehavior.java", "Item[] items"),),
+    "GlasswareHolderBlockEntity.java": (("storage/DisplayStorageService.java", "GLASSWARE_HOLDER"),),
+    "HolderBlockEntity.java": (("storage/StorageBlockBehavior.java", "Item[] items"),),
     "IncenseBlockEntity.java": (
-        ("block/IncenseBlockBehavior.java", "hurtNearbyUndead"),
-        ("block/IncenseBlockBehavior.java", "takeDamageDue()"),
+        ("effect/IncenseBlockBehavior.java", "hurtNearbyUndead"),
+        ("effect/IncenseBlockBehavior.java", "takeDamageDue()"),
     ),
-    "SandwichBlockEntity.java": (("BoardTextService.java", "isSandwichBoard"),),
-    "StorageBlockEntity.java": (("block/StorageBlockBehavior.java", "Item[] items"),),
-    "TextBlockEntity.java": (("BoardTextService.java", "board_text"),),
-    "TiltedRackBlockEntity.java": (("block/StorageBlockBehavior.java", "Item[] items"),),
+    "SandwichBlockEntity.java": (("board/BoardTextService.java", "isSandwichBoard"),),
+    "StorageBlockEntity.java": (("storage/StorageBlockBehavior.java", "Item[] items"),),
+    "TextBlockEntity.java": (("board/BoardTextService.java", "board_text"),),
+    "TiltedRackBlockEntity.java": (("storage/StorageBlockBehavior.java", "Item[] items"),),
     "ShakerBlockEntity.java": (
-        ("StationService.java", "updateShakerSource"),
-        ("ShakerVisualService.java", "animatePut"),
+        ("station/StationService.java", "updateShakerSource"),
+        ("shaker/ShakerVisualService.java", "animatePut"),
     ),
     "SignatureCocktailBlockEntity.java": (
-        ("StationService.java", "signature_cocktail"),
+        ("station/StationService.java", "signature_cocktail"),
         ("src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/ItemService.java",
          "signatureColor"),
     ),
@@ -926,12 +926,21 @@ def validate() -> dict[str, int]:
 
     game_package = (
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game")
-    bottle_placement_source = (game_package / "BottlePlacementService.java").read_text(
+    ungrouped_game_sources = sorted(
+        path.name
+        for path in game_package.glob("*.java")
+        if path.name != "package-info.java"
+    )
+    if ungrouped_game_sources:
+        raise AssertionError(
+            "Gameplay classes must be grouped by feature module instead of being "
+            f"placed in the game root package: {ungrouped_game_sources}")
+    bottle_placement_source = (game_package / "drink/BottlePlacementService.java").read_text(
         encoding="utf-8-sig")
-    bottle_furniture_source = (game_package / "BottleFurnitureService.java").read_text(
+    bottle_furniture_source = (game_package / "drink/BottleFurnitureService.java").read_text(
         encoding="utf-8-sig")
     bottle_behavior_source = (
-        game_package / "furniture/BottleFurnitureBehavior.java"
+        game_package / "drink/BottleFurnitureBehavior.java"
     ).read_text(encoding="utf-8-sig")
     block_service_source = (game_package / "block/BlockService.java").read_text(
         encoding="utf-8-sig")
@@ -943,10 +952,10 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Bone meal must use CraftEngine BonemealableBlock behavior, not a cancelled Bukkit event")
     trellis_behavior_source = (
-        game_package / "block/TrellisBehavior.java").read_text(encoding="utf-8-sig")
+        game_package / "grape/TrellisBehavior.java").read_text(encoding="utf-8-sig")
     for behavior_source_path in (
-            game_package / "block/TrellisBehavior.java",
-            game_package / "block/WildGrapevineBehavior.java"):
+            game_package / "grape/TrellisBehavior.java",
+            game_package / "grape/WildGrapevineBehavior.java"):
         behavior_source = behavior_source_path.read_text(encoding="utf-8-sig")
         if ("public InteractionResult useOnBlock" not in behavior_source
                 or "player.swingHand(context.getHand())" not in behavior_source
@@ -990,7 +999,7 @@ def validate() -> dict[str, int]:
                 "TrellisBehavior must let CE own its placement axis; found duplicate "
                 f"implementation {duplicate_token}")
     trellis_semantics_source = (
-        game_package / "block/TrellisConnectionSemantics.java"
+        game_package / "grape/TrellisConnectionSemantics.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             'xConnected || baseAxis.equals("x")',
@@ -1002,13 +1011,13 @@ def validate() -> dict[str, int]:
                 f"missing {required_token}")
     trellis_semantics_test = (
         ROOT / "src/paperTest/java/com/github/ysbbbbbb/kaleidoscopetavern/"
-        "paper/game/block/TrellisConnectionSemanticsTest.java"
+        "paper/game/grape/TrellisConnectionSemanticsTest.java"
     ).read_text(encoding="utf-8-sig")
     if "verticalPlacementNeverCollapsesIntoAHorizontalShape" not in trellis_semantics_test:
         raise AssertionError(
             "Trellis vertical placement needs a regression test for immediate neighbour updates")
     wild_behavior_source = (
-        game_package / "block/WildGrapevineBehavior.java").read_text(encoding="utf-8-sig")
+        game_package / "grape/WildGrapevineBehavior.java").read_text(encoding="utf-8-sig")
     for leaf_attachment_token in (
             'Key.of("minecraft", "leaves")',
             "if (!isAttachedToLeaves(args))",
@@ -1022,7 +1031,7 @@ def validate() -> dict[str, int]:
     plugin_config = PLUGIN_CONFIG.read_text(encoding="utf-8-sig")
     item_behavior_source = (
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
-        "item/behavior/SneakPlaceDrinkItemBehavior.java"
+        "game/drink/SneakPlaceDrinkItemBehavior.java"
     ).read_text(encoding="utf-8-sig")
     plugin_source = (
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
@@ -1082,9 +1091,9 @@ def validate() -> dict[str, int]:
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
         "item/ManagedLoreSemantics.java"
     ).read_text(encoding="utf-8-sig")
-    effect_service_source = (game_package / "EffectService.java").read_text(
+    effect_service_source = (game_package / "effect/EffectService.java").read_text(
         encoding="utf-8-sig")
-    effect_semantics_source = (game_package / "EffectSemantics.java").read_text(
+    effect_semantics_source = (game_package / "effect/EffectSemantics.java").read_text(
         encoding="utf-8-sig")
     stale_item_migration_tokens = {
         "ItemService": (
@@ -1136,9 +1145,9 @@ def validate() -> dict[str, int]:
     if "new Placement(customId" in bottle_placement_source:
         raise AssertionError("Paper must not duplicate custom drink player placement")
     for redundant_owner in (
-            game_package / "BottlePlacementService.java",
-            game_package / "TapService.java",
-            game_package / "StationService.java"):
+            game_package / "drink/BottlePlacementService.java",
+            game_package / "tap/TapService.java",
+            game_package / "station/StationService.java"):
         if 'items("bottle_items", List.of(source))' in redundant_owner.read_text(
                 encoding="utf-8-sig"):
             raise AssertionError(
@@ -1196,10 +1205,10 @@ def validate() -> dict[str, int]:
     if "List<ItemStack> stored = storedItems(event.furniture());" in bottle_furniture_source:
         raise AssertionError(
             "Single-bottle breaks must use CE furniture_item loot instead of a manual duplicate drop")
-    station_source = (game_package / "StationService.java").read_text(
+    station_source = (game_package / "station/StationService.java").read_text(
         encoding="utf-8-sig")
     station_interaction_behavior_source = (
-        game_package / "furniture/StationInteractionFurnitureBehavior.java"
+        game_package / "station/StationInteractionFurnitureBehavior.java"
     ).read_text(encoding="utf-8-sig")
     if ('state.items("shaker_ingredients"' in station_source
             or 'state.item("shaker_result"' in station_source
@@ -1217,7 +1226,7 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"Placed shaker CE sourceItem lifecycle is missing {shaker_source_token}")
 
-    display_storage_source = (game_package / "DisplayStorageService.java").read_text(
+    display_storage_source = (game_package / "storage/DisplayStorageService.java").read_text(
         encoding="utf-8-sig")
     if "items.buildVisual(prefix + storedId.substring(PREFIX.length()))" not in display_storage_source:
         raise AssertionError(
@@ -1235,10 +1244,10 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Storage must resolve CE display controllers by behavior ordinal")
 
-    board_text_source = (game_package / "BoardTextService.java").read_text(
+    board_text_source = (game_package / "board/BoardTextService.java").read_text(
         encoding="utf-8-sig")
     chalkboard_behavior_source = (
-        game_package / "block/ChalkboardBlockBehavior.java"
+        game_package / "board/ChalkboardBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
     if ("runTaskTimer" in board_text_source
             or "onMove(PlayerMoveEvent event)" not in board_text_source
@@ -1429,7 +1438,7 @@ def validate() -> dict[str, int]:
     block_service_source = (game_package / "block/BlockService.java").read_text(
         encoding="utf-8-sig")
     grapevine_item_behavior_source = (
-        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/grape/"
         "GrapevineItemBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for evidence in (
@@ -1478,7 +1487,7 @@ def validate() -> dict[str, int]:
     if "registerEvents(blocks, this)" in plugin_source:
         raise AssertionError(
             "BlockService only binds a CE item behavior and must not be a global Bukkit listener")
-    station_source = (game_package / "StationService.java").read_text(encoding="utf-8-sig")
+    station_source = (game_package / "station/StationService.java").read_text(encoding="utf-8-sig")
     for required_token in (
             "player.hasActiveItem()",
             "player.getActiveItemHand() == usedHand",
@@ -1487,12 +1496,12 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Successful station interactions must cancel predicted bucket/drink use; "
                 f"missing token: {required_token}")
-    storage_source = (game_package / "DisplayStorageService.java").read_text(
+    storage_source = (game_package / "storage/DisplayStorageService.java").read_text(
         encoding="utf-8-sig")
     storage_interaction_behavior_source = (
-        game_package / "furniture/StorageInteractionFurnitureBehavior.java"
+        game_package / "storage/StorageInteractionFurnitureBehavior.java"
     ).read_text(encoding="utf-8-sig")
-    ambient_source = (game_package / "AmbientFurnitureService.java").read_text(
+    ambient_source = (game_package / "decor/AmbientFurnitureService.java").read_text(
         encoding="utf-8-sig")
     for owner_name, owner_source in (("StationService", station_source),
                                      ("AmbientFurnitureService", ambient_source)):
@@ -1534,7 +1543,7 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"KaleidoscopeTavernPlugin must leave sofas to native CE configuration: {stale_token}")
     incense_behavior_source = (
-        game_package / "block/IncenseBlockBehavior.java"
+        game_package / "effect/IncenseBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             "implements EntityBlock",
@@ -1617,7 +1626,7 @@ def validate() -> dict[str, int]:
                 "CE furniture controllers own barrel lifecycle; "
                 f"StationService must not reintroduce {stale_token}")
 
-    furniture_state_source = (game_package / "FurnitureState.java").read_text(
+    furniture_state_source = (game_package / "furniture/FurnitureState.java").read_text(
         encoding="utf-8-sig")
     for stale_token in (
             "PersistentDataContainer", "PersistentDataType", "NamespacedKey", "JavaPlugin"):
@@ -1673,7 +1682,7 @@ def validate() -> dict[str, int]:
                 f"missing token: {required_token}")
 
     pressing_behavior_source = (
-        game_package / "block" / "PressingTubBlockBehavior.java"
+        game_package / "pressing" / "PressingTubBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             "implements EntityBlock, PrioritizedFallOnHandler",
@@ -1761,7 +1770,7 @@ def validate() -> dict[str, int]:
                 f"validity/concurrent-map overhead; found {hot_path_token}")
 
     board_text_behavior_source = (
-        game_package / "furniture" / "BoardTextFurnitureBehavior.java"
+        game_package / "board" / "BoardTextFurnitureBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             "implements FurnitureElement",
@@ -1796,9 +1805,9 @@ def validate() -> dict[str, int]:
                 f"stale token found: {stale_token}")
 
     lifecycle_services = {
-        "BarStoolVisualService.java": "BAR_STOOL",
-        "BoardTextService.java": "BOARD",
-        "ShakerVisualService.java": "SHAKER",
+        "decor/BarStoolVisualService.java": "BAR_STOOL",
+        "board/BoardTextService.java": "BOARD",
+        "shaker/ShakerVisualService.java": "SHAKER",
     }
     for service_name, channel in lifecycle_services.items():
         source = (game_package / service_name).read_text(encoding="utf-8-sig")
@@ -1809,7 +1818,7 @@ def validate() -> dict[str, int]:
         for stale_token in ("Bukkit.getWorlds()", "private void bootstrap(",
                             "private void bootstrapDisplays(", "FurniturePlaceEvent event"):
             if stale_token in source and not (
-                    service_name == "BoardTextService.java"
+                    service_name == "board/BoardTextService.java"
                     and stale_token == "FurniturePlaceEvent event"):
                 raise AssertionError(
                     f"{service_name} retained replaced lifecycle scan/event: {stale_token}")
@@ -1824,7 +1833,7 @@ def validate() -> dict[str, int]:
     # sofas, tables, counters and cabinets are real CE blocks and therefore do
     # not participate in any furniture lifecycle index.
     bar_stool_source = (
-        game_package / "BarStoolVisualService.java"
+        game_package / "decor/BarStoolVisualService.java"
     ).read_text(encoding="utf-8-sig")
     if "Channel.BAR_STOOL, mount, 1.5, 1.5" not in bar_stool_source:
         raise AssertionError(
@@ -1835,7 +1844,7 @@ def validate() -> dict[str, int]:
             "moved to CE block updateShape")
 
     connected_block_source = (
-        game_package / "block" / "ConnectedBlockBehavior.java"
+        game_package / "decor" / "ConnectedBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             "extends BukkitBlockBehavior",
@@ -1871,13 +1880,13 @@ def validate() -> dict[str, int]:
                 "ConnectedBlockBehavior must not duplicate CE lifecycle/static config; "
                 f"stale token: {stale_token}")
     removed_migration_sources = (
-        game_package / "block" / "LegacySofaBlockMigrationService.java",
-        game_package / "block" / "SofaBlockIds.java",
-        game_package / "block" / "SofaTintSupport.java",
-        game_package / "furniture" /
+        game_package / "decor" / "LegacySofaBlockMigrationService.java",
+        game_package / "decor" / "SofaBlockIds.java",
+        game_package / "decor" / "SofaTintSupport.java",
+        game_package / "decor" /
         "LegacyConnectedBlockMigrationFurnitureBehavior.java",
-        game_package / "furniture" / "LegacyConnectedBlockMigrationSemantics.java",
-        game_package / "furniture" /
+        game_package / "decor" / "LegacyConnectedBlockMigrationSemantics.java",
+        game_package / "pressing" /
         "LegacyPressingTubMigrationFurnitureBehavior.java",
     )
     remaining_migration_sources = [
@@ -1889,7 +1898,7 @@ def validate() -> dict[str, int]:
             "Removed runtime migration sources were restored: "
             f"{remaining_migration_sources}")
     trellis_shape_source = (
-        game_package / "block" / "TrellisBlockShape.java"
+        game_package / "grape" / "TrellisBlockShape.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             "implements BlockShape",
@@ -1931,7 +1940,7 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "animated_item_furniture must never create persistent Bukkit entities; "
                 f"stale token found: {stale_token}")
-    for service_name in ("ShakerVisualService.java", "BarStoolVisualService.java"):
+    for service_name in ("shaker/ShakerVisualService.java", "decor/BarStoolVisualService.java"):
         source = (game_package / service_name).read_text(encoding="utf-8-sig")
         for required_token in (
                 "AnimatedItemFurnitureBehavior.bind(",
@@ -1950,14 +1959,14 @@ def validate() -> dict[str, int]:
                     "Animated furniture visuals must not retain Bukkit helper entities or "
                     f"recovery state; {service_name} contains {stale_token}")
     shaker_visual_service_source = (
-        game_package / "ShakerVisualService.java"
+        game_package / "shaker/ShakerVisualService.java"
     ).read_text(encoding="utf-8-sig")
     if ("implements Listener" in shaker_visual_service_source
             or "registerEvents(shakerVisuals, this)" in plugin_source):
         raise AssertionError(
             "Shaker visuals are CE lifecycle-driven and must not retain an empty Bukkit listener")
     shaker_hud_source = (
-        game_package / "ShakerHudSemantics.java"
+        game_package / "shaker/ShakerHudSemantics.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             'FONT_KEY = "kaleidoscope_tavern:shaker_hud"',
@@ -1986,7 +1995,7 @@ def validate() -> dict[str, int]:
                 "Loaded shakers must drive their source-compatible progress and ingredient HUD; "
                 f"missing token: {required_token}")
     bar_stool_visual_source = (
-        game_package / "BarStoolVisualService.java"
+        game_package / "decor/BarStoolVisualService.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             "private final class SeatEventListener implements Listener",
@@ -2021,10 +2030,10 @@ def validate() -> dict[str, int]:
         raise AssertionError(
             "Bar-stool mount events must not remain globally registered without loaded stools")
 
-    station_source = (game_package / "StationService.java").read_text(
+    station_source = (game_package / "station/StationService.java").read_text(
         encoding="utf-8-sig")
     shaker_item_behavior_source = (
-        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/item/behavior/"
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/game/shaker/"
         "ShakerItemBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
@@ -2143,7 +2152,7 @@ def validate() -> dict[str, int]:
     # 压榨桶玩法已拆到独立服务：StationService 不再绑定 PressingTubBlockBehavior
     # 或维护压榨配方/视觉布局。
     pressing_service_source = (
-        game_package / "PressingTubService.java").read_text(encoding="utf-8-sig")
+        game_package / "pressing/PressingTubService.java").read_text(encoding="utf-8-sig")
     for required_token in (
             "implements PressingTubBlockBehavior.Handler",
             "WALL_FURNITURE_ID",
@@ -2171,7 +2180,7 @@ def validate() -> dict[str, int]:
                 "PressingTubService must stay free of Bukkit landing-index "
                 f"machinery; stale token: {stale_token}")
     visual_factory_source = (
-        game_package / "PressingTubVisualFactory.java").read_text(encoding="utf-8-sig")
+        game_package / "pressing/PressingTubVisualFactory.java").read_text(encoding="utf-8-sig")
     for required_token in (
             "static double[] tiltDisplay(",
             "static Quaternionf tiltRotation(",
@@ -2220,7 +2229,7 @@ def validate() -> dict[str, int]:
                 f"stale token: {stale_station_visual_token}")
 
     station_visual_source = (
-        game_package / "furniture" / "StationVisualFurnitureBehavior.java"
+        game_package / "station" / "StationVisualFurnitureBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_station_element_token in (
             "implements FurnitureElement",
@@ -2255,11 +2264,11 @@ def validate() -> dict[str, int]:
                 "Reused station visual slots must write transform/scale/rotation "
                 "unconditionally so clients reset to defaults; stale token: "
                 f"{stale_station_metadata_token}")
-    tap_source = (game_package / "TapService.java").read_text(
+    tap_source = (game_package / "tap/TapService.java").read_text(
         encoding="utf-8-sig")
-    tap_block_source = (game_package / "block/TapBlockBehavior.java").read_text(
+    tap_block_source = (game_package / "tap/TapBlockBehavior.java").read_text(
         encoding="utf-8-sig")
-    tap_semantics_source = (game_package / "TapSemantics.java").read_text(
+    tap_semantics_source = (game_package / "tap/TapSemantics.java").read_text(
         encoding="utf-8-sig")
     for required_token in (
             "TapSemantics.shouldDelegateBarrelTapPlacement(",
@@ -2454,10 +2463,10 @@ def validate() -> dict[str, int]:
                 f"found {stale_token}")
 
     storage_block_source = (
-        game_package / "block/StorageBlockBehavior.java"
+        game_package / "storage/StorageBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
     storage_config_source = (
-        game_package / "block/StorageBlockConfig.java"
+        game_package / "storage/StorageBlockConfig.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             "implements EntityBlock",
@@ -2506,7 +2515,7 @@ def validate() -> dict[str, int]:
                 "Active storage family rules must stay in CE configuration; "
                 f"found {forbidden_family_token}")
     connected_block_source = (
-        game_package / "block/ConnectedBlockBehavior.java"
+        game_package / "decor/ConnectedBlockBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_token in (
             "case LINEAR -> updateLinear",
@@ -2684,7 +2693,7 @@ def validate() -> dict[str, int]:
                 f"missing token: {required_storage_visual_token}")
 
     storage_visual_source = (
-        game_package / "furniture" / "StorageVisualFurnitureBehavior.java"
+        game_package / "storage" / "StorageVisualFurnitureBehavior.java"
     ).read_text(encoding="utf-8-sig")
     for required_storage_element_token in (
             "implements FurnitureElement",
@@ -2751,9 +2760,9 @@ def validate() -> dict[str, int]:
     # Vision, upside-down and slightly-tipsy are point-of-view effects. They
     # must never write shared entity state, otherwise unrelated players see
     # the outline/name or the server gains a fake nausea effect.
-    effect_service_source = (game_package / "EffectService.java").read_text(
+    effect_service_source = (game_package / "effect/EffectService.java").read_text(
         encoding="utf-8-sig")
-    viewer_packet_source = (game_package / "ViewerEffectPackets.java").read_text(
+    viewer_packet_source = (game_package / "effect/ViewerEffectPackets.java").read_text(
         encoding="utf-8-sig")
     for shared_state_write in (
             "living.addPotionEffect(new PotionEffect(glowing",
@@ -4015,7 +4024,7 @@ def validate() -> dict[str, int]:
     if neutral_effects != {"slightly_tipsy", "upside_down"}:
         raise AssertionError(
             f"Corner HUD row-two set drifted from the Forge registrations: {sorted(neutral_effects)}")
-    hud_semantics_source = (game_package / "CustomEffectHudSemantics.java").read_text(
+    hud_semantics_source = (game_package / "effect/CustomEffectHudSemantics.java").read_text(
         encoding="utf-8-sig")
     # The ambient swirl colours must stay byte-identical to the archived
     # Forge registrations.

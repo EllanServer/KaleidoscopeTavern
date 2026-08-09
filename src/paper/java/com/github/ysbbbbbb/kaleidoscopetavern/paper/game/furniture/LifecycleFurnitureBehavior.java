@@ -1,6 +1,5 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture;
 
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.FurnitureSpatialSemantics;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.core.entity.furniture.Furniture;
 import net.momirealms.craftengine.core.entity.furniture.FurnitureDefinition;

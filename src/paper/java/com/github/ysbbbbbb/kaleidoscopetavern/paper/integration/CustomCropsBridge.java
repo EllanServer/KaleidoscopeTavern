@@ -1,6 +1,6 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.integration;
 
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.GrapeSeasonSemantics;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.GrapeSeasonSemantics;
 import net.momirealms.customcrops.api.BukkitCustomCropsAPI;
 import net.momirealms.customcrops.api.BukkitCustomCropsPlugin;
 import net.momirealms.customcrops.api.CustomCropsAPI;

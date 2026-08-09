@@ -1,7 +1,8 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.behavior.GrapevineItemBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.GrapevineItemBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape.TrellisBehavior;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.property.Property;

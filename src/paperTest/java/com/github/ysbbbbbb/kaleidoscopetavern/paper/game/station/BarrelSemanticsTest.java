@@ -1,0 +1,74 @@
+package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.station;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class BarrelSemanticsTest {
+    @Test
+    void onlyTheCeilingLayerCanOperateTheLid() {
+        assertEquals(BarrelSemantics.Hit.BODY, BarrelSemantics.classify(0, 1.998, 0));
+        assertEquals(BarrelSemantics.Hit.TOP_RIM, BarrelSemantics.classify(1, 2.25, 0));
+        assertEquals(BarrelSemantics.Hit.TOP_RIM, BarrelSemantics.classify(-1, 2.75, 1));
+    }
+
+    @Test
+    void onlyIndexFourCanAccessContents() {
+        assertEquals(BarrelSemantics.Hit.TOP_CENTER, BarrelSemantics.classify(0, 2.4, 0));
+        assertEquals(BarrelSemantics.Hit.TOP_CENTER, BarrelSemantics.classify(0.5, 3, -0.5));
+        assertEquals(BarrelSemantics.Hit.TOP_RIM, BarrelSemantics.classify(0.5011, 2.4, 0));
+    }
+
+    @Test
+    void pointsOutsideTheMultiblockAreNotTopClicks() {
+        assertEquals(BarrelSemantics.Hit.BODY, BarrelSemantics.classify(1.6, 2.5, 0));
+        assertEquals(BarrelSemantics.Hit.BODY, BarrelSemantics.classify(0, 3.1, 0));
+    }
+
+    @Test
+    void brewingUsesTheSourcesNinetySevenTickQuantization() {
+        assertEquals(new BarrelSemantics.BrewState(1, 2303),
+                BarrelSemantics.advance(1, 2400, 2400));
+        assertEquals(new BarrelSemantics.BrewState(1, -47),
+                BarrelSemantics.advance(1, 50, 2400));
+        assertEquals(new BarrelSemantics.BrewState(2, 4800),
+                BarrelSemantics.advance(1, -47, 2400));
+        assertEquals(new BarrelSemantics.BrewState(6, -1),
+                BarrelSemantics.advance(5, 0, 2400));
+    }
+
+    @Test
+    void onlyPendingOrActiveClosedBarrelsNeedSparseTicks() {
+        int capacity = 4_000;
+        assertFalse(BarrelSemantics.needsTick(true, 0, capacity, capacity));
+        assertFalse(BarrelSemantics.needsTick(false, 0, capacity - 1, capacity));
+        assertTrue(BarrelSemantics.needsTick(false, 0, capacity, capacity));
+        assertTrue(BarrelSemantics.needsTick(false, 1, 0, capacity));
+        assertTrue(BarrelSemantics.needsTick(false, 5, 0, capacity));
+        assertFalse(BarrelSemantics.needsTick(false, 6, 0, capacity));
+        assertFalse(BarrelSemantics.needsTick(false, 99, capacity, capacity));
+    }
+
+    @Test
+    void formatsRemainingTimeLikeTheArchivedMinecraftUtility() {
+        assertEquals("0:00", BarrelSemantics.formatTickDuration(-97));
+        assertEquals("0:00", BarrelSemantics.formatTickDuration(19));
+        assertEquals("0:01", BarrelSemantics.formatTickDuration(20));
+        assertEquals("2:00", BarrelSemantics.formatTickDuration(2_400));
+        assertEquals("61:01", BarrelSemantics.formatTickDuration(73_220));
+    }
+
+    @Test
+    void tapFailuresUseTheSourceCheckOrder() {
+        assertEquals(BarrelSemantics.TapExtractStatus.NOT_BREWING,
+                BarrelSemantics.tapExtractStatus(false, 0, false));
+        assertEquals(BarrelSemantics.TapExtractStatus.EMPTY,
+                BarrelSemantics.tapExtractStatus(true, 0, false));
+        assertEquals(BarrelSemantics.TapExtractStatus.INVALID_CONTAINER,
+                BarrelSemantics.tapExtractStatus(true, 1, false));
+        assertEquals(BarrelSemantics.TapExtractStatus.READY,
+                BarrelSemantics.tapExtractStatus(true, 1, true));
+    }
+}

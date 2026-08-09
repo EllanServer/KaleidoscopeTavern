@@ -1,6 +1,6 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.integration;
 
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.EffectService;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.effect.EffectService;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
