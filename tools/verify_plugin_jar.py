@@ -113,16 +113,15 @@ def main() -> int:
         blocks_document = json.loads(
             archive.read("tavern-pack/configuration/blocks.json").decode("utf-8-sig")
         )
-        if len(blocks_document.get("blocks", {})) != 60:
-            raise SystemExit("Embedded CraftEngine project must contain 60 block ids")
+        if len(blocks_document.get("blocks", {})) != 44:
+            raise SystemExit("Embedded CraftEngine project must contain 44 block ids")
 
         furniture_document = json.loads(
             archive.read("tavern-pack/configuration/furniture.json").decode("utf-8-sig")
         )
-        if len(furniture_document.get("furniture", {})) != 137:
+        if len(furniture_document.get("furniture", {})) != 116:
             raise SystemExit(
-                "Embedded CraftEngine project must contain 137 furniture ids "
-                "(legacy pressing tub plus private active wall tub)")
+                "Embedded CraftEngine project must contain 116 furniture ids")
 
         items_document = json.loads(
             archive.read("tavern-pack/configuration/items.json").decode("utf-8-sig")
@@ -133,8 +132,8 @@ def main() -> int:
         render_items_document = json.loads(
             archive.read("tavern-pack/configuration/render-items.json").decode("utf-8-sig")
         )
-        if len(render_items_document.get("items", {})) != 503:
-            raise SystemExit("Embedded CraftEngine project must contain 503 render item ids")
+        if len(render_items_document.get("items", {})) != 413:
+            raise SystemExit("Embedded CraftEngine project must contain 413 render item ids")
 
         worldgen_document = json.loads(
             archive.read("tavern-pack/configuration/worldgen.json").decode("utf-8-sig")

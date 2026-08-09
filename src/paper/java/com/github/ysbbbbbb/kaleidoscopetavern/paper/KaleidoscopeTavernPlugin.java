@@ -24,7 +24,6 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.ConnectedBlockBeh
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.GrapeSeasonGate;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.HangingGrapeCropBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.IncenseBlockBehavior;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.LegacySofaBlockMigrationService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.PressingTubBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.StorageBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.block.TapBlockBehavior;
@@ -35,8 +34,6 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.AnimatedItemF
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BoardTextFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.BottleFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LifecycleFurnitureBehavior;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LegacyConnectedBlockMigrationFurnitureBehavior;
-import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.LegacyPressingTubMigrationFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StateFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationInteractionFurnitureBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.StationVisualFurnitureBehavior;
@@ -81,9 +78,9 @@ import java.util.logging.Level;
 /** Paper 26.2 entry point for the CraftEngine rewrite. */
 public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listener, TabExecutor {
     private static final String NAMESPACE = "kaleidoscope_tavern";
-    private static final int EXPECTED_ITEMS = 660; // 157 public items + 503 private render helpers
-    private static final int EXPECTED_BLOCKS = 60; // + sofas, table, counter and two cabinets
-    private static final int EXPECTED_FURNITURE = 137; // includes one-release migration-only definitions
+    private static final int EXPECTED_ITEMS = 570; // 157 public items + 413 private render helpers
+    private static final int EXPECTED_BLOCKS = 44;
+    private static final int EXPECTED_FURNITURE = 116;
     // 已验证的 CraftEngine minor 版本。低于 26.7 直接拒绝启动（使用了
     // PrioritizedFallOnHandler / BlockEntityElement Experimental / NMS proxy 等
     // 非稳定 API），高于已验证 minor 仅警告。
@@ -105,7 +102,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     private BarStoolVisualService barStoolVisuals;
     private ShakerVisualService shakerVisuals;
     private BottleFurnitureService bottleFurniture;
-    private LegacySofaBlockMigrationService legacySofaBlocks;
     private BlockService blocks;
     private EffectHudPlaceholder effectHudPlaceholder;
 
@@ -123,8 +119,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             PressingTubBlockBehavior.register();
             TapBlockBehavior.register();
             StateFurnitureBehavior.register();
-            LegacyConnectedBlockMigrationFurnitureBehavior.register();
-            LegacyPressingTubMigrationFurnitureBehavior.register();
             AnimatedItemFurnitureBehavior.register();
             BoardTextFurnitureBehavior.register();
             BottleFurnitureBehavior.register();
@@ -198,10 +192,8 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         displayStorage = new DisplayStorageService(this, catalog, items);
         ambientFurniture = new AmbientFurnitureService();
         barStoolVisuals = new BarStoolVisualService(this, items);
-        legacySofaBlocks = new LegacySofaBlockMigrationService(this);
 
         getServer().getPluginManager().registerEvents(this, this);
-        getServer().getPluginManager().registerEvents(legacySofaBlocks, this);
         blocks = new BlockService(catalog);
         getServer().getPluginManager().registerEvents(new MolotovService(this, items), this);
         getServer().getPluginManager().registerEvents(new BottlePlacementService(this, catalog, items), this);
@@ -212,8 +204,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         getServer().getPluginManager().registerEvents(stations, this);
         getServer().getPluginManager().registerEvents(effects, this);
         TickingFurnitureBehavior.start(this);
-        LegacyConnectedBlockMigrationFurnitureBehavior.bind(this);
-        LegacyPressingTubMigrationFurnitureBehavior.bind(this);
         blocks.start();
         stations.start();
         pressingTubs.start();
@@ -225,8 +215,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         ambientFurniture.start();
         barStoolVisuals.start();
         shakerVisuals.start();
-        legacySofaBlocks.start();
-
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             effectHudPlaceholder = new EffectHudPlaceholder(this, effects);
             effectHudPlaceholder.register();
@@ -251,16 +239,9 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
 
     @Override
     public void onDisable() {
-        // Stop dispatching new migration tasks before the scheduler is torn
-        // down; already queued tasks are cancelled with the plugin.
-        LegacyConnectedBlockMigrationFurnitureBehavior.unbind(this);
-        LegacyPressingTubMigrationFurnitureBehavior.unbind(this);
         if (effectHudPlaceholder != null) {
             effectHudPlaceholder.unregister();
             effectHudPlaceholder = null;
-        }
-        if (legacySofaBlocks != null) {
-            legacySofaBlocks.stop();
         }
         if (blocks != null) {
             blocks.stop();
@@ -314,9 +295,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         // 结构、状态笛卡尔积、carrier、原生行为与物品路由都由
         // validate_pack.py 在构建期校验；运行时只检查 CE 已加载的内容数量。
         verifyContent(startup);
-        if (legacySofaBlocks != null) {
-            legacySofaBlocks.rescanLoadedChunks();
-        }
     }
 
     /** 启动时 fail-fast：拒绝低于已验证的 CraftEngine minor 版本。 */
@@ -627,33 +605,6 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
                 + "，命中 " + effectStats.trackHits()
                 + "，批处理 " + effectStats.trackFlushes()
                 + "，metadata 构建 " + effectStats.metadataBuilds()));
-        if (legacySofaBlocks != null) {
-            LegacySofaBlockMigrationService.MigrationStats sofaMigration =
-                    legacySofaBlocks.stats();
-            if (sofaMigration.migrated() > 0 || sofaMigration.failures() > 0) {
-                sender.sendMessage(Component.text("旧彩色沙发方块迁移：成功 "
-                        + sofaMigration.migrated() + "，失败 "
-                        + sofaMigration.failures()));
-            }
-        }
-        LegacyConnectedBlockMigrationFurnitureBehavior.MigrationStats connectedMigration =
-                LegacyConnectedBlockMigrationFurnitureBehavior.stats();
-        if (connectedMigration.migrated() > 0 || connectedMigration.conflicts() > 0
-                || connectedMigration.failures() > 0) {
-            sender.sendMessage(Component.text("旧连接家具迁移：成功 "
-                    + connectedMigration.migrated() + "，冲突 "
-                    + connectedMigration.conflicts() + "，失败 "
-                    + connectedMigration.failures()));
-        }
-        LegacyPressingTubMigrationFurnitureBehavior.MigrationStats migration =
-                LegacyPressingTubMigrationFurnitureBehavior.stats();
-        if (migration.loaded() > 0 || migration.migrated() > 0
-                || migration.conflicts() > 0 || migration.failures() > 0) {
-            sender.sendMessage(Component.text("旧压榨桶迁移：已加载 " + migration.loaded()
-                    + "，成功迁移 " + migration.migrated()
-                    + "，冲突 " + migration.conflicts()
-                    + "，失败 " + migration.failures()));
-        }
         if (packResult != null) {
             sender.sendMessage(Component.text("内容包目录：" + packResult.target()));
         }

@@ -42,18 +42,13 @@ import java.util.concurrent.ThreadLocalRandom;
 /** Preserves source bottle storage semantics across CE blocks and remaining display furniture. */
 public final class DisplayStorageService {
     private static final String PREFIX = "kaleidoscope_tavern:";
-    private static final String IRREGULAR_TAG = PREFIX + "bar_cabinet_irregular";
     private static final String EMPTY_GLASSWARE = PREFIX + "empty_glassware";
     private static final String MOLOTOV = PREFIX + "molotov";
     private static final String WATERMELON_JUICE = PREFIX + "watermelon_juice";
-    // Only migration-only/native CE furniture still uses this compatibility
-    // table. Active block storage is entirely described by each CE block's
+    // Glassware holder is the sole storage family that remains furniture.
+    // Block-backed storage is described by each CE block's
     // `kaleidoscope_tavern:storage` configuration.
-    private static final Map<Key, StorageSpec> LEGACY_FURNITURE_STORAGE = Map.ofEntries(
-            Map.entry(Key.of(PREFIX + "bar_cabinet"), new StorageSpec(
-                    2, null, StorageSemantics.Kind.BAR_CABINET)),
-            Map.entry(Key.of(PREFIX + "glass_bar_cabinet"), new StorageSpec(
-                    2, null, StorageSemantics.Kind.BAR_CABINET)),
+    private static final Map<Key, StorageSpec> FURNITURE_STORAGE = Map.ofEntries(
             Map.entry(Key.of(PREFIX + "glassware_holder"), new StorageSpec(
                     4, null, StorageSemantics.Kind.GLASSWARE_HOLDER)));
 
@@ -126,7 +121,7 @@ public final class DisplayStorageService {
 
     private InteractionResult interact(BukkitFurniture furniture,
                                        InteractEntityContext context) {
-        StorageSpec spec = LEGACY_FURNITURE_STORAGE.get(furniture.id());
+        StorageSpec spec = FURNITURE_STORAGE.get(furniture.id());
         if (spec == null) {
             return InteractionResult.PASS;
         }
@@ -146,74 +141,8 @@ public final class DisplayStorageService {
             return InteractionResult.SUCCESS_AND_CANCEL;
         }
 
-        if (spec.kind() == StorageSemantics.Kind.BAR_CABINET) {
-            interactBarCabinet(player, furniture, spec, hand, selected);
-        } else {
-            interactStorage(player, furniture, spec, hand, selected);
-        }
+        interactStorage(player, furniture, spec, hand, selected);
         return InteractionResult.SUCCESS_AND_CANCEL;
-    }
-
-    private void interactBarCabinet(Player player, BukkitFurniture furniture,
-                                    StorageSpec spec, ItemStack hand, int selected) {
-        List<Item> stored = controllerItems(furniture, spec.slots());
-        if (hand.isEmpty()) {
-            if (stored.get(selected) == null || stored.get(selected).isEmpty()) {
-                int other = 1 - selected;
-                if (stored.get(other) != null && !stored.get(other).isEmpty()) {
-                    selected = other;
-                }
-            }
-            Item selectedItem = stored.get(selected);
-            if (selectedItem == null || selectedItem.isEmpty()) {
-                return;
-            }
-            ItemStack taken = bukkitItem(selectedItem);
-            if (!setControllerItem(furniture, selected, null)) {
-                return;
-            }
-            player.getInventory().setItemInMainHand(taken);
-            playCabinetSound(furniture, true);
-            return;
-        }
-
-        String handId = items.id(hand);
-        if (!isBottle(handId)) {
-            return;
-        }
-        boolean insertingIrregular = catalog.tag(IRREGULAR_TAG).contains(handId);
-        boolean containsIrregular = stored.stream()
-                .filter(item -> item != null && !item.isEmpty())
-                .map(this::bukkitItem)
-                .map(items::id)
-                .anyMatch(catalog.tag(IRREGULAR_TAG)::contains);
-        if (containsIrregular) {
-            return;
-        }
-        if (insertingIrregular) {
-            if (stored.stream().anyMatch(item -> item != null && !item.isEmpty())) {
-                return;
-            }
-            selected = 0;
-        } else if (stored.get(selected) != null && !stored.get(selected).isEmpty()) {
-            int other = 1 - selected;
-            if (stored.get(other) != null && !stored.get(other).isEmpty()) {
-                return;
-            }
-            selected = other;
-        }
-
-        ItemStack one = hand.clone();
-        one.setAmount(1);
-        if (!setControllerItem(furniture, selected, BukkitAdaptor.adapt(one))) {
-            return;
-        }
-        // BarCabinetBlock uses ItemStack#split directly and therefore also
-        // consumes one bottle from creative players.
-        hand.subtract(1);
-        // The source selects pitch from the post-split stack. Inserting the
-        // last carried bottle consequently uses its "empty hand" pitch.
-        playCabinetSound(furniture, hand.isEmpty());
     }
 
     private void interactStorage(Player player, BukkitFurniture furniture, StorageSpec spec,
@@ -316,18 +245,6 @@ public final class DisplayStorageService {
                 sound, SoundCategory.BLOCKS, 1.0F, 1.0F);
     }
 
-    private static void playCabinetSound(BukkitFurniture furniture, boolean taking) {
-        playCabinetSound(furniture.location(), taking);
-    }
-
-    private static void playCabinetSound(Location location, boolean taking) {
-        float volume = ThreadLocalRandom.current().nextFloat() * 0.2F + 0.8F;
-        float pitch = ThreadLocalRandom.current().nextFloat() * 0.2F
-                + (taking ? 0.8F : 0.2F);
-        location.getWorld().playSound(location,
-                "minecraft:block.glass.place", SoundCategory.BLOCKS, volume, pitch);
-    }
-
     private void launchConfiguredItem(
             StorageBlockBehavior.Controller controller,
             Item stored,
@@ -369,14 +286,6 @@ public final class DisplayStorageService {
 
     private static Vector horizontalDirection(Direction direction) {
         return new Vector(direction.stepX(), 0, direction.stepZ());
-    }
-
-    private List<Item> controllerItems(BukkitFurniture furniture, int slots) {
-        List<Item> result = new ArrayList<>(slots);
-        for (int slot = 0; slot < slots; slot++) {
-            result.add(controllerItem(furniture, slot));
-        }
-        return result;
     }
 
     private Item controllerItem(BukkitFurniture furniture, int slot) {
@@ -494,18 +403,12 @@ public final class DisplayStorageService {
         if (stored == null || stored.isEmpty()) {
             return null;
         }
-        boolean irregular = false;
-        if (spec.kind() == StorageSemantics.Kind.BAR_CABINET) {
-            Item first = controllerItem(furniture, 0);
-            irregular = first != null && !first.isEmpty()
-                    && catalog.tag(IRREGULAR_TAG).contains(items.id(bukkitItem(first)));
-        }
         ItemStack storedStack = bukkitItem(stored);
         ItemStack shown = storageRenderItem(
                 storedStack, PREFIX + "_render/storage/").orElseGet(storedStack::clone);
         shown.setAmount(1);
         StorageSemantics.Visual visual = StorageSemantics.visual(
-                spec.kind(), slot, irregular, facingAxisX(furniture));
+                spec.kind(), slot, false, facingAxisX(furniture));
         return new StorageVisualFurnitureBehavior.Visual(
                 BukkitAdaptor.adapt(shown),
                 visual.centerX(), visual.centerY(), visual.centerZ(),
@@ -553,7 +456,7 @@ public final class DisplayStorageService {
     }
 
     private static StorageSpec storageSpec(BukkitFurniture furniture) {
-        return furniture == null ? null : LEGACY_FURNITURE_STORAGE.get(furniture.id());
+        return furniture == null ? null : FURNITURE_STORAGE.get(furniture.id());
     }
 
     private void warnReflectionBridge() {

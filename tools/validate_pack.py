@@ -80,8 +80,8 @@ EXPECTED_STATE_FURNITURE = {
     "sweet_berry_wine", "sherry", "mother_snow", "luminous_bride",
     "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
     "watermelon_juice",
-    # Migration-only legacy state plus the active wall-only representation.
-    "pressing_tub", WALL_PRESSING_TUB,
+    # The ground tub is a block; only the wall representation is furniture.
+    WALL_PRESSING_TUB,
 }
 EXPECTED_BOTTLE_FURNITURE = {
     "empty_bottle", "empty_glassware",
@@ -152,9 +152,6 @@ SOFA_DYE_COLORS = {
     "red": "176,46,38", "black": "29,29,33",
 }
 CONNECTED_GRID_BLOCKS = {"bar_counter", "table"}
-MIGRATION_BLOCK_FURNITURE = SOFA_BLOCKS | CONNECTED_GRID_BLOCKS | {
-    "bar_cabinet", "glass_bar_cabinet", "pressing_tub",
-}
 EXPECTED_LIFECYCLE_FURNITURE: dict[str, tuple[str, ...]] = {
     "base_sandwich_board": ("board",),
     "grass_sandwich_board": ("board",),
@@ -497,7 +494,6 @@ BLOCK_ENTITY_COVERAGE = {
     "PressingTubBlockEntity.java": (
         ("block/PressingTubBlockBehavior.java",
          'private static final String DATA_KEY = "kaleidoscope_tavern:press"'),
-        ("furniture/LegacyPressingTubMigrationFurnitureBehavior.java", "press_count"),
     ),
     "TapBlockEntity.java": (
         ("block/TapBlockBehavior.java", "private Cycle cycle"),
@@ -776,14 +772,12 @@ def validate() -> dict[str, int]:
 
     if len(items) != 157:
         raise AssertionError(f"Expected 157 public items, found {len(items)}")
-    if len(blocks) != 60:
-        raise AssertionError(f"Expected 60 grid/state blocks, found {len(blocks)}")
-    if len(furniture) != 137:
-        raise AssertionError(
-            f"Expected 137 furniture definitions (legacy pressing tub plus "
-            f"the private active wall tub), found {len(furniture)}")
-    if len(render_items) != 503:
-        raise AssertionError(f"Expected 503 private render items, found {len(render_items)}")
+    if len(blocks) != 44:
+        raise AssertionError(f"Expected 44 grid/state blocks, found {len(blocks)}")
+    if len(furniture) != 116:
+        raise AssertionError(f"Expected 116 furniture definitions, found {len(furniture)}")
+    if len(render_items) != 413:
+        raise AssertionError(f"Expected 413 private render items, found {len(render_items)}")
     if len(recipes) != 114:
         raise AssertionError(f"Expected 114 crafting recipes, found {len(recipes)}")
 
@@ -1363,22 +1357,15 @@ def validate() -> dict[str, int]:
         *(f"{NAMESPACE}:{storage}" for storage in STORAGE_BLOCK_SPECS),
         *(f"{NAMESPACE}:{connected}" for connected in CONNECTED_GRID_BLOCKS),
         SHARED_SOFA_ID,
-        *(f"{NAMESPACE}:{sofa}" for sofa in SOFA_BLOCKS),
     }
     if set(blocks) != expected_grid_blocks:
         unexpected = sorted(set(blocks) - expected_grid_blocks)
         missing = sorted(expected_grid_blocks - set(blocks))
         raise AssertionError(f"Grid/furniture classification drift: unexpected={unexpected}, missing={missing}")
-    # These are real CE blocks. Their same-id furniture definitions are
-    # intentionally migration-only for one release and are unreachable from
-    # items/loot. No other placeable may exist in both registries.
-    migration_overlap = {
-        f"{NAMESPACE}:{block_id}" for block_id in MIGRATION_BLOCK_FURNITURE
-    }
-    unexpected_overlap = (set(blocks) & set(furniture)) - migration_overlap
-    if unexpected_overlap:
+    registry_overlap = set(blocks) & set(furniture)
+    if registry_overlap:
         raise AssertionError(
-            f"Unexpected block/furniture overlap: {sorted(unexpected_overlap)}")
+            f"Block/furniture registries must be disjoint: {sorted(registry_overlap)}")
 
     for wild_id in ("wild_grapevine", "wild_grapevine_plant"):
         behavior = blocks[f"{NAMESPACE}:{wild_id}"].get("behavior")
@@ -1397,9 +1384,13 @@ def validate() -> dict[str, int]:
     }
     private_furniture = {WALL_PRESSING_TUB_ID}
     private_blocks = {SHARED_SOFA_ID}
+    public_sofa_items = {
+        f"{NAMESPACE}:{sofa}" for sofa in SOFA_BLOCKS
+    }
     represented_placeables = (
         (set(blocks) - derived_crop_stages - private_blocks)
         | (set(furniture) - private_furniture)
+        | public_sofa_items
     )
     if represented_placeables != source_placeables:
         missing = sorted(source_placeables - represented_placeables)
@@ -1742,44 +1733,6 @@ def validate() -> dict[str, int]:
                 "pressing_tub fallOn must stay proxy-level without Bukkit entity "
                 f"or landing-index machinery; stale token: {stale_token}")
 
-    migration_behavior_source = (
-        game_package / "furniture" / "LegacyPressingTubMigrationFurnitureBehavior.java"
-    ).read_text(encoding="utf-8-sig")
-    for required_token in (
-            "FurnitureBehaviors.register(",
-            "public void onLoad()",
-            "public void onPlace(Player player)",
-            "public void onUnload(boolean isStopping)",
-            "Bukkit.getScheduler().runTask(owner,",
-            "migrateGround(origin, oldState)",
-            "migrateWall(origin, oldState)",
-            "CraftEngineBlocks.place(",
-            "PressingTubBlockBehavior.BLOCK_ID",
-            "PressingTubBlockBehavior.findController(",
-            "PressingTubService.WALL_FURNITURE_ID",
-            "CraftEngineFurniture.place(",
-            "StateFurnitureBehavior.state(replacement)",
-            "writeState(targetController, oldState)",
-            "CraftEngineFurniture.remove(furniture, false, false)",
-            "sameState(current, oldState)",
-            "isEmpty(current)",
-            "CONFLICTS.incrementAndGet()",
-            "press_item", "press_count", "press_fluid", "press_amount",
-            "facingFromYaw(origin.getYaw())",
-            "LOADED_TUBS.incrementAndGet()",
-            "MIGRATED.incrementAndGet()"):
-        if required_token not in migration_behavior_source:
-            raise AssertionError(
-                "legacy_pressing_tub_migration must split old ground/wall furniture "
-                f"into the configured targets; missing token: {required_token}")
-    for stale_token in ("setVariant(", "onPlayerHit(",
-                        "useOnFurniture(", "gatherElements(", "gatherHitboxes(",
-                        'properties.putBoolean("tilt"'):
-        if stale_token in migration_behavior_source:
-            raise AssertionError(
-                "Legacy pressing-tub migration must not restore placement/visual "
-                f"behavior or the removed tilt block state; stale token: {stale_token}")
-
     lifecycle_behavior_source = (
         game_package / "furniture" / "LifecycleFurnitureBehavior.java"
     ).read_text(encoding="utf-8-sig")
@@ -1912,97 +1865,29 @@ def validate() -> dict[str, int]:
             "runTask", "ConcurrentHashMap", "BukkitFurniture",
             "FurnitureElement", "SeatBlockEntity", "CraftEngineFurniture",
             "waterloggedProperty", "FluidStateProxy", "FluidsProxy",
-            "getFluidState("):
+            "getFluidState(", "SofaBlockIds"):
         if stale_token in connected_block_source:
             raise AssertionError(
                 "ConnectedBlockBehavior must not duplicate CE lifecycle/static config; "
                 f"stale token: {stale_token}")
-    for required_token in (
-            "ImmutableBlockState resolveCornerState(",
-            "SofaBlockIds.isLegacy(",
-            "return corner.none;"):
-        if required_token not in connected_block_source:
-            raise AssertionError(
-                "Shared-sofa migration must connect compact legacy aliases while "
-                f"they are being converted; missing token: {required_token}")
-
-    sofa_tint_source = (
-        game_package / "block" / "SofaTintSupport.java"
-    ).read_text(encoding="utf-8-sig")
-    for required_token in (
-            "TintSourceBlockEntityController.class",
-            "controller.setSourceItem(source)",
-            "world.blockEntityChanged(pos)",
-            "clearSourceItem(world, pos)"):
-        if required_token not in sofa_tint_source:
-            raise AssertionError(
-                "Shared sofa must delegate exact colour/source persistence to CE's "
-                f"native tint-source controller; missing token: {required_token}")
-    for stale_token in (
-            "PersistentDataContainer", "ItemDisplay", "spawnEntity",
-            "FurnitureConnectionService"):
-        if stale_token in sofa_tint_source:
-            raise AssertionError(
-                "SofaTintSupport must remain a migration-only CE-native adapter; "
-                f"stale token: {stale_token}")
-
-    sofa_block_migration_source = (
-        game_package / "block" / "LegacySofaBlockMigrationService.java"
-    ).read_text(encoding="utf-8-sig")
-    for required_token in (
-            "CELLS_PER_TICK = 8_192",
-            "MIGRATIONS_PER_TICK = 32",
-            "statesContainer().hasAny(",
-            "SofaTintSupport.placeShared(",
-            "SofaBlockIds.isLegacy("):
-        if required_token not in sofa_block_migration_source:
-            raise AssertionError(
-                "Old colour-specific CE block ids need a bounded, palette-filtered "
-                f"one-release migration; missing token: {required_token}")
-
-    migration_source = (
+    removed_migration_sources = (
+        game_package / "block" / "LegacySofaBlockMigrationService.java",
+        game_package / "block" / "SofaBlockIds.java",
+        game_package / "block" / "SofaTintSupport.java",
         game_package / "furniture" /
-        "LegacyConnectedBlockMigrationFurnitureBehavior.java"
-    ).read_text(encoding="utf-8-sig")
-    for required_token in (
-            "FurnitureBehaviors.register(",
-            "CraftEngineBlocks.place(",
-            "CraftEngineFurniture.remove(furniture, false, false)",
-            "LegacyConnectedBlockMigrationSemantics.tableProperties(",
-            "MIGRATED.incrementAndGet()",
-            "CONFLICTS.incrementAndGet()",
-            "FAILURES.incrementAndGet()"):
-        if required_token not in migration_source:
-            raise AssertionError(
-                "Legacy connected furniture must migrate non-destructively into CE blocks; "
-                f"missing token: {required_token}")
-    migration_semantics_source = (
+        "LegacyConnectedBlockMigrationFurnitureBehavior.java",
+        game_package / "furniture" / "LegacyConnectedBlockMigrationSemantics.java",
         game_package / "furniture" /
-        "LegacyConnectedBlockMigrationSemantics.java"
-    ).read_text(encoding="utf-8-sig")
-    for required_token in (
-            "final class LegacyConnectedBlockMigrationSemantics",
-            "static TableProperties tableProperties(",
-            "record TableProperties(String axis, int position)"):
-        if required_token not in migration_semantics_source:
-            raise AssertionError(
-                "Legacy connected migration variant decoding must remain a pure, "
-                f"runtime-independent helper; missing token: {required_token}")
-    for stale_token in ("org.bukkit", "BukkitFurniture", "CraftEngineBlocks",
-                        "FurnitureBehaviorTemplate"):
-        if stale_token in migration_semantics_source:
-            raise AssertionError(
-                "Legacy connected migration semantics must not bootstrap Bukkit/CE "
-                f"runtime classes; stale token: {stale_token}")
-
-    for stale_token in (
-            "useOnFurniture(", "gatherElements(", "gatherHitboxes(",
-            "setVariant(", "onPlayerHit("):
-        if stale_token in migration_source:
-            raise AssertionError(
-                "Migration-only furniture must not restore runtime furniture behavior; "
-                f"stale token: {stale_token}")
-
+        "LegacyPressingTubMigrationFurnitureBehavior.java",
+    )
+    remaining_migration_sources = [
+        str(path.relative_to(ROOT)) for path in removed_migration_sources
+        if path.exists()
+    ]
+    if remaining_migration_sources:
+        raise AssertionError(
+            "Removed runtime migration sources were restored: "
+            f"{remaining_migration_sources}")
     trellis_shape_source = (
         game_package / "block" / "TrellisBlockShape.java"
     ).read_text(encoding="utf-8-sig")
@@ -4784,26 +4669,8 @@ def validate() -> dict[str, int]:
     if len({next(iter(ids)) for ids in table_render_ids.values()}) != 7:
         raise AssertionError("Table must retain exactly seven authored source models")
 
-    legacy_table = furniture.get(table_id)
-    table_base_variants = {
-        "ground",
-        *(f"ground_axis_{axis}_position_{position}"
-          for axis in ("x", "z") for position in range(1, 4)),
-    }
-    expected_legacy_table_variants = {
-        base if facing == "south" else f"{base}_facing_{facing}"
-        for base in table_base_variants
-        for facing in ("south", "west", "north", "east")
-    }
-    if (legacy_table is None
-            or "item" in legacy_table.get("settings", {})
-            or "loot" in legacy_table
-            or legacy_table.get("behavior") != {
-                "type": f"{NAMESPACE}:legacy_connected_block_migration"}
-            or set(legacy_table.get("variants", {}))
-            != expected_legacy_table_variants):
-        raise AssertionError(
-            "Old table furniture must remain unreachable and migration-only for one release")
+    if table_id in furniture:
+        raise AssertionError("Block-backed table must not retain a furniture definition")
 
     board = furniture[f"{NAMESPACE}:base_sandwich_board"]["variants"]["ground"]
     if [element.get("translation") for element in board["elements"]] != ["0,0.5,0", "0,1.5,0"]:
@@ -4832,24 +4699,9 @@ def validate() -> dict[str, int]:
                             f"has a degenerate UV {uv}, which causes translucent "
                             "ItemDisplay texture noise")
     pressing_tub_id = f"{NAMESPACE}:pressing_tub"
-    legacy_tub = furniture.get(pressing_tub_id)
-    if legacy_tub is None:
+    if pressing_tub_id in furniture:
         raise AssertionError(
-            "The old pressing-tub furniture id must remain migration-only so "
-            "existing ground and wall saves can be split safely")
-    if "item" in legacy_tub.get("settings", {}) or "loot" in legacy_tub:
-        raise AssertionError(
-            "Legacy pressing-tub furniture must be unreachable from native "
-            "placement and must not duplicate target loot")
-    if set(legacy_tub.get("variants", {})) != {"ground", "wall"}:
-        raise AssertionError(
-            "Legacy pressing-tub migration must retain both old anchor variants")
-    if legacy_tub.get("behaviors") != [
-            {"type": f"{NAMESPACE}:state_furniture"},
-            {"type": f"{NAMESPACE}:legacy_pressing_tub_migration"}]:
-        raise AssertionError(
-            "Legacy pressing-tub furniture must keep only state storage plus "
-            "the split migration behavior")
+            "Ground pressing tub must exist only as a CE block")
 
     wall_tub = furniture.get(WALL_PRESSING_TUB_ID)
     if wall_tub is None:
@@ -4887,10 +4739,14 @@ def validate() -> dict[str, int]:
             "Wall pressing-tub runtime-sized state must use the shared generic "
             "furniture adapters, not a dedicated placement/lifecycle behavior")
     wall_variant = wall_tub["variants"]["wall"]
-    if (wall_variant.get("elements")
-            != legacy_tub["variants"]["wall"].get("elements")):
+    wall_elements = wall_variant.get("elements", [])
+    if len(wall_elements) != 1:
         raise AssertionError(
-            "Active and legacy wall tubs must preserve the same authored model")
+            "Wall pressing tub must have exactly one authored model element")
+    wall_render_id = wall_elements[0].get("item")
+    if render_items.get(wall_render_id, {}).get("model", {}).get("path") \
+            != f"{NAMESPACE}:block/brew/tilt_pressing_tub":
+        raise AssertionError("Wall pressing-tub authored model drifted")
     expected_wall_hitboxes = [{
         "type": "interaction",
         "position": "0,-0.5,0.5",
@@ -5436,21 +5292,13 @@ def validate() -> dict[str, int]:
                 f"{storage_id}: storage visual controller must follow its native slot controllers")
 
     connection_names = SOFA_CONNECTIONS
-    legacy_connection_variants = {
-        "ground" if connection == "single"
-        else f"ground_connection_{connection}"
-        for connection in connection_names
-    }
     # Authored block-model rotations must be compensated for the final
     # +180-degree item turn performed by Minecraft's ItemDisplay renderer.
     facing_rotations = {
         "north": "0,180,0", "east": "0,90,0",
         "south": None, "west": "0,270,0",
     }
-    sofa_connect_ids = [
-        SHARED_SOFA_ID,
-        *(f"{NAMESPACE}:{name}" for name in sorted(SOFA_BLOCKS)),
-    ]
+    sofa_connect_ids = [SHARED_SOFA_ID]
 
     shared = blocks.get(SHARED_SOFA_ID)
     if shared is None:
@@ -5565,45 +5413,14 @@ def validate() -> dict[str, int]:
         if item.get("data", {}).get("dyed_color") != SOFA_DYE_COLORS[color]:
             raise AssertionError(f"{sofa_name}: fixed dye colour drifted")
 
-        alias = blocks.get(sofa_id)
-        if alias is None or "behavior" in alias or "behaviors" in alias:
+        if sofa_id in blocks or sofa_id in furniture:
             raise AssertionError(
-                f"{sofa_name}: old id must be a passive migration alias")
-        alias_states = alias.get("states", {})
-        expected_alias_keys = {
-            f"facing={facing}" for facing in
-            ("north", "east", "south", "west")
-        }
-        if set(alias_states.get("variants", {})) != expected_alias_keys:
-            raise AssertionError(
-                f"{sofa_name}: migration alias must consume only four states")
-        settings = alias.get("settings", {})
-        if settings.get("item") != sofa_id:
-            raise AssertionError(f"{sofa_name}: alias pickup item drifted")
-        loot_entries = alias.get("loot", {}).get("pools", [{}])[0] \
-            .get("entries", [])
-        if loot_entries != [{"type": "item", "item": sofa_id}]:
-            raise AssertionError(f"{sofa_name}: alias loot drifted")
+                f"{sofa_name}: obsolete block/furniture definition was restored")
 
-        legacy = furniture.get(sofa_id)
-        if (legacy is None
-                or "item" in legacy.get("settings", {})
-                or "loot" in legacy
-                or legacy.get("behavior") != {
-                    "type": f"{NAMESPACE}:legacy_connected_block_migration"}
-                or set(legacy.get("variants", {}))
-                != legacy_connection_variants):
-            raise AssertionError(
-                f"{sofa_name}: old furniture must remain migration-only")
-
-    sofa_state_total = len(shared_variants) + sum(
-        len(blocks[f"{NAMESPACE}:{name}"]["states"]["variants"])
-        for name in SOFA_BLOCKS
-    )
-    if sofa_state_total != 88:
+    if len(shared_variants) != 24:
         raise AssertionError(
-            f"Sofa family must use 24 active + 64 alias states, found "
-            f"{sofa_state_total}")
+            f"Sofa family must use exactly 24 shared states, found "
+            f"{len(shared_variants)}")
 
     counter_id = f"{NAMESPACE}:bar_counter"
     counter = blocks[counter_id]
@@ -5647,21 +5464,14 @@ def validate() -> dict[str, int]:
             raise AssertionError(f"bar_counter/{variant_key}: source model drifted")
     if any(len(ids) != 1 for ids in counter_render_ids.values()):
         raise AssertionError("Bar counter facings must share six render items")
-    legacy_counter = furniture.get(counter_id)
-    if (legacy_counter is None
-            or "item" in legacy_counter.get("settings", {})
-            or "loot" in legacy_counter
-            or legacy_counter.get("behavior") != {
-                "type": f"{NAMESPACE}:legacy_connected_block_migration"}
-            or set(legacy_counter.get("variants", {}))
-            != legacy_connection_variants):
+    if counter_id in furniture:
         raise AssertionError(
-            "Old bar-counter furniture must be unreachable and migration-only")
+            "Block-backed bar counter must not retain a furniture definition")
 
     for expected_token in (
-            "EXPECTED_ITEMS = 660",
-            "EXPECTED_BLOCKS = 60",
-            "EXPECTED_FURNITURE = 137"):
+            "EXPECTED_ITEMS = 570",
+            "EXPECTED_BLOCKS = 44",
+            "EXPECTED_FURNITURE = 116"):
         if expected_token not in plugin_source:
             raise AssertionError(
                 f"Runtime CE content count guard is stale: {expected_token}")
@@ -5690,13 +5500,10 @@ def validate() -> dict[str, int]:
     }
     for storage_id, (slot_count, blocklist, carrier_type) in STORAGE_BLOCK_SPECS.items():
         full_id = f"{NAMESPACE}:{storage_id}"
-        legacy_cabinet = storage_id in {"bar_cabinet", "glass_bar_cabinet"}
-        if full_id in furniture and not legacy_cabinet:
+        two_slot_cabinet = storage_id in {"bar_cabinet", "glass_bar_cabinet"}
+        if full_id in furniture:
             raise AssertionError(
-                f"{storage_id}: migrated storage must not remain active furniture")
-        if legacy_cabinet and full_id not in furniture:
-            raise AssertionError(
-                f"{storage_id}: old furniture id must remain for one-release migration")
+                f"{storage_id}: block-backed storage must not remain furniture")
 
         definition = blocks[full_id]
         actual_behavior = (definition.get("behaviors")
@@ -5742,7 +5549,7 @@ def validate() -> dict[str, int]:
         expected_orientations = {
             key: dict(value) for key, value in expected_storage_orientations.items()
         }
-        if legacy_cabinet:
+        if two_slot_cabinet:
             expected_orientations["east"]["reverse_slots"] = True
             expected_orientations["west"]["reverse_slots"] = True
         if storage_id == "cellar_cabinet":
@@ -5782,13 +5589,13 @@ def validate() -> dict[str, int]:
         if blocklist is not None and "blocked_items" not in interaction:
             raise AssertionError(
                 f"{storage_id}: configured blocklist key was not flattened into the behavior")
-        if legacy_cabinet and (not interaction.get("exclusive_items")
+        if two_slot_cabinet and (not interaction.get("exclusive_items")
                 or interaction.get("exclusive_slot") != 0
                 or interaction.get("fallback_take") is not True
                 or interaction.get("fallback_put") is not True):
             raise AssertionError(
                 f"{storage_id}: irregular two-slot behavior must be config-owned")
-        if not legacy_cabinet and "launch" not in configured_storage:
+        if not two_slot_cabinet and "launch" not in configured_storage:
             raise AssertionError(
                 f"{storage_id}: redstone launch parameters must be config-owned")
         if storage_id == "circular_rack":
@@ -5801,7 +5608,7 @@ def validate() -> dict[str, int]:
                     "Circular-rack edge particle ranges must remain in CE config")
 
         properties = definition.get("states", {}).get("properties", {})
-        if legacy_cabinet:
+        if two_slot_cabinet:
             expected_properties = {"facing", "position"}
         elif storage_id == "cellar_cabinet":
             expected_properties = {"facing", "powered", "position"}
@@ -5823,8 +5630,8 @@ def validate() -> dict[str, int]:
         appearances = states.get("appearances", {})
         variants = states.get("variants", {})
         expected_appearances = 16 if (
-            legacy_cabinet or storage_id == "cellar_cabinet") else 4
-        expected_variants = (16 if legacy_cabinet
+            two_slot_cabinet or storage_id == "cellar_cabinet") else 4
+        expected_variants = (16 if two_slot_cabinet
                              else 32 if storage_id == "cellar_cabinet"
                              else 8)
         if (len(appearances) != expected_appearances
@@ -5875,7 +5682,7 @@ def validate() -> dict[str, int]:
             render_ids.add(renderer.get("item"))
 
         expected_render_items = 4 if (
-            legacy_cabinet or storage_id == "cellar_cabinet") else 1
+            two_slot_cabinet or storage_id == "cellar_cabinet") else 1
         if len(render_ids) != expected_render_items:
             raise AssertionError(
                 f"{storage_id}: expected {expected_render_items} shared base "
@@ -5920,7 +5727,7 @@ def validate() -> dict[str, int]:
         expected_luminance = 14 if storage_id == "circular_rack" else None
         if settings.get("luminance") != expected_luminance:
             raise AssertionError(f"{storage_id}: source luminance drifted")
-        if legacy_cabinet:
+        if two_slot_cabinet:
             if (settings.get("map_color") != 13
                     or settings.get("instrument") != "guitar"
                     or settings.get("burnable") is not True
@@ -5932,36 +5739,6 @@ def validate() -> dict[str, int]:
                 "type": "block_item", "block": full_id}:
             raise AssertionError(
                 f"{storage_id}: placement must use CE's native block_item")
-
-        if legacy_cabinet:
-            legacy = furniture[full_id]
-            expected_legacy_variants = {
-                "ground", "ground_position_left",
-                "ground_position_middle", "ground_position_right",
-            }
-            expected_legacy_behaviors = [
-                {"type": f"{NAMESPACE}:legacy_connected_block_migration"},
-                {"type": "display_item_furniture",
-                 "data_key": f"{NAMESPACE}:display_slot_0"},
-                {"type": "display_item_furniture",
-                 "data_key": f"{NAMESPACE}:display_slot_1"},
-            ]
-            if ("item" in legacy.get("settings", {})
-                    or "loot" in legacy
-                    or set(legacy.get("variants", {}))
-                    != expected_legacy_variants
-                    or legacy.get("behaviors") != expected_legacy_behaviors):
-                raise AssertionError(
-                    f"{storage_id}: old furniture must be unreachable, retain "
-                    "two native CE persistence slots and migrate only")
-            legacy_render_ids = {
-                variant["elements"][0]["item"]
-                for variant in legacy["variants"].values()
-            }
-            if legacy_render_ids != render_ids:
-                raise AssertionError(
-                    f"{storage_id}: active block and migration furniture must "
-                    "share the same four render helpers")
 
     storage_helpers = {
         item_id for item_id in render_items

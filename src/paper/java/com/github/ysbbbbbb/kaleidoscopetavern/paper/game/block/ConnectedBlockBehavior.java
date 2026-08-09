@@ -283,13 +283,7 @@ public final class ConnectedBlockBehavior extends BukkitBlockBehavior {
     }
 
     private String connection(ImmutableBlockState state) {
-        String connection = property(
-                state, stringStateProperty.name(), String.class);
-        if (connection == null && state != null
-                && SofaBlockIds.isLegacy(state.owner().value().id())) {
-            return corner.none;
-        }
-        return connection;
+        return property(state, stringStateProperty.name(), String.class);
     }
 
     private boolean sameFacing(

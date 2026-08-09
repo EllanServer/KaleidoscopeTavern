@@ -73,8 +73,6 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
         implements EntityBlock, PrioritizedFallOnHandler {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "pressing_tub_block");
 
-    /** The CE block definition id the migration behavior targets. */
-    public static final Key BLOCK_ID = Key.of("kaleidoscope_tavern", "pressing_tub");
     /** 原料视觉 + 液体视觉最多占用的动态实体槽位数（与源渲染器一致）。 */
     private static final int MAX_ELEMENTS = 17;
     private static final float VIEW_RANGE = 1.25F;
@@ -214,14 +212,6 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
     private static Controller controller(CEWorld world, BlockPos pos) {
         BlockEntity blockEntity = world.getBlockEntityAtIfLoaded(pos);
         return blockEntity == null ? null : blockEntity.controller.get(Controller.class, 0);
-    }
-
-    /**
-     * Public lookup used by the legacy-furniture migration to reach the
-     * controller of a freshly placed or already-existing pressing tub.
-     */
-    public static Controller findController(CEWorld world, BlockPos pos) {
-        return controller(world, pos);
     }
 
     /** Gameplay bridge implemented by PressingTubService. */

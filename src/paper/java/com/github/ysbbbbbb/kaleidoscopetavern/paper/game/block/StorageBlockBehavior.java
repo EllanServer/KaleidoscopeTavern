@@ -326,11 +326,6 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         // This behavior owns one controller and retrieves it by class.
     }
 
-    /** Returns the loaded controller at an exact CE block position. */
-    public static Controller findController(CEWorld world, BlockPos pos) {
-        return controller(world, pos);
-    }
-
     private static Controller controller(CEWorld world, BlockPos pos) {
         BlockEntity blockEntity = world.getBlockEntityAtIfLoaded(pos);
         return blockEntity == null ? null : blockEntity.controller.get(Controller.class, 0);
