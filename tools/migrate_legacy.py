@@ -3071,13 +3071,57 @@ def create_chalkboard_models() -> None:
     write_json(model_root / "chalkboard_large.json", large)
 
 
+def repair_pendant_lamp_rod_uvs(model: dict[str, Any], owner: str) -> None:
+    """Give each one-pixel metal rod a non-degenerate texture interval.
+
+    The archived Blockbench models collapse the east/west and top-face UVs of
+    both rods onto v=9.  In the 32x32 lamp sprite that coordinate is exactly the
+    boundary between a transparent row and the opaque metal row.  ItemDisplay's
+    translucent pass therefore filters the faces to partial alpha and renders
+    them as a noisy, stippled strip.  Half a model-UV unit covers one complete
+    source texel at this texture size.
+    """
+    repaired_faces = 0
+    rod_count = 0
+    for element in model.get("elements", []):
+        start = element.get("from")
+        end = element.get("to")
+        if not (isinstance(start, list) and isinstance(end, list)
+                and len(start) == 3 and len(end) == 3):
+            continue
+        dimensions = [end[axis] - start[axis] for axis in range(3)]
+        if dimensions[0] != 1 or dimensions[2] != 1 or dimensions[1] not in {10, 16}:
+            continue
+
+        rod_count += 1
+        faces = element.get("faces")
+        if not isinstance(faces, dict):
+            raise AssertionError(f"{owner}: pendant rod has no faces")
+        for direction in ("east", "west", "up"):
+            face = faces.get(direction)
+            uv = None if not isinstance(face, dict) else face.get("uv")
+            if not (isinstance(uv, list) and len(uv) == 4
+                    and uv[1] == uv[3] == 9):
+                raise AssertionError(
+                    f"{owner}: unexpected {direction} rod UV {uv!r}")
+            uv[3] = 9.5
+            repaired_faces += 1
+
+    if rod_count != 2 or repaired_faces != 6:
+        raise AssertionError(
+            f"{owner}: expected two pendant rods and six repaired faces, "
+            f"found {rod_count} rods and {repaired_faces} faces")
+
+
 def create_pendant_lamp_models() -> None:
-    """Override the six pendant halves with their Paper 26.2 particle texture.
+    """Override the six pendant halves for Paper 26.2 item-display rendering.
 
     Vanilla renamed the chain texture to ``iron_chain``.  The particle entry is
     still resolved by CraftEngine even though every visible face uses the
     tavern's own lamp texture, so leaving the archived id emits a missing-texture
-    warning while loading the pack.
+    warning while loading the pack.  The archived zero-area rod UVs also need a
+    Paper-only repair so translucent ItemDisplays do not filter them into noisy
+    strips.
     """
     source_root = MAIN_RESOURCES / f"assets/{NAMESPACE}/models/block/deco"
     target_root = ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/block/deco"
@@ -3095,6 +3139,7 @@ def create_pendant_lamp_models() -> None:
                 raise AssertionError(
                     f"{owner}: unexpected particle texture {particle!r}")
             textures["particle"] = normalized
+            repair_pendant_lamp_rod_uvs(model, owner)
             write_json(target_root / block_id / f"{half}.json", model)
 
 

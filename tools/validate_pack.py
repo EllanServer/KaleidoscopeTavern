@@ -4822,6 +4822,15 @@ def validate() -> dict[str, int]:
             if particle != "minecraft:block/iron_chain":
                 raise AssertionError(
                     f"{pendant_id}/{half}: Paper 26.2 requires the iron_chain particle texture")
+            for element_index, element in enumerate(model.get("elements", [])):
+                for direction, face in element.get("faces", {}).items():
+                    uv = face.get("uv")
+                    if (isinstance(uv, list) and len(uv) == 4
+                            and (uv[0] == uv[2] or uv[1] == uv[3])):
+                        raise AssertionError(
+                            f"{pendant_id}/{half}: element {element_index} {direction} "
+                            f"has a degenerate UV {uv}, which causes translucent "
+                            "ItemDisplay texture noise")
     pressing_tub_id = f"{NAMESPACE}:pressing_tub"
     legacy_tub = furniture.get(pressing_tub_id)
     if legacy_tub is None:
