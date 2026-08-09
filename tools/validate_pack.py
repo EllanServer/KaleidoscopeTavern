@@ -1229,13 +1229,17 @@ def validate() -> dict[str, int]:
     for token in (
             "if (!context.isSecondaryUseActive())",
             "return InteractionResult.PASS;",
-            "Vec3d.atBottomCenterOf(targetPos)",
-            "Direction.UP",
-            "return InteractionResult.SUCCESS_AND_CANCEL;"):
+            "return furnitureItem.useOnBlock(context);"):
         if token not in item_behavior_source:
             raise AssertionError(
-                "Vessel CE behavior must preserve target-centred placement, preserve "
-                "normal CE item use and own rejected sneak placement")
+                "Vessel CE behavior must preserve normal item use and delegate the "
+                "original placement context to CraftEngine")
+    for stale_token in (
+            "new BlockHitResult", "Direction.UP", "targetPos", "atBottomCenterOf"):
+        if stale_token in item_behavior_source:
+            raise AssertionError(
+                "CraftEngine must own vessel surface height, anchor and collision; "
+                f"custom placement still contains Tavern-side token {stale_token}")
     for stale_token in ("sync_active_use", "startUsingItem(", "EquipmentSlot"):
         if stale_token in item_behavior_source:
             raise AssertionError(
