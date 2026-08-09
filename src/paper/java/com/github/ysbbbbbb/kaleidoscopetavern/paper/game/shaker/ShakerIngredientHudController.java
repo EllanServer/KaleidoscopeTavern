@@ -321,7 +321,9 @@ final class ShakerIngredientHudController implements Listener {
 
     private void refresh(Player player) {
         UUID playerId = player.getUniqueId();
-        BukkitFurniture target = targetResolver.resolve(player, loaded);
+        Set<UUID> trackedNonEmptyOwners = ownersByPlayer.get(playerId);
+        BukkitFurniture target = targetResolver.resolve(
+                player, loaded, trackedNonEmptyOwners);
         if (target == null || !isTracked(playerId, target.uuid())) {
             clearDisplayed(playerId, player);
             return;

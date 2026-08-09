@@ -119,6 +119,21 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
     public static boolean hasNearby(Channel channel, World world,
                                     double centerX, double centerY, double centerZ,
                                     double horizontalRadius, double verticalRadius) {
+        return hasNearby(channel, world, centerX, centerY, centerZ,
+                horizontalRadius, verticalRadius, null);
+    }
+
+    /**
+     * Allocation-free existence check restricted to an already-qualified owner set.
+     * A {@code null} owner set accepts every furniture; an empty set accepts none.
+     */
+    public static boolean hasNearby(Channel channel, World world,
+                                    double centerX, double centerY, double centerZ,
+                                    double horizontalRadius, double verticalRadius,
+                                    Set<UUID> allowedOwners) {
+        if (allowedOwners != null && allowedOwners.isEmpty()) {
+            return false;
+        }
         Map<UUID, WorldIndex> channelWorlds = SPATIAL.get(channel);
         if (channelWorlds == null) {
             return false;
@@ -142,7 +157,12 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
                     continue;
                 }
                 for (Controller controller : controllers) {
-                    Location location = controller.bukkitFurniture.location();
+                    BukkitFurniture furniture = controller.bukkitFurniture;
+                    if (allowedOwners != null
+                            && !allowedOwners.contains(furniture.uuid())) {
+                        continue;
+                    }
+                    Location location = furniture.location();
                     if (FurnitureSpatialSemantics.insideBox(
                             location.getX(), location.getY(), location.getZ(),
                             centerX, centerY, centerZ,

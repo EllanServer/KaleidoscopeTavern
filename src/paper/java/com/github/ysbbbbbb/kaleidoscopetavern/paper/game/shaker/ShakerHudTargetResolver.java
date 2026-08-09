@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /** Resolves a looked-at shaker through the Tavern index and CraftEngine collider API. */
@@ -21,7 +22,11 @@ final class ShakerHudTargetResolver {
         this.shakerId = Objects.requireNonNull(shakerId, "shakerId");
     }
 
-    BukkitFurniture resolve(Player player, Map<UUID, BukkitFurniture> loaded) {
+    BukkitFurniture resolve(Player player, Map<UUID, BukkitFurniture> loaded,
+                            Set<UUID> trackedNonEmptyOwners) {
+        if (trackedNonEmptyOwners == null || trackedNonEmptyOwners.isEmpty()) {
+            return null;
+        }
         World world = player.getWorld();
         double x = player.getX();
         double y = player.getY() + player.getEyeHeight();
@@ -29,18 +34,21 @@ final class ShakerHudTargetResolver {
 
         if (!LifecycleFurnitureBehavior.hasNearby(
                 LifecycleFurnitureBehavior.Channel.SHAKER, world,
-                x, y, z, PREFILTER_RADIUS, PREFILTER_RADIUS)) {
+                x, y, z, PREFILTER_RADIUS, PREFILTER_RADIUS,
+                trackedNonEmptyOwners)) {
             return null;
         }
         BukkitFurniture target = CraftEngineFurniture.rayTrace(player, TARGET_RANGE);
-        return usable(target, loaded) ? target : null;
+        return usable(target, loaded, trackedNonEmptyOwners) ? target : null;
     }
 
     private boolean usable(BukkitFurniture furniture,
-                           Map<UUID, BukkitFurniture> loaded) {
+                           Map<UUID, BukkitFurniture> loaded,
+                           Set<UUID> trackedNonEmptyOwners) {
         return furniture != null
                 && furniture.isValid()
                 && furniture.id().toString().equals(shakerId)
+                && trackedNonEmptyOwners.contains(furniture.uuid())
                 && loaded.get(furniture.uuid()) == furniture;
     }
 }
