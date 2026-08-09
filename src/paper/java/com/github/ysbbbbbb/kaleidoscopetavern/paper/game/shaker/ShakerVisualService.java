@@ -7,11 +7,9 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.momirealms.craftengine.bukkit.api.BukkitAdaptor;
-import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
 import net.momirealms.craftengine.bukkit.item.BukkitItem;
 import net.momirealms.craftengine.core.item.Item;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -42,8 +41,12 @@ public final class ShakerVisualService {
     private final ItemService items;
     private final Map<UUID, BukkitFurniture> loaded = new HashMap<>();
     private final Map<UUID, Float> animations = new HashMap<>();
+    private final Map<UUID, Optional<Component>> ingredientHudSubtitles = new HashMap<>();
     private final Set<UUID> mixingHudViewers = new HashSet<>();
-    private final Set<UUID> ingredientHudViewers = new HashSet<>();
+    private Set<UUID> ingredientHudViewers = new HashSet<>();
+    private Set<UUID> nextIngredientHudViewers = new HashSet<>();
+    private final ShakerHudTargetResolver ingredientHudTargets =
+            new ShakerHudTargetResolver(SHAKER);
     private final AnimatedItemFurnitureBehavior.Handler visualHandler = this::visuals;
     private final LifecycleFurnitureBehavior.Handler lifecycleHandler;
     private BukkitTask animationTask;
@@ -61,6 +64,8 @@ public final class ShakerVisualService {
             public void onReady(BukkitFurniture furniture,
                                 LifecycleFurnitureBehavior.ReadyReason reason) {
                 loaded.put(furniture.uuid(), furniture);
+                ingredientHudSubtitles.remove(furniture.uuid());
+                ingredientHudTargets.invalidate();
                 ensureIngredientHudTask();
             }
 
@@ -70,6 +75,8 @@ public final class ShakerVisualService {
                 UUID owner = furniture.uuid();
                 loaded.remove(owner, furniture);
                 animations.remove(owner);
+                ingredientHudSubtitles.remove(owner);
+                ingredientHudTargets.invalidate();
                 stopAnimationTaskIfIdle();
                 stopIngredientHudTaskIfIdle();
             }
@@ -106,6 +113,8 @@ public final class ShakerVisualService {
         LifecycleFurnitureBehavior.unbind(
                 LifecycleFurnitureBehavior.Channel.SHAKER, lifecycleHandler);
         loaded.clear();
+        ingredientHudSubtitles.clear();
+        ingredientHudTargets.invalidate();
         baseRender = null;
         lidRender = null;
     }
@@ -113,6 +122,7 @@ public final class ShakerVisualService {
     public void beginMix(Player player) {
         UUID playerId = player.getUniqueId();
         ingredientHudViewers.remove(playerId);
+        nextIngredientHudViewers.remove(playerId);
         mixingHudViewers.add(playerId);
         showHud(player, ShakerHudSemantics.progressSubtitle(0));
     }
@@ -136,6 +146,7 @@ public final class ShakerVisualService {
         if (!isShaker(furniture) || !furniture.isValid()) {
             return;
         }
+        ingredientHudSubtitles.remove(furniture.uuid());
         animations.put(furniture.uuid(), 0F);
         AnimatedItemFurnitureBehavior.updateTransforms(furniture);
         ensureAnimationTask();
@@ -146,6 +157,7 @@ public final class ShakerVisualService {
         if (!isShaker(furniture)) {
             return;
         }
+        ingredientHudSubtitles.remove(furniture.uuid());
         animations.remove(furniture.uuid());
         stopAnimationTaskIfIdle();
     }
@@ -180,43 +192,57 @@ public final class ShakerVisualService {
     }
 
     private void tickIngredientHud() {
-        Set<UUID> shownNow = new HashSet<>();
-        for (Player player : plugin.getServer().getOnlinePlayers()) {
-            UUID playerId = player.getUniqueId();
-            if (mixingHudViewers.contains(playerId)) {
-                continue;
+        Set<UUID> shownNow = nextIngredientHudViewers;
+        shownNow.clear();
+        ingredientHudTargets.beginPoll();
+        try {
+            for (Player player : plugin.getServer().getOnlinePlayers()) {
+                UUID playerId = player.getUniqueId();
+                if (mixingHudViewers.contains(playerId)) {
+                    continue;
+                }
+                BukkitFurniture shaker = ingredientHudTargets.resolve(player, loaded);
+                if (shaker == null) {
+                    continue;
+                }
+                Optional<Component> subtitle = ingredientSubtitle(shaker);
+                if (subtitle.isEmpty()) {
+                    continue;
+                }
+                showHud(player, subtitle.orElseThrow());
+                shownNow.add(playerId);
             }
-            BukkitFurniture shaker = targetedShaker(player);
-            if (shaker == null) {
-                continue;
-            }
-            List<Integer> colors = ingredientColors(shaker);
-            if (colors.isEmpty()) {
-                continue;
-            }
-            showHud(player, ShakerHudSemantics.ingredientSubtitle(colors));
-            shownNow.add(playerId);
+        } finally {
+            ingredientHudTargets.endPoll();
         }
-        for (Player player : plugin.getServer().getOnlinePlayers()) {
-            UUID playerId = player.getUniqueId();
-            if (ingredientHudViewers.contains(playerId) && !shownNow.contains(playerId)) {
+
+        for (UUID playerId : ingredientHudViewers) {
+            if (!shownNow.contains(playerId)) {
+                Player player = plugin.getServer().getPlayer(playerId);
+                if (player == null) {
+                    continue;
+                }
                 player.clearTitle();
             }
         }
-        ingredientHudViewers.clear();
-        ingredientHudViewers.addAll(shownNow);
+        Set<UUID> previous = ingredientHudViewers;
+        ingredientHudViewers = shownNow;
+        nextIngredientHudViewers = previous;
+        nextIngredientHudViewers.clear();
     }
 
-    private BukkitFurniture targetedShaker(Player player) {
-        Entity target = player.getTargetEntity(5);
-        if (target == null) {
-            return null;
+    private Optional<Component> ingredientSubtitle(BukkitFurniture furniture) {
+        UUID owner = furniture.uuid();
+        Optional<Component> cached = ingredientHudSubtitles.get(owner);
+        if (cached != null) {
+            return cached;
         }
-        BukkitFurniture furniture = CraftEngineFurniture.getLoadedFurnitureByCollider(target);
-        if (furniture == null) {
-            furniture = CraftEngineFurniture.getLoadedFurnitureByMetaEntity(target);
-        }
-        return isShaker(furniture) && loaded.containsKey(furniture.uuid()) ? furniture : null;
+        List<Integer> colors = ingredientColors(furniture);
+        Optional<Component> subtitle = colors.isEmpty()
+                ? Optional.empty()
+                : Optional.of(ShakerHudSemantics.ingredientSubtitle(colors));
+        ingredientHudSubtitles.put(owner, subtitle);
+        return subtitle;
     }
 
     private List<Integer> ingredientColors(BukkitFurniture furniture) {
@@ -245,6 +271,7 @@ public final class ShakerVisualService {
             }
         }
         ingredientHudViewers.clear();
+        nextIngredientHudViewers.clear();
     }
 
     private void clearAllHud() {
@@ -255,6 +282,7 @@ public final class ShakerVisualService {
             }
         }
         ingredientHudViewers.clear();
+        nextIngredientHudViewers.clear();
         mixingHudViewers.clear();
     }
 

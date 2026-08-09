@@ -1936,6 +1936,7 @@ def validate() -> dict[str, int]:
             "handler.onReady(bukkitFurniture, readyReason, placingPlayer)",
             "currentHandler.onUnavailable(bukkitFurniture, removed, stopping)",
             "public static List<BukkitFurniture> nearby(",
+            "public static boolean hasNearby(",
             "public static Optional<BukkitFurniture> atBlock(",
             "FurnitureSpatialSemantics.minimumColumn(",
             "FurnitureSpatialSemantics.insideBox("):
@@ -2148,6 +2149,12 @@ def validate() -> dict[str, int]:
     shaker_hud_source = (
         game_package / "shaker/ShakerHudSemantics.java"
     ).read_text(encoding="utf-8-sig")
+    shaker_hud_target_source = (
+        game_package / "shaker/ShakerHudTargetResolver.java"
+    ).read_text(encoding="utf-8-sig")
+    shaker_hud_cache_source = (
+        game_package / "shaker/ShakerHudTargetCache.java"
+    ).read_text(encoding="utf-8-sig")
     for required_token in (
             'FONT_KEY = "kaleidoscope_tavern:shaker_hud"',
             "BAR_GLYPH = '\\uE400'",
@@ -2175,9 +2182,10 @@ def validate() -> dict[str, int]:
                 f"Shaker HUD {filename} must preserve source pixels via even-height padding; "
                 f"expected {expected_size}, got {actual_size}")
     for required_token in (
-            "player.getTargetEntity(5)",
-            "CraftEngineFurniture.getLoadedFurnitureByCollider(target)",
-            "CraftEngineFurniture.getLoadedFurnitureByMetaEntity(target)",
+            "ingredientHudTargets.beginPoll()",
+            "ingredientHudTargets.resolve(player, loaded)",
+            "ingredientHudSubtitles",
+            "nextIngredientHudViewers",
             "items.shakerIngredients(shaker)",
             "ShakerSemantics.ingredientColor(",
             "ShakerHudSemantics.progressSubtitle(ticks)",
@@ -2188,6 +2196,29 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Loaded shakers must drive their source-compatible progress and ingredient HUD; "
                 f"missing token: {required_token}")
+    for required_token in (
+            "LifecycleFurnitureBehavior.hasNearby(",
+            "CraftEngineFurniture.rayTrace(player, TARGET_RANGE)",
+            "cache.reusable(",
+            "cache.record("):
+        if required_token not in shaker_hud_target_source:
+            raise AssertionError(
+                "Shaker HUD targeting must prefilter through the lifecycle index and delegate "
+                f"the exact collider ray to CraftEngine; missing token: {required_token}")
+    for required_token in (
+            "MAX_REUSE_TICKS = 20L",
+            "Double.doubleToLongBits(",
+            "Float.floatToIntBits(",
+            "void endPoll()"):
+        if required_token not in shaker_hud_cache_source:
+            raise AssertionError(
+                "Shaker HUD targeting must cache unchanged player views without leaking "
+                f"offline entries; missing token: {required_token}")
+    for stale_token in ("getTargetEntity(", "getNearbyEntities("):
+        if stale_token in shaker_visual_service_source + shaker_hud_target_source:
+            raise AssertionError(
+                "Shaker HUD must not scan the world's general entity set on every poll; "
+                f"stale token: {stale_token}")
     bar_stool_visual_source = (
         game_package / "decor/BarStoolVisualService.java"
     ).read_text(encoding="utf-8-sig")

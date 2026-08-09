@@ -11,6 +11,7 @@ import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 
 import java.util.ArrayList;
@@ -112,6 +113,46 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
             }
         }
         return result;
+    }
+
+    /** Allocation-free existence check for hot paths that do not need a result list. */
+    public static boolean hasNearby(Channel channel, World world,
+                                    double centerX, double centerY, double centerZ,
+                                    double horizontalRadius, double verticalRadius) {
+        Map<UUID, WorldIndex> channelWorlds = SPATIAL.get(channel);
+        if (channelWorlds == null) {
+            return false;
+        }
+        WorldIndex index = channelWorlds.get(world.getUID());
+        if (index == null) {
+            return false;
+        }
+        int minX = FurnitureSpatialSemantics.minimumColumn(
+                centerX, horizontalRadius);
+        int maxX = FurnitureSpatialSemantics.maximumColumn(
+                centerX, horizontalRadius);
+        int minZ = FurnitureSpatialSemantics.minimumColumn(
+                centerZ, horizontalRadius);
+        int maxZ = FurnitureSpatialSemantics.maximumColumn(
+                centerZ, horizontalRadius);
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                Set<Controller> controllers = index.columns.get(packColumn(x, z));
+                if (controllers == null) {
+                    continue;
+                }
+                for (Controller controller : controllers) {
+                    Location location = controller.bukkitFurniture.location();
+                    if (FurnitureSpatialSemantics.insideBox(
+                            location.getX(), location.getY(), location.getZ(),
+                            centerX, centerY, centerZ,
+                            horizontalRadius, verticalRadius)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
