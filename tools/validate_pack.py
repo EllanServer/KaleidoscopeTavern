@@ -2275,6 +2275,25 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Bar-stool every-tick rotation must not resolve riders through Bukkit UUID lookup; "
                 f"found {stale_token}")
+    # Losing a stool while it is occupied must reset the body through the same
+    # path as a dismount. Dropping the occupancy inline would strip the rider's
+    # body yaw without ever repositioning the seated visual.
+    for required_token in (
+            "private void releaseOccupancy(UUID owner)",
+            "releaseOccupancy(owner);"):
+        if required_token not in bar_stool_visual_source:
+            raise AssertionError(
+                "Unavailable bar stools must release riders through the shared reset path; "
+                f"missing token: {required_token}")
+    unavailable_body = bar_stool_visual_source.split(
+        "public void onUnavailable(BukkitFurniture furniture", 1)
+    if len(unavailable_body) != 2:
+        raise AssertionError(
+            "BarStoolVisualService must keep its CE lifecycle onUnavailable callback")
+    if "occupied.values().removeIf" in unavailable_body[1].split("}", 1)[0]:
+        raise AssertionError(
+            "onUnavailable must not drop bar-stool occupancy inline; it has to run "
+            "releaseOccupancy so the body yaw is reset while the stool is still loaded")
     if ("BarStoolVisualService implements Listener" in bar_stool_visual_source
             or "registerEvents(barStoolVisuals, this)" in plugin_source):
         raise AssertionError(
