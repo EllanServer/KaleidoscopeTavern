@@ -60,10 +60,12 @@ public final class BarStoolVisualService {
             @Override
             public void onUnavailable(BukkitFurniture furniture, boolean removed) {
                 UUID owner = furniture.uuid();
+                // Reset the body through the same path as a dismount before the
+                // furniture leaves `loaded`: `resetBody` needs the entry to still
+                // resolve, and dropping the occupancy without it would strip the
+                // rider's body yaw while the seated visual is still shown.
+                releaseOccupancy(owner);
                 loaded.remove(owner, furniture);
-                bodyYaws.remove(owner);
-                occupied.values().removeIf(occupancy -> owner.equals(occupancy.owner()));
-                stopRotationTaskIfIdle();
                 stopSeatEventsIfIdle();
             }
         };
@@ -169,6 +171,17 @@ public final class BarStoolVisualService {
         if (occupancy != null) {
             resetBody(occupancy.owner());
         }
+        stopRotationTaskIfIdle();
+    }
+
+    /**
+     * Drops every rider seated on one stool and resets its body, mirroring
+     * {@link #deactivate(UUID)} for the furniture side. Must run while the stool
+     * is still in {@code loaded} so {@link #resetBody(UUID)} can reach it.
+     */
+    private void releaseOccupancy(UUID owner) {
+        occupied.values().removeIf(occupancy -> owner.equals(occupancy.owner()));
+        resetBody(owner);
         stopRotationTaskIfIdle();
     }
 
