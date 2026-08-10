@@ -2286,7 +2286,7 @@ def validate() -> dict[str, int]:
                 "Unavailable bar stools must release riders through the shared reset path; "
                 f"missing token: {required_token}")
     unavailable_body = bar_stool_visual_source.split(
-        "public void onUnavailable(BukkitFurniture furniture, boolean removed)", 1)
+        "public void onUnavailable(BukkitFurniture furniture", 1)
     if len(unavailable_body) != 2:
         raise AssertionError(
             "BarStoolVisualService must keep its CE lifecycle onUnavailable callback")
