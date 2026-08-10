@@ -202,7 +202,7 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
             return true;
         }
 
-        default void onUnload(BukkitFurniture furniture, boolean isStopping) {
+        default void onUnload(BukkitFurniture furniture) {
         }
 
         default void onRemove(BukkitFurniture furniture) {
@@ -238,11 +238,11 @@ public final class TickingFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
 
         @Override
-        public void onUnload(boolean isStopping) {
+        public void onUnload() {
             Handler handler = deliveredHandler;
             deactivate();
             if (handler != null) {
-                handler.onUnload(bukkitFurniture, isStopping);
+                handler.onUnload(bukkitFurniture);
             }
         }
 

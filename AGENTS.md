@@ -8,7 +8,8 @@
 
 ## 当前项目事实
 
-- 运行目标仅为 Minecraft / Paper `26.2`，使用 Java 25、CraftEngine `26.7.4` 与 CustomCrops `3.6.52`。
+- 运行目标仅为 Minecraft / Paper `26.2`，使用 Java 25、CraftEngine `26.8-SNAPSHOT` 与 CustomCrops `3.6.52`。
+  CraftEngine 26.8 目前只在 `https://repo.momirealms.net/snapshots/` 发布，`releases` 仓库最新仍为 `26.7.4`。
 - 这是服务端插件重写，不再编译或加载 Forge。Paper 主源码位于 `src/paper/java`，插件资源位于
   `src/paper/resources`，CraftEngine 项目位于 `src/paper/pack`，测试位于 `src/paperTest/java`。
 - 入口类是
@@ -33,8 +34,14 @@
   执行饮用；雪克杯在物品态与家具态之间迁移其原料和产物数据。
 - 家具业务状态使用家具元实体数据；CE 方块业务状态使用方块实体 NBT。静态碰撞、座位、放置、朝向、含水、
   发光和掉落优先使用 CraftEngine 原生行为或配置；只有原生展示槽无法表达的多槽点击路由、过滤与变换才保留 Java 方块实体。
-- CraftEngine API 以 `26.7.4` 固定版本为准。动态展示差量、自定义方块实体和源玩法特有的邻居拓扑会
+- CraftEngine API 以 `26.8-SNAPSHOT` 固定版本为准。动态展示差量、自定义方块实体和源玩法特有的邻居拓扑会
   接触该固定版本的非稳定实现，升级 CraftEngine 前必须重新编译并做服务器实测。
+- 26.8 相对 26.7.4 唯一的破坏性变更是 `FurnitureController.onUnload(boolean isStopping)` 改为 `onUnload()`；
+  CE 不再区分"关服卸载"与"区块卸载"，因此 `LifecycleFurnitureBehavior.Handler#onUnavailable` 与
+  `TickingFurnitureBehavior.Handler#onUnload` 也去掉了对应的 `stopping` 形参（原本无任何消费者使用）。
+- 26.8 新增的 JS 脚本、attribute、loot source、atlas 等配置子系统均无法承接现有 Java 补位逻辑：JS 脚本
+  访问不到插件自身的服务状态，`BiomeCondition` 只做群系 id 集合匹配而非 `getBaseTemperature()` 连续值，
+  loot source 面向原版掉落场景注入而非自定义容器内容还原。评估后不下放任何 Java 代码。
 - CustomCrops 负责悬挂葡萄的成长刻、阶段、骨粉、交互、掉落和持久化；Tavern 只保留棚架连线、藤蔓
   传播与悬挂存活规则。托管配置源位于 `src/paper/customcrops`，不要在 Java 中重复这些作物机制。
 

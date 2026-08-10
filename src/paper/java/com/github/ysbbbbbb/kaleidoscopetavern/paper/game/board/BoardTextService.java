@@ -124,8 +124,7 @@ public final class BoardTextService implements Listener {
             }
 
             @Override
-            public void onUnavailable(BukkitFurniture furniture,
-                                      boolean removed, boolean stopping) {
+            public void onUnavailable(BukkitFurniture furniture, boolean removed) {
                 UUID owner = furnitureOwner(furniture);
                 editors.entrySet().removeIf(
                         entry -> owner.equals(entry.getValue().furniture()));

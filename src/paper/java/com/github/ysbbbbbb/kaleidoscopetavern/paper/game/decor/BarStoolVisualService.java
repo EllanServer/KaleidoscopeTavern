@@ -58,8 +58,7 @@ public final class BarStoolVisualService {
             }
 
             @Override
-            public void onUnavailable(BukkitFurniture furniture,
-                                      boolean removed, boolean stopping) {
+            public void onUnavailable(BukkitFurniture furniture, boolean removed) {
                 UUID owner = furniture.uuid();
                 loaded.remove(owner, furniture);
                 bodyYaws.remove(owner);

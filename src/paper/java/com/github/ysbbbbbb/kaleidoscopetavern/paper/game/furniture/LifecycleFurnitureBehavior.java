@@ -251,7 +251,7 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
             onReady(furniture, reason);
         }
 
-        default void onUnavailable(BukkitFurniture furniture, boolean removed, boolean stopping) {
+        default void onUnavailable(BukkitFurniture furniture, boolean removed) {
         }
     }
 
@@ -282,17 +282,17 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
 
         @Override
         public void preRemove(Player player) {
-            unavailable(true, false);
+            unavailable(true);
         }
 
         @Override
         public void postRemove(Player player) {
-            unavailable(true, false);
+            unavailable(true);
         }
 
         @Override
-        public void onUnload(boolean isStopping) {
-            unavailable(false, isStopping);
+        public void onUnload() {
+            unavailable(false);
         }
 
         private void ready(ReadyReason reason, Player placingPlayer) {
@@ -308,7 +308,7 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
             deliver(HANDLERS.get(channel), placingPlayer);
         }
 
-        private void unavailable(boolean removed, boolean stopping) {
+        private void unavailable(boolean removed) {
             if (readyReason == null) {
                 return;
             }
@@ -322,7 +322,7 @@ public final class LifecycleFurnitureBehavior extends FurnitureBehaviorTemplate 
             removeFromSpatialIndex();
             Handler currentHandler = HANDLERS.get(channel);
             if (currentHandler != null && currentHandler == deliveredHandler) {
-                currentHandler.onUnavailable(bukkitFurniture, removed, stopping);
+                currentHandler.onUnavailable(bukkitFurniture, removed);
             }
             readyReason = null;
             deliveredHandler = null;

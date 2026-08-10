@@ -11,6 +11,8 @@ repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.momirealms.net/releases/")
+    // CraftEngine 26.8 is only published as a snapshot for now.
+    maven("https://repo.momirealms.net/snapshots/")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://repo.catnies.top/releases")
 }
