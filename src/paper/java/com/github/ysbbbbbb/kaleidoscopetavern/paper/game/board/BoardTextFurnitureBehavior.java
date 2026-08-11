@@ -173,7 +173,7 @@ public final class BoardTextFurnitureBehavior extends FurnitureBehaviorTemplate 
         }
 
         @Override
-        public void onUnload(boolean isStopping) {
+        public void onUnload() {
             LOADED.remove(bukkitFurniture.uuid(), this);
         }
 

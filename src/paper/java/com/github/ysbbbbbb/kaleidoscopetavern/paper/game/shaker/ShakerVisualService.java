@@ -68,8 +68,7 @@ public final class ShakerVisualService {
             }
 
             @Override
-            public void onUnavailable(BukkitFurniture furniture,
-                                      boolean removed, boolean stopping) {
+            public void onUnavailable(BukkitFurniture furniture, boolean removed) {
                 UUID owner = furniture.uuid();
                 loaded.remove(owner, furniture);
                 animations.remove(owner);

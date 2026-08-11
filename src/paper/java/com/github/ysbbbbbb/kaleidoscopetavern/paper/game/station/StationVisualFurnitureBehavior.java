@@ -159,7 +159,7 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         }
 
         @Override
-        public void onUnload(boolean isStopping) {
+        public void onUnload() {
             LOADED.remove(bukkitFurniture.uuid(), this);
         }
 
