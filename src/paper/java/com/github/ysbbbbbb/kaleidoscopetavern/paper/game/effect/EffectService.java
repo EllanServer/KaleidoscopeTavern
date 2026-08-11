@@ -541,9 +541,16 @@ public final class EffectService implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDeath(EntityDeathEvent event) {
         LivingEntity target = event.getEntity();
-        pendingEffectParticleRefresh.remove(target.getUniqueId());
-        for (Set<UUID> inverted : upsideDownPacketTargets.values()) {
-            inverted.remove(target.getUniqueId());
+        UUID targetId = target.getUniqueId();
+        pendingEffectParticleRefresh.remove(targetId);
+        Iterator<Map.Entry<UUID, Set<UUID>>> invertedEntries =
+                upsideDownPacketTargets.entrySet().iterator();
+        while (invertedEntries.hasNext()) {
+            Set<UUID> inverted = invertedEntries.next().getValue();
+            inverted.remove(targetId);
+            if (inverted.isEmpty()) {
+                invertedEntries.remove();
+            }
         }
         stopTrackReplayListenerIfIdle();
         // Resolving Paper's DamageSource is unnecessary for nearly every
@@ -562,7 +569,12 @@ public final class EffectService implements Listener {
                 }
             }
         }
-        clearEffects(target);
+        // Every valid persisted effect is loaded into active on join/chunk load.
+        // Ordinary deaths therefore have no Tavern state to clear and should
+        // avoid PDC access, three attribute lookups and a global expiry rescan.
+        if (active.containsKey(targetId)) {
+            clearEffects(target);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -1491,8 +1503,9 @@ public final class EffectService implements Listener {
                 if (!(user instanceof Player viewer)) {
                     return;
                 }
+                UUID viewerId = viewer.getUniqueId();
                 Set<UUID> inverted = upsideDownPacketTargets.computeIfAbsent(
-                        viewer.getUniqueId(), ignored -> new HashSet<>());
+                        viewerId, ignored -> new HashSet<>());
                 for (Entity entity : user.getNearbyEntities(16, 16, 16)) {
                     if (entity instanceof Mob mob && !mob.isDead()) {
                         inverted.add(mob.getUniqueId());
@@ -1501,8 +1514,12 @@ public final class EffectService implements Listener {
                         }
                     }
                 }
-                // 新的倒置目标需要追踪重放：确保 PlayerTrackEntityEvent 监听器在线。
-                ensureTrackReplayListener();
+                if (inverted.isEmpty()) {
+                    upsideDownPacketTargets.remove(viewerId);
+                } else {
+                    // 新的倒置目标需要追踪重放：确保 PlayerTrackEntityEvent 监听器在线。
+                    ensureTrackReplayListener();
+                }
             }
             case PREFIX + "zenith" -> {
                 Location current = user.getLocation();
