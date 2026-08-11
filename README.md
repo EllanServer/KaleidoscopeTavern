@@ -1,16 +1,17 @@
 # Kaleidoscope Tavern — Paper / CraftEngine 重写版
 
-这是 [KaleidoscopeTavern](https://github.com/KaleidoscopeMods/KaleidoscopeTavern) 的 Paper 服务端重写。运行时不再加载 Forge 代码；原 Forge 源码与数据生成器保留在仓库中，仅作为可审计的迁移输入。
+这是 [KaleidoscopeTavern](https://github.com/KaleidoscopeMods/KaleidoscopeTavern) 的 Paper 服务端重写版。插件保留原模组的葡萄种植、酿造、酒馆家具、饮品与特殊酒效，但运行时不需要 Forge。
 
-## 许可证
+## 主要内容
 
-- **代码**：[BSD 3-Clause](LICENSE-CODE)，版权归 Kaleidoscope Official Production Team 所有。
-- **素材**（贴图、模型、音效等美术资源）：[CC BY-NC-SA 4.0](LICENSE-ASSETS)——署名、非商业性使用、相同方式共享。
-- **素材来源与修改说明**：[ASSET-CREDITS.md](ASSET-CREDITS.md)。代码许可证不会覆盖或放宽素材的非商业限制。
-- **第三方组件**：[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。Sparrow YAML 作为配方解析器内嵌；CraftEngine、CustomCrops、Paper 与可选的 PlaceholderAPI 仍由服务器分别安装，其类不会打入本插件 JAR。
-- **上游致谢**：本项目源自 [KaleidoscopeTavern](https://github.com/KaleidoscopeMods/KaleidoscopeTavern)（作者 ysbbbbbb、tartaric_acid），并依赖 [CraftEngine](https://github.com/Xiao-MoMi/craft-engine) 与 [CustomCrops](https://github.com/Xiao-MoMi/Custom-Crops) 运行。
+- 葡萄种植、野生葡萄藤与棚架玩法
+- 压榨、酒桶发酵、调酒器与龙头灌装
+- 可饮用、可摆放和可堆叠的酒瓶与杯具
+- 桌椅、沙发、吧台、酒柜、灯具、告示板等酒馆装饰
+- 自定义饮品效果及可选 HUD
+- 可编辑的酒桶和鸡尾酒配方
 
-## 兼容范围
+## 运行要求
 
 | 组件 | 支持版本 |
 | --- | --- |
@@ -18,122 +19,96 @@
 | Java | **25** |
 | CraftEngine | **26.7.4** |
 | CustomCrops | **3.6.52** |
-| Sparrow YAML | **1.0.7（内嵌）** |
 
-本项目以 CraftEngine 官方 Wiki 的 [自定义方块](https://xiao-momi.github.io/craft-engine-wiki/configuration/block/)、[家具](https://xiao-momi.github.io/craft-engine-wiki/configuration/furniture/) 和 [API](https://xiao-momi.github.io/craft-engine-wiki/api/) 模型为准，并没有把所有旧 Forge `Block` 机械地迁成 CE 方块。
-
-## 内容映射
-
-| CraftEngine 对象 | 数量 | 内容 |
-| --- | ---: | --- |
-| 自定义物品 | 157 | 葡萄、酒饮、容器、装饰与所有可获取内容 |
-| 自定义方块 | 44 | 29 个公开/结构方块（包含共享沙发、桌子、吧台、黑板、八种熏香、水龙头与储酒架柜），加上 15 个只供 CustomCrops 切换的葡萄阶段方块 |
-| 家具 | 116 | 桌椅、灯具、画、三明治展板、酒桶、壁挂压榨桶、调酒器、酒瓶与杯具等静态或实体展示内容 |
-| 私有渲染物品 | 413 | 仅供 CE 方块模型、家具槽位、酒桶部件/液面、压榨液面及高脚凳/调酒器动态部件显示使用，不作为公共内容发放；野葡萄藤身直接使用原版垂泪藤状态 |
-| 原版工作台配方 | 114 | 有序、无序与切石配方 |
-
-家具继续使用 CraftEngine 的碰撞箱、座位、储物、展示槽、发光和 placement rule；需要网格状态的内容使用 CE 方块与方块实体。Paper 插件只补充 CE 未提供的模组业务语义：
-
-- 物品态：葡萄仍是可食用物，果汁桶仍可饮用、清除状态并返还桶；藤条保留燃料值，瓶装酒、杯具与燃烧瓶保留 16 个堆叠上限；
-- 压榨桶：地面型可放入原料并踩踏压榨，壁挂倾倒型不可踩踏；不匹配的原料会被挤出，满 1000 mB 后可用桶取出；
-- 酒桶：保留 3×3×3 家具占位，支持 4 桶基液、至多 4 种原料及离线计时的 6 档陈酿品质；
-- 调酒器：摆放后装入一至三份配方原料（默认配方为三份），潜行空手取回后在手中摇制；原料与成品随物品保存，签名鸡尾酒会合并效果与颜色；
-- 龙头：读取后方水/岩浆/蜂巢/龙首/西瓜或邻近 CE 酒桶，并向下方炼药锅或 CE 空瓶家具灌装；
-- 酒瓶：饮品正常右键仍会饮用，潜行时才摆成家具；原版药水、水瓶、蜂蜜瓶、龙息与经验瓶也可摆放，药水颜色及完整 `ItemStack` 数据会保留，同类瓶可叠放四层并被投射物击碎；
-- 酒架与酒柜：酒窖柜、倾斜酒架、圆形酒架和酒瓶托架使用 CE 方块状态与方块实体 NBT 保存槽位，限制瓶装酒/杯具类型；收到红石上升沿后会随机发射其中一瓶；其余吧台柜仍沿用 CE 家具展示槽；
-- 告示板：三明治展板仍是家具；黑板改为 2×1 CE 方块，以关闭铁门状态提供连续选择/碰撞，纵向成对生命周期及放置回滚交给 CE 原生 `double_high_block` / `double_high_block_item`，仅三块横向合并和文字 NBT 由插件补充；
-- 沙发、吧台、桌子与柜体：相邻家具自动切换直线、端部和转角模型；
-- 香炉：使用 CE 方块状态处理手动开关和红石边沿，粒子与亡灵驱散由方块实体稀疏刻执行；
-- 饮品效果：迁移 37 种饮品、270 条分级效果，包括 12 种原模组自定义效果；
-- 世界生成：只在新生成的主世界区块中，将真实 CE 野生葡萄藤挂到橡树/白桦树冠下。
-- 葡萄作物：CustomCrops 负责三类悬挂葡萄的 6 个阶段、随机刻、骨粉、交互收获、掉落和世界持久化；本插件只保留棚架连线、藤蔓传播及成熟藤架下悬挂存活规则。
-- 藤架与野藤手部交互：空藤架的蜂巢涂蜡/斧脱蜡与野生葡萄藤的剪刀剪毛(含剪刀损耗)由生成的 CE 方块 events 承担(与灯串染色同一机制)；葡萄种植与剪藤回收仍由插件处理。
+PlaceholderAPI 与 CustomNameplates 仅在需要外部酒效 HUD 时安装。
 
 ## 安装
 
 1. 使用 Java 25 启动 Paper 26.2 服务端。
-2. 安装 CraftEngine 26.7.4。
-3. 安装 CustomCrops 3.6.52。
-4. 将 `KaleidoscopeTavern-Paper-2.0.0-paper26.2.jar` 放入 `plugins/`。
-5. 启动服务端。插件会在依赖启用前，把内置 CE 项目同步到 `plugins/CraftEngine/resources/kaleidoscope_tavern/`，并把葡萄定义同步到 `plugins/CustomCrops/contents/crops/kaleidoscope_tavern.yml`。
-6. 按 CraftEngine 的资源包部署方式让客户端加载生成的资源包，并执行 `/kt status` 检查内容数量。
+2. 安装 CraftEngine 26.7.4 与 CustomCrops 3.6.52。
+3. 将 `KaleidoscopeTavern-Paper-2.0.0-paper26.2.jar` 放入 `plugins/`。
+4. 启动服务端。插件会自动安装 CraftEngine 内容与 CustomCrops 葡萄配置。
+5. 按 CraftEngine 的方式部署生成的资源包，让客户端加载。
+6. 执行 `/kt status` 检查内容是否正常加载。
 
-本插件不再嵌入 Sparrow-Heart，也不再保留仅用于调试高亮的代码。配方文件仅内嵌轻量的 [Sparrow YAML](https://github.com/Xiao-MoMi/sparrow-yaml) 解析器；CustomCrops 自身如何管理其运行库由 CustomCrops 负责，Tavern JAR 不会再打入一份重复副本。
+插件只管理自己安装的文件，不会清理其他 CraftEngine 项目。若关闭 `pack.install-on-startup`，需要自行将 JAR 内的 `tavern-pack/` 安装到 CraftEngine 资源目录。
 
-插件只删除自己清单中记录的过期文件，不会清理 CraftEngine 的其他项目。若关闭 `pack.install-on-startup`，则需要自行把 JAR 内的 `tavern-pack/` 放入 CraftEngine 资源目录。
+## 基本玩法
 
-### 酒效 HUD（可选：CustomNameplates）
+- 正常使用饮品会直接饮用；潜行使用时会将其摆放为家具。
+- 压榨桶可放入原料并通过踩踏榨汁，装满后可用桶取出。
+- 酒桶会根据配方和时间完成发酵，支持离线计时。
+- 调酒器装入配方原料后可取回手中摇制鸡尾酒。
+- 龙头可从水源、部分方块或酒桶取液，并向下方容器灌装。
+- CustomCrops 负责葡萄的成长、骨粉、收获、掉落与持久化。
 
-纯原版客户端无法注册自定义状态效果，插件通过隐形 BossBar 文本渲染持续型酒效。默认 `effect-hud.style: corner` 会把效果图标排到**原版药水 HUD 的位置**：右上角 24x24 原版效果框、增益第一行、其余第二行、从右向左每 25px 一格，与原版视觉一致（原版 HUD 同样不显示文字）。`style: line` 则退回顶部居中一行（图标 + 名称 + 等级 + 倒计时）。
+## 自定义配方
 
-### 与 Forge 原版的已声明偏差
+首次启动会生成：
 
-全子系统(效果/酒瓶/压榨/酒桶/摇酒器/水龙头/存储/座椅/文字板/葡萄/世界生成)已逐项对照归档源码审计。以下为有意保留的偏差：家具类装饰不可含水(CE 家具为实体)；副手对着占用槽不会触发喝酒(家具交互模型差异)；创造喝果汁桶不退空桶(原版 use_remainder 语义)；野生葡萄藤世界生成经 CraftEngine 的 configured/placed feature 注入真实区块生成管线(`configuration/worldgen.json`:1/12 区块 × 1–5 条 × 链长 1–7,橡树/白桦树叶下悬挂),分布模型仍是 Forge"蜂巢树装饰器"的近似；酒桶龙头载体暂仅支持空瓶(当前全部配方即空瓶)；雪克杯手持摇动由 CraftEngine 原生 `using_item + use_cycle` 物品模型驱动，进度条使用原模组 181×17 与 11×13 素材的无损像素映射，原版客户端仍无法复刻 Forge 对玩家手臂骨骼的专用渲染钩子；迁至 CE events 的手部交互(灯串染色、藤架涂蜡/脱蜡、野藤剪毛、香炉开关)仅响应主手,避免主副手交互事件在同一刻各触发一次；黑板暂不支持天花板悬挂，地面或墙面点击会放置同一套 2×1 直立方块；其选择/碰撞厚度使用 CE 已释放的原版关闭铁门状态近似原模组 1/16 薄板。
+- `plugins/KaleidoscopeTavern/recipes/barrel.yml`
+- `plugins/KaleidoscopeTavern/recipes/shaker.yml`
 
-效果行为与视觉均复刻自归档 Forge 源码：属性修改（步高、交互距离）、击杀回血、缴械、经验流失、灵视脉冲、音爆等逻辑此前已迁移；环境粒子按 ModEffects 注册的原色由服务端补发 `ENTITY_EFFECT` 漩涡（隐身实体按原版规则降频）。两处原版客户端协议内的近似/限制：穿草隐身时原模组在客户端取消整个玩家渲染，服务端以 invisible 标志近似（装备仍可见）；微醺的镜头摇晃属于客户端渲染事件，无法在原版客户端复刻。
+修改后执行 `/kt reload`。无效配置不会替换当前生效的配方，具体错误会写入服务器日志。使用 `/kt recipes <barrel|pressing|shaker>` 可查看当前配置。
 
-corner 排版基于零和偏移：BossBar 文本以屏幕中心为锚，按 `effect-hud.gui-half-width`（默认 240，对应 1920x1080 + GUI 比例 4）推算右上角坐标。其他分辨率/GUI 比例的玩家图标仍在顶行，只是水平位置偏移；若服上另有 BossBar（末影龙、其他插件），整行会随原版堆叠规则下移一格。corner 风格占用 YELLOW BossBar 颜色（tavern 资源包把 `boss_bar/yellow_*` 覆盖为全透明），服务器上其他黄色 BossBar 也会因此隐形。
+## 酒效 HUD
 
-如果服务端装有 PlaceholderAPI 与 CustomNameplates，可以把显示层交给 CustomNameplates：
+插件默认通过 BossBar 显示持续型酒效：
 
-1. 安装 PlaceholderAPI 与 CustomNameplates。
-2. 把 JAR 内 `customnameplates/bossbar-tavern-effects.yml` 中的 `tavern_effects` 一节合并进 `plugins/CustomNameplates/configs/bossbar.yml`，然后 `/nameplates reload`（`color` 保持 `YELLOW` 以隐藏条本体）。
-3. 本插件 `config.yml` 的 `effect-hud.mode` 默认为 `auto`：检测到 CustomNameplates 时自动停用内置 BossBar，避免重复显示；也可强制 `builtin` / `external`。
+- `effect-hud.style: corner`：在右上角显示图标。
+- `effect-hud.style: line`：在屏幕顶部显示图标、名称与倒计时。
+- `effect-hud.mode: auto`：检测到 CustomNameplates 时自动停用内置 HUD。
 
-占位符：`%kaleidoscopetavern_effect_hud%`（完整 MiniMessage 行，随 `style` 输出 corner 或 line 排版，与内置 BossBar 内容一致）、`%kaleidoscopetavern_effect_count%`（酒效数量，用于隐藏条件）。字形来自 CraftEngine 分发的 `kaleidoscope_tavern:custom_effects`（line）与 `kaleidoscope_tavern:custom_effects_hud`（corner）位图字体，无需在 CustomNameplates 中另行注册 image。
+使用 PlaceholderAPI 与 CustomNameplates 时，可将 JAR 内 `customnameplates/bossbar-tavern-effects.yml` 的 `tavern_effects` 配置合并到 `plugins/CustomNameplates/configs/bossbar.yml`。
 
-### 自定义酒类配方
+可用占位符：
 
-首次启动会生成 `plugins/KaleidoscopeTavern/recipes/barrel.yml` 与
-`plugins/KaleidoscopeTavern/recipes/shaker.yml`。前者管理酒桶配方、醋保底产物与发酵时间，后者管理
-雪克杯/鸡尾酒配方以及神秘、招牌鸡尾酒的特殊结果。已有文件不会在升级时被覆盖；`ingredients` 与
-`carrier` 支持 `item=<命名空间:物品>` 或 `tag=<命名空间:标签>` selector，删除列表项即可禁用对应配方。
+- `%kaleidoscopetavern_effect_hud%`
+- `%kaleidoscopetavern_effect_count%`
 
-保存后执行 `/kt reload`。插件会先完整解析两份文件，再原子替换运行时配方；任一文件无效时会保留上一份
-有效配置，并在日志中给出具体字段。`/kt recipes <barrel|shaker>` 显示当前实际生效的配置。
+注意：内置 `corner` 样式会将黄色 BossBar 贴图设为透明，因此其他黄色 BossBar 也可能不可见。
 
-### 命令
+## 命令
 
-- `/kt status`：显示 CE 物品、方块、家具和玩法目录的加载数量；
-- `/kt give <物品ID> [数量] [玩家]`：发放公共 CE 物品；
-- `/kt reload`：原子重载酒桶/鸡尾酒配方、本插件配置，并重载 CraftEngine 与 CustomCrops 内容；
-- 权限：`kaleidoscopetavern.admin`（默认仅 OP）。
+- `/kt status`：检查插件内容加载状态。
+- `/kt give <物品ID> [数量] [玩家]`：发放物品。
+- `/kt recipes <barrel|pressing|shaker>`：查看当前酒类配方。
+- `/kt reload`：重载插件配置、配方及相关内容。
+- 权限：`kaleidoscopetavern.admin`，默认仅 OP 拥有。
 
-## 构建与校验
+## 构建
+
+Windows：
+
+```powershell
+.\gradlew.bat clean build
+```
+
+Linux / CI：
 
 ```bash
 ./gradlew clean build
 ```
 
-成品位于 `build/libs/`。`build` 会同时执行：
-
-- Java 25 编译与 JUnit 配方语义测试；
-- `tools/validate_pack.py`，校验 CE 引用、模型、变体、配方、TSV 目录及 CustomCrops 阶段映射；
-- `tools/verify_plugin_jar.py`，确认成品同时内置 CE 项目、资源包、托管作物配置与 Sparrow YAML，并且没有误嵌入 CustomCrops/Sparrow-Heart 类；
-- 打包完整 CraftEngine 项目、资源包与 CustomCrops 葡萄定义。
-
-需要从保留的 Forge 数据生成器重新生成全部 CE 配置时：
+成品位于 `build/libs/`。需要重新生成迁移内容时运行：
 
 ```bash
 ./gradlew migrateLegacyContent validatePack
 ```
 
-生成结果及数量清单位于 `src/paper/pack/configuration/migration-report.json`。不要直接修改生成的 JSON/TSV；应修改 `tools/migrate_legacy.py` 或迁移输入后重新生成。
+`src/paper/pack/configuration/*.json` 与 `src/paper/resources/catalog/*.tsv` 是生成文件，请修改迁移脚本或迁移输入后重新生成，不要直接编辑。
 
-## CustomCrops 职责边界
+## 存档迁移
 
-本项目按 CustomCrops 官方 Wiki 的 [Crop](https://mo-mi.gitbook.io/xiaomomi-plugins/customcrops/plugin-wiki/customcrops/format/crop)、[CraftEngine/其他方块系统接入](https://mo-mi.gitbook.io/xiaomomi-plugins/customcrops/plugin-wiki/customcrops/api/other-block-system) 与 [Random tick / Scheduled tick](https://mo-mi.gitbook.io/xiaomomi-plugins/customcrops/plugin-wiki/customcrops/random-tick-vs-scheduled-tick) 模型接入。CustomCrops 已有的成长、骨粉、收获、掉落和持久化不在 Tavern 中重复实现。
+旧 Forge 世界中的已放置设备无法原地转换为 CraftEngine 对象；旧版 CraftEngine 中已放置的沙发、桌子、吧台、吧台柜和压榨桶也不会自动迁移。
 
-CustomCrops 也有 [Pot](https://mo-mi.gitbook.io/xiaomomi-plugins/customcrops/plugin-wiki/customcrops/format/pot)、[Watering Can](https://mo-mi.gitbook.io/xiaomomi-plugins/customcrops/plugin-wiki/customcrops/format/watering-can) 与 [Sprinkler](https://mo-mi.gitbook.io/xiaomomi-plugins/customcrops/plugin-wiki/customcrops/format/sprinkler) 的水分系统，但它表示的是作物灌溉水单位，并不是任意流体容器。果汁/酒液类型、1000 mB 压榨容量、酒桶发酵、龙头输送和瓶桶灌装仍属于 Tavern 酿造玩法，不与 CustomCrops 重复。
+正式服升级前请备份世界，并先在测试服检查关键设备、配方与资源包。
 
-## TheBrewingProject
+## 许可证与致谢
 
-[TheBrewingProject](https://github.com/BreweryTeam/TheBrewingProject) 可以在未来作为可选配方/酿造桥接层，因为它能识别 CraftEngine 物品；本重写不把它设为依赖。它不能替代压榨桶、家具酒桶、调酒器、可放置酒瓶、告示板及自定义饮用效果，而且其当前公开兼容范围尚未覆盖这里锁定的 Paper 26.2 / CraftEngine 26.7.4 组合。
+- 代码：[BSD 3-Clause](LICENSE-CODE)
+- 美术资源：[CC BY-NC-SA 4.0](LICENSE-ASSETS)
+- 素材来源与修改说明：[ASSET-CREDITS.md](ASSET-CREDITS.md)
+- 第三方组件：[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
 
-## 数据迁移说明
-
-Forge 方块实体 NBT 与 CraftEngine 家具实体/PDC 的表示不同，因此旧 Forge 世界中的已放置设备不会原地转换。物品、模型、配方和玩法规则已经迁移；正式服升级前仍应备份世界，并在测试服重新放置关键设备完成验收。
-
-旧版 CE 沙发、桌子、吧台、吧台柜和压榨桶的在线迁移兼容层已移除，旧存档中的这些对象也不会再自动转换。
-
-代码使用 [BSD 3-Clause](LICENSE-CODE)，美术资源使用 [CC BY-NC-SA 4.0](LICENSE-ASSETS)。
+本项目源自 [KaleidoscopeTavern](https://github.com/KaleidoscopeMods/KaleidoscopeTavern)，并依赖 [CraftEngine](https://github.com/Xiao-MoMi/craft-engine) 与 [CustomCrops](https://github.com/Xiao-MoMi/Custom-Crops) 运行。
