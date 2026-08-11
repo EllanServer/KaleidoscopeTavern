@@ -42,7 +42,6 @@ dependencies {
     // server supplies them. Tests that model CE types (e.g. the station visual
     // diff state machine) need the companion libraries on the worker classpath.
     testRuntimeOnly("net.momirealms:craft-engine-adventure:${providers.gradleProperty("craft_engine_version").get()}")
-    testRuntimeOnly("net.momirealms:sparrow-nbt:0.18.9")
     // MiniMessage round-trips in CustomEffectHudSemanticsTest use the same
     // adventure version Paper ships at runtime.
     testImplementation("io.papermc.paper:paper-api:${providers.gradleProperty("paper_version").get()}")
