@@ -10291,7 +10291,7 @@
           },
           "east": {
             "position_yaw": -90,
-            "model_yaw": -90,
+            "model_yaw": 90,
             "local_x": "1-z",
             "local_z": "1-x",
             "reverse_slots": false
@@ -10305,7 +10305,7 @@
           },
           "west": {
             "position_yaw": 90,
-            "model_yaw": 90,
+            "model_yaw": 270,
             "local_x": "z",
             "local_z": "x",
             "reverse_slots": false
@@ -11051,7 +11051,7 @@
           },
           "east": {
             "position_yaw": -90,
-            "model_yaw": -90,
+            "model_yaw": 90,
             "local_x": "1-z",
             "local_z": "1-x",
             "reverse_slots": false
@@ -11065,7 +11065,7 @@
           },
           "west": {
             "position_yaw": 90,
-            "model_yaw": 90,
+            "model_yaw": 270,
             "local_x": "z",
             "local_z": "x",
             "reverse_slots": false

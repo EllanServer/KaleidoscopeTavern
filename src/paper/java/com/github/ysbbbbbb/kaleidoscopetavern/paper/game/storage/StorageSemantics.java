@@ -51,10 +51,15 @@ public final class StorageSemantics {
 
     public static FacingRotation facingRotation(
             Kind kind, float facingYaw, boolean facingAxisX) {
-        // Base furniture and packet-only bottle displays use the same CE/Minecraft
-        // yaw. Do not mirror east/west: that made the rack body and its contents
-        // face different directions.
-        return new FacingRotation(facingYaw, facingYaw);
+        // Entity yaw and the ItemDisplay's X-pitch compose in different spaces.
+        // A pitched bottle therefore needs a half-turn for east/west facings;
+        // its position still follows the rack body's signed source-space yaw.
+        boolean pitchedBottle = kind == Kind.CELLAR_CABINET
+                || kind == Kind.TILTED_RACK
+                || kind == Kind.HOLDER;
+        float modelYaw = pitchedBottle && facingAxisX
+                ? facingYaw + 180F : facingYaw;
+        return new FacingRotation(facingYaw, modelYaw);
     }
 
     public static boolean changesRenderedArrangement(

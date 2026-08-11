@@ -1148,11 +1148,11 @@ def configured_sound(sound: str, volume: tuple[float, float] = (1, 1),
 
 
 def storage_orientations(*, reverse_axis_x_slots: bool = False,
-                         flip_axis_x_model_yaw: bool = False) -> dict[str, Any]:
+                         compensate_pitched_axis_x_yaw: bool = False) -> dict[str, Any]:
     """Source-space click transform plus packet ItemDisplay yaw.
 
-    Upright displays use the signed source position yaw directly. Cellar
-    bottles are additionally pitched -90 degrees to lie on their sides; the
+    Upright displays use the signed source position yaw directly. Bottles in
+    the cellar cabinet, tilted rack and holder also have an X-axis pitch; the
     ItemDisplay yaw/pitch composition reverses their longitudinal axis for
     east/west facings unless the model yaw receives a 180-degree correction.
     """
@@ -1166,7 +1166,7 @@ def storage_orientations(*, reverse_axis_x_slots: bool = False,
         },
         "east": {
             "position_yaw": -90,
-            "model_yaw": 90 if flip_axis_x_model_yaw else -90,
+            "model_yaw": 90 if compensate_pitched_axis_x_yaw else -90,
             "local_x": "1-z",
             "local_z": "1-x",
             "reverse_slots": reverse_axis_x_slots,
@@ -1180,7 +1180,7 @@ def storage_orientations(*, reverse_axis_x_slots: bool = False,
         },
         "west": {
             "position_yaw": 90,
-            "model_yaw": 270 if flip_axis_x_model_yaw else 90,
+            "model_yaw": 270 if compensate_pitched_axis_x_yaw else 90,
             "local_x": "z",
             "local_z": "x",
             "reverse_slots": reverse_axis_x_slots,
@@ -1370,7 +1370,8 @@ def storage_behavior(block_id: str, tags: dict[str, list[str]]) -> dict[str, Any
         "orientations": storage_orientations(
             reverse_axis_x_slots=block_id in {
                 "bar_cabinet", "glass_bar_cabinet"},
-            flip_axis_x_model_yaw=block_id == "cellar_cabinet"),
+            compensate_pitched_axis_x_yaw=block_id in {
+                "cellar_cabinet", "tilted_rack", "holder"}),
         "selector": storage_selector(block_id),
         "interaction": storage_interaction(block_id, tags),
         "slots": storage_slot_visuals(block_id),

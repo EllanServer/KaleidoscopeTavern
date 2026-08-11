@@ -6029,17 +6029,20 @@ def validate() -> dict[str, int]:
         if two_slot_cabinet:
             expected_orientations["east"]["reverse_slots"] = True
             expected_orientations["west"]["reverse_slots"] = True
-        if storage_id == "cellar_cabinet":
+        pitched_storage = storage_id in {
+            "cellar_cabinet", "tilted_rack", "holder",
+        }
+        if pitched_storage:
             expected_orientations["east"]["model_yaw"] = 90
             expected_orientations["west"]["model_yaw"] = 270
         if orientations != expected_orientations:
             raise AssertionError(
                 f"{storage_id}: source-space click/model orientation drifted: {orientations!r}")
-        # The -90-degree pitch used only by cellar bottles changes the effective
-        # east/west longitudinal axis. Those two model yaws need a half-turn;
-        # every upright/tilted packet display keeps the source position yaw.
+        # Any X-axis bottle pitch changes the effective east/west longitudinal
+        # axis. Cellar, tilted-rack and holder model yaws therefore need a
+        # half-turn while upright displays keep the source position yaw.
         for facing, orientation in orientations.items():
-            expected_offset = (180 if storage_id == "cellar_cabinet"
+            expected_offset = (180 if pitched_storage
                                and facing in {"east", "west"} else 0)
             actual_offset = (
                 orientation["model_yaw"] - orientation["position_yaw"]
