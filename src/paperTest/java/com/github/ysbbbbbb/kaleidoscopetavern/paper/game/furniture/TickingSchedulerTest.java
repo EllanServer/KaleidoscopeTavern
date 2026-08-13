@@ -434,6 +434,30 @@ class TickingSchedulerTest {
         assertInvariant();
     }
 
+    @Test
+    void sameTickEarlierSchedulesShareOneProbeWake() {
+        host("A");
+        host("B");
+        FakeHost c = host("C");
+        c.shouldScheduleResult = false;
+
+        core.schedule("A", 100);
+        core.schedule("B", 80);
+        core.schedule("C", 60);
+
+        assertEquals(1, wake.scheduleCount);
+        assertEquals(0, wake.cancelCount);
+        assertEquals(1, wake.current.delay);
+
+        advanceTo(1);
+        assertEquals(2, wake.scheduleCount);
+        assertEquals(59, wake.current.delay);
+
+        advanceTo(60);
+        assertEquals(1, c.tickCount);
+        assertInvariant();
+    }
+
     // ===== 审查补充 5: 计数不变量 =====
 
     @Test

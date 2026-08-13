@@ -265,7 +265,14 @@ public final class EffectService implements Listener {
             return;
         }
         for (EffectSpec spec : specs) {
-            if (isEmbeddedVanillaEffect(consumed, spec)) {
+            // ItemService writes every guaranteed vanilla effect from this
+            // exact EffectSpec list into potion_contents when a drink is
+            // built, aged or mixed. Minecraft applies those effects itself;
+            // rereading PotionMeta and Registry here duplicated that work and
+            // could class-load through CraftEngine's transformer on a consume
+            // tick.
+            if (!NativeDrinkEffectSemantics.shouldApplyThroughEvent(
+                    spec.effect(), spec.probability())) {
                 continue;
             }
             if (EffectSemantics.rolls(ThreadLocalRandom.current().nextDouble(), spec.probability())) {
@@ -275,27 +282,6 @@ public final class EffectService implements Listener {
         // The empty bottle or glassware now comes back through CraftEngine's
         // settings.consume_replacement on each drink item; this handler only
         // applies the migrated effects.
-    }
-
-    private static boolean isEmbeddedVanillaEffect(ItemStack consumed, EffectSpec spec) {
-        if (!NativeDrinkEffectSemantics.shouldEmbed(spec.effect(), spec.probability())
-                || !(consumed.getItemMeta() instanceof PotionMeta potionMeta)) {
-            return false;
-        }
-        NamespacedKey key = NamespacedKey.fromString(spec.effect());
-        PotionEffectType type = key == null ? null : Registry.EFFECT.get(key);
-        if (type == null) {
-            return false;
-        }
-        int duration = NativeDrinkEffectSemantics.duration(type.isInstant(), spec.durationTicks());
-        for (PotionEffect effect : potionMeta.getCustomEffects()) {
-            if (effect.getType().equals(type)
-                    && effect.getDuration() == duration
-                    && effect.getAmplifier() == spec.amplifier()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -501,6 +487,7 @@ public final class EffectService implements Listener {
 
     @EventHandler
     public void onEntitiesUnload(EntitiesUnloadEvent event) {
+        boolean removedActiveEffect = false;
         for (Entity entity : event.getEntities()) {
             if (entity instanceof LivingEntity living && active.containsKey(living.getUniqueId())) {
                 save(living);
@@ -512,7 +499,11 @@ public final class EffectService implements Listener {
                 activeEntities.remove(living.getUniqueId());
                 active.remove(living.getUniqueId());
                 fastTickEntities.remove(living.getUniqueId());
+                removedActiveEffect = true;
             }
+        }
+        if (!removedActiveEffect) {
+            return;
         }
         recomputeNextPassiveExpiryTick();
         stopTrackReplayListenerIfIdle();

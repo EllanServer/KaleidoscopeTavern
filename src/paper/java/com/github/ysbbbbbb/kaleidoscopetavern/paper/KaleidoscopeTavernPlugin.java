@@ -83,7 +83,7 @@ import java.util.logging.Level;
 /** Paper 26.2 entry point for the CraftEngine rewrite. */
 public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listener, TabExecutor {
     private static final String NAMESPACE = "kaleidoscope_tavern";
-    private static final int EXPECTED_ITEMS = 570; // 157 public items + 413 private render helpers
+    private static final int EXPECTED_ITEMS = 571; // 157 public items + 414 private render helpers
     private static final int EXPECTED_BLOCKS = 44;
     private static final int EXPECTED_FURNITURE = 116;
     // 已验证的 CraftEngine minor 版本。低于 26.7 直接拒绝启动（使用了
@@ -166,6 +166,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             return;
         }
         IncenseBlockBehavior.prewarmRuntime();
+        TrellisBehavior.prewarmRuntime(getServer().getWorlds());
         try {
             CustomCropsBridge.requireReady();
         } catch (RuntimeException | LinkageError exception) {

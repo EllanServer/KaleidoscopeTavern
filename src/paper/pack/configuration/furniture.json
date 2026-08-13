@@ -43968,7 +43968,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/empty_bottle/339163cd58",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -45021,6 +45042,245 @@
               "shadow_radius": 0,
               "view_range": 1.25,
               "translation": "0,0.5,0"
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 0) < 0.001"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 22.5) < 0.001"
+                }
+              ],
+              "yaw": -22.5
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 45) < 0.001"
+                }
+              ],
+              "yaw": -45.0
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 67.5) < 0.001"
+                }
+              ],
+              "yaw": -67.5
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 90) < 0.001"
+                }
+              ],
+              "yaw": -90.0
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 112.5) < 0.001"
+                }
+              ],
+              "yaw": -112.5
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 135) < 0.001"
+                }
+              ],
+              "yaw": -135.0
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 157.5) < 0.001"
+                }
+              ],
+              "yaw": -157.5
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 180) < 0.001"
+                }
+              ],
+              "yaw": -180.0
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 202.5) < 0.001"
+                }
+              ],
+              "yaw": -202.5
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 225) < 0.001"
+                }
+              ],
+              "yaw": -225.0
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 247.5) < 0.001"
+                }
+              ],
+              "yaw": -247.5
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 270) < 0.001"
+                }
+              ],
+              "yaw": -270.0
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 292.5) < 0.001"
+                }
+              ],
+              "yaw": -292.5
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 315) < 0.001"
+                }
+              ],
+              "yaw": -315.0
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sculk_special/ripple",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - 337.5) < 0.001"
+                }
+              ],
+              "yaw": -337.5
             }
           ],
           "hitboxes": [
@@ -45700,7 +45960,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/wine/ea5864e045",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -45746,7 +46027,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/wine/15d97ebc34",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -45836,7 +46138,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/wine/141a28698f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -45992,7 +46315,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/wine/65f4e1bfe3",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46065,7 +46409,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/champagne/e1e46219fb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46111,7 +46476,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/champagne/43a6e4c1cf",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46201,7 +46587,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/champagne/3d51da0e63",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46357,7 +46764,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/champagne/074ff66e26",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46430,7 +46858,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/vodka/a579c3a584",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46465,7 +46914,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/vodka/9add477ce7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46511,7 +46981,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/vodka/47b4a71aad",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46579,7 +47070,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/vodka/b46a0d19f2",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46651,7 +47163,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/brandy/faa89b5e22",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46686,7 +47219,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/brandy/8e60029beb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46721,7 +47275,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/brandy/e6c03d8966",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46794,7 +47369,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/carignan/bf8380e8b8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46829,7 +47425,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/carignan/f891a6b4c3",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46864,7 +47481,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/carignan/79583ff6f9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46937,7 +47575,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sakura_wine/0b20a9b917",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -46983,7 +47642,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sakura_wine/db685a9ff7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -47073,7 +47753,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sakura_wine/95558d57be",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -47229,7 +47930,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sakura_wine/f9c1a9cfad",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -47302,7 +48024,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/plum_wine/95e543ed71",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -47348,7 +48091,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/plum_wine/c9159a9bfe",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -47383,7 +48147,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/plum_wine/e9abd099a7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -47429,7 +48214,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/plum_wine/0186ca25b5",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -47502,7 +48308,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/whiskey/fe7ff02286",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -47548,7 +48375,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/whiskey/b42669fb81",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -47638,7 +48486,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/whiskey/a85d8ef6ca",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -47794,7 +48663,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/whiskey/b9d6c94fd1",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -47867,7 +48757,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_wine/9ff25d46fb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -47913,7 +48824,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_wine/3120e4abdd",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -48003,7 +48935,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_wine/248a2b641a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -48159,7 +49112,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/ice_wine/57beb79458",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -48232,7 +49206,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/polaris_sweet_white/cf08bca288",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -48278,7 +49273,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/polaris_sweet_white/89fb632fa5",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -48368,7 +49384,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/polaris_sweet_white/bd0844dd26",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -48524,7 +49561,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/polaris_sweet_white/80aff14531",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -48597,7 +49655,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/honey_wine/6389b335a8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -48643,7 +49722,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/honey_wine/62618066b3",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -48733,7 +49833,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/honey_wine/6bf1e17ea4",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -48889,7 +50010,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/honey_wine/9ce9c2baeb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -48962,7 +50104,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/red_queen/b1e0c585ce",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -49008,7 +50171,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/red_queen/602a8bf6b2",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -49098,7 +50282,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/red_queen/3beed211b6",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -49254,7 +50459,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/red_queen/17a42f042d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -49327,7 +50553,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/miners_star/983ce18b9e",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -49373,7 +50620,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/miners_star/f9c47e2a2f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -49463,7 +50731,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/miners_star/ccd9fc4ff2",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -49619,7 +50908,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/miners_star/eb5c2a5e54",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -49692,7 +51002,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/rum/7425c0a3a5",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -49738,7 +51069,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/rum/92525acc27",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -49828,7 +51180,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/rum/d01e5d58e8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -49984,7 +51357,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/rum/550182f918",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50057,7 +51451,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/riesling_dry_white/8164dac666",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50092,7 +51507,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/riesling_dry_white/bde8a558cb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50138,7 +51574,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/riesling_dry_white/fffec7a64f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50206,7 +51663,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/riesling_dry_white/d3d0d04fdb",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50278,7 +51756,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sunset_glow/ba16fbc5e7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50313,7 +51812,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sunset_glow/6326383e90",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50348,7 +51868,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sunset_glow/40f32cd461",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50421,7 +51962,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/madame_shexiang/677e36b537",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50456,7 +52018,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/madame_shexiang/dfa4fe92df",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50502,7 +52085,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/madame_shexiang/0e20318a6b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50570,7 +52174,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/madame_shexiang/58ebae68ff",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50642,7 +52267,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sweet_berry_wine/205264220b",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50677,7 +52323,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sweet_berry_wine/662bb1fbc8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50723,7 +52390,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sweet_berry_wine/4928a8dd19",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50791,7 +52479,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sweet_berry_wine/e9a695d9c9",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50863,7 +52572,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sherry/9ac359fe39",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50909,7 +52639,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sherry/8200cb042f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -50999,7 +52750,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sherry/a8fd1f746f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -51155,7 +52927,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sherry/d631f63915",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -51228,7 +53021,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/mother_snow/4b28dfebff",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -51263,7 +53077,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/mother_snow/7be5f5b46f",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -51309,7 +53144,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/mother_snow/47b9fa1ca8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -51377,7 +53233,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/mother_snow/abbb6d4587",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -51449,7 +53326,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/luminous_bride/16d8dfc1a6",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -51495,7 +53393,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/luminous_bride/8658c145e5",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -51585,7 +53504,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/luminous_bride/061e5149e7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -51741,7 +53681,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/luminous_bride/b9b848b76d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -51814,7 +53775,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glowflower_brew/b8a9e7b275",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -51860,7 +53842,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glowflower_brew/b913db756d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -51950,7 +53953,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glowflower_brew/dc00012da6",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -52106,7 +54130,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/glowflower_brew/711b8e69d8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -52179,7 +54224,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sauvignon_blanc_dry_white/36e5808e5a",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -52225,7 +54291,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sauvignon_blanc_dry_white/92eb6908e7",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -52315,7 +54402,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sauvignon_blanc_dry_white/6667a4aec6",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -52471,7 +54579,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/sauvignon_blanc_dry_white/b7e81628a1",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -52544,7 +54673,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/vinegar/a1779abda0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -52590,7 +54740,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/vinegar/19c2aa69de",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -52680,7 +54851,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/vinegar/5090dfca3d",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -52836,7 +55028,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/vinegar/ad0ae0baa0",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -52909,7 +55122,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/watermelon_juice/eb8eb23685",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -52955,7 +55189,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/watermelon_juice/e13070e918",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -53045,7 +55300,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/watermelon_juice/4d977af3d6",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [
@@ -53201,7 +55477,28 @@
               "display_transform": "none",
               "shadow_radius": 0,
               "view_range": 1.25,
-              "translation": "0,0.5,0"
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) <= 45) || (ABS(<arg:furniture.yaw> % 180) > 135)"
+                }
+              ]
+            },
+            {
+              "type": "item_display",
+              "item": "kaleidoscope_tavern:_render/watermelon_juice/3c4469f1e8",
+              "display_transform": "none",
+              "shadow_radius": 0,
+              "view_range": 1.25,
+              "translation": "0,0.5,0",
+              "conditions": [
+                {
+                  "type": "expression",
+                  "expression": "(ABS(<arg:furniture.yaw> % 180) > 45) && (ABS(<arg:furniture.yaw> % 180) <= 135)"
+                }
+              ],
+              "yaw": 180
             }
           ],
           "hitboxes": [

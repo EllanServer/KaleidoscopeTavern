@@ -26,11 +26,15 @@ final class BiomeTemperature {
             if (handle == null || biomeClass != biome.getClass()) {
                 handle = MethodHandles.lookup()
                         .unreflect(biome.getClass().getMethod("getBaseTemperature"))
-                        .asType(MethodType.methodType(double.class, Object.class));
+                        // The NMS method returns float. Keeping that primitive type here
+                        // avoids a MethodHandle float-to-double conversion adapter and its
+                        // first-use LambdaForm compilation; Java widens the returned value
+                        // after invokeExact instead.
+                        .asType(MethodType.methodType(float.class, Object.class));
                 baseTemperature = handle;
                 biomeClass = biome.getClass();
             }
-            return (double) handle.invokeExact(biome);
+            return (float) handle.invokeExact(biome);
         } catch (Throwable exception) {
             throw new IllegalStateException("Unable to read biome base temperature", exception);
         }

@@ -72,6 +72,24 @@ final class TickingScheduler {
     private static final int COMPACT_MIN_QUEUE_SIZE = 512;
     private static final int COMPACT_MIN_STALE_RUNS = 256;
 
+    /**
+     * Link the classes used by the first furniture activation while the
+     * behavior type itself is being registered. Without this, the JVM may
+     * defer reading these separate nested-class entries from the plugin JAR
+     * until a CE furniture onLoad callback reaches activate/schedule. That is
+     * normally tiny, but slow storage, antivirus scanning or a class-file
+     * transformer can turn the one-time ZIP lookup into a visible chunk-load
+     * hitch. Class literals load/link the classes without constructing any
+     * scheduler state or changing tick semantics.
+     */
+    @SuppressWarnings("unused")
+    private static final Class<?>[] PRELINKED_ACTIVATION_CLASSES = {
+            IdentityState.class,
+            ReconcileResult.class,
+            ScheduledRun.class,
+            DueBucket.class
+    };
+
     TickingScheduler(LongSupplier tickSource, WakeTarget wakeTarget) {
         this.tickSource = tickSource;
         this.wakeTarget = wakeTarget;
@@ -330,7 +348,7 @@ final class TickingScheduler {
             dispatching = false;
             pruneStaleHeadLocked();
             maybeCompactQueueLocked();
-            scheduleWakeLocked();
+            scheduleWakeLocked(false);
         }
     }
 
@@ -552,13 +570,21 @@ final class TickingScheduler {
             return;
         }
         maybeCompactQueueLocked();
-        scheduleWakeLocked();
+        scheduleWakeLocked(true);
     }
 
     // ===== 唤醒 =====
 
-    /** 为最早的 live 任务安排恰好一个唤醒回调。 */
-    private void scheduleWakeLocked() {
+    /**
+     * 为最早的 live 任务安排恰好一个唤醒回调。
+     *
+     * <p>普通队列变更使用下一 tick 的合并唤醒：CE 会在同一 tick 内成批恢复
+     * 家具，而随机首延迟会不断产生更早的队头。先安排一个不会晚于任何新任务
+     * 的 next-tick probe，可把一批 cancel + reschedule 压成一次；probe 派发后
+     * 再精确睡眠到最终队头。派发收尾本身已经是天然批次边界，因此直接安排
+     * 精确唤醒。</p>
+     */
+    private void scheduleWakeLocked(boolean coalesceMutations) {
         if (dispatching || !started) {
             return;
         }
@@ -582,8 +608,10 @@ final class TickingScheduler {
             // 新任务更早，必须提前唤醒。
             wakeTarget.cancel();
         }
-        long delay = Math.max(1L, next.dueTick - tickSource.getAsLong());
-        scheduledWakeTick = next.dueTick;
+        long currentTick = tickSource.getAsLong();
+        long exactWakeTick = Math.max(currentTick + 1L, next.dueTick);
+        scheduledWakeTick = coalesceMutations ? currentTick + 1L : exactWakeTick;
+        long delay = scheduledWakeTick - currentTick;
         wakeTarget.schedule(delay, dispatchAction);
         wakeScheduled = true;
     }

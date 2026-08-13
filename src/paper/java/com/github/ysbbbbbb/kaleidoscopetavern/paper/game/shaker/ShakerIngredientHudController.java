@@ -5,6 +5,7 @@ import io.papermc.paper.event.player.PlayerUntrackEntityEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -43,9 +44,8 @@ final class ShakerIngredientHudController implements Listener {
     private final ShakerHudTargetResolver targetResolver;
     private final Function<BukkitFurniture, Optional<Component>> subtitleProvider;
 
-    /** CE base-entity id to furniture owner. The integer lookup keeps unrelated track events cheap. */
-    private final Map<Integer, UUID> ownerByBaseEntity = new HashMap<>();
-    private final Map<UUID, Integer> baseEntityByOwner = new HashMap<>();
+    /** Non-empty shaker owners. A furniture owner's UUID is its CE base ItemDisplay UUID. */
+    private final Set<UUID> activeOwners = new HashSet<>();
     private final Map<UUID, Set<UUID>> ownersByPlayer = new HashMap<>();
     private final Map<UUID, Set<UUID>> playersByOwner = new HashMap<>();
     private final Map<UUID, DisplayedHud> displayed = new HashMap<>();
@@ -53,6 +53,7 @@ final class ShakerIngredientHudController implements Listener {
 
     private BukkitTask targetTask;
     private boolean started;
+    private boolean trackingListenersRegistered;
 
     ShakerIngredientHudController(
             JavaPlugin plugin,
@@ -70,7 +71,6 @@ final class ShakerIngredientHudController implements Listener {
             return;
         }
         started = true;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
         for (BukkitFurniture furniture : loaded.values()) {
             furnitureAvailable(furniture);
         }
@@ -81,7 +81,10 @@ final class ShakerIngredientHudController implements Listener {
             return;
         }
         started = false;
-        HandlerList.unregisterAll(this);
+        if (trackingListenersRegistered) {
+            HandlerList.unregisterAll(this);
+            trackingListenersRegistered = false;
+        }
         if (targetTask != null) {
             targetTask.cancel();
             targetTask = null;
@@ -96,8 +99,7 @@ final class ShakerIngredientHudController implements Listener {
         suppressedPlayers.clear();
         ownersByPlayer.clear();
         playersByOwner.clear();
-        ownerByBaseEntity.clear();
-        baseEntityByOwner.clear();
+        activeOwners.clear();
     }
 
     void furnitureAvailable(BukkitFurniture furniture) {
@@ -143,18 +145,8 @@ final class ShakerIngredientHudController implements Listener {
 
     private void attachOwner(BukkitFurniture furniture) {
         UUID owner = furniture.uuid();
-        int entityId = furniture.bukkitEntity().getEntityId();
-        Integer previousEntityId = baseEntityByOwner.get(owner);
-        if (previousEntityId != null && previousEntityId != entityId) {
-            detachOwner(owner);
-        }
-
-        UUID previousOwner = ownerByBaseEntity.put(entityId, owner);
-        if (previousOwner != null && !previousOwner.equals(owner)) {
-            baseEntityByOwner.remove(previousOwner, entityId);
-            detachOwnerTracking(previousOwner);
-        }
-        baseEntityByOwner.put(owner, entityId);
+        activeOwners.add(owner);
+        ensureTrackingListeners();
 
         // Covers plugin reloads and furniture that became tracked before the lifecycle callback.
         for (Player player : furniture.bukkitEntity().getTrackedBy()) {
@@ -178,17 +170,21 @@ final class ShakerIngredientHudController implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onTrack(PlayerTrackEntityEvent event) {
-        UUID owner = ownerByBaseEntity.get(event.getEntity().getEntityId());
-        if (owner != null) {
-            track(event.getPlayer(), owner);
+        if (event.getEntity() instanceof ItemDisplay itemDisplay) {
+            UUID owner = itemDisplay.getUniqueId();
+            if (activeOwners.contains(owner)) {
+                track(event.getPlayer(), owner);
+            }
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onUntrack(PlayerUntrackEntityEvent event) {
-        UUID owner = ownerByBaseEntity.get(event.getEntity().getEntityId());
-        if (owner != null) {
-            untrack(event.getPlayer(), owner);
+        if (event.getEntity() instanceof ItemDisplay itemDisplay) {
+            UUID owner = itemDisplay.getUniqueId();
+            if (activeOwners.contains(owner)) {
+                untrack(event.getPlayer(), owner);
+            }
         }
     }
 
@@ -198,7 +194,7 @@ final class ShakerIngredientHudController implements Listener {
     }
 
     private void track(Player player, UUID owner) {
-        if (!player.isOnline() || !baseEntityByOwner.containsKey(owner)
+        if (!player.isOnline() || !activeOwners.contains(owner)
                 || loaded.get(owner) == null) {
             return;
         }
@@ -230,11 +226,11 @@ final class ShakerIngredientHudController implements Listener {
     }
 
     private void detachOwner(UUID owner) {
-        Integer entityId = baseEntityByOwner.remove(owner);
-        if (entityId != null) {
-            ownerByBaseEntity.remove(entityId, owner);
+        if (!activeOwners.remove(owner) && !playersByOwner.containsKey(owner)) {
+            return;
         }
         detachOwnerTracking(owner);
+        stopTrackingListenersIfIdle();
     }
 
     private void detachOwnerTracking(UUID owner) {
@@ -278,6 +274,20 @@ final class ShakerIngredientHudController implements Listener {
         viewers.remove(playerId);
         if (viewers.isEmpty()) {
             playersByOwner.remove(owner, viewers);
+        }
+    }
+
+    private void ensureTrackingListeners() {
+        if (started && !trackingListenersRegistered && !activeOwners.isEmpty()) {
+            plugin.getServer().getPluginManager().registerEvents(this, plugin);
+            trackingListenersRegistered = true;
+        }
+    }
+
+    private void stopTrackingListenersIfIdle() {
+        if (trackingListenersRegistered && activeOwners.isEmpty()) {
+            HandlerList.unregisterAll(this);
+            trackingListenersRegistered = false;
         }
     }
 

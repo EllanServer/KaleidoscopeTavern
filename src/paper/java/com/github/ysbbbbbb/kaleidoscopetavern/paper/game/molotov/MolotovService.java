@@ -4,7 +4,12 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.drink.BottleFurnitureSe
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.item.ItemService;
 import io.papermc.paper.event.player.PlayerStopUsingItemEvent;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
+import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.entity.furniture.BukkitFurniture;
+import net.momirealms.craftengine.core.block.UpdateFlags;
+import net.momirealms.craftengine.proxy.bukkit.craftbukkit.CraftWorldProxy;
+import net.momirealms.craftengine.proxy.minecraft.core.BlockPosProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.level.LevelWriterProxy;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -38,14 +43,37 @@ import java.util.concurrent.ThreadLocalRandom;
 /** Restores the original charged throw and fire-spreading Molotov impact. */
 public final class MolotovService implements Listener {
     private static final String MOLOTOV = "kaleidoscope_tavern:molotov";
+    // Client updates are required, but cascading neighbour/shape physics for
+    // every fire in the same burst is not. Unlike Bukkit's applyPhysics=false
+    // flags, this deliberately does not include UPDATE_SKIP_ON_PLACE: vanilla
+    // FireBlock#onPlace must still schedule the first fire tick.
+    private static final int FIRE_UPDATE_FLAGS =
+            UpdateFlags.UPDATE_CLIENTS | UpdateFlags.UPDATE_KNOWN_SHAPE;
+
     private final JavaPlugin plugin;
     private final ItemService items;
     private final NamespacedKey projectileKey;
+    private final BlockData fireData;
+    private final BlockData soulFireData;
+    private final Object fireState;
+    private final Object soulFireState;
+    private final CraftWorldProxy craftWorlds;
+    private final BlockPosProxy blockPositions;
+    private final LevelWriterProxy levelWriter;
 
     public MolotovService(JavaPlugin plugin, ItemService items) {
         this.plugin = plugin;
         this.items = items;
         this.projectileKey = new NamespacedKey(plugin, "molotov_projectile");
+        this.fireData = Material.FIRE.createBlockData();
+        this.soulFireData = Material.SOUL_FIRE.createBlockData();
+        this.fireState = BlockStateUtils.blockDataToBlockState(fireData);
+        this.soulFireState = BlockStateUtils.blockDataToBlockState(soulFireData);
+        // Resolve CE's generated NMS bridges during plugin enable rather than
+        // charging their first-use linkage to the first Molotov impact.
+        this.craftWorlds = CraftWorldProxy.INSTANCE;
+        this.blockPositions = BlockPosProxy.INSTANCE;
+        this.levelWriter = LevelWriterProxy.INSTANCE;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -146,23 +174,30 @@ public final class MolotovService implements Listener {
 
     private void spreadFire(Location center, Entity source) {
         int radius = 3;
+        int radiusSquared = radius * radius;
         ThreadLocalRandom random = ThreadLocalRandom.current();
+        Block centerBlock = center.getBlock();
+        Object level = craftWorlds.getWorld(center.getWorld());
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
-                double overshoot = Math.sqrt(dx * dx + dz * dz) - radius;
-                if (overshoot > 2D || overshoot > 0D && random.nextDouble() >= (1D - overshoot / 2D) * 0.6D) {
-                    continue;
+                int distanceSquared = dx * dx + dz * dz;
+                if (distanceSquared > radiusSquared) {
+                    double overshoot = Math.sqrt(distanceSquared) - radius;
+                    if (overshoot > 2D || random.nextDouble()
+                            >= (1D - overshoot / 2D) * 0.6D) {
+                        continue;
+                    }
                 }
                 for (int dy = -1; dy <= 1; dy++) {
-                    Block target = center.getBlock().getRelative(dx, dy, dz);
+                    Block target = centerBlock.getRelative(dx, dy, dz);
                     if (!target.getType().isAir()) {
                         continue;
                     }
-                    Material fireType = switch (target.getRelative(BlockFace.DOWN).getType()) {
-                        case SOUL_SAND, SOUL_SOIL -> Material.SOUL_FIRE;
-                        default -> Material.FIRE;
+                    boolean soulFire = switch (target.getRelative(BlockFace.DOWN).getType()) {
+                        case SOUL_SAND, SOUL_SOIL -> true;
+                        default -> false;
                     };
-                    BlockData fire = fireType.createBlockData();
+                    BlockData fire = soulFire ? soulFireData : fireData;
                     if (!target.canPlace(fire)) {
                         continue;
                     }
@@ -170,8 +205,11 @@ public final class MolotovService implements Listener {
                             target, BlockIgniteEvent.IgniteCause.FIREBALL, source);
                     Bukkit.getPluginManager().callEvent(ignite);
                     if (!ignite.isCancelled()) {
-                        target.setBlockData(fire, true);
-                        if (target.getType() == fireType) {
+                        Object position = blockPositions.newInstance(
+                                target.getX(), target.getY(), target.getZ());
+                        Object state = soulFire ? soulFireState : fireState;
+                        if (levelWriter.setBlock(
+                                level, position, state, FIRE_UPDATE_FLAGS)) {
                             break;
                         }
                     }

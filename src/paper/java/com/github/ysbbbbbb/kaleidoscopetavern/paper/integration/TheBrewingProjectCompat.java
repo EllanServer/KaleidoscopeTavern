@@ -37,11 +37,10 @@ public final class TheBrewingProjectCompat {
      * plus one PDC lookup, short-circuited in that order.
      */
     public static boolean isBrew(ItemStack stack) {
-        if (!installed()) {
+        if (stack.getType() != Material.POTION || !installed()) {
             return false;
         }
-        return stack.getType() == Material.POTION
-                && stack.getPersistentDataContainer().has(BREWERY_DATA_VERSION);
+        return stack.getPersistentDataContainer().has(BREWERY_DATA_VERSION);
     }
 
     private static boolean installed() {

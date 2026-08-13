@@ -172,8 +172,8 @@ def main() -> int:
         render_items_document = json.loads(
             archive.read("tavern-pack/configuration/render-items.json").decode("utf-8-sig")
         )
-        if len(render_items_document.get("items", {})) != 413:
-            raise SystemExit("Embedded CraftEngine project must contain 413 render item ids")
+        if len(render_items_document.get("items", {})) != 414:
+            raise SystemExit("Embedded CraftEngine project must contain 414 render item ids")
 
         worldgen_document = json.loads(
             archive.read("tavern-pack/configuration/worldgen.json").decode("utf-8-sig")

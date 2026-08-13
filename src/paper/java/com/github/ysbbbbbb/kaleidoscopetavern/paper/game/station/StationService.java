@@ -89,6 +89,19 @@ public final class StationService implements Listener {
     private static final int MAX_STATION_ITEM_VISUALS = 16;
     private static final int MAX_STATION_MATERIAL_VISUALS = 4;
 
+    /**
+     * Paper transforms plugin classes lazily when they are first resolved.
+     * Resolve the barrel state/semantics classes with StationService during
+     * plugin enable so a loaded barrel's shouldSchedule callback never owns
+     * that one-time Commodore/ClassLoader work.
+     */
+    @SuppressWarnings("unused")
+    private static final Class<?>[] PRELINKED_BARREL_TICK_CLASSES = {
+            FurnitureState.class,
+            BarrelSemantics.class,
+            BarrelSemantics.BrewState.class
+    };
+
     private final JavaPlugin plugin;
     private final ContentCatalog catalog;
     private final StationRecipeRegistry recipes;

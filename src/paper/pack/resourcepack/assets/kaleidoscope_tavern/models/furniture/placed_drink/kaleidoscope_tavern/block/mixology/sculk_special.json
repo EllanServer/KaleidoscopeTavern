@@ -843,39 +843,6 @@
     },
     {
       "from": [
-        0,
-        0.1,
-        0
-      ],
-      "to": [
-        16,
-        0.1,
-        16
-      ],
-      "shade": false,
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          0,
-          0.1,
-          0
-        ]
-      },
-      "faces": {
-        "up": {
-          "uv": [
-            8,
-            8,
-            16,
-            16
-          ],
-          "texture": "#opaque_detail"
-        }
-      }
-    },
-    {
-      "from": [
         1,
         5.5,
         8

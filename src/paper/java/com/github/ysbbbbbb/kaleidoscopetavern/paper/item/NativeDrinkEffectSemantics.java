@@ -13,6 +13,15 @@ public final class NativeDrinkEffectSemantics {
                 && probability >= 1.0;
     }
 
+    /**
+     * Effects embedded by {@link ItemService} are applied by Minecraft while
+     * finishing the consumable. Everything else stays on the Paper event
+     * bridge so probability and Tavern-specific behavior remain intact.
+     */
+    public static boolean shouldApplyThroughEvent(String effectId, double probability) {
+        return !shouldEmbed(effectId, probability);
+    }
+
     public static int duration(boolean instant, int durationTicks) {
         return instant ? Math.max(1, durationTicks) : durationTicks;
     }

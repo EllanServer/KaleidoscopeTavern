@@ -31,6 +31,7 @@ import net.momirealms.craftengine.proxy.minecraft.core.MutableBlockPosProxy;
 import net.momirealms.craftengine.proxy.minecraft.core.Vec3iProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.BlockGetterProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
+import net.momirealms.craftengine.proxy.bukkit.craftbukkit.CraftWorldProxy;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -65,6 +66,8 @@ public final class TrellisBehavior extends BukkitBlockBehavior
     private final Property<String> typeProperty;
     private final IntegerProperty ageProperty;
     private final float spreadChance;
+    private final TrellisTemperatureSemantics.Rule temperatureRule;
+    private final GrapeSeasonSemantics.Plant seasonalPlant;
 
     private TrellisBehavior(BlockDefinition block, ConfigSection section) {
         super(block);
@@ -75,6 +78,9 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         Property<?> age = block.getProperty("age");
         this.ageProperty = age instanceof IntegerProperty integer ? integer : null;
         this.spreadChance = section.getFloat("spread_chance", 0.25F);
+        String blockId = block.id().toString();
+        this.temperatureRule = TrellisTemperatureSemantics.ruleForBlock(blockId);
+        this.seasonalPlant = GrapeSeasonSemantics.plantForTrellis(blockId);
     }
 
     /** Must run from the plugin's onLoad, before CraftEngine parses projects. */
@@ -82,6 +88,26 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         if (REGISTERED.compareAndSet(false, true)) {
             BlockBehaviors.register(TYPE, TrellisBehavior::new);
         }
+    }
+
+    /** Builds lazy NMS call sites during startup, outside the first trellis random tick. */
+    public static void prewarmRuntime(List<World> worlds) {
+        // MutableBlockPosProxy and Vec3iProxy are separate CE proxy interfaces.
+        // Warming only the mutable proxy still leaves Vec3iProxy's ASM binding
+        // on the first random tick that reads the supplied BlockPos.
+        Vec3iProxy.INSTANCE.newInstance(0, 0, 0);
+        MutableBlockPosProxy.INSTANCE.newInstance();
+        if (worlds.isEmpty()) {
+            return;
+        }
+        World world = worlds.getFirst();
+        Location spawn = world.getSpawnLocation();
+        Object level = CraftWorldProxy.INSTANCE.getWorld(world);
+        // Spawn chunks have already been prepared before Paper enables plugins. This
+        // read therefore links the biome MethodHandle without loading a new chunk or
+        // mutating world state. Run twice so invokeExact's adapted form is exercised.
+        BiomeTemperature.at(level, spawn.getBlockX(), spawn.getBlockY(), spawn.getBlockZ());
+        BiomeTemperature.at(level, spawn.getBlockX(), spawn.getBlockY(), spawn.getBlockZ());
     }
 
     @Override
@@ -140,24 +166,40 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         }
         ImmutableBlockState state = optional.get();
         Object level = args[1];
+        Object position = args[2];
+
+        int x;
+        int y;
+        int z;
+        if (temperatureRule == TrellisTemperatureSemantics.Rule.NONE) {
+            // The original ordinary grape supplier is a constant 0.25F. Its
+            // overwhelmingly common failed roll needs neither BlockPos field
+            // reads nor an NMS biome lookup.
+            if (ThreadLocalRandom.current().nextFloat() >= spreadChance) {
+                return;
+            }
+            x = Vec3iProxy.INSTANCE.getX(position);
+            y = Vec3iProxy.INSTANCE.getY(position);
+            z = Vec3iProxy.INSTANCE.getZ(position);
+        } else {
+            x = Vec3iProxy.INSTANCE.getX(position);
+            y = Vec3iProxy.INSTANCE.getY(position);
+            z = Vec3iProxy.INSTANCE.getZ(position);
+            if (ThreadLocalRandom.current().nextFloat()
+                    >= adjustedChance(level, x, y, z)) {
+                return;
+            }
+        }
+
         World world = LevelProxy.INSTANCE.getWorld(level);
         if (world == null) {
             return;
         }
-        Object position = args[2];
-        int x = Vec3iProxy.INSTANCE.getX(position);
-        int y = Vec3iProxy.INSTANCE.getY(position);
-        int z = Vec3iProxy.INSTANCE.getZ(position);
-        String id = state.owner().value().id().toString();
-        float chance = adjustedChance(level, x, y, z, id);
-        if (ThreadLocalRandom.current().nextFloat() >= chance) {
-            return;
-        }
         Location location = new Location(world, x, y, z);
-        GrapeSeasonSemantics.Plant plant = GrapeSeasonSemantics.plantForTrellis(id);
         // SereneSeasons parity: only random ticks are season-gated; the bone
         // meal chain (performBonemeal -> grow) intentionally bypasses this.
-        if (plant != null && !GrapeSeasonGate.permitsRandomGrowth(plant, location)) {
+        if (seasonalPlant != null
+                && !GrapeSeasonGate.permitsRandomGrowth(seasonalPlant, location)) {
             return;
         }
         grow(location, state, level, position);
@@ -294,15 +336,9 @@ public final class TrellisBehavior extends BukkitBlockBehavior
                 && grow(location, source);
     }
 
-    private float adjustedChance(Object level, int x, int y, int z, String id) {
+    private float adjustedChance(Object level, int x, int y, int z) {
         double temperature = BiomeTemperature.at(level, x, y, z);
-        if (id.equals(PREFIX + "ice_grapevine_trellis") && temperature < 0.15D) {
-            return Math.max(spreadChance, 0.8F);
-        }
-        if (id.equals(PREFIX + "gold_grapevine_trellis") && temperature > 1.0D) {
-            return Math.max(spreadChance, 0.8F);
-        }
-        return spreadChance;
+        return temperatureRule.adjust(spreadChance, temperature);
     }
 
     private static Location location(Object level, Object position) {

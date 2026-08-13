@@ -17,6 +17,16 @@ final class NativeDrinkEffectSemanticsTest {
     }
 
     @Test
+    void eventBridgeIsTheExactComplementOfNativePotionContents() {
+        assertFalse(NativeDrinkEffectSemantics.shouldApplyThroughEvent(
+                "minecraft:speed", 1.0));
+        assertTrue(NativeDrinkEffectSemantics.shouldApplyThroughEvent(
+                "minecraft:speed", 0.15));
+        assertTrue(NativeDrinkEffectSemantics.shouldApplyThroughEvent(
+                "kaleidoscope_tavern:vision", 1.0));
+    }
+
+    @Test
     void givesInstantEffectsAUsablePotionDuration() {
         assertEquals(1, NativeDrinkEffectSemantics.duration(true, 0));
         assertEquals(40, NativeDrinkEffectSemantics.duration(true, 40));

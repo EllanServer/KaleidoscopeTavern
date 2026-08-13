@@ -56,7 +56,7 @@
 - 单独校验 CE 配置：`.\gradlew.bat validatePack` 或 `python tools/validate_pack.py`。
 - 校验 CE 服务端状态预算：`.\gradlew.bat validateServerStateBudget` 或
   `python tools/check_server_state_budget.py --capacity 2000 --reserve 1000`。
-- 迁移与校验会生成/检查 157 个公共物品、44 个方块 id、116 个家具定义、413 个私有渲染物品、114 个配方
+- 迁移与校验会生成/检查 157 个公共物品、44 个方块 id、116 个家具定义、414 个私有渲染物品、114 个配方
   和 3 个 CustomCrops 作物。
 
 ## 生成文件

@@ -9,7 +9,6 @@ import net.momirealms.craftengine.bukkit.entity.data.DisplayData;
 import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
 import net.momirealms.craftengine.bukkit.util.EntityUtils;
-import net.momirealms.craftengine.bukkit.util.ItemStackUtils;
 import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.BlockDefinition;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
@@ -30,7 +29,6 @@ import net.momirealms.craftengine.core.plugin.config.Config;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
-import net.momirealms.craftengine.core.util.VersionHelper;
 import net.momirealms.craftengine.core.world.BlockPos;
 import net.momirealms.craftengine.core.world.CEWorld;
 import net.momirealms.craftengine.core.world.Vec3d;
@@ -38,6 +36,7 @@ import net.momirealms.craftengine.core.world.chunk.CEChunk;
 import net.momirealms.craftengine.core.world.context.BlockPlaceContext;
 import net.momirealms.craftengine.core.world.context.UseOnContext;
 import net.momirealms.craftengine.libraries.antigrieflib.Flag;
+import net.momirealms.craftengine.libraries.nbt.ByteArrayTag;
 import net.momirealms.craftengine.libraries.nbt.CompoundTag;
 import net.momirealms.craftengine.libraries.nbt.Tag;
 import net.momirealms.craftengine.proxy.minecraft.network.protocol.game.ClientboundAddEntityPacketProxy;
@@ -77,6 +76,7 @@ import java.util.function.Consumer;
  */
 public final class StorageBlockBehavior extends BukkitBlockBehavior implements EntityBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "storage");
+    private static final int ITEM_DATA_VERSION = 2;
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static volatile Handler handler;
 
@@ -494,13 +494,16 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
                 invalidateVisuals();
                 return;
             }
+            int storageVersion = data.getInt("version", 1);
             int dataVersion = data.getInt(
                     "data_version", Config.itemDataFixerUpperFallbackVersion());
             for (int slot = 0; slot < items.length; slot++) {
                 Tag itemTag = data.get("slot_" + slot);
                 if (itemTag != null) {
-                    items[slot] = ItemStackUtils.wrap(
-                            ItemStackUtils.parseMinecraftItem(itemTag, dataVersion));
+                    items[slot] = storageVersion >= ITEM_DATA_VERSION
+                            && itemTag instanceof ByteArrayTag encoded
+                            ? decodeCached(encoded.getAsByteArray())
+                            : decodeLegacy(itemTag, dataVersion);
                     if (!items[slot].isEmpty()) {
                         occupiedSlots++;
                     }
@@ -509,18 +512,36 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
             invalidateVisuals();
         }
 
+        private static Item decodeCached(byte[] encoded) {
+            try {
+                // CE 26.8 owns a bounded cache for this exact format and returns a copy.
+                return Item.fromBytes(encoded);
+            } catch (RuntimeException ignored) {
+                return Item.empty();
+            }
+        }
+
+        private static Item decodeLegacy(Tag itemTag, int dataVersion) {
+            try {
+                return net.momirealms.craftengine.bukkit.util.ItemStackUtils.wrap(
+                        net.momirealms.craftengine.bukkit.util.ItemStackUtils
+                                .parseMinecraftItem(itemTag, dataVersion));
+            } catch (RuntimeException ignored) {
+                return Item.empty();
+            }
+        }
+
         @Override
         public void saveCustomData(CompoundTag tag) {
             if (!hasAny()) {
                 return;
             }
             CompoundTag data = new CompoundTag();
-            data.putInt("data_version", VersionHelper.WORLD_VERSION);
+            data.putInt("version", ITEM_DATA_VERSION);
             for (int slot = 0; slot < items.length; slot++) {
                 Item item = items[slot];
                 if (item != null && !item.isEmpty()) {
-                    data.put("slot_" + slot,
-                            ItemStackUtils.saveMinecraftItemStackAsTag(item.minecraftItem()));
+                    data.put("slot_" + slot, new ByteArrayTag(item.toBytes()));
                 }
             }
             tag.put(behavior.config.dataKey(), data);

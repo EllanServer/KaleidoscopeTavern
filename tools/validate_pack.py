@@ -137,6 +137,24 @@ EXPECTED_BOTTLE_FURNITURE = {
     "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
     "watermelon_juice",
 }
+CARDINAL_BOTTLE_AXIS_CONDITIONS = {
+    (
+        "(ABS(<arg:furniture.yaw> % 180) <= 45) || "
+        "(ABS(<arg:furniture.yaw> % 180) > 135)",
+        None,
+    ),
+    (
+        "(ABS(<arg:furniture.yaw> % 180) > 45) && "
+        "(ABS(<arg:furniture.yaw> % 180) <= 135)",
+        180,
+    ),
+}
+SCULK_RIPPLE_ELEMENT_INDEX = 12
+SCULK_RIPPLE_MODEL_PATH = (
+    f"furniture/placed_drink/{NAMESPACE}/block/mixology/sculk_special_ripple"
+)
+SCULK_RIPPLE_MODEL_ID = f"{NAMESPACE}:{SCULK_RIPPLE_MODEL_PATH}"
+SCULK_RIPPLE_RENDER_ID = f"{NAMESPACE}:_render/sculk_special/ripple"
 OPAQUE_PLACED_DRINK_ELEMENTS = {
     "allium_garden": (12, 13),
     "bloody_mary": (1, 10, 11, 12, 13),
@@ -159,13 +177,19 @@ EXPECTED_CONSUMABLE_COCKTAILS = {
     "allium_garden", "depth_charge", "nether_special", "bloody_mary",
     "sculk_special",
 }
-EXPECTED_ROTATION_16_GLASSWARE = EXPECTED_CONSUMABLE_COCKTAILS | {
-    "empty_glassware",
-}
 SIMPLE_BOTTLES = {
     "water_bottle", "honey_bottle", "dragon_breath_bottle",
     "potion_bottle", "xp_bottle",
 }
+EXPECTED_ROTATION_16_VESSELS = EXPECTED_CONSUMABLE_COCKTAILS | {
+    "empty_glassware",
+} | SIMPLE_BOTTLES
+EXPECTED_DIRECTIONLESS_VESSELS = {"molotov"}
+EXPECTED_CARDINAL_BOTTLE_FURNITURE = (
+    EXPECTED_BOTTLE_FURNITURE
+    - EXPECTED_ROTATION_16_VESSELS
+    - EXPECTED_DIRECTIONLESS_VESSELS
+)
 EXPECTED_STORAGE_INTERACTION_FURNITURE = {
     "glassware_holder",
 }
@@ -404,7 +428,11 @@ RUNTIME_BEHAVIOR_COVERAGE = {
         ("effect/IncenseBlockBehavior.java", "spawnParticles"),
     ),
     "JuiceBucketItem.java": (("tools/migrate_legacy.py", "milk_bucket"),),
-    "MolotovBlock.java": (("molotov/MolotovService.java", "onProjectileHit"),),
+    "MolotovBlock.java": (
+        ("molotov/MolotovService.java", "onProjectileHit"),
+        ("molotov/MolotovService.java", "LevelWriterProxy.INSTANCE"),
+        ("molotov/MolotovService.java", "UPDATE_CLIENTS | UpdateFlags.UPDATE_KNOWN_SHAPE"),
+    ),
     "MolotovBlockItem.java": (
         ("molotov/MolotovService.java", "onStopUsing"),
         ("tools/migrate_legacy.py", "consume_seconds"),
@@ -576,7 +604,67 @@ BLOCK_ENTITY_COVERAGE = {
 
 def expected_vessel_rotation(item_id: str) -> str:
     path = item_id.rsplit(":", 1)[-1]
-    return "sixteen" if path in EXPECTED_ROTATION_16_GLASSWARE else "four"
+    if path in EXPECTED_ROTATION_16_VESSELS:
+        return "sixteen"
+    if path in EXPECTED_DIRECTIONLESS_VESSELS:
+        return "north"
+    return "four"
+
+
+def validate_cardinal_bottle_direction_mapping() -> None:
+    """Prove cardinal CE displays match Forge HorizontalDirectionalBlock yaw."""
+
+    player_yaw = {
+        "north": 180,
+        "east": -90,
+        "south": 0,
+        "west": 90,
+    }
+    opposite = {
+        "north": "south",
+        "east": "west",
+        "south": "north",
+        "west": "east",
+    }
+    source_blockstate_yaw = {
+        "north": 0,
+        "east": 90,
+        "south": 180,
+        "west": 270,
+    }
+    actual: dict[str, int] = {}
+    expected: dict[str, int] = {}
+    for player_facing, yaw in player_yaw.items():
+        # FurnitureItemBehavior 26.8 applies FOUR to 180 + playerYaw.
+        furniture_yaw = round((180 + yaw) / 90) * 90
+        axis = abs(math.fmod(furniture_yaw, 180))
+        element_yaw = 0 if axis <= 45 or axis > 135 else 180
+        # Minecraft's ItemDisplay renderer reverses entity yaw and applies its
+        # final 180-degree item-model turn.
+        actual[player_facing] = int(
+            (180 - (furniture_yaw + element_yaw)) % 360)
+        expected[player_facing] = source_blockstate_yaw[opposite[player_facing]]
+    if actual != expected:
+        raise AssertionError(
+            "CE bottle direction no longer matches Forge "
+            f"FACING=player.opposite blockstates: actual={actual}, expected={expected}")
+
+
+def expected_sculk_ripple_directions() -> set[tuple[str, float | None]]:
+    directions: set[tuple[str, float | None]] = set()
+    for segment in range(16):
+        furniture_yaw = segment * 22.5
+        normalized = f"{furniture_yaw:.6f}".rstrip("0").rstrip(".")
+        expression = (
+            "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - "
+            f"{normalized}) < 0.001"
+        )
+        yaw = -furniture_yaw if furniture_yaw else None
+        directions.add((expression, yaw))
+        if (furniture_yaw + (yaw or 0.0)) % 360 != 0:
+            raise AssertionError(
+                f"sculk_special: ripple yaw {yaw} does not cancel {furniture_yaw}")
+    return directions
 
 
 def nested_strings(value: Any):
@@ -865,6 +953,7 @@ def generated_station_recipe_rows(name: str) -> list[dict[str, Any]]:
 
 
 def validate() -> dict[str, int]:
+    validate_cardinal_bottle_direction_mapping()
     items = load("items.json", "items")
     public_items = {
         item_id: definition for item_id, definition in items.items()
@@ -897,8 +986,8 @@ def validate() -> dict[str, int]:
         raise AssertionError(f"Expected 44 grid/state blocks, found {len(blocks)}")
     if len(furniture) != 116:
         raise AssertionError(f"Expected 116 furniture definitions, found {len(furniture)}")
-    if len(render_items) != 413:
-        raise AssertionError(f"Expected 413 private render items, found {len(render_items)}")
+    if len(render_items) != 414:
+        raise AssertionError(f"Expected 414 private render items, found {len(render_items)}")
     if len(recipes) != 114:
         raise AssertionError(f"Expected 114 crafting recipes, found {len(recipes)}")
 
@@ -938,7 +1027,88 @@ def validate() -> dict[str, int]:
     for bottle_id in sorted(EXPECTED_BOTTLE_FURNITURE):
         config = furniture[f"{NAMESPACE}:{bottle_id}"]
         for variant_name, variant in config.get("variants", {}).items():
-            for element in variant.get("elements", []):
+            elements = variant.get("elements", [])
+            if any(element.get("type") != "item_display" for element in elements):
+                raise AssertionError(
+                    f"{bottle_id}/{variant_name}: vessel furniture must use item displays")
+            if bottle_id == "sculk_special":
+                if len(elements) != 17:
+                    raise AssertionError(
+                        "sculk_special: expected one rotating body and sixteen "
+                        "world-fixed ripple alternatives")
+                body, ripple_elements = elements[0], elements[1:]
+                if "conditions" in body or "yaw" in body:
+                    raise AssertionError(
+                        "sculk_special: the glass body must follow native CE sixteen-way yaw")
+                ripple_directions: set[tuple[str | None, float | None]] = set()
+                ripple_bases: list[dict[str, Any]] = []
+                for ripple in ripple_elements:
+                    conditions = ripple.get("conditions")
+                    if (not isinstance(conditions, list) or len(conditions) != 1
+                            or conditions[0].get("type") != "expression"):
+                        raise AssertionError(
+                            "sculk_special: each fixed ripple alternative needs one "
+                            "native CE expression condition")
+                    ripple_directions.add((
+                        conditions[0].get("expression"),
+                        ripple.get("yaw"),
+                    ))
+                    ripple_bases.append({
+                        key: value for key, value in ripple.items()
+                        if key not in {"conditions", "yaw"}
+                    })
+                if ripple_directions != expected_sculk_ripple_directions():
+                    raise AssertionError(
+                        "sculk_special: ripple yaw alternatives no longer cancel all "
+                        "sixteen furniture directions")
+                if (any(base != ripple_bases[0] for base in ripple_bases[1:])
+                        or ripple_bases[0].get("item") != SCULK_RIPPLE_RENDER_ID):
+                    raise AssertionError(
+                        "sculk_special: fixed ripple alternatives must share one model "
+                        "and exact display transform")
+                if body.get("item") == SCULK_RIPPLE_RENDER_ID:
+                    raise AssertionError(
+                        "sculk_special: rotating body and fixed ripple need separate models")
+            elif bottle_id in EXPECTED_CARDINAL_BOTTLE_FURNITURE:
+                if len(elements) != 2:
+                    raise AssertionError(
+                        f"{bottle_id}/{variant_name}: cardinal bottle furniture must "
+                        "contain exactly two conditional CE item-display elements")
+                directions: set[tuple[str | None, int | None]] = set()
+                bases: list[dict[str, Any]] = []
+                for element in elements:
+                    conditions = element.get("conditions")
+                    if (not isinstance(conditions, list) or len(conditions) != 1
+                            or conditions[0].get("type") != "expression"):
+                        raise AssertionError(
+                            f"{bottle_id}/{variant_name}: cardinal direction display "
+                            "must use one native CE expression condition")
+                    directions.add((
+                        conditions[0].get("expression"),
+                        element.get("yaw"),
+                    ))
+                    bases.append({
+                        key: value for key, value in element.items()
+                        if key not in {"conditions", "yaw"}
+                    })
+                if directions != CARDINAL_BOTTLE_AXIS_CONDITIONS:
+                    raise AssertionError(
+                        f"{bottle_id}/{variant_name}: cardinal direction compensation "
+                        f"drifted: {sorted(directions, key=str)}")
+                if bases[0] != bases[1]:
+                    raise AssertionError(
+                        f"{bottle_id}/{variant_name}: direction copies must share one "
+                        "render item and exact display transform")
+            else:
+                if len(elements) != 1:
+                    raise AssertionError(
+                        f"{bottle_id}/{variant_name}: CE-native sixteen/fixed rotation "
+                        "must use exactly one item-display element")
+                if "conditions" in elements[0] or "yaw" in elements[0]:
+                    raise AssertionError(
+                        f"{bottle_id}/{variant_name}: CE must own the furniture yaw "
+                        "without conditional display copies or element yaw")
+            for element in elements:
                 if element.get("type") != "item_display":
                     continue
                 render_id = element.get("item")
@@ -973,6 +1143,22 @@ def validate() -> dict[str, int]:
         assert_ordered_model_bounds(model_path, owner)
         assert_no_forge_render_type(model_path, owner)
 
+    ripple_render = render_items.get(SCULK_RIPPLE_RENDER_ID, {})
+    if ripple_render.get("model", {}).get("path") != SCULK_RIPPLE_MODEL_ID:
+        raise AssertionError(
+            "sculk_special: fixed ripple render item is missing its split model")
+    ripple_model = asset_json(
+        SCULK_RIPPLE_MODEL_ID, "models", roots=(ASSET_ROOTS[0],))
+    if ripple_model is None:
+        raise AssertionError("sculk_special: missing split ripple model")
+    ripple_geometry = ripple_model.get("elements", [])
+    if (len(ripple_geometry) != 1
+            or ripple_geometry[0].get("from") != [0, 0.1, 0]
+            or ripple_geometry[0].get("to") != [16, 0.1, 16]
+            or set(ripple_geometry[0].get("faces", {})) != {"up"}):
+        raise AssertionError(
+            "sculk_special: fixed ripple must remain the authored 16x16 top plane")
+
     if set(OPAQUE_PLACED_DRINK_ELEMENTS) != EXPECTED_CONSUMABLE_COCKTAILS:
         raise AssertionError(
             "Every consumable cocktail must explicitly classify its opaque decorations")
@@ -1004,8 +1190,16 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 f"{drink_id}: glass/liquid must retain one forced-translucent slot")
         elements = model.get("elements", [])
+        private_opaque_indices = tuple(
+            index - 1
+            if drink_id == "sculk_special" and index > SCULK_RIPPLE_ELEMENT_INDEX
+            else index
+            for index in opaque_element_indices
+            if not (drink_id == "sculk_special"
+                    and index == SCULK_RIPPLE_ELEMENT_INDEX)
+        )
         missing_indices = [
-            index for index in opaque_element_indices if index >= len(elements)
+            index for index in private_opaque_indices if index >= len(elements)
         ]
         if missing_indices:
             raise AssertionError(
@@ -1016,7 +1210,7 @@ def validate() -> dict[str, int]:
                 face.get("texture")
                 for face in element.get("faces", {}).values()
             }
-            if index in opaque_element_indices:
+            if index in private_opaque_indices:
                 if face_textures != {"#opaque_detail"}:
                     raise AssertionError(
                         f"{drink_id}: decoration element {index} is not fully opaque")
@@ -1252,7 +1446,7 @@ def validate() -> dict[str, int]:
     for token in (
             "if (!context.isSecondaryUseActive())",
             "return InteractionResult.PASS;",
-            "return furnitureItem.useOnBlock(context);"):
+            "return furnitureItem.place(context);"):
         if token not in item_behavior_source:
             raise AssertionError(
                 "Vessel CE behavior must preserve normal item use and delegate the "
@@ -1260,10 +1454,10 @@ def validate() -> dict[str, int]:
     for token in (
             "SneakPlaceVanillaBottleItemBehavior.register(this)",
             "FurnitureItemBehavior.FACTORY.create",
-            "if (!context.isSecondaryUseActive()",
+            "!context.isSecondaryUseActive()",
             "TheBrewingProjectCompat.isBrew(stack)",
             "PotionType.WATER",
-            "placement.furnitureItem().useOnBlock(context)",
+            "placement.furnitureItem().place(context)",
             "return InteractionResult.SUCCESS_AND_CANCEL;"):
         if token not in plugin_source + vanilla_bottle_behavior_source:
             raise AssertionError(
@@ -6049,7 +6243,7 @@ def validate() -> dict[str, int]:
             "Block-backed bar counter must not retain a furniture definition")
 
     for expected_token in (
-            "EXPECTED_ITEMS = 570",
+            "EXPECTED_ITEMS = 571",
             "EXPECTED_BLOCKS = 44",
             "EXPECTED_FURNITURE = 116"):
         if expected_token not in plugin_source:

@@ -29,10 +29,34 @@ public final class SneakPlaceVanillaBottleItemBehavior extends ItemBehavior {
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static volatile JavaPlugin plugin;
 
-    private final Map<Route, Placement> placements;
+    private final Placement directPlacement;
+    private final Placement waterPlacement;
+    private final Placement potionPlacement;
+    private final boolean anyPlacementEnabled;
 
     private SneakPlaceVanillaBottleItemBehavior(Map<Route, Placement> placements) {
-        this.placements = Map.copyOf(placements);
+        boolean potionRouting = placements.containsKey(Route.WATER)
+                || placements.containsKey(Route.POTION);
+        if (potionRouting) {
+            if (placements.keySet().stream().anyMatch(route ->
+                    route != Route.WATER && route != Route.POTION)) {
+                throw new IllegalArgumentException(
+                        "Potion routes cannot be mixed with fixed vanilla-bottle routes");
+            }
+            this.directPlacement = null;
+            this.waterPlacement = placements.get(Route.WATER);
+            this.potionPlacement = placements.get(Route.POTION);
+        } else {
+            if (placements.size() != 1) {
+                throw new IllegalArgumentException(
+                        "A non-potion vanilla bottle behavior requires exactly one route");
+            }
+            this.directPlacement = placements.values().iterator().next();
+            this.waterPlacement = null;
+            this.potionPlacement = null;
+        }
+        this.anyPlacementEnabled = placements.values().stream().anyMatch(placement ->
+                placement != null);
     }
 
     /** Must run from the plugin's onLoad, before CraftEngine parses projects. */
@@ -47,31 +71,45 @@ public final class SneakPlaceVanillaBottleItemBehavior extends ItemBehavior {
             Pack pack, Path path, Key id, ConfigSection section) {
         ConfigSection configuredPlacements = section.getNonNullSection("placements");
         Map<Route, Placement> placements = new EnumMap<>(Route.class);
+        JavaPlugin owner = plugin;
+        if (owner == null) {
+            throw new IllegalStateException(
+                    "Vanilla bottle behavior was parsed before Tavern registration");
+        }
         for (String routeName : configuredPlacements.keySet()) {
             Route route = Route.valueOf(routeName.toUpperCase(Locale.ROOT));
             ConfigSection placement = configuredPlacements.getNonNullSection(routeName);
-            placements.put(route, new Placement(
-                    FurnitureItemBehavior.FACTORY.create(pack, path, id, placement),
-                    placement.getNonEmptyString("config")));
+            String configPath = placement.getNonEmptyString("config");
+            placements.put(route, owner.getConfig().getBoolean(configPath, true)
+                    ? new Placement(FurnitureItemBehavior.FACTORY.create(
+                            pack, path, id, placement))
+                    : null);
         }
         return new SneakPlaceVanillaBottleItemBehavior(placements);
     }
 
     @Override
     public InteractionResult useOnBlock(UseOnContext context) {
-        if (!context.isSecondaryUseActive()
-                || !(context.getItem() instanceof BukkitItem bukkitItem)) {
+        // CraftEngine only calls this behavior for the four vanilla item ids
+        // carrying it. Disabled routes can therefore bypass even the sneak
+        // query; fixed-material routes need no Bukkit conversion or map lookup.
+        if (!anyPlacementEnabled || !context.isSecondaryUseActive()) {
             return InteractionResult.PASS;
         }
 
-        ItemStack stack = bukkitItem.getBukkitItem();
-        if (TheBrewingProjectCompat.isBrew(stack)) {
-            return InteractionResult.PASS;
+        Placement placement = directPlacement;
+        if (placement == null) {
+            if (!(context.getItem() instanceof BukkitItem bukkitItem)) {
+                return InteractionResult.PASS;
+            }
+            ItemStack stack = bukkitItem.getBukkitItem();
+            if (stack.getType() != Material.POTION
+                    || TheBrewingProjectCompat.isBrew(stack)) {
+                return InteractionResult.PASS;
+            }
+            placement = potionPlacement(stack);
         }
-        Placement placement = placements.get(routeFor(stack));
-        JavaPlugin owner = plugin;
-        if (placement == null || owner == null
-                || !owner.getConfig().getBoolean(placement.configPath(), true)) {
+        if (placement == null) {
             return InteractionResult.PASS;
         }
 
@@ -79,22 +117,15 @@ public final class SneakPlaceVanillaBottleItemBehavior extends ItemBehavior {
         // events, source item, custom data, consumption, hand swing and sound.
         // Cancel the underlying vanilla use for both successful and rejected
         // sneak-placement attempts, matching the former Paper listener.
-        placement.furnitureItem().useOnBlock(context);
+        placement.furnitureItem().place(context);
         return InteractionResult.SUCCESS_AND_CANCEL;
     }
 
-    private static Route routeFor(ItemStack stack) {
-        return switch (stack.getType()) {
-            case POTION -> {
-                PotionType type = stack.getItemMeta() instanceof PotionMeta potion
-                        ? potion.getBasePotionType() : null;
-                yield type == null || type == PotionType.WATER ? Route.WATER : Route.POTION;
-            }
-            case HONEY_BOTTLE -> Route.HONEY;
-            case DRAGON_BREATH -> Route.DRAGON_BREATH;
-            case EXPERIENCE_BOTTLE -> Route.EXPERIENCE;
-            default -> null;
-        };
+    private Placement potionPlacement(ItemStack stack) {
+        PotionType type = stack.getItemMeta() instanceof PotionMeta potion
+                ? potion.getBasePotionType() : null;
+        return type == null || type == PotionType.WATER
+                ? waterPlacement : potionPlacement;
     }
 
     private enum Route {
@@ -105,6 +136,6 @@ public final class SneakPlaceVanillaBottleItemBehavior extends ItemBehavior {
         EXPERIENCE
     }
 
-    private record Placement(FurnitureItemBehavior furnitureItem, String configPath) {
+    private record Placement(FurnitureItemBehavior furnitureItem) {
     }
 }

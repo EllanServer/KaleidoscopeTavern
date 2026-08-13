@@ -4118,7 +4118,7 @@
         "furniture": "kaleidoscope_tavern:molotov",
         "rules": {
           "ground": {
-            "rotation": "four",
+            "rotation": "north",
             "alignment": "center"
           }
         }
@@ -5608,7 +5608,7 @@
             "furniture": "kaleidoscope_tavern:water_bottle",
             "rules": {
               "ground": {
-                "rotation": "four",
+                "rotation": "sixteen",
                 "alignment": "center"
               }
             },
@@ -5618,7 +5618,7 @@
             "furniture": "kaleidoscope_tavern:potion_bottle",
             "rules": {
               "ground": {
-                "rotation": "four",
+                "rotation": "sixteen",
                 "alignment": "center"
               }
             },
@@ -5635,7 +5635,7 @@
             "furniture": "kaleidoscope_tavern:honey_bottle",
             "rules": {
               "ground": {
-                "rotation": "four",
+                "rotation": "sixteen",
                 "alignment": "center"
               }
             },
@@ -5652,7 +5652,7 @@
             "furniture": "kaleidoscope_tavern:dragon_breath_bottle",
             "rules": {
               "ground": {
-                "rotation": "four",
+                "rotation": "sixteen",
                 "alignment": "center"
               }
             },
@@ -5669,7 +5669,7 @@
             "furniture": "kaleidoscope_tavern:xp_bottle",
             "rules": {
               "ground": {
-                "rotation": "four",
+                "rotation": "sixteen",
                 "alignment": "center"
               }
             },

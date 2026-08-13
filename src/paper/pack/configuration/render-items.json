@@ -3642,6 +3642,21 @@
         ]
       }
     },
+    "kaleidoscope_tavern:_render/sculk_special/ripple": {
+      "material": "paper",
+      "data": {
+        "item_name": "<!i><lang:block.kaleidoscope_tavern.sculk_special>"
+      },
+      "model": {
+        "type": "minecraft:model",
+        "path": "kaleidoscope_tavern:furniture/placed_drink/kaleidoscope_tavern/block/mixology/sculk_special_ripple"
+      },
+      "settings": {
+        "tags": [
+          "kaleidoscope_tavern:internal_render_items"
+        ]
+      }
+    },
     "kaleidoscope_tavern:_render/shaker/e08673e2b8": {
       "material": "paper",
       "data": {

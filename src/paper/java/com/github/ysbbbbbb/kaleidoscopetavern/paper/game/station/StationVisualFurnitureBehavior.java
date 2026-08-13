@@ -218,6 +218,13 @@ public final class StationVisualFurnitureBehavior extends FurnitureBehaviorTempl
         }
 
         private static void prewarm() {
+            // Calling an empty method only initializes StationVisualElement itself.
+            // Resolve the constructor's lazily linked field types during plugin load so
+            // the first CE chunk load does not pay their class-linking cost.
+            new IdentityHashMap<Player, ViewerState>();
+            new DisplayVisualDiff.GenerationDiff();
+            new ViewerState(-1L, 0);
+            PreparedVisual[] ignored = new PreparedVisual[0];
         }
 
         private void ensureIdentityCapacity(int required) {

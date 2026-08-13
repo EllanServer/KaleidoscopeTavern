@@ -299,6 +299,31 @@ ITEM_DISPLAY_FACING_YAW = {
     "south": 0,
     "west": 270,
 }
+
+# Cardinal bottle furniture retains the original HorizontalDirectionalBlock
+# mapping. CE ground furniture stores 180 + playerYaw, but ItemDisplay entity
+# yaw composes in the opposite direction, so east/west placements need another
+# 180-degree display turn. The user-selected sixteen-way vessels below do not
+# use this compatibility layer: their one display follows CE's native yaw
+# directly. Modulo handles Bukkit yaw values outside [-180, 180).
+CARDINAL_BOTTLE_AXIS_CONDITIONS = (
+    (
+        "(ABS(<arg:furniture.yaw> % 180) <= 45) || "
+        "(ABS(<arg:furniture.yaw> % 180) > 135)",
+        None,
+    ),
+    (
+        "(ABS(<arg:furniture.yaw> % 180) > 45) && "
+        "(ABS(<arg:furniture.yaw> % 180) <= 135)",
+        180,
+    ),
+)
+SCULK_RIPPLE_ELEMENT_INDEX = 12
+SCULK_RIPPLE_MODEL_PATH = (
+    f"furniture/placed_drink/{NAMESPACE}/block/mixology/sculk_special_ripple"
+)
+SCULK_RIPPLE_MODEL_ID = f"{NAMESPACE}:{SCULK_RIPPLE_MODEL_PATH}"
+SCULK_RIPPLE_RENDER_ID = f"{NAMESPACE}:_render/sculk_special/ripple"
 COPPER_LANTERN_CARRIER_STATE = (
     "minecraft:copper_lantern[hanging=false,waterlogged=false]"
 )
@@ -479,6 +504,15 @@ SIMPLE_BOTTLES = {
     "water_bottle", "honey_bottle", "dragon_breath_bottle",
     "potion_bottle", "xp_bottle",
 }
+# Project placement policy: cocktails and the five vanilla-bottle furniture
+# targets use CE's native 22.5-degree snapping. Ordinary Tavern drink bottles
+# and empty_bottle retain the source mod's cardinal mapping. Molotov's generated
+# blockstate is a simpleBlock with no facing property, so it stays world-fixed.
+SIXTEEN_WAY_VESSELS = COCKTAILS | SIMPLE_BOTTLES
+DIRECTIONLESS_VESSELS = {"molotov"}
+CARDINAL_BOTTLE_FURNITURE = (
+    BOTTLE_AND_GLASS_ITEMS - SIXTEEN_WAY_VESSELS - DIRECTIONLESS_VESSELS
+)
 BAR_STOOL_COLORS = (
     "black", "blue", "brown", "cyan", "gray", "green", "light_blue",
     "light_gray", "lime", "magenta", "orange", "pink", "purple", "red",
@@ -853,6 +887,26 @@ def placed_drink_model(
     # item must resolve from the runtime resource pack even when the source
     # no longer needs axis correction or render_type migration.
     private_path = f"furniture/placed_drink/{namespace}/{resource_path}"
+    if block_id == "sculk_special":
+        elements = copied.get("elements")
+        if (not isinstance(elements, list)
+                or len(elements) <= SCULK_RIPPLE_ELEMENT_INDEX):
+            raise AssertionError(
+                "sculk_special: missing the full-block ripple model element")
+        ripple_model = deepcopy(copied)
+        ripple_model["elements"] = [
+            deepcopy(elements[SCULK_RIPPLE_ELEMENT_INDEX])
+        ]
+        copied["elements"] = [
+            element for index, element in enumerate(elements)
+            if index != SCULK_RIPPLE_ELEMENT_INDEX
+        ]
+        write_json(
+            ROOT
+            / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/"
+            / f"{SCULK_RIPPLE_MODEL_PATH}.json",
+            ripple_model,
+        )
     write_json(
         ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}/models/{private_path}.json",
         copied,
@@ -2544,6 +2598,62 @@ def furniture_element(
     return element
 
 
+def cardinal_bottle_furniture_elements(
+    element: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Restore cardinal BottleBlock model yaw without changing furniture yaw."""
+
+    elements: list[dict[str, Any]] = []
+    for expression, yaw in CARDINAL_BOTTLE_AXIS_CONDITIONS:
+        directional = deepcopy(element)
+        directional["conditions"] = [{
+            "type": "expression",
+            "expression": expression,
+        }]
+        if yaw is not None:
+            directional["yaw"] = yaw
+        elements.append(directional)
+    return elements
+
+
+def sculk_special_furniture_elements(
+    render_items: dict[str, Any],
+    body: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Let the glass rotate sixteen ways while keeping its 16x16 ripple fixed."""
+
+    render_items.setdefault(SCULK_RIPPLE_RENDER_ID, {
+        "material": "paper",
+        "data": {"item_name": render_item_name("sculk_special")},
+        "model": {"type": "minecraft:model", "path": SCULK_RIPPLE_MODEL_ID},
+        "settings": {"tags": [f"{NAMESPACE}:internal_render_items"]},
+    })
+    ripple = deepcopy(body)
+    ripple["item"] = SCULK_RIPPLE_RENDER_ID
+    ripple.pop("rotation", None)
+    ripple.pop("yaw", None)
+    ripple.pop("conditions", None)
+
+    elements = [body]
+    for segment in range(16):
+        furniture_yaw = segment * 22.5
+        normalized = number(furniture_yaw)
+        fixed = deepcopy(ripple)
+        fixed["conditions"] = [{
+            "type": "expression",
+            "expression": (
+                "ABS((((<arg:furniture.yaw> % 360) + 360) % 360) - "
+                f"{normalized}) < 0.001"
+            ),
+        }]
+        if furniture_yaw:
+            # CE 26.8 adds element yaw to furniture yaw. Its inverse keeps the
+            # one-block ripple aligned to world axes while the body turns.
+            fixed["yaw"] = -furniture_yaw
+        elements.append(fixed)
+    return elements
+
+
 def drink_boxes(block_id: str, count: int) -> list[Box]:
     if block_id in TALL_DRINKS:
         return {
@@ -4174,17 +4284,20 @@ def table_furniture_variant_name(base: str, facing: str) -> str:
     return base if facing == "south" else f"{base}_facing_{facing}"
 
 
+def furniture_rotation_rule(block_id: str) -> str:
+    if block_id in SIXTEEN_WAY_VESSELS or block_id.endswith("_sandwich_board"):
+        return "sixteen"
+    if block_id in DIRECTIONLESS_VESSELS:
+        return "north"
+    return "four"
+
+
 def furniture_rules(block_id: str, variant_names: list[str]) -> dict[str, Any]:
     anchors = [name for name in ("ground", "wall", "ceiling") if name in variant_names]
     rules: dict[str, Any] = {}
-    # Forge BlockItem placement always occupied the target block centre. The
-    # released 1.2.0 GlasswareBlock and sandwich boards used ROTATION_16;
-    # ordinary bottles and the remaining furniture retained cardinal facing.
-    rotation = (
-        "sixteen"
-        if block_id in COCKTAILS or block_id.endswith("_sandwich_board")
-        else "four"
-    )
+    # Forge BlockItem placement always occupied the target block centre. Keep
+    # that alignment while applying the explicit per-family rotation policy.
+    rotation = furniture_rotation_rule(block_id)
     for anchor in anchors:
         rules[anchor] = {"rotation": rotation, "alignment": "center"}
     return rules
@@ -4395,8 +4508,17 @@ def build_furniture(
                 if name in used_names:
                     name = f"{name}_{index}"
                 used_names.add(name)
+                element = furniture_element(
+                    render_items, block_id, name, selected, anchor)
+                if block_id == "sculk_special":
+                    elements = sculk_special_furniture_elements(
+                        render_items, element)
+                elif block_id in CARDINAL_BOTTLE_FURNITURE:
+                    elements = cardinal_bottle_furniture_elements(element)
+                else:
+                    elements = [element]
                 variants[name] = {
-                    "elements": [furniture_element(render_items, block_id, name, selected, anchor)],
+                    "elements": elements,
                     "hitboxes": furniture_hitboxes(block_id, anchor, dict(semantic)),
                 }
 
@@ -4938,7 +5060,10 @@ def build_items(
             placements[route] = {
                 "furniture": f"{NAMESPACE}:{furniture_id}",
                 "rules": {
-                    "ground": {"rotation": "four", "alignment": "center"},
+                    "ground": {
+                        "rotation": furniture_rotation_rule(furniture_id),
+                        "alignment": "center",
+                    },
                 },
                 "config": config_path,
             }

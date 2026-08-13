@@ -44,6 +44,6 @@ public final class SneakPlaceDrinkItemBehavior extends ItemBehavior {
         // collision, protection checks, events, source item and consumption.
         // Passing the original context is what makes partial-height supports
         // such as bottom slabs work without Tavern-side block exceptions.
-        return furnitureItem.useOnBlock(context);
+        return furnitureItem.place(context);
     }
 }
