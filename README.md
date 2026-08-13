@@ -26,7 +26,7 @@ PlaceholderAPI 与 CustomNameplates 仅在需要外部酒效 HUD 时安装。
 
 1. 使用 Java 25 启动 Paper 26.2 服务端。
 2. 安装 CraftEngine 26.7.4 与 CustomCrops 3.6.52。
-3. 将 `KaleidoscopeTavern-Paper-2.0.0-paper26.2.jar` 放入 `plugins/`。
+3. 将 `KaleidoscopeTavern-Paper-0.0.1.jar` 放入 `plugins/`。
 4. 启动服务端。插件会自动安装 CraftEngine 内容与 CustomCrops 葡萄配置。
 5. 按 CraftEngine 的方式部署生成的资源包，让客户端加载。
 6. 执行 `/kt status` 检查内容是否正常加载。
