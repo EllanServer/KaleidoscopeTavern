@@ -154,8 +154,20 @@ def main() -> int:
         items_document = json.loads(
             archive.read("tavern-pack/configuration/items.json").decode("utf-8-sig")
         )
-        if len(items_document.get("items", {})) != 157:
+        item_definitions = items_document.get("items", {})
+        public_items = {
+            item_id for item_id in item_definitions
+            if item_id.startswith("kaleidoscope_tavern:")
+        }
+        if len(public_items) != 157:
             raise SystemExit("Embedded CraftEngine project must contain 157 public item ids")
+        vanilla_extensions = set(item_definitions) - public_items
+        if vanilla_extensions != {
+                "minecraft:potion", "minecraft:honey_bottle",
+                "minecraft:dragon_breath", "minecraft:experience_bottle"}:
+            raise SystemExit(
+                "Embedded CraftEngine project must contain the four managed "
+                "vanilla bottle item extensions")
 
         render_items_document = json.loads(
             archive.read("tavern-pack/configuration/render-items.json").decode("utf-8-sig")

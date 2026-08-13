@@ -17,6 +17,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.drink.BottleFurnitureBe
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.drink.BottleFurnitureService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.drink.BottlePlacementService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.drink.SneakPlaceDrinkItemBehavior;
+import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.drink.SneakPlaceVanillaBottleItemBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.effect.EffectService;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.effect.IncenseBlockBehavior;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.furniture.AnimatedItemFurnitureBehavior;
@@ -139,6 +140,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
             GrapevineItemBehavior.register();
             ShakerItemBehavior.register();
             SneakPlaceDrinkItemBehavior.register();
+            SneakPlaceVanillaBottleItemBehavior.register(this);
             if (getConfig().getBoolean("pack.install-on-startup", true)) {
                 packResult = PackInstaller.install(this);
             }
@@ -211,7 +213,7 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         getServer().getPluginManager().registerEvents(this, this);
         blocks = new BlockService(catalog);
         getServer().getPluginManager().registerEvents(new MolotovService(this, items), this);
-        getServer().getPluginManager().registerEvents(new BottlePlacementService(this, catalog, items), this);
+        getServer().getPluginManager().registerEvents(new BottlePlacementService(catalog, items), this);
         bottleFurniture = new BottleFurnitureService(this, catalog, items, effects);
         getServer().getPluginManager().registerEvents(bottleFurniture, this);
         getServer().getPluginManager().registerEvents(boards, this);

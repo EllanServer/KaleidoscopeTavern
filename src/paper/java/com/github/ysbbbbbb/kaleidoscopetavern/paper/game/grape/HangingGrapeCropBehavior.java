@@ -1,20 +1,22 @@
 package com.github.ysbbbbbb.kaleidoscopetavern.paper.game.grape;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.integration.CustomCropsBridge;
-import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.block.behavior.BukkitBlockBehavior;
+import net.momirealms.craftengine.bukkit.util.BlockStateUtils;
+import net.momirealms.craftengine.bukkit.util.DirectionUtils;
+import net.momirealms.craftengine.bukkit.util.LocationUtils;
 import net.momirealms.craftengine.core.block.BlockDefinition;
 import net.momirealms.craftengine.core.block.ImmutableBlockState;
 import net.momirealms.craftengine.core.block.behavior.BlockBehaviors;
 import net.momirealms.craftengine.core.block.property.IntegerProperty;
 import net.momirealms.craftengine.core.block.property.Property;
+import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.proxy.minecraft.core.Vec3iProxy;
+import net.momirealms.craftengine.proxy.minecraft.world.level.BlockGetterProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.LevelProxy;
 import net.momirealms.craftengine.proxy.minecraft.world.level.block.BlocksProxy;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,10 +28,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class HangingGrapeCropBehavior extends BukkitBlockBehavior {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "hanging_grape_crop");
-    private static final Set<String> VINES = Set.of(
-            "kaleidoscope_tavern:grapevine_trellis",
-            "kaleidoscope_tavern:ice_grapevine_trellis",
-            "kaleidoscope_tavern:gold_grapevine_trellis");
+    private static final Set<Key> VINES = Set.of(
+            Key.of("kaleidoscope_tavern", "grapevine_trellis"),
+            Key.of("kaleidoscope_tavern", "ice_grapevine_trellis"),
+            Key.of("kaleidoscope_tavern", "gold_grapevine_trellis"));
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
 
     private HangingGrapeCropBehavior(BlockDefinition block) {
@@ -44,40 +46,38 @@ public final class HangingGrapeCropBehavior extends BukkitBlockBehavior {
 
     @Override
     public boolean canSurvive(Object thisBlock, Object[] args) {
-        World world = LevelProxy.INSTANCE.getWorld(args[1]);
-        if (world == null) {
-            return false;
-        }
-        Object position = args[2];
-        return hasMatureVineAbove(world,
-                Vec3iProxy.INSTANCE.getX(position),
-                Vec3iProxy.INSTANCE.getY(position),
-                Vec3iProxy.INSTANCE.getZ(position));
+        Object above = LocationUtils.above(args[2]);
+        Object support = BlockGetterProxy.INSTANCE.getBlockState(args[1], above);
+        return isMatureVine(support);
     }
 
     @Override
     public Object updateShape(Object thisBlock, Object[] args) {
-        World world = LevelProxy.INSTANCE.getWorld(args[updateShape$level]);
-        if (world == null) {
+        // Minecraft 26.2 HangingRootsBlock only revalidates its support when
+        // the UP neighbour changes. CE passes that neighbour's NMS BlockState
+        // directly, so this hot path needs neither a Bukkit block lookup nor
+        // a second world read.
+        if (DirectionUtils.fromNMSDirection(args[updateShape$direction]) != Direction.UP
+                || isMatureVine(args[updateShape$neighborState])) {
             return args[0];
         }
+
         Object position = args[updateShape$blockPos];
-        int x = Vec3iProxy.INSTANCE.getX(position);
-        int y = Vec3iProxy.INSTANCE.getY(position);
-        int z = Vec3iProxy.INSTANCE.getZ(position);
-        if (hasMatureVineAbove(world, x, y, z)) {
-            return args[0];
+        World world = LevelProxy.INSTANCE.getWorld(args[updateShape$level]);
+        if (world != null) {
+            int x = Vec3iProxy.INSTANCE.getX(position);
+            int y = Vec3iProxy.INSTANCE.getY(position);
+            int z = Vec3iProxy.INSTANCE.getZ(position);
+            // The visible block self-destructs here, so the CustomCrops record
+            // must go with it or explosions/pistons leave orphaned crop data.
+            CustomCropsBridge.removeCrop(world.getBlockAt(x, y, z).getLocation());
         }
-        // The visible block self-destructs here, so the CustomCrops record
-        // must go with it or explosions/pistons leave orphaned crop data.
-        CustomCropsBridge.removeCrop(world.getBlockAt(x, y, z).getLocation());
         return BlocksProxy.AIR$defaultState;
     }
 
-    private static boolean hasMatureVineAbove(World world, int x, int y, int z) {
-        Block above = world.getBlockAt(x, y, z).getRelative(BlockFace.UP);
-        ImmutableBlockState state = CraftEngineBlocks.getCustomBlockState(above);
-        if (state == null || !VINES.contains(state.owner().value().id().toString())) {
+    private static boolean isMatureVine(Object minecraftState) {
+        ImmutableBlockState state = BlockStateUtils.getNullableCustomBlockState(minecraftState);
+        if (state == null || !VINES.contains(state.owner().value().id())) {
             return false;
         }
         Property<?> rawAge = state.getProperty("age");

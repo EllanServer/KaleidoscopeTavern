@@ -5599,6 +5599,84 @@
         "type": "block_item",
         "block": "kaleidoscope_tavern:firefly_incense"
       }
+    },
+    "minecraft:potion": {
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_vanilla_bottle",
+        "placements": {
+          "water": {
+            "furniture": "kaleidoscope_tavern:water_bottle",
+            "rules": {
+              "ground": {
+                "rotation": "four",
+                "alignment": "center"
+              }
+            },
+            "config": "bottle-placement.water"
+          },
+          "potion": {
+            "furniture": "kaleidoscope_tavern:potion_bottle",
+            "rules": {
+              "ground": {
+                "rotation": "four",
+                "alignment": "center"
+              }
+            },
+            "config": "bottle-placement.potion"
+          }
+        }
+      }
+    },
+    "minecraft:honey_bottle": {
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_vanilla_bottle",
+        "placements": {
+          "honey": {
+            "furniture": "kaleidoscope_tavern:honey_bottle",
+            "rules": {
+              "ground": {
+                "rotation": "four",
+                "alignment": "center"
+              }
+            },
+            "config": "bottle-placement.honey"
+          }
+        }
+      }
+    },
+    "minecraft:dragon_breath": {
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_vanilla_bottle",
+        "placements": {
+          "dragon_breath": {
+            "furniture": "kaleidoscope_tavern:dragon_breath_bottle",
+            "rules": {
+              "ground": {
+                "rotation": "four",
+                "alignment": "center"
+              }
+            },
+            "config": "bottle-placement.dragon-breath"
+          }
+        }
+      }
+    },
+    "minecraft:experience_bottle": {
+      "behavior": {
+        "type": "kaleidoscope_tavern:sneak_place_vanilla_bottle",
+        "placements": {
+          "experience": {
+            "furniture": "kaleidoscope_tavern:xp_bottle",
+            "rules": {
+              "ground": {
+                "rotation": "four",
+                "alignment": "center"
+              }
+            },
+            "config": "bottle-placement.experience"
+          }
+        }
+      }
     }
   }
 }

@@ -399,6 +399,22 @@ SMALL_FURNITURE = {
     "watermelon_juice",
 }
 BOTTLE_AND_GLASS_ITEMS = SMALL_FURNITURE - {"shaker"}
+VANILLA_BOTTLE_PLACEMENTS = {
+    "minecraft:potion": {
+        "water": ("water_bottle", "bottle-placement.water"),
+        "potion": ("potion_bottle", "bottle-placement.potion"),
+    },
+    "minecraft:honey_bottle": {
+        "honey": ("honey_bottle", "bottle-placement.honey"),
+    },
+    "minecraft:dragon_breath": {
+        "dragon_breath": (
+            "dragon_breath_bottle", "bottle-placement.dragon-breath"),
+    },
+    "minecraft:experience_bottle": {
+        "experience": ("xp_bottle", "bottle-placement.experience"),
+    },
+}
 # Zero-based Blockbench element indices whose geometry must not share the
 # glass/liquid translucent render pass.  The private Paper model redirects
 # only these faces to an alpha-binarized copy of the source sprite.
@@ -4910,6 +4926,28 @@ def build_items(
             config.setdefault("settings", {})["consume_replacement"] = (
                 f"{NAMESPACE}:empty_bottle")
         items[f"{NAMESPACE}:{item_id}"] = config
+
+    # CE can attach item behaviors to vanilla ids without replacing their
+    # components or ordinary use. Potion contents still require one tiny
+    # Tavern router because water and every drinkable potion share
+    # minecraft:potion; after that selection, CE's native furniture_item owns
+    # the complete placement transaction.
+    for vanilla_item, routes in VANILLA_BOTTLE_PLACEMENTS.items():
+        placements: dict[str, Any] = {}
+        for route, (furniture_id, config_path) in routes.items():
+            placements[route] = {
+                "furniture": f"{NAMESPACE}:{furniture_id}",
+                "rules": {
+                    "ground": {"rotation": "four", "alignment": "center"},
+                },
+                "config": config_path,
+            }
+        items[vanilla_item] = {
+            "behavior": {
+                "type": f"{NAMESPACE}:sneak_place_vanilla_bottle",
+                "placements": placements,
+            },
+        }
     return items
 
 
@@ -5079,8 +5117,9 @@ def main() -> None:
 
     report = {
         "source": "KaleidoscopeTavern Forge 1.20.1 data generators",
-        "target": "Paper 26.2 + CraftEngine 26.7.4",
-        "items": len(items),
+        "target": "Paper 26.2 + CraftEngine 26.8",
+        "items": len(item_ids),
+        "vanilla_item_extensions": len(VANILLA_BOTTLE_PLACEMENTS),
         "blocks": len(blocks),
         "furniture": len(furniture),
         "legacy_placeables": len(legacy_placeable_ids),

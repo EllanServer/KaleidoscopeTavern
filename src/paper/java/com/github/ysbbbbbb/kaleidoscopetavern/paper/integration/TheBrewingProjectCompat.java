@@ -9,10 +9,9 @@ import org.bukkit.inventory.ItemStack;
  * Soft compatibility boundary with TheBrewingProject.
  * <p>
  * TBP seals brews by sneaking and right-clicking a crafting table with
- * paper in the off hand; that handler runs at NORMAL priority with
- * ignoreCancelled=true, so any LOW-priority listener that cancels the
- * interaction first (such as Tavern's sneak bottle placement) starves
- * it. Every TBP brew, sealed or not, is a vanilla potion carrying the
+ * paper in the off hand. Tavern therefore lets any TBP brew bypass its
+ * CraftEngine vanilla-potion placement behavior. Every TBP brew, sealed
+ * or not, is a vanilla potion carrying the
  * {@code brewery:version} PDC key
  * ({@code BrewAdapterAccess#applyBrewData}), which is all this boundary
  * needs; no hard dependency on TheBrewingProject is introduced.

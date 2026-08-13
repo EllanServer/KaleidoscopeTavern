@@ -515,7 +515,7 @@ EVENT_BEHAVIOR_COVERAGE = {
         ("effect/EffectService.java", "ardentHeat"),
     ),
     "VanillaBottlePlaceEvent.java": (
-        ("drink/BottlePlacementService.java", "onPlaceVanillaBottle"),
+        ("drink/SneakPlaceVanillaBottleItemBehavior.java", "useOnBlock"),
     ),
 }
 
@@ -866,14 +866,33 @@ def generated_station_recipe_rows(name: str) -> list[dict[str, Any]]:
 
 def validate() -> dict[str, int]:
     items = load("items.json", "items")
+    public_items = {
+        item_id: definition for item_id, definition in items.items()
+        if item_id.startswith(f"{NAMESPACE}:")
+    }
+    vanilla_item_extensions = {
+        item_id: definition for item_id, definition in items.items()
+        if item_id.startswith("minecraft:")
+    }
     render_items = load("render-items.json", "items")
     blocks = load("blocks.json", "blocks")
     furniture = load("furniture.json", "furniture")
     recipes = load("recipes.json", "recipes")
     categories = load("categories.json", "categories")
 
-    if len(items) != 157:
-        raise AssertionError(f"Expected 157 public items, found {len(items)}")
+    if len(public_items) != 157:
+        raise AssertionError(
+            f"Expected 157 public items, found {len(public_items)}")
+    expected_vanilla_extensions = {
+        "minecraft:potion",
+        "minecraft:honey_bottle",
+        "minecraft:dragon_breath",
+        "minecraft:experience_bottle",
+    }
+    if set(vanilla_item_extensions) != expected_vanilla_extensions:
+        raise AssertionError(
+            "Vanilla bottle CE item extensions drifted: "
+            f"{sorted(vanilla_item_extensions)}")
     if len(blocks) != 44:
         raise AssertionError(f"Expected 44 grid/state blocks, found {len(blocks)}")
     if len(furniture) != 116:
@@ -1135,12 +1154,16 @@ def validate() -> dict[str, int]:
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
         "game/drink/SneakPlaceDrinkItemBehavior.java"
     ).read_text(encoding="utf-8-sig")
+    vanilla_bottle_behavior_source = (
+        ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
+        "game/drink/SneakPlaceVanillaBottleItemBehavior.java"
+    ).read_text(encoding="utf-8-sig")
     plugin_source = (
         ROOT / "src/paper/java/com/github/ysbbbbbb/kaleidoscopetavern/paper/"
         "KaleidoscopeTavernPlugin.java"
     ).read_text(encoding="utf-8-sig")
     runtime_counts = {
-        "ITEMS": len(items) + len(render_items),
+        "ITEMS": len(public_items) + len(render_items),
         "BLOCKS": len(blocks),
         "FURNITURE": len(furniture),
     }
@@ -1234,6 +1257,18 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "Vessel CE behavior must preserve normal item use and delegate the "
                 "original placement context to CraftEngine")
+    for token in (
+            "SneakPlaceVanillaBottleItemBehavior.register(this)",
+            "FurnitureItemBehavior.FACTORY.create",
+            "if (!context.isSecondaryUseActive()",
+            "TheBrewingProjectCompat.isBrew(stack)",
+            "PotionType.WATER",
+            "placement.furnitureItem().useOnBlock(context)",
+            "return InteractionResult.SUCCESS_AND_CANCEL;"):
+        if token not in plugin_source + vanilla_bottle_behavior_source:
+            raise AssertionError(
+                "Vanilla bottles must route through CE's native furniture item behavior; "
+                f"missing token: {token}")
     for stale_token in (
             "new BlockHitResult", "Direction.UP", "targetPos", "atBottomCenterOf"):
         if stale_token in item_behavior_source:
@@ -1245,12 +1280,13 @@ def validate() -> dict[str, int]:
             raise AssertionError(
                 "CraftEngine's consumable component must exclusively own active-use state; "
                 f"vessel placement still contains plugin-side token {stale_token}")
-    for token in (
-            "event.getAction() != Action.RIGHT_CLICK_BLOCK",
-            "!event.getPlayer().isSneaking()"):
-        if token not in bottle_placement_source:
+    for stale_token in (
+            "PlayerInteractEvent", "onPlaceVanillaBottle", "player.swingHand(",
+            "FurnitureAttemptPlaceEvent", "FurniturePlaceEvent"):
+        if stale_token in bottle_placement_source:
             raise AssertionError(
-                "Vanilla-source bottle furniture placement must require sneak + right-click block")
+                "Player bottle placement must be owned by CE item dispatch; "
+                f"BottlePlacementService still contains {stale_token}")
     if "new Placement(customId" in bottle_placement_source:
         raise AssertionError("Paper must not duplicate custom drink player placement")
     for redundant_owner in (
@@ -3728,7 +3764,7 @@ def validate() -> dict[str, int]:
     chinese_language_keys = set(chinese_language)
     if any("\ufffd" in value for value in chinese_language.values()):
         raise AssertionError("zh_cn.json contains a Unicode replacement character")
-    for full_item_id, item in items.items():
+    for full_item_id, item in public_items.items():
         item_id = full_item_id.split(":", 1)[1]
         raw_name = item.get("data", {}).get("item_name", "")
         matches = re.fullmatch(r"<!i><lang:([^>]+)>", raw_name)
@@ -3878,6 +3914,33 @@ def validate() -> dict[str, int]:
             "Hanging grape lifecycle must be configured in CustomCrops, not Java; "
             f"found={duplicated}"
         )
+    required_nms_support = (
+        "LocationUtils.above(args[2])",
+        "BlockGetterProxy.INSTANCE.getBlockState(args[1], above)",
+        "DirectionUtils.fromNMSDirection(args[updateShape$direction])",
+        "args[updateShape$neighborState]",
+        "BlockStateUtils.getNullableCustomBlockState(minecraftState)",
+    )
+    missing_nms_support = [
+        token for token in required_nms_support if token not in hanging_behavior
+    ]
+    if missing_nms_support:
+        raise AssertionError(
+            "Hanging grape support checks must stay on CraftEngine's NMS helper path; "
+            f"missing={missing_nms_support}"
+        )
+    forbidden_bukkit_support = (
+        "CraftEngineBlocks.getCustomBlockState(above)",
+        "getRelative(BlockFace.UP)",
+    )
+    bukkit_fallback = [
+        token for token in forbidden_bukkit_support if token in hanging_behavior
+    ]
+    if bukkit_fallback:
+        raise AssertionError(
+            "Hanging grape support checks must not fall back to Bukkit block lookups; "
+            f"found={bukkit_fallback}"
+        )
     paper_java = ROOT / "src/paper/java"
     configured_growth_api = ("addPointToCrop(", "addGrowthPoints(", "GrapeGrowthSemantics")
     growth_code_owners = {
@@ -3896,7 +3959,7 @@ def validate() -> dict[str, int]:
             f"found={growth_code_owners}"
         )
 
-    for item_id, item in {**items, **render_items}.items():
+    for item_id, item in {**public_items, **render_items}.items():
         models = set(item_model_paths(item.get("model", {})))
         if not models:
             raise AssertionError(f"{item_id}: item definition has no block-model path")
@@ -3956,7 +4019,7 @@ def validate() -> dict[str, int]:
             raise AssertionError(f"{recipe_id}: unknown result {result}")
 
     category_items = categories[f"{NAMESPACE}:all"]["list"]
-    if category_items != list(items):
+    if category_items != list(public_items):
         raise AssertionError("The CraftEngine category is not in registry order")
 
     expected_catalogs = {
@@ -4086,6 +4149,46 @@ def validate() -> dict[str, int]:
                 f"{item_id}: drink potion_contents must use the effectless mundane base "
                 "to prevent PotionItem water-on-dirt conversion, and may only add an "
                 "integer custom_color")
+
+    vanilla_bottle_routes = {
+        "minecraft:potion": {
+            "water": ("water_bottle", "bottle-placement.water"),
+            "potion": ("potion_bottle", "bottle-placement.potion"),
+        },
+        "minecraft:honey_bottle": {
+            "honey": ("honey_bottle", "bottle-placement.honey"),
+        },
+        "minecraft:dragon_breath": {
+            "dragon_breath": (
+                "dragon_breath_bottle", "bottle-placement.dragon-breath"),
+        },
+        "minecraft:experience_bottle": {
+            "experience": ("xp_bottle", "bottle-placement.experience"),
+        },
+    }
+    vanilla_placement_type = f"{NAMESPACE}:sneak_place_vanilla_bottle"
+    for vanilla_item, routes in vanilla_bottle_routes.items():
+        expected_placements = {}
+        for route, (furniture_id, config_path) in routes.items():
+            expected_placements[route] = {
+                "furniture": f"{NAMESPACE}:{furniture_id}",
+                "rules": {
+                    "ground": {
+                        "rotation": expected_vessel_rotation(furniture_id),
+                        "alignment": "center",
+                    },
+                },
+                "config": config_path,
+            }
+        expected_extension = {
+            "behavior": {
+                "type": vanilla_placement_type,
+                "placements": expected_placements,
+            },
+        }
+        if items[vanilla_item] != expected_extension:
+            raise AssertionError(
+                f"{vanilla_item}: CE vanilla bottle placement routing drifted")
 
     public_vessel_ids = {
         f"{NAMESPACE}:{vessel_id}"
@@ -6254,7 +6357,7 @@ def validate() -> dict[str, int]:
             raise AssertionError(f"{item_id}: placement rule drifted from Forge BlockItem semantics")
 
     return {
-        "items": len(items),
+        "items": len(public_items),
         "blocks": len(blocks),
         "furniture": len(furniture),
         "source-placeables": len(source_placeables),

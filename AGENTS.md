@@ -39,9 +39,12 @@
 - 26.8 相对 26.7.4 唯一的破坏性变更是 `FurnitureController.onUnload(boolean isStopping)` 改为 `onUnload()`；
   CE 不再区分"关服卸载"与"区块卸载"，因此 `LifecycleFurnitureBehavior.Handler#onUnavailable` 与
   `TickingFurnitureBehavior.Handler#onUnload` 也去掉了对应的 `stopping` 形参（原本无任何消费者使用）。
-- 26.8 新增的 JS 脚本、attribute、loot source、atlas 等配置子系统均无法承接现有 Java 补位逻辑：JS 脚本
-  访问不到插件自身的服务状态，`BiomeCondition` 只做群系 id 集合匹配而非 `getBaseTemperature()` 连续值，
-  loot source 面向原版掉落场景注入而非自定义容器内容还原。评估后不下放任何 Java 代码。
+- 26.8 新增的 JS 脚本默认关闭，内置只绑定日志、调度和事件上下文，不直接暴露 Tavern 服务。Nashorn 与
+  GraalJS 均可通过宿主 Java 互操作强行访问 Bukkit、插件类及 CE 非稳定实现，但这只是把相同的 Java/NMS
+  依赖迁到无类型脚本；`@Subscribe` 仍会注册 Bukkit 全局监听，并额外增加脚本调用。CE 配置事件内的 `js`
+  function/condition 只用于对应对象的事件，现有可由这类无状态事件表达的逻辑已经直接使用 CE 原生函数，
+  无需再套脚本。`BiomeCondition` 只做群系 id 集合匹配而非 `getBaseTemperature()` 连续值，loot source 面向
+  原版掉落场景注入而非自定义容器内容还原。评估后不把剩余 Java 机械改写为 JS。
 - CustomCrops 负责悬挂葡萄的成长刻、阶段、骨粉、交互、掉落和持久化；Tavern 只保留棚架连线、藤蔓
   传播与悬挂存活规则。托管配置源位于 `src/paper/customcrops`，不要在 Java 中重复这些作物机制。
 
