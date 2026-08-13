@@ -58,6 +58,7 @@ import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.bukkit.api.CraftEngineItems;
 import net.momirealms.craftengine.bukkit.api.event.CraftEngineReloadEvent;
+import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -168,7 +169,12 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
         IncenseBlockBehavior.prewarmRuntime();
         TrellisBehavior.prewarmRuntime(getServer().getWorlds());
         try {
+            // CE builds and caches its protection-provider fan-out lazily.
+            // Charge plugin detection to enable instead of the first tap or
+            // furniture placement interaction.
+            BukkitCraftEngine.instance().antiGriefProvider();
             CustomCropsBridge.requireReady();
+            CustomCropsBridge.prewarmSeasonLookups(getServer().getWorlds());
         } catch (RuntimeException | LinkageError exception) {
             getLogger().log(Level.SEVERE, "CustomCrops 3.6.52+ API 无法初始化，插件已停止。", exception);
             getServer().getPluginManager().disablePlugin(this);
@@ -303,9 +309,15 @@ public final class KaleidoscopeTavernPlugin extends JavaPlugin implements Listen
     }
 
     private void refreshRuntimeContent(boolean startup) {
+        // A plugin enabled after Tavern may register another CE protection
+        // adapter and invalidate the instance warmed during onEnable. This
+        // delayed pass runs after plugin enable order settles; on cache hits
+        // antiGriefProvider() is only a field read.
+        BukkitCraftEngine.instance().antiGriefProvider();
         if (items != null) {
             items.clearVisualCache();
         }
+        TrellisBehavior.prewarmLoadedBlockIds();
         int trellisShapes = TrellisBlockShape.install();
         if (trellisShapes == 0) {
             getLogger().warning("No trellis carrier shapes were available after CraftEngine loading");

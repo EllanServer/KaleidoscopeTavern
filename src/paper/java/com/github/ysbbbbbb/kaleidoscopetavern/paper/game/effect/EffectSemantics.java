@@ -67,6 +67,29 @@ final class EffectSemantics {
     }
 
     /**
+     * Whether a target intersects the finite shriek ray. Both inputs are in
+     * coordinates relative to the user's eye, avoiding Bukkit Vector's
+     * mutable subtract semantics from corrupting a world-space target point.
+     */
+    static boolean shriekHits(double targetX, double targetY, double targetZ,
+                              double lookX, double lookY, double lookZ,
+                              double targetHalfWidth) {
+        double projection = targetX * lookX + targetY * lookY + targetZ * lookZ;
+        if (projection < 0.0 || projection > 32.0) {
+            return false;
+        }
+        double closestX = lookX * projection;
+        double closestY = lookY * projection;
+        double closestZ = lookZ * projection;
+        double deltaX = targetX - closestX;
+        double deltaY = targetY - closestY;
+        double deltaZ = targetZ - closestZ;
+        double radius = 1.0 + targetHalfWidth;
+        return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ
+                <= radius * radius;
+    }
+
+    /**
      * Mirrors {@code MobEffectInstance#update}: a stronger, shorter effect hides
      * the current one, while a weaker effect is retained only when it outlasts
      * the currently visible layer.

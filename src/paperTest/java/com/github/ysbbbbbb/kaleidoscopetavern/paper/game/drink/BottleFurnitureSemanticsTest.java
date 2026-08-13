@@ -21,4 +21,19 @@ class BottleFurnitureSemanticsTest {
         assertEquals("ground_count_2", BottleFurnitureSemantics.variantForCount(2));
         assertEquals("ground_count_4", BottleFurnitureSemantics.variantForCount(4));
     }
+
+    @Test
+    void cardinalBottleVariantPreservesFourWayDisplayAxis() {
+        assertEquals("ground", BottleFurnitureSemantics.variantForCount(1, 0));
+        assertEquals("ground_axis_x", BottleFurnitureSemantics.variantForCount(1, 90));
+        assertEquals("ground_count_4", BottleFurnitureSemantics.variantForCount(4, 180));
+        assertEquals("ground_count_4_axis_x",
+                BottleFurnitureSemantics.variantForCount(4, -90));
+        assertEquals("ground_count_2_axis_x",
+                BottleFurnitureSemantics.withCardinalAxis(
+                        "ground_count_2_axis_x", 270));
+        assertEquals("ground_count_2",
+                BottleFurnitureSemantics.withCardinalAxis(
+                        "ground_count_2_axis_x", 360));
+    }
 }

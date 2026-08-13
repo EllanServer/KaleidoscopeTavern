@@ -320,6 +320,10 @@ public final class BottleFurnitureService implements Listener {
     }
 
     private static void setBottleCount(BukkitFurniture furniture, int count) {
-        furniture.setVariant(BottleFurnitureSemantics.variantForCount(count), true);
+        String base = BottleFurnitureSemantics.variantForCount(count);
+        String directional = BottleFurnitureSemantics.variantForCount(
+                count, furniture.position().yRot());
+        furniture.setVariant(furniture.config.variants().containsKey(directional)
+                ? directional : base, true);
     }
 }

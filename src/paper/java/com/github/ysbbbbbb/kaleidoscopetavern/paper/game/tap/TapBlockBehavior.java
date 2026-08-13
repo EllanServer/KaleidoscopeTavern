@@ -255,7 +255,8 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
         EMPTY
     }
 
-    private static final class Controller extends BlockEntityController {
+    private static final class Controller extends BlockEntityController
+            implements BlockEntityTicker<Controller> {
         private final TapBlockBehavior behavior;
         private Cycle cycle = Cycle.DEFAULT;
         private int ticks;
@@ -310,11 +311,12 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
         @Override
         public <C extends BlockEntityController> BlockEntityTicker<C> createBlockEntityTicker(
                 CEWorld world, ImmutableBlockState blockState) {
-            return createTickerHelper(Controller::tick);
+            return createTickerHelper(this);
         }
 
-        private static void tick(CEWorld world, BlockPos pos, ImmutableBlockState state,
-                                 Controller controller) {
+        @Override
+        public void tick(CEWorld world, BlockPos pos, ImmutableBlockState state,
+                         Controller controller) {
             controller.tickCycle(world, pos, state);
         }
 
@@ -327,7 +329,7 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
             }
             if (cycle == Cycle.DEFAULT) {
                 behavior.setOpen(world.world().minecraftWorld(), pos, state, false,
-                        UpdateFlags.UPDATE_CLIENTS);
+                        UpdateFlags.UPDATE_NO_PHYS);
                 return;
             }
 
@@ -342,7 +344,7 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
                 }
                 if (ticks >= EMPTY_OPEN_TICKS) {
                     behavior.setOpen(world.world().minecraftWorld(), pos, state, false,
-                            UpdateFlags.UPDATE_CLIENTS);
+                            UpdateFlags.UPDATE_NO_PHYS);
                     playToggleSound(drip, false);
                     reset();
                 }
@@ -358,7 +360,7 @@ public final class TapBlockBehavior extends BukkitBlockBehavior implements Entit
             UUID finishingActor = actorId;
             reset();
             behavior.setOpen(world.world().minecraftWorld(), pos, state, false,
-                    UpdateFlags.UPDATE_CLIENTS);
+                    UpdateFlags.UPDATE_NO_PHYS);
             playToggleSound(drip, false);
             Handler current = handler;
             if (current != null) {

@@ -57,6 +57,7 @@ public final class ShakerVisualService {
         this.items = items;
         this.ingredientHud = new ShakerIngredientHudController(
                 plugin, loaded, new ShakerHudTargetResolver(SHAKER),
+                this::hasIngredients,
                 this::ingredientSubtitle);
         this.lifecycleHandler = new LifecycleFurnitureBehavior.Handler() {
             @Override
@@ -183,6 +184,12 @@ public final class ShakerVisualService {
                 : Optional.of(ShakerHudSemantics.ingredientSubtitle(colors));
         ingredientHudSubtitles.put(owner, subtitle);
         return subtitle;
+    }
+
+    private boolean hasIngredients(BukkitFurniture furniture) {
+        Item source = furniture.sourceItem();
+        return source instanceof BukkitItem bukkitItem && !source.isEmpty()
+                && items.hasShakerIngredients(bukkitItem.getBukkitItem());
     }
 
     private List<Integer> ingredientColors(BukkitFurniture furniture) {

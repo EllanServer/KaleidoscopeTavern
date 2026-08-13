@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": {
+      "sprite": "kaleidoscope_tavern:item/empty_bottle",
+      "force_translucent": true
+    }
+  }
+}

@@ -10,14 +10,19 @@ import net.momirealms.customcrops.api.core.world.CustomCropsBlockState;
 import net.momirealms.customcrops.api.core.world.CustomCropsWorld;
 import net.momirealms.customcrops.api.core.world.Pos3;
 import net.momirealms.customcrops.api.core.world.Season;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 /** Narrow public-API boundary between Tavern structures and CustomCrops. */
 public final class CustomCropsBridge {
     private static final String PREFIX = "kaleidoscope_tavern:";
+    private static final TickScopedValueCache<UUID, Season> SEASON_CACHE =
+            new TickScopedValueCache<>();
 
     private CustomCropsBridge() {
     }
@@ -25,6 +30,13 @@ public final class CustomCropsBridge {
     public static void requireReady() {
         if (api() == null) {
             throw new IllegalStateException("CustomCrops API is not initialized");
+        }
+    }
+
+    /** Moves the provider's lazy linkage away from the first grape random tick. */
+    public static void prewarmSeasonLookups(Iterable<? extends World> worlds) {
+        for (World world : worlds) {
+            currentSeason(world);
         }
     }
 
@@ -56,8 +68,7 @@ public final class CustomCropsBridge {
      */
     public static boolean isSeasonSuitable(Location location,
             Set<GrapeSeasonSemantics.Season> allowedSeasons) {
-        Season season = BukkitCustomCropsPlugin.getInstance().getWorldManager()
-                .getSeason(location.getWorld());
+        Season season = currentSeason(location.getWorld());
         if (season == null || GrapeSeasonSemantics.allowsGrowth(allowedSeasons, season.name())) {
             return true;
         }
@@ -92,6 +103,17 @@ public final class CustomCropsBridge {
         BukkitCustomCropsPlugin plugin = BukkitCustomCropsPlugin.getInstance();
         plugin.reload();
         plugin.getWorldManager().reloadWorlds();
+        SEASON_CACHE.clear();
+        prewarmSeasonLookups(Bukkit.getWorlds());
+    }
+
+    private static Season currentSeason(World world) {
+        // CustomCrops calls its configured SeasonProvider on every getSeason
+        // invocation. A world's result is stable during one server tick, so
+        // hundreds of successful trellis spread rolls can share one lookup.
+        return SEASON_CACHE.get(world.getUID(), Bukkit.getCurrentTick(),
+                () -> BukkitCustomCropsPlugin.getInstance().getWorldManager()
+                        .getSeason(world));
     }
 
     private static CustomCropsAPI api() {

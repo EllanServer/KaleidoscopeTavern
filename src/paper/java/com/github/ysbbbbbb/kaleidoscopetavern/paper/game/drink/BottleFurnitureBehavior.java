@@ -8,6 +8,7 @@ import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureBehavi
 import net.momirealms.craftengine.core.entity.furniture.behavior.FurnitureController;
 import net.momirealms.craftengine.core.entity.furniture.hitbox.FurnitureHitBox;
 import net.momirealms.craftengine.core.entity.player.InteractionResult;
+import net.momirealms.craftengine.core.entity.player.Player;
 import net.momirealms.craftengine.core.plugin.config.ConfigSection;
 import net.momirealms.craftengine.core.util.Key;
 import net.momirealms.craftengine.core.world.context.InteractEntityContext;
@@ -65,12 +66,37 @@ public final class BottleFurnitureBehavior extends FurnitureBehaviorTemplate {
         }
 
         @Override
+        public void onPlace(Player player) {
+            alignCardinalAxisVariant();
+        }
+
+        @Override
+        public void onLoad() {
+            alignCardinalAxisVariant();
+        }
+
+        @Override
         public InteractionResult useOnFurniture(FurnitureHitBox hitBox,
                                                 InteractEntityContext context) {
             Handler current = handler;
             return current == null
                     ? InteractionResult.PASS
                     : current.interact(bukkitFurniture, context);
+        }
+
+        private void alignCardinalAxisVariant() {
+            String current = bukkitFurniture.currentVariant().name();
+            String aligned = BottleFurnitureSemantics.withCardinalAxis(
+                    current, bukkitFurniture.position().yRot());
+            // Cocktails and vanilla-style bottles use CE-native sixteen-way
+            // rotation and therefore deliberately have no axis variants.
+            if (current.equals(aligned)
+                    || !bukkitFurniture.config.variants().containsKey(aligned)) {
+                return;
+            }
+            if (bukkitFurniture.setVariant(aligned, true)) {
+                bukkitFurniture.setUnsaved();
+            }
         }
     }
 }

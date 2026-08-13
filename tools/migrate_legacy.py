@@ -56,6 +56,9 @@ MAIN_RESOURCES = ROOT / "src/main/resources"
 CONFIGURATION = ROOT / "src/paper/pack/configuration"
 CATALOG = ROOT / "src/paper/resources/catalog"
 RECIPE_DEFAULTS = ROOT / "src/paper/resources/recipes"
+PACK_RESOURCEPACK = (
+    ROOT / f"src/paper/pack/resourcepack/assets/{NAMESPACE}"
+)
 
 ITEM_REGISTER = JAVA_INIT / "ModItems.java"
 BLOCK_REGISTER = JAVA_INIT / "ModBlocks.java"
@@ -303,21 +306,12 @@ ITEM_DISPLAY_FACING_YAW = {
 # Cardinal bottle furniture retains the original HorizontalDirectionalBlock
 # mapping. CE ground furniture stores 180 + playerYaw, but ItemDisplay entity
 # yaw composes in the opposite direction, so east/west placements need another
-# 180-degree display turn. The user-selected sixteen-way vessels below do not
-# use this compatibility layer: their one display follows CE's native yaw
-# directly. Modulo handles Bukkit yaw values outside [-180, 180).
-CARDINAL_BOTTLE_AXIS_CONDITIONS = (
-    (
-        "(ABS(<arg:furniture.yaw> % 180) <= 45) || "
-        "(ABS(<arg:furniture.yaw> % 180) > 135)",
-        None,
-    ),
-    (
-        "(ABS(<arg:furniture.yaw> % 180) > 45) && "
-        "(ABS(<arg:furniture.yaw> % 180) <= 135)",
-        180,
-    ),
-)
+# 180-degree display turn. Keep that compensation in a dedicated variant
+# instead of a conditional element: CE 26.8 variant refresh contexts do not
+# expose <arg:furniture.yaw>, which made every stacked-bottle display invisible
+# after switching from ground to ground_count_N.
+CARDINAL_BOTTLE_AXIS_SUFFIX = "_axis_x"
+CARDINAL_BOTTLE_AXIS_YAW = 180
 SCULK_RIPPLE_ELEMENT_INDEX = 12
 SCULK_RIPPLE_MODEL_PATH = (
     f"furniture/placed_drink/{NAMESPACE}/block/mixology/sculk_special_ripple"
@@ -695,6 +689,80 @@ def translucent_texture(sprite: str) -> dict[str, Any]:
     }
 
 
+EMPTY_BOTTLE_GLASS_ALPHA = 176
+EMPTY_BOTTLE_CORK_RGB = {
+    (0x95, 0x36, 0x16),
+    (0xA7, 0x46, 0x25),
+    (0xD8, 0x74, 0x50),
+}
+
+def create_empty_bottle_texture_overrides() -> None:
+    """Keep the Forge bottle artwork while making only its glass translucent.
+
+    The archived item sprite is fully opaque and the previously migrated block
+    sprite still contains opaque glass highlights.  CE therefore receives
+    deterministic Paper-only copies: every non-empty cork texel remains opaque,
+    while every other non-empty texel uses the same alpha as the other migrated
+    brew bottles.  RGB and UV layout remain byte-for-byte semantic copies of
+    the source artwork.
+    """
+    try:
+        from PIL import Image
+    except ImportError as exc:  # pragma: no cover - local setup guard
+        raise RuntimeError(
+            "Pillow is required to generate the empty-bottle texture overrides"
+        ) from exc
+
+    expected_counts = {
+        "block/brew/empty_bottle": (8, 68),
+        "item/empty_bottle": (6, 42),
+    }
+    for sprite_path, (expected_cork, expected_glass) in expected_counts.items():
+        source = (
+            MAIN_RESOURCES
+            / f"assets/{NAMESPACE}/textures/{sprite_path}.png"
+        )
+        target = PACK_RESOURCEPACK / f"textures/{sprite_path}.png"
+        target.parent.mkdir(parents=True, exist_ok=True)
+
+        with Image.open(source) as source_image:
+            rgba = source_image.convert("RGBA")
+            pixels: list[tuple[int, int, int, int]] = []
+            cork_count = 0
+            glass_count = 0
+            for y in range(rgba.height):
+                for x in range(rgba.width):
+                    red, green, blue, alpha = rgba.getpixel((x, y))
+                    rgb = (red, green, blue)
+                    if alpha == 0:
+                        pixels.append((red, green, blue, 0))
+                    elif rgb in EMPTY_BOTTLE_CORK_RGB:
+                        pixels.append((red, green, blue, 255))
+                        cork_count += 1
+                    else:
+                        pixels.append((
+                            red, green, blue, EMPTY_BOTTLE_GLASS_ALPHA))
+                        glass_count += 1
+            if (cork_count, glass_count) != (expected_cork, expected_glass):
+                raise AssertionError(
+                    f"{sprite_path}: empty-bottle palette drifted; expected "
+                    f"{expected_cork}/{expected_glass} cork/glass texels, found "
+                    f"{cork_count}/{glass_count}"
+                )
+            rgba.putdata(pixels)
+            rgba.save(target, format="PNG", compress_level=9, optimize=False)
+
+    # minecraft:item/generated accepts the same 26.2 texture descriptor as
+    # cuboid models. Without it, partial alpha can still be selected as cutout.
+    write_json(PACK_RESOURCEPACK / "models/item/empty_bottle.json", {
+        "parent": "minecraft:item/generated",
+        "textures": {
+            "layer0": translucent_texture(
+                f"{NAMESPACE}:item/empty_bottle"),
+        },
+    })
+
+
 def migrate_translucent_model(model: dict[str, Any], owner: str) -> dict[str, Any]:
     """Translate Forge's model-wide render type into vanilla texture slots.
 
@@ -833,6 +901,66 @@ def split_opaque_placed_drink_details(
         face["texture"] = "#opaque_detail"
 
 
+def remove_empty_bottle_z_fighting(
+    model: dict[str, Any],
+    block_id: str,
+    owner: str,
+) -> None:
+    """Separate the empty bottle's archived coplanar visible layers.
+
+    The empty bottle's one-unit shoulder band was exported over the top unit
+    of the body.  Partition those cuboids at y=9 and move the authored top face
+    onto the band, preserving the lower body's texel mapping and the band's own
+    UV. Other bottle models, including the potion bottle's authored glass and
+    tinted-liquid layers, remain byte-for-byte geometrically unchanged.
+    """
+    if block_id != "empty_bottle":
+        return
+
+    elements = model.get("elements")
+    if not isinstance(elements, list):
+        raise AssertionError(f"{owner}: bottle model has no elements")
+
+    if len(elements) != 4:
+        raise AssertionError(
+            f"{owner}: expected four empty-bottle elements, found {len(elements)}")
+    body = elements[2]
+    band = elements[3]
+    if (body.get("from") != [6, 1, 6]
+            or body.get("to") != [10, 10, 10]
+            or band.get("from") != [6, 9, 6]
+            or band.get("to") != [10, 10, 10]):
+        raise AssertionError(
+            f"{owner}: empty-bottle body/shoulder geometry drifted")
+
+    body_faces = body.get("faces")
+    band_faces = band.get("faces")
+    if not isinstance(body_faces, dict) or not isinstance(band_faces, dict):
+        raise AssertionError(f"{owner}: empty-bottle faces are missing")
+    side_names = ("north", "east", "south", "west")
+    for face_name in side_names:
+        face = body_faces.get(face_name)
+        if not isinstance(face, dict) or face.get("uv") != [9, 6, 13, 15]:
+            raise AssertionError(
+                f"{owner}: empty-bottle body UV {face_name} drifted")
+        band_face = band_faces.get(face_name)
+        if (not isinstance(band_face, dict)
+                or band_face.get("uv") != [9, 14, 13, 15]):
+            raise AssertionError(
+                f"{owner}: empty-bottle shoulder UV {face_name} drifted")
+        # Removing the top model unit also removes the first UV unit; the
+        # remaining y=1..9 body therefore continues to sample v=7..15.
+        face["uv"] = [9, 7, 13, 15]
+
+    top_face = body_faces.pop("up", None)
+    if (not isinstance(top_face, dict)
+            or top_face.get("uv") != [0, 0, 4, 4]
+            or "up" in band_faces):
+        raise AssertionError(f"{owner}: empty-bottle top face drifted")
+    body["to"][1] = 9
+    band_faces["up"] = top_face
+
+
 def placed_drink_model(
     block_id: str,
     model: tuple[str, int, int, int, bool],
@@ -881,6 +1009,7 @@ def placed_drink_model(
     if needs_migration:
         migrate_translucent_model(copied, resource_id)
     split_opaque_placed_drink_details(copied, block_id, resource_id)
+    remove_empty_bottle_z_fighting(copied, block_id, resource_id)
 
     # Bottle/glass models always receive a private pack copy.  Forge's
     # original lives under src/main and is never packaged, so the CE render
@@ -2598,22 +2727,12 @@ def furniture_element(
     return element
 
 
-def cardinal_bottle_furniture_elements(
-    element: dict[str, Any],
-) -> list[dict[str, Any]]:
-    """Restore cardinal BottleBlock model yaw without changing furniture yaw."""
+def cardinal_bottle_axis_element(element: dict[str, Any]) -> dict[str, Any]:
+    """Build the east/west display for a four-way BottleBlock variant."""
 
-    elements: list[dict[str, Any]] = []
-    for expression, yaw in CARDINAL_BOTTLE_AXIS_CONDITIONS:
-        directional = deepcopy(element)
-        directional["conditions"] = [{
-            "type": "expression",
-            "expression": expression,
-        }]
-        if yaw is not None:
-            directional["yaw"] = yaw
-        elements.append(directional)
-    return elements
+    directional = deepcopy(element)
+    directional["yaw"] = CARDINAL_BOTTLE_AXIS_YAW
+    return directional
 
 
 def sculk_special_furniture_elements(
@@ -4510,17 +4629,25 @@ def build_furniture(
                 used_names.add(name)
                 element = furniture_element(
                     render_items, block_id, name, selected, anchor)
+                hitboxes = furniture_hitboxes(block_id, anchor, dict(semantic))
                 if block_id == "sculk_special":
                     elements = sculk_special_furniture_elements(
                         render_items, element)
-                elif block_id in CARDINAL_BOTTLE_FURNITURE:
-                    elements = cardinal_bottle_furniture_elements(element)
                 else:
                     elements = [element]
                 variants[name] = {
                     "elements": elements,
-                    "hitboxes": furniture_hitboxes(block_id, anchor, dict(semantic)),
+                    "hitboxes": hitboxes,
                 }
+                if block_id in CARDINAL_BOTTLE_FURNITURE:
+                    # Furniture yaw still supplies all four directions. The
+                    # extra variant only carries the ItemDisplay convention
+                    # compensation needed on the east/west axis. Runtime
+                    # selects it on place/load and preserves it while stacking.
+                    variants[f"{name}{CARDINAL_BOTTLE_AXIS_SUFFIX}"] = {
+                        "elements": [cardinal_bottle_axis_element(element)],
+                        "hitboxes": deepcopy(hitboxes),
+                    }
 
         config: dict[str, Any] = {
             "settings": furniture_settings(block_id),
@@ -5203,6 +5330,7 @@ def main() -> None:
     create_pressing_fluid_models()
     create_barrel_fluid_models()
     create_pendant_lamp_models()
+    create_empty_bottle_texture_overrides()
     create_custom_effect_font()
     create_custom_effect_hud_assets()
     create_shaker_hud_assets()

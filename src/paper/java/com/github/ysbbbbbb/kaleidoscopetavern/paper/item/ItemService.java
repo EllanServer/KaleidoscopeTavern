@@ -440,6 +440,17 @@ public final class ItemService {
         return encoded == null ? List.of() : decodeItems(encoded);
     }
 
+    /**
+     * Checks whether a shaker carries ingredients without deserializing any of
+     * its embedded item stacks. Empty state removes this key in
+     * {@link #withShakerState(ItemStack, List, ItemStack)}.
+     */
+    public boolean hasShakerIngredients(ItemStack stack) {
+        return stack != null && !stack.isEmpty()
+                && stack.getPersistentDataContainer()
+                        .has(shakerIngredientsKey, BYTE_ARRAY_LIST);
+    }
+
     public ItemStack shakerResult(ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
             return null;

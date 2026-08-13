@@ -53,6 +53,11 @@ public final class IncenseBlockBehavior extends BukkitBlockBehavior implements E
     private static final int DAMAGE_INTERVAL = 120;
     private static final int PARTICLE_PHASE_SALT = 0x4B1D_5EED;
     private static final int DAMAGE_PHASE_SALT = 0x51A7_0F1D;
+    /** Matches the variance of a bounded uniform half-range with a Gaussian packet offset. */
+    private static final double UNIFORM_HALF_RANGE_TO_GAUSSIAN_STDDEV =
+            0.5773502691896258;
+    private static final double LARGE_PARTICLE_HORIZONTAL_STDDEV =
+            16.0 * UNIFORM_HALF_RANGE_TO_GAUSSIAN_STDDEV;
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static final DamageSource MAGIC_DAMAGE =
             DamageSource.builder(DamageType.MAGIC).build();
@@ -192,15 +197,20 @@ public final class IncenseBlockBehavior extends BukkitBlockBehavior implements E
         if (!open) {
             return;
         }
-        for (int index = 0; index < 5; index++) {
-            world.spawnParticle(
-                    largeParticle,
-                    centerX + random.nextDouble(-16.0, 16.0),
-                    centerY + largeParticleYOffset
-                            + random.nextDouble() * largeParticleYRange,
-                    centerZ + random.nextDouble(-16.0, 16.0),
-                    1, 0, 0, 0, 0);
-        }
+        // One vanilla particle packet lets every receiving client generate the
+        // five random positions. Center the packet on the source volume and
+        // convert its uniform half-ranges to variance-equivalent Gaussian
+        // offsets, avoiding fifteen server-side random draws and five packets.
+        world.spawnParticle(
+                largeParticle,
+                centerX,
+                centerY + largeParticleYOffset + largeParticleYRange * 0.5,
+                centerZ,
+                5,
+                LARGE_PARTICLE_HORIZONTAL_STDDEV,
+                largeParticleYRange * 0.5 * UNIFORM_HALF_RANGE_TO_GAUSSIAN_STDDEV,
+                LARGE_PARTICLE_HORIZONTAL_STDDEV,
+                0);
     }
 
     private static void hurtNearbyUndead(World world, BlockPos pos) {

@@ -52,12 +52,12 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         implements BonemealableBlock, RandomTickBlock {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "trellis");
     private static final String PREFIX = "kaleidoscope_tavern:";
-    private static final String PLAIN_TRELLIS = PREFIX + "trellis";
-    private static final Set<String> TRELLISES = Set.of(
+    private static final Key PLAIN_TRELLIS = Key.of(PREFIX + "trellis");
+    private static final Set<Key> TRELLISES = Set.of(
             PLAIN_TRELLIS,
-            PREFIX + "grapevine_trellis",
-            PREFIX + "ice_grapevine_trellis",
-            PREFIX + "gold_grapevine_trellis");
+            Key.of(PREFIX + "grapevine_trellis"),
+            Key.of(PREFIX + "ice_grapevine_trellis"),
+            Key.of(PREFIX + "gold_grapevine_trellis"));
     private static final List<BlockFace> GROW_DIRECTIONS = List.of(
             BlockFace.UP, BlockFace.EAST, BlockFace.WEST, BlockFace.SOUTH, BlockFace.NORTH);
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
@@ -108,6 +108,16 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         // mutating world state. Run twice so invokeExact's adapted form is exercised.
         BiomeTemperature.at(level, spawn.getBlockX(), spawn.getBlockY(), spawn.getBlockZ());
         BiomeTemperature.at(level, spawn.getBlockX(), spawn.getBlockY(), spawn.getBlockZ());
+    }
+
+    /** Links CE's state-owner-id access after projects load, not on the first crop tick. */
+    public static void prewarmLoadedBlockIds() {
+        for (Key blockId : TRELLISES) {
+            BlockDefinition definition = CraftEngineBlocks.byId(blockId);
+            if (definition != null) {
+                id(definition.defaultState());
+            }
+        }
     }
 
     @Override
@@ -305,7 +315,7 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         if (!below.getType().isAir() || below.getY() < location.getWorld().getMinHeight()) {
             return false;
         }
-        return CustomCropsBridge.placeHangingGrapes(below.getLocation(), id(source));
+        return CustomCropsBridge.placeHangingGrapes(below.getLocation(), id(source).toString());
     }
 
     private static boolean canGrow(Location location, ImmutableBlockState source) {
@@ -365,7 +375,7 @@ public final class TrellisBehavior extends BukkitBlockBehavior
     }
 
     private static boolean isTrellis(BlockStateWrapper state) {
-        return state != null && TRELLISES.contains(state.ownerId().toString());
+        return state != null && TRELLISES.contains(state.ownerId());
     }
 
     private static boolean isTrellis(Block block) {
@@ -381,8 +391,8 @@ public final class TrellisBehavior extends BukkitBlockBehavior
         };
     }
 
-    private static String id(ImmutableBlockState state) {
-        return state.owner().value().id().toString();
+    private static Key id(ImmutableBlockState state) {
+        return state.owner().value().id();
     }
 
     private static boolean bool(ImmutableBlockState state, String propertyName) {

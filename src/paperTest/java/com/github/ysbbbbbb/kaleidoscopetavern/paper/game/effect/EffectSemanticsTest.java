@@ -71,6 +71,30 @@ class EffectSemanticsTest {
     }
 
     @Test
+    void shriekRayUsesOneConsistentRelativeCoordinateSpace() {
+        assertTrue(EffectSemantics.shriekHits(
+                0.0, 0.0, 5.0,
+                0.0, 0.0, 1.0,
+                0.5));
+        assertTrue(EffectSemantics.shriekHits(
+                1.49, 0.0, 31.0,
+                0.0, 0.0, 1.0,
+                0.5));
+        assertFalse(EffectSemantics.shriekHits(
+                1.51, 0.0, 31.0,
+                0.0, 0.0, 1.0,
+                0.5));
+        assertFalse(EffectSemantics.shriekHits(
+                0.0, 0.0, -1.0,
+                0.0, 0.0, 1.0,
+                0.5));
+        assertFalse(EffectSemantics.shriekHits(
+                0.0, 0.0, 32.01,
+                0.0, 0.0, 1.0,
+                0.5));
+    }
+
+    @Test
     void strongerShortEffectHidesAndThenRestoresTheOldEffect() {
         EffectSemantics.EffectState weak = new EffectSemantics.EffectState(200, 0, null);
         EffectSemantics.EffectState strong = EffectSemantics.mergeEffect(weak, 40, 2);

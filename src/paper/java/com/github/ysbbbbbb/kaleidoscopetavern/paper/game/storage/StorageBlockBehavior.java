@@ -337,7 +337,8 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         void launch(Controller controller, Item item, StorageBlockConfig.Launch launch);
     }
 
-    public static final class Controller extends BlockEntityController {
+    public static final class Controller extends BlockEntityController
+            implements BlockEntityTicker<Controller> {
         private final StorageBlockBehavior behavior;
         private final Item[] items;
         private final Item[] cachedVisuals;
@@ -567,13 +568,18 @@ public final class StorageBlockBehavior extends BukkitBlockBehavior implements E
         public <C extends BlockEntityController> BlockEntityTicker<C> createBlockEntityTicker(
                 CEWorld world, ImmutableBlockState blockState) {
             return behavior.config.particle() == null
-                    ? null : createTickerHelper(Controller::tickParticle);
+                    ? null : createTickerHelper(this);
         }
 
-        private static void tickParticle(
+        @Override
+        public void tick(
                 CEWorld world, BlockPos pos, ImmutableBlockState state, Controller controller) {
-            StorageBlockConfig.ParticleEffect effect = controller.config().particle();
-            if (!controller.hasAny() || effect == null
+            controller.tickParticle(world, pos);
+        }
+
+        private void tickParticle(CEWorld world, BlockPos pos) {
+            StorageBlockConfig.ParticleEffect effect = config().particle();
+            if (!hasAny() || effect == null
                     || ThreadLocalRandom.current().nextInt(effect.chance()) != 0) {
                 return;
             }

@@ -1574,41 +1574,58 @@ public final class EffectService implements Listener {
     private static void shriek(LivingEntity user) {
         Location eye = user.getEyeLocation();
         Vector look = eye.getDirection().normalize();
-        Vector horizontal = new Vector(look.getX(), 0, look.getZ());
-        if (horizontal.lengthSquared() > 0.001) {
-            horizontal.normalize();
-        } else {
-            // Looking straight up or down knocks targets purely upward.
-            horizontal = new Vector();
-        }
+        double eyeX = eye.getX();
+        double eyeY = eye.getY();
+        double eyeZ = eye.getZ();
+        double lookX = look.getX();
+        double lookY = look.getY();
+        double lookZ = look.getZ();
+        double horizontalLengthSquared = lookX * lookX + lookZ * lookZ;
+        double horizontalScale = horizontalLengthSquared > 0.001
+                ? 0.63 / Math.sqrt(horizontalLengthSquared)
+                : 0.0;
+        double knockbackX = lookX * horizontalScale;
+        double knockbackZ = lookZ * horizontalScale;
         double damage = user.getHealth() * 1.2;
-        DamageSource damageSource = DamageSource.builder(DamageType.SONIC_BOOM)
-                .withCausingEntity(user)
-                .withDirectEntity(user)
-                .withDamageLocation(eye)
-                .build();
+        DamageSource damageSource = null;
         for (Entity entity : user.getNearbyEntities(32, 32, 32)) {
             if (!(entity instanceof LivingEntity target) || target.equals(user) || target.isDead()) {
                 continue;
             }
-            Vector targetCenter = target.getLocation().add(0, target.getHeight() / 2.0, 0).toVector();
-            Vector toTarget = targetCenter.subtract(eye.toVector());
-            double projection = toTarget.dot(look);
-            if (projection < 0 || projection > 32) {
+            double targetX = target.getX() - eyeX;
+            double targetY = target.getY() + target.getHeight() / 2.0 - eyeY;
+            double targetZ = target.getZ() - eyeZ;
+            if (!EffectSemantics.shriekHits(
+                    targetX, targetY, targetZ,
+                    lookX, lookY, lookZ,
+                    target.getWidth() / 2.0)) {
                 continue;
             }
-            Vector closest = eye.toVector().add(look.clone().multiply(projection));
-            if (closest.distance(targetCenter) > 1.0 + target.getWidth() / 2.0) {
-                continue;
+            if (damageSource == null) {
+                damageSource = DamageSource.builder(DamageType.SONIC_BOOM)
+                        .withCausingEntity(user)
+                        .withDirectEntity(user)
+                        .withDamageLocation(eye)
+                        .build();
             }
             target.damage(damage, damageSource);
-            target.setVelocity(target.getVelocity().add(horizontal.clone().multiply(0.63)).add(new Vector(0, 0.28, 0)));
+            Vector velocity = target.getVelocity();
+            velocity.setX(velocity.getX() + knockbackX);
+            velocity.setY(velocity.getY() + 0.28);
+            velocity.setZ(velocity.getZ() + knockbackZ);
+            target.setVelocity(velocity);
         }
-        user.getWorld().playSound(user.getLocation(), "minecraft:entity.warden.sonic_boom",
+        user.getWorld().playSound(user, "minecraft:entity.warden.sonic_boom",
                 SoundCategory.PLAYERS, 1.0F, 1.0F);
+        double particleX = eyeX + lookX * 2.0;
+        double particleY = eyeY + lookY * 2.0;
+        double particleZ = eyeZ + lookZ * 2.0;
         for (int distance = 2; distance <= 32; distance += 2) {
             user.getWorld().spawnParticle(Particle.SONIC_BOOM,
-                    eye.clone().add(look.clone().multiply(distance)), 1, 0, 0, 0, 0);
+                    particleX, particleY, particleZ, 1, 0, 0, 0, 0);
+            particleX += lookX * 2.0;
+            particleY += lookY * 2.0;
+            particleZ += lookZ * 2.0;
         }
     }
 

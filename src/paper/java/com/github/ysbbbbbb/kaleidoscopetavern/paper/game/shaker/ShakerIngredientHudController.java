@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Drives the placed-shaker ingredient HUD from Paper entity tracking.
@@ -42,6 +43,7 @@ final class ShakerIngredientHudController implements Listener {
     private final JavaPlugin plugin;
     private final Map<UUID, BukkitFurniture> loaded;
     private final ShakerHudTargetResolver targetResolver;
+    private final Predicate<BukkitFurniture> ingredientPresence;
     private final Function<BukkitFurniture, Optional<Component>> subtitleProvider;
 
     /** Non-empty shaker owners. A furniture owner's UUID is its CE base ItemDisplay UUID. */
@@ -59,10 +61,13 @@ final class ShakerIngredientHudController implements Listener {
             JavaPlugin plugin,
             Map<UUID, BukkitFurniture> loaded,
             ShakerHudTargetResolver targetResolver,
+            Predicate<BukkitFurniture> ingredientPresence,
             Function<BukkitFurniture, Optional<Component>> subtitleProvider) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.loaded = Objects.requireNonNull(loaded, "loaded");
         this.targetResolver = Objects.requireNonNull(targetResolver, "targetResolver");
+        this.ingredientPresence = Objects.requireNonNull(
+                ingredientPresence, "ingredientPresence");
         this.subtitleProvider = Objects.requireNonNull(subtitleProvider, "subtitleProvider");
     }
 
@@ -106,7 +111,7 @@ final class ShakerIngredientHudController implements Listener {
         if (!started || !furniture.isValid()) {
             return;
         }
-        if (subtitleProvider.apply(furniture).isEmpty()) {
+        if (!ingredientPresence.test(furniture)) {
             // An empty shaker has no HUD, so do not admit it to the tracking interest set.
             detachOwner(furniture.uuid());
             return;
@@ -120,7 +125,7 @@ final class ShakerIngredientHudController implements Listener {
 
     void furnitureChanged(BukkitFurniture furniture) {
         if (!started || !furniture.isValid()
-                || subtitleProvider.apply(furniture).isEmpty()) {
+                || !ingredientPresence.test(furniture)) {
             detachOwner(furniture.uuid());
             return;
         }

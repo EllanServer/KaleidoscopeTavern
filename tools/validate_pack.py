@@ -137,18 +137,8 @@ EXPECTED_BOTTLE_FURNITURE = {
     "glowflower_brew", "sauvignon_blanc_dry_white", "vinegar",
     "watermelon_juice",
 }
-CARDINAL_BOTTLE_AXIS_CONDITIONS = {
-    (
-        "(ABS(<arg:furniture.yaw> % 180) <= 45) || "
-        "(ABS(<arg:furniture.yaw> % 180) > 135)",
-        None,
-    ),
-    (
-        "(ABS(<arg:furniture.yaw> % 180) > 45) && "
-        "(ABS(<arg:furniture.yaw> % 180) <= 135)",
-        180,
-    ),
-}
+CARDINAL_BOTTLE_AXIS_SUFFIX = "_axis_x"
+CARDINAL_BOTTLE_AXIS_YAW = 180
 SCULK_RIPPLE_ELEMENT_INDEX = 12
 SCULK_RIPPLE_MODEL_PATH = (
     f"furniture/placed_drink/{NAMESPACE}/block/mixology/sculk_special_ripple"
@@ -383,7 +373,7 @@ RUNTIME_BEHAVIOR_COVERAGE = {
     ),
     "CircularRackBlock.java": (
         ("storage/StorageBlockConfig.java", "record ParticleEffect("),
-        ("storage/StorageBlockBehavior.java", "private static void tickParticle("),
+        ("storage/StorageBlockBehavior.java", "private void tickParticle("),
         ("src/paper/pack/configuration/blocks.json", '"alternate_min_x"'),
     ),
     "CocktailBlockItem.java": (
@@ -527,7 +517,11 @@ EFFECT_BEHAVIOR_COVERAGE = {
     "GrassStealthEffect.java": (("effect/EffectService.java", "grassStealth"),),
     "HighHeelsEffect.java": (("effect/EffectService.java", "Attribute.STEP_HEIGHT"),),
     "LongReachEffect.java": (("effect/EffectService.java", "Attribute.BLOCK_INTERACTION_RANGE"),),
-    "ShriekAttackEffect.java": (("effect/EffectService.java", "DamageType.SONIC_BOOM"),),
+    "ShriekAttackEffect.java": (
+        ("effect/EffectService.java", "DamageType.SONIC_BOOM"),
+        ("effect/EffectService.java", "EffectSemantics.shriekHits("),
+        ("effect/EffectSemantics.java", "static boolean shriekHits("),
+    ),
     "UpsideDownEffect.java": (("effect/EffectService.java", "upside_down"),),
     "VisionEffect.java": (("effect/EffectService.java", "void vision"),),
     "XpDrainEffect.java": (("effect/EffectService.java", "xpDrain"),),
@@ -578,7 +572,7 @@ BLOCK_ENTITY_COVERAGE = {
     ),
     "CircularRackBlockEntity.java": (
         ("storage/StorageBlockBehavior.java", "private final Item[] items"),
-        ("storage/StorageBlockBehavior.java", "private static void tickParticle("),
+        ("storage/StorageBlockBehavior.java", "private void tickParticle("),
     ),
     "GlasswareHolderBlockEntity.java": (("storage/DisplayStorageService.java", "GLASSWARE_HOLDER"),),
     "HolderBlockEntity.java": (("storage/StorageBlockBehavior.java", "Item[] items"),),
@@ -737,6 +731,55 @@ def assert_ordered_model_bounds(resource_id: str, owner: str) -> None:
                 raise AssertionError(
                     f"{owner}: {resource_id} element {index} has descending {axis_name} "
                     "bounds, which exposes its back face when rendered as furniture")
+
+
+def assert_no_same_facing_coplanar_quads(resource_id: str, owner: str) -> None:
+    """Reject overlapping, outward-facing quads on zero-rotation cuboids."""
+    model = asset_json(resource_id, "models", roots=(ASSET_ROOTS[0],))
+    if model is None:
+        raise AssertionError(f"{owner}: missing displayed model {resource_id}")
+
+    face_axes = {
+        "west": (0, 0), "east": (0, 1),
+        "down": (1, 0), "up": (1, 1),
+        "north": (2, 0), "south": (2, 1),
+    }
+    other_axes = {0: (1, 2), 1: (0, 2), 2: (0, 1)}
+    quads: list[tuple[int, str, float, float, float, float, float]] = []
+    for element_index, element in enumerate(model.get("elements", [])):
+        rotation = element.get("rotation", {})
+        if rotation and float(rotation.get("angle", 0)) != 0:
+            continue
+        start = element.get("from")
+        end = element.get("to")
+        if not (isinstance(start, list) and isinstance(end, list)
+                and len(start) == 3 and len(end) == 3):
+            continue
+        low = [min(start[axis], end[axis]) for axis in range(3)]
+        high = [max(start[axis], end[axis]) for axis in range(3)]
+        for face_name in element.get("faces", {}):
+            if face_name not in face_axes:
+                continue
+            axis, side = face_axes[face_name]
+            first, second = other_axes[axis]
+            quads.append((
+                element_index,
+                face_name,
+                low[axis] if side == 0 else high[axis],
+                low[first], high[first],
+                low[second], high[second],
+            ))
+
+    for first_index, first in enumerate(quads):
+        for second in quads[first_index + 1:]:
+            if first[1] != second[1] or first[2] != second[2]:
+                continue
+            overlap_first = min(first[4], second[4]) - max(first[3], second[3])
+            overlap_second = min(first[6], second[6]) - max(first[5], second[5])
+            if overlap_first > 0 and overlap_second > 0:
+                raise AssertionError(
+                    f"{owner}: {resource_id} elements {first[0]}/{second[0]} "
+                    f"have overlapping coplanar {first[1]} quads")
 
 
 def assert_forced_translucency(
@@ -1026,7 +1069,8 @@ def validate() -> dict[str, int]:
     placed_drink_models: dict[str, str] = {}
     for bottle_id in sorted(EXPECTED_BOTTLE_FURNITURE):
         config = furniture[f"{NAMESPACE}:{bottle_id}"]
-        for variant_name, variant in config.get("variants", {}).items():
+        variants = config.get("variants", {})
+        for variant_name, variant in variants.items():
             elements = variant.get("elements", [])
             if any(element.get("type") != "item_display" for element in elements):
                 raise AssertionError(
@@ -1070,34 +1114,45 @@ def validate() -> dict[str, int]:
                     raise AssertionError(
                         "sculk_special: rotating body and fixed ripple need separate models")
             elif bottle_id in EXPECTED_CARDINAL_BOTTLE_FURNITURE:
-                if len(elements) != 2:
+                if len(elements) != 1:
                     raise AssertionError(
                         f"{bottle_id}/{variant_name}: cardinal bottle furniture must "
-                        "contain exactly two conditional CE item-display elements")
-                directions: set[tuple[str | None, int | None]] = set()
-                bases: list[dict[str, Any]] = []
-                for element in elements:
-                    conditions = element.get("conditions")
-                    if (not isinstance(conditions, list) or len(conditions) != 1
-                            or conditions[0].get("type") != "expression"):
-                        raise AssertionError(
-                            f"{bottle_id}/{variant_name}: cardinal direction display "
-                            "must use one native CE expression condition")
-                    directions.add((
-                        conditions[0].get("expression"),
-                        element.get("yaw"),
-                    ))
-                    bases.append({
-                        key: value for key, value in element.items()
-                        if key not in {"conditions", "yaw"}
-                    })
-                if directions != CARDINAL_BOTTLE_AXIS_CONDITIONS:
+                        "contain exactly one unconditional CE item-display element")
+                element = elements[0]
+                if "conditions" in element:
                     raise AssertionError(
-                        f"{bottle_id}/{variant_name}: cardinal direction compensation "
-                        f"drifted: {sorted(directions, key=str)}")
-                if bases[0] != bases[1]:
+                        f"{bottle_id}/{variant_name}: cardinal stack variants must not "
+                        "depend on CE furniture context expressions")
+                axis_x = variant_name.endswith(CARDINAL_BOTTLE_AXIS_SUFFIX)
+                base_name = (variant_name[:-len(CARDINAL_BOTTLE_AXIS_SUFFIX)]
+                             if axis_x else variant_name)
+                paired_name = (base_name if axis_x else
+                               f"{variant_name}{CARDINAL_BOTTLE_AXIS_SUFFIX}")
+                paired = variants.get(paired_name)
+                if not isinstance(paired, dict):
                     raise AssertionError(
-                        f"{bottle_id}/{variant_name}: direction copies must share one "
+                        f"{bottle_id}/{variant_name}: missing paired four-way axis "
+                        f"variant {paired_name}")
+                expected_yaw = CARDINAL_BOTTLE_AXIS_YAW if axis_x else None
+                if element.get("yaw") != expected_yaw:
+                    raise AssertionError(
+                        f"{bottle_id}/{variant_name}: expected axis compensation yaw "
+                        f"{expected_yaw}, found {element.get('yaw')}")
+                paired_elements = paired.get("elements", [])
+                if len(paired_elements) != 1:
+                    raise AssertionError(
+                        f"{bottle_id}/{paired_name}: paired axis variant must contain "
+                        "exactly one item display")
+                base_element = {
+                    key: value for key, value in element.items() if key != "yaw"
+                }
+                paired_base = {
+                    key: value for key, value in paired_elements[0].items()
+                    if key != "yaw"
+                }
+                if base_element != paired_base:
+                    raise AssertionError(
+                        f"{bottle_id}/{variant_name}: axis variants must share one "
                         "render item and exact display transform")
             else:
                 if len(elements) != 1:
@@ -1142,6 +1197,28 @@ def validate() -> dict[str, int]:
     for model_path, owner in placed_drink_models.items():
         assert_ordered_model_bounds(model_path, owner)
         assert_no_forge_render_type(model_path, owner)
+
+    # Only the empty bottle's accidental shoulder/body overlap is corrected.
+    # The potion bottle deliberately retains its authored glass/liquid layers.
+    assert_no_same_facing_coplanar_quads(
+        f"{NAMESPACE}:furniture/placed_drink/{NAMESPACE}/block/brew/empty_bottle",
+        "empty_bottle",
+    )
+    source_potion = asset_json(
+        f"{NAMESPACE}:block/brew/potion_bottle",
+        "models",
+        roots=SOURCE_ASSET_ROOTS,
+    )
+    migrated_potion = asset_json(
+        f"{NAMESPACE}:furniture/placed_drink/{NAMESPACE}/block/brew/potion_bottle",
+        "models",
+        roots=(ASSET_ROOTS[0],),
+    )
+    if source_potion is None or migrated_potion is None:
+        raise AssertionError("potion_bottle: missing source or migrated model")
+    if migrated_potion.get("elements") != source_potion.get("elements"):
+        raise AssertionError(
+            "potion_bottle: Paper migration must not alter the authored geometry or UVs")
 
     ripple_render = render_items.get(SCULK_RIPPLE_RENDER_ID, {})
     if ripple_render.get("model", {}).get("path") != SCULK_RIPPLE_MODEL_ID:
@@ -1280,11 +1357,21 @@ def validate() -> dict[str, int]:
     for required_token in (
             "MutableBlockPosProxy.INSTANCE.newInstance()",
             "MutableBlockPosProxy.INSTANCE.setWithOffset(",
-            "BlockGetterProxy.INSTANCE.getBlockState(level, targetPosition)"):
+            "BlockGetterProxy.INSTANCE.getBlockState(level, targetPosition)",
+            "private static final Set<Key> TRELLISES",
+            "public static void prewarmLoadedBlockIds()",
+            "return state.owner().value().id();"):
         if required_token not in trellis_behavior_source:
             raise AssertionError(
                 "Trellis random ticks must reuse their NMS position instead of allocating "
                 f"one Bukkit-to-CE BlockPos bridge per neighbour; missing {required_token}")
+    for stale_token in (
+            "TRELLISES.contains(state.ownerId().toString())",
+            "return state.owner().value().id().toString();"):
+        if stale_token in trellis_behavior_source:
+            raise AssertionError(
+                "Trellis hot paths must compare CE Keys without allocating strings; "
+                f"found {stale_token}")
     for required_token in (
             "extends BukkitBlockBehavior",
             "private final Property<Direction.Axis> axisProperty",
@@ -1897,6 +1984,9 @@ def validate() -> dict[str, int]:
             "scheduleNextParticle(random)",
             "random.nextInt(PARTICLE_DELAY_BOUND)",
             "random.nextInt(3) == 0",
+            "centerY + largeParticleYOffset + largeParticleYRange * 0.5",
+            "LARGE_PARTICLE_HORIZONTAL_STDDEV",
+            "largeParticleYRange * 0.5 * UNIFORM_HALF_RANGE_TO_GAUSSIAN_STDDEV",
             "takeDamageDue()",
             "damageDelay = DAMAGE_INTERVAL - 1",
             "world.getNearbyLivingEntities(center, 32.5)",
@@ -1910,6 +2000,8 @@ def validate() -> dict[str, int]:
                         "random.nextInt(49) == 0",
                         "world.getGameTime() % 120L",
                         "center.clone().add(",
+                        "for (int index = 0; index < 5; index++)",
+                        "random.nextDouble(-16.0, 16.0)",
                         "Controller::tick"):
         if stale_token in incense_behavior_source:
             raise AssertionError(
@@ -2425,6 +2517,7 @@ def validate() -> dict[str, int]:
             "ingredientHud.furnitureUnavailable(owner)",
             "ingredientHud.furnitureChanged(furniture)",
             "ingredientHudSubtitles",
+            "items.hasShakerIngredients(",
             "items.shakerIngredients(shaker)",
             "ShakerSemantics.ingredientColor(",
             "ShakerHudSemantics.progressSubtitle(ticks)",
@@ -2444,7 +2537,9 @@ def validate() -> dict[str, int]:
             "implements Listener",
             "PlayerTrackEntityEvent",
             "PlayerUntrackEntityEvent",
-            "subtitleProvider.apply(furniture).isEmpty()",
+            "Predicate<BukkitFurniture> ingredientPresence",
+            "if (!ingredientPresence.test(furniture))",
+            "Optional<Component> subtitle = subtitleProvider.apply(target)",
             "furniture.bukkitEntity().getTrackedBy()",
             "ownersByPlayer",
             "playersByOwner",
@@ -2466,7 +2561,8 @@ def validate() -> dict[str, int]:
     for stale_token in (
             "getTargetEntity(", "getNearbyEntities(", "tickIngredientHud(",
             "ingredientHudTask", "beginPoll()", "endPoll()", "MAX_REUSE_TICKS",
-            "PlayerMoveEvent", "runTaskLater(", "flushDirty"):
+            "PlayerMoveEvent", "runTaskLater(", "flushDirty",
+            "subtitleProvider.apply(furniture)"):
         if stale_token in (shaker_visual_service_source
                            + shaker_hud_target_source
                            + shaker_ingredient_hud_source):
@@ -2922,6 +3018,8 @@ def validate() -> dict[str, int]:
             "TAKE_PARTICLE_TICKS = 5",
             "EMPTY_OPEN_TICKS = 6",
             "DRIP_LIFETIME_TICKS = 18",
+            "implements BlockEntityTicker<Controller>",
+            "return createTickerHelper(this)",
             "private boolean open;",
             "this.open = blockEntity.blockState.get(behavior.openProperty)",
             "public void preBlockStateChange(ImmutableBlockState newState)",
@@ -2977,7 +3075,7 @@ def validate() -> dict[str, int]:
             "TapBlockBehavior must cache its open state instead of resolving the CE "
             "property table from every loaded tap on every tick")
     for stale_token in ("BukkitTask", "runTaskTimer", "PersistentDataContainer",
-                        "BukkitFurniture", "FurnitureInteractEvent"):
+                        "BukkitFurniture", "FurnitureInteractEvent", "Controller::tick"):
         if stale_token in tap_block_source:
             raise AssertionError(
                 "The CE tap block must not duplicate its state through furniture/PDC/tasks; "
@@ -3018,11 +3116,16 @@ def validate() -> dict[str, int]:
             "blockEntity.world.blockEntityChanged(blockEntity.pos)",
             "implements BlockEntityElement",
             "ClientboundAddEntityPacketProxy.INSTANCE.newInstance",
-            "private static void tickParticle("):
+            "implements BlockEntityTicker<Controller>",
+            "createTickerHelper(this)",
+            "private void tickParticle("):
         if required_token not in storage_block_source:
             raise AssertionError(
                 "CE storage blocks must use one generic config-driven slot engine; "
                 f"missing token: {required_token}")
+    if "Controller::tickParticle" in storage_block_source:
+        raise AssertionError(
+            "CE storage particle tickers must not generate a runtime lambda class")
     for required_token in (
             "record Orientation(", "record SlotVisual(", "record Selector(",
             "record Interaction(", "record Launch(", "record ParticleEffect(",
