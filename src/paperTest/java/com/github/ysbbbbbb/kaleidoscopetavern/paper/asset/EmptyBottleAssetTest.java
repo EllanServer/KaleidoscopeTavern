@@ -51,7 +51,8 @@ class EmptyBottleAssetTest {
         expectedUvs.add(topUv);
         assertEquals(expectedUvs, migratedUvs,
                 "CE furniture must partition the shoulder while preserving its authored UVs");
-        assertTrue(migrated.contains("\"to\": [\n        10,\n        9,\n        10\n      ]"),
+        assertTrue(Pattern.compile("\"to\":\\s*\\[\\s*10,\\s*9,\\s*10\\s*]")
+                        .matcher(migrated).find(),
                 "The empty-bottle body must stop below the shoulder band");
         assertTrue(migrated.contains("\"force_translucent\": true"));
 
