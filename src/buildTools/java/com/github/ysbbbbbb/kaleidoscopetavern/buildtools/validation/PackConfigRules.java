@@ -2548,16 +2548,18 @@ public final class PackConfigRules {
     /**
      * Third-person: a purely client-driven use_cycle shake at the source
      * SHAKING tempo (period 2π/1.5 ticks). Every frame is
-     * R_X(-45°·sin(1.5·t))·R_Z(-9°) — the source mod's right-arm swing
-     * expressed as the shaker's motion in hand; the bow arm base stays
-     * forward and no server swing loop is needed.
+     * R_X(∓45°·sin(1.5·t))·R_Z(∓9°) — the source mod's right-arm swing for
+     * the right hand and its mirrored counterpart (247.5° + 45°·sin, +9°)
+     * for the left hand, expressed as the shaker's motion in hand; the bow
+     * arm base stays forward and no server swing loop is needed.
      */
-    private static JsonObject expectedShakerUseCycleTP() {
+    private static JsonObject expectedShakerUseCycleTP(boolean rightHand) {
         JsonArray entries = new JsonArray();
+        double dir = rightHand ? 1 : -1;
         for (int index = 0; index < SHAKER_USE_FRAMES; index++) {
             double cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES;
-            double angle = -45 * Math.sin(1.5 * cycle);
-            double[] u = shakerMul(shakerRotX(angle), shakerRotZ(-9));
+            double angle = dir * -45 * Math.sin(1.5 * cycle);
+            double[] u = shakerMul(shakerRotX(angle), shakerRotZ(dir * -9));
             JsonObject entry = new JsonObject();
             entry.addProperty("threshold", Math.round(cycle * 1e6) / 1e6);
             JsonObject model = new JsonObject();
@@ -2993,13 +2995,18 @@ public final class PackConfigRules {
         JsonObject fallbackModel = new JsonObject();
         fallbackModel.addProperty("type", "minecraft:model");
         fallbackModel.addProperty("path", NAMESPACE + ":item/shaker_3d");
-        JsonObject thirdPerson = new JsonObject();
-        JsonArray tpWhen = new JsonArray();
-        tpWhen.add("thirdperson_lefthand");
-        tpWhen.add("thirdperson_righthand");
-        thirdPerson.add("when", tpWhen);
-        thirdPerson.add("model", expectedShakerUseCycleTP());
-        useCases.add(thirdPerson);
+        JsonObject thirdPersonRight = new JsonObject();
+        JsonArray tpRightWhen = new JsonArray();
+        tpRightWhen.add("thirdperson_righthand");
+        thirdPersonRight.add("when", tpRightWhen);
+        thirdPersonRight.add("model", expectedShakerUseCycleTP(true));
+        useCases.add(thirdPersonRight);
+        JsonObject thirdPersonLeft = new JsonObject();
+        JsonArray tpLeftWhen = new JsonArray();
+        tpLeftWhen.add("thirdperson_lefthand");
+        thirdPersonLeft.add("when", tpLeftWhen);
+        thirdPersonLeft.add("model", expectedShakerUseCycleTP(false));
+        useCases.add(thirdPersonLeft);
         expectedUseModel.add("cases", useCases);
         expectedUseModel.add("fallback", fallbackModel);
         if (!offFalse.equals(useCondition.get("on_false"))
