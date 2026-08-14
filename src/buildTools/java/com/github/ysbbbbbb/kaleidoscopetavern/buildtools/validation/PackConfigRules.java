@@ -2514,8 +2514,7 @@ public final class PackConfigRules {
      */
     private static JsonObject expectedShakerUseCycle(boolean rightHand) {
         JsonArray entries = new JsonArray();
-        double[] display = shakerMul(shakerMul(shakerTrans(0, 2.75, 0), shakerScale(0.5)),
-                shakerTrans(-0.5, -0.5, -0.5));
+        double[] display = shakerTrans(-0.5, -0.5, -0.5);
         double[] bow = shakerBowHand(rightHand);
         double[] invDisplay = shakerInv(display);
         double[] invBow = shakerInv(bow);
