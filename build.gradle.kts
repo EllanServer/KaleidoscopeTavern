@@ -17,6 +17,11 @@ repositories {
     maven("https://repo.catnies.top/releases")
 }
 
+val buildTools = sourceSets.create("buildTools") {
+    java.setSrcDirs(listOf("src/buildTools/java"))
+    resources.setSrcDirs(emptyList<String>())
+}
+
 val embeddedLibraries = configurations.create("embeddedLibraries") {
     isCanBeConsumed = false
     isCanBeResolved = true
@@ -34,6 +39,8 @@ dependencies {
     compileOnly("me.clip:placeholderapi:${providers.gradleProperty("placeholder_api_version").get()}")
     implementation("net.momirealms:sparrow-yaml:${providers.gradleProperty("sparrow_yaml_version").get()}")
     embeddedLibraries("net.momirealms:sparrow-yaml:${providers.gradleProperty("sparrow_yaml_version").get()}")
+
+    add(buildTools.implementationConfigurationName, "com.google.code.gson:gson:2.13.2")
 
     testImplementation(platform("org.junit:junit-bom:5.14.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -138,42 +145,63 @@ tasks.jar {
 }
 
 val deployableJar = tasks.jar.flatMap { it.archiveFile }
-val verifyPluginJar = tasks.register<Exec>("verifyPluginJar") {
+
+// Native Java build tools. The same classes are used by the migration and
+// validation tasks below; Gson stays confined to the buildTools source set and
+// never enters the deployable JAR.
+val verifyPluginJar = tasks.register<JavaExec>("verifyPluginJar") {
     group = "verification"
     description = "Checks the deployable JAR, embedded CraftEngine project and CustomCrops content pack."
-    dependsOn(tasks.jar)
+    dependsOn(tasks.jar, buildTools.classesTaskName)
+    classpath = buildTools.runtimeClasspath
+    mainClass.set("com.github.ysbbbbbb.kaleidoscopetavern.buildtools.PluginJarVerifier")
+    workingDir(projectDir)
+    args(deployableJar.get().asFile.absolutePath, customCropsVersion.get())
     inputs.file(deployableJar)
-    workingDir = projectDir
-    commandLine(
-        "python",
-        "tools/verify_plugin_jar.py",
-        deployableJar.get().asFile.absolutePath,
-        customCropsVersion.get()
-    )
 }
 
-tasks.register<Exec>("migrateLegacyContent") {
+tasks.register<JavaExec>("migrateLegacyContent") {
     group = "kaleidoscope tavern"
     description = "Regenerates the CraftEngine pack and runtime recipe catalog from the archived Forge resources."
-    workingDir = projectDir
-    commandLine("python", "tools/migrate_legacy.py")
+    dependsOn(buildTools.classesTaskName)
+    classpath = buildTools.runtimeClasspath
+    mainClass.set("com.github.ysbbbbbb.kaleidoscopetavern.buildtools.LegacyContentMigrator")
+    workingDir(projectDir)
+    args("--root", projectDir.absolutePath)
+    inputs.files(
+        fileTree("src/main/java/com/github/ysbbbbbb/kaleidoscopetavern/init"),
+        fileTree("src/main/resources"),
+        fileTree("src/generated/resources")
+    )
+    outputs.files(
+        fileTree("src/paper/pack/configuration"),
+        fileTree("src/paper/resources/catalog"),
+        fileTree("src/paper/resources/recipes"),
+        fileTree("src/paper/pack/resourcepack")
+    )
 }
 
-tasks.register<Exec>("validatePack") {
+tasks.register<JavaExec>("validatePack") {
     group = "verification"
     description = "Validates all generated CraftEngine definitions, recipes, models and runtime catalogs."
-    workingDir = projectDir
-    commandLine("python", "tools/validate_pack.py")
+    dependsOn(buildTools.classesTaskName)
+    classpath = buildTools.runtimeClasspath
+    mainClass.set("com.github.ysbbbbbb.kaleidoscopetavern.buildtools.PackValidator")
+    workingDir(projectDir)
+    args(projectDir.absolutePath)
 }
 
-val validateServerStateBudget = tasks.register<Exec>("validateServerStateBudget") {
+val validateServerStateBudget = tasks.register<JavaExec>("validateServerStateBudget") {
     group = "verification"
     description = "Guards the CraftEngine 2000-state pool with a 1000-state reserve for other projects."
-    workingDir = projectDir
-    commandLine(
-        "python", "tools/check_server_state_budget.py",
-        "--capacity", "2000", "--reserve", "1000"
-    )
+    dependsOn(buildTools.classesTaskName)
+    classpath = buildTools.runtimeClasspath
+    mainClass.set("com.github.ysbbbbbb.kaleidoscopetavern.buildtools.ServerStateBudgetValidator")
+    workingDir(projectDir)
+    args("--capacity", "2000", "--reserve", "1000")
+    inputs.file("src/paper/pack/configuration/blocks.json")
+    inputs.property("capacity", 2000)
+    inputs.property("reserve", 1000)
 }
 
 tasks.named("check") {

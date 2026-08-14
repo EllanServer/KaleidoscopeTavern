@@ -53,18 +53,18 @@
 - 完整构建：Windows 使用 `.\gradlew.bat clean build`，Unix/CI 使用 `./gradlew clean build`。
 - 只编译：`.\gradlew.bat compileJava`。
 - 重新迁移：`.\gradlew.bat migrateLegacyContent`。
-- 单独校验 CE 配置：`.\gradlew.bat validatePack` 或 `python tools/validate_pack.py`。
-- 校验 CE 服务端状态预算：`.\gradlew.bat validateServerStateBudget` 或
-  `python tools/check_server_state_budget.py --capacity 2000 --reserve 1000`。
+- 单独校验 CE 配置：`.\gradlew.bat validatePack`。
+- 校验 CE 服务端状态预算：`.\gradlew.bat validateServerStateBudget`。
+
 - 迁移与校验会生成/检查 157 个公共物品、44 个方块 id、116 个家具定义、414 个私有渲染物品、114 个配方
   和 3 个 CustomCrops 作物。
 
 ## 生成文件
 
-- `tools/migrate_legacy.py` 从保留的 Forge 注册表、数据生成结果和资源模型确定性地产生
-  `src/paper/pack/configuration/*.json` 与 `src/paper/resources/catalog/*.tsv`。
+- `migrateLegacyContent`（原生 Java 迁移器，`buildTools` 源集）从保留的 Forge 注册表、数据生成结果和资源模型确定性地产生
+  `src/paper/pack/configuration/*.json`、`src/paper/pack/resourcepack` 资源、`src/paper/resources/catalog/*.tsv` 与 `src/paper/resources/recipes/*.yml`。
 - 不要直接修改生成的 JSON/TSV；应修改迁移脚本或旧迁移输入，再重新生成并检查差异。
-- `tools/validate_pack.py` 会检查对象分类、资源引用、家具变体、配方、CustomCrops 阶段映射、饮品物品
+- `validatePack`（原生 Java 校验器）会检查对象分类、资源引用、家具变体、配方、CustomCrops 阶段映射、饮品物品
   语义、酒桶占位和玩法目录。
 
 ## 验证注意事项
