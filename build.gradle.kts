@@ -71,7 +71,29 @@ sourceSets {
     }
 }
 
+val migrateLegacyContent = tasks.register<JavaExec>("migrateLegacyContent") {
+    group = "kaleidoscope tavern"
+    description = "Regenerates the CraftEngine pack and runtime recipe catalog from the archived Forge resources."
+    dependsOn(buildTools.classesTaskName)
+    classpath = buildTools.runtimeClasspath
+    mainClass.set("com.github.ysbbbbbb.kaleidoscopetavern.buildtools.LegacyContentMigrator")
+    workingDir(projectDir)
+    args("--root", projectDir.absolutePath)
+    inputs.files(
+        fileTree("src/main/java/com/github/ysbbbbbb/kaleidoscopetavern/init"),
+        fileTree("src/main/resources"),
+        fileTree("src/generated/resources")
+    )
+    outputs.files(
+        fileTree("src/paper/pack/configuration"),
+        fileTree("src/paper/resources/catalog"),
+        fileTree("src/paper/resources/recipes"),
+        fileTree("src/paper/pack/resourcepack")
+    )
+}
+
 tasks.processResources {
+    dependsOn(migrateLegacyContent)
     val replacements = mapOf("version" to project.version.toString())
     inputs.properties(replacements)
     filesMatching("plugin.yml") {
@@ -109,6 +131,10 @@ tasks.processResources {
         into("tavern-pack/resourcepack")
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.named("sourcesJar") {
+    dependsOn(migrateLegacyContent)
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -160,31 +186,11 @@ val verifyPluginJar = tasks.register<JavaExec>("verifyPluginJar") {
     inputs.file(deployableJar)
 }
 
-tasks.register<JavaExec>("migrateLegacyContent") {
-    group = "kaleidoscope tavern"
-    description = "Regenerates the CraftEngine pack and runtime recipe catalog from the archived Forge resources."
-    dependsOn(buildTools.classesTaskName)
-    classpath = buildTools.runtimeClasspath
-    mainClass.set("com.github.ysbbbbbb.kaleidoscopetavern.buildtools.LegacyContentMigrator")
-    workingDir(projectDir)
-    args("--root", projectDir.absolutePath)
-    inputs.files(
-        fileTree("src/main/java/com/github/ysbbbbbb/kaleidoscopetavern/init"),
-        fileTree("src/main/resources"),
-        fileTree("src/generated/resources")
-    )
-    outputs.files(
-        fileTree("src/paper/pack/configuration"),
-        fileTree("src/paper/resources/catalog"),
-        fileTree("src/paper/resources/recipes"),
-        fileTree("src/paper/pack/resourcepack")
-    )
-}
 
 tasks.register<JavaExec>("validatePack") {
     group = "verification"
     description = "Validates all generated CraftEngine definitions, recipes, models and runtime catalogs."
-    dependsOn(buildTools.classesTaskName)
+    dependsOn(buildTools.classesTaskName, migrateLegacyContent)
     classpath = buildTools.runtimeClasspath
     mainClass.set("com.github.ysbbbbbb.kaleidoscopetavern.buildtools.PackValidator")
     workingDir(projectDir)
@@ -194,7 +200,7 @@ tasks.register<JavaExec>("validatePack") {
 val validateServerStateBudget = tasks.register<JavaExec>("validateServerStateBudget") {
     group = "verification"
     description = "Guards the CraftEngine 2000-state pool with a 1000-state reserve for other projects."
-    dependsOn(buildTools.classesTaskName)
+    dependsOn(buildTools.classesTaskName, migrateLegacyContent)
     classpath = buildTools.runtimeClasspath
     mainClass.set("com.github.ysbbbbbb.kaleidoscopetavern.buildtools.ServerStateBudgetValidator")
     workingDir(projectDir)

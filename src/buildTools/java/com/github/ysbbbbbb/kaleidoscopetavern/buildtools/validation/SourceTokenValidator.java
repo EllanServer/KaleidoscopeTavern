@@ -843,6 +843,21 @@ public final class SourceTokenValidator {
                 "public InteractionResult useOnFurniture(",
                 "current.interact(bukkitFurniture, context)"},
                 "board_text useOnFurniture delegation missing");
+        addStale(GAME + "grape/HangingGrapeCropBehavior.java", new String[] {
+                "RandomTickBlock", "randomTick(", "canRandomlyTick(",
+                "addGrowthPoints", "GrapeGrowthSemantics", "GrapeSeasonGate"},
+                "Hanging grape lifecycle must be configured in CustomCrops, not Java");
+        addRequired(GAME + "grape/HangingGrapeCropBehavior.java", new String[] {
+                "LocationUtils.above(args[2])",
+                "BlockGetterProxy.INSTANCE.getBlockState(args[1], above)",
+                "DirectionUtils.fromNMSDirection(args[updateShape$direction])",
+                "args[updateShape$neighborState]",
+                "BlockStateUtils.getNullableCustomBlockState(minecraftState)"},
+                "Hanging grape support checks must stay on CraftEngine NMS helper path");
+        addStale(GAME + "grape/HangingGrapeCropBehavior.java", new String[] {
+                "CraftEngineBlocks.getCustomBlockState(above)",
+                "getRelative(BlockFace.UP)"},
+                "Hanging grape support checks must not fall back to Bukkit block lookups");
     }
 
     private static void addRequired(String path, String[] tokens, String message) {
@@ -951,6 +966,14 @@ public final class SourceTokenValidator {
                     "FurnitureState construction must not retain the obsolete Bukkit PDC owner");
         }
         String allPaper = allPaperJava.toString();
+        for (String growthApi : new String[] {"addPointToCrop(", "addGrowthPoints(",
+                "GrapeGrowthSemantics"}) {
+            if (allPaper.contains(growthApi)) {
+                throw new ValidationException(
+                        "CustomCrops-configurable grape growth APIs must not be implemented in Java; "
+                        + "found " + growthApi);
+            }
+        }
         for (String stale : new String[] {"pollRedstone", "pollIncenseRedstone", "tap_triggered",
                 "storage_powered", "storage_power_initialized", "incense_powered",
                 "incense_initialized", "barrel_initialized", "barrel_open"}) {
