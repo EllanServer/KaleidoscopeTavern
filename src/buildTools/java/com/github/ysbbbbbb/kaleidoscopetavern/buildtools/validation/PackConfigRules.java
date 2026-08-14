@@ -2505,66 +2505,19 @@ public final class PackConfigRules {
         return r;
     }
 
-    private static double[] shakerInv(double[] m) {
-        double[] a = m.clone();
-        double[] r = shakerIdent();
-        for (int col = 0; col < 4; col++) {
-            int p = col;
-            for (int i = col + 1; i < 4; i++) {
-                if (Math.abs(a[i * 4 + col]) > Math.abs(a[p * 4 + col])) p = i;
-            }
-            if (p != col) {
-                for (int j = 0; j < 4; j++) {
-                    double t = a[col * 4 + j]; a[col * 4 + j] = a[p * 4 + j]; a[p * 4 + j] = t;
-                    t = r[col * 4 + j]; r[col * 4 + j] = r[p * 4 + j]; r[p * 4 + j] = t;
-                }
-            }
-            double d = a[col * 4 + col];
-            for (int j = 0; j < 4; j++) { a[col * 4 + j] /= d; r[col * 4 + j] /= d; }
-            for (int i = 0; i < 4; i++) {
-                if (i == col) continue;
-                double f = a[i * 4 + col];
-                if (f == 0) continue;
-                for (int j = 0; j < 4; j++) {
-                    a[i * 4 + j] -= f * a[col * 4 + j];
-                    r[i * 4 + j] -= f * r[col * 4 + j];
-                }
-            }
-        }
-        return r;
-    }
-
-    /** ItemInHandRenderer's first-person trident case (case 6) static transform. */
-    private static double[] shakerTridentHand(boolean rightHand) {
-        double dir = rightHand ? 1 : -1;
-        return shakerMul(shakerMul(shakerMul(shakerMul(shakerMul(
-                shakerMul(shakerTrans(-0.5 * dir, 0.7, 0.1), shakerRotX(-55)),
-                shakerRotY(35.3 * dir)),
-                shakerRotZ(-9.785 * dir)),
-                shakerTrans(0, 0, 0.2)),
-                shakerScale(1.2)),
-                shakerRotY(-45 * dir));
-    }
-
     /**
-     * First-person: the trident use animation adds ItemInHandRenderer's
-     * trident hold transform (case 6); the per-frame matrix therefore
-     * equals D⁻¹·C⁻¹·D·U0 so the net first-person look stays identical to
-     * the 0.0.1 release (U0 = -15° tilt with ±0.15 bob, D = first-person
-     * display transform).
+     * First-person: the 0.0.1 release used animation "none" and this exact
+     * use_cycle set (16 frames, source 2π/1.5): every frame is the -15°
+     * tilt plus a ±0.15-block bob (ty = 0.15·sin(1.5·t)). "none" adds no
+     * first-person case transform and no customArmTransform, so the
+     * generated model must equal the v0.0.1 JSON byte for byte.
      */
-    private static JsonObject expectedShakerUseCycle(boolean rightHand) {
+    private static JsonObject expectedShakerUseCycle() {
         JsonArray entries = new JsonArray();
-        double[] display = shakerMul(shakerMul(shakerTrans(0, 2.75, 0), shakerScale(0.5)),
-                shakerTrans(-0.5, -0.5, -0.5));
-        double[] trident = shakerTridentHand(rightHand);
-        double[] invDisplay = shakerInv(display);
-        double[] invTrident = shakerInv(trident);
         for (int index = 0; index < SHAKER_USE_FRAMES; index++) {
             double cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES;
-            double wave = Math.sin(-cycle * 1.5);
-            double[] u0 = shakerMul(shakerTrans(0, -wave * 0.15, 0), shakerRotX(-15));
-            double[] u = shakerMul(shakerMul(shakerMul(invDisplay, invTrident), display), u0);
+            double ty = 0.15 * Math.sin(1.5 * cycle);
+            double[] u = shakerMul(shakerTrans(0, ty, 0), shakerRotX(-15));
             JsonObject entry = new JsonObject();
             entry.addProperty("threshold", Math.round(cycle * 1e6) / 1e6);
             JsonObject model = new JsonObject();
@@ -2900,11 +2853,11 @@ public final class PackConfigRules {
         JsonObject shakerComponents = shakerItem.getAsJsonObject("data").getAsJsonObject("components");
         JsonObject expectedShakerConsumable = new JsonObject();
         expectedShakerConsumable.addProperty("consume_seconds", 3600.0);
-        expectedShakerConsumable.addProperty("animation", "trident");
+        expectedShakerConsumable.addProperty("animation", "none");
         expectedShakerConsumable.addProperty("has_consume_particles", false);
         JsonObject expectedShakerSwing = new JsonObject();
         expectedShakerSwing.addProperty("type", "whack");
-        expectedShakerSwing.addProperty("duration", 4);
+        expectedShakerSwing.addProperty("duration", 40);
         if (!shakerItem.get("material").getAsString().equals("paper")
                 || shakerComponents.get("minecraft:max_stack_size").getAsInt() != 1
                 || !expectedShakerConsumable.equals(shakerComponents.get("minecraft:consumable"))
@@ -2914,7 +2867,7 @@ public final class PackConfigRules {
                 || !expectedShakerSwing.equals(nestedObject(shakerItem, "client_bound_data", "components")
                         .get("minecraft:swing_animation"))) {
             throw new ValidationException(
-                    "Shaker must retain active-use timing, its trident arm pose and the WHACK swing loop");
+                    "Shaker must retain active-use timing, its v0.0.1 first-person use_cycle and the WHACK wave loop");
         }
         JsonObject shakerModel = shakerItem.getAsJsonObject("model");
         if (!shakerModel.get("type").getAsString().equals("minecraft:select")
@@ -2946,18 +2899,13 @@ public final class PackConfigRules {
         expectedUseModel.addProperty("type", "minecraft:select");
         expectedUseModel.addProperty("property", "display_context");
         JsonArray useCases = new JsonArray();
-        JsonObject firstPersonRight = new JsonObject();
-        JsonArray fpRightWhen = new JsonArray();
-        fpRightWhen.add("firstperson_righthand");
-        firstPersonRight.add("when", fpRightWhen);
-        firstPersonRight.add("model", expectedShakerUseCycle(true));
-        useCases.add(firstPersonRight);
-        JsonObject firstPersonLeft = new JsonObject();
-        JsonArray fpLeftWhen = new JsonArray();
-        fpLeftWhen.add("firstperson_lefthand");
-        firstPersonLeft.add("when", fpLeftWhen);
-        firstPersonLeft.add("model", expectedShakerUseCycle(false));
-        useCases.add(firstPersonLeft);
+        JsonObject firstPerson = new JsonObject();
+        JsonArray fpWhen = new JsonArray();
+        fpWhen.add("firstperson_lefthand");
+        fpWhen.add("firstperson_righthand");
+        firstPerson.add("when", fpWhen);
+        firstPerson.add("model", expectedShakerUseCycle());
+        useCases.add(firstPerson);
         JsonObject fallbackModel = new JsonObject();
         fallbackModel.addProperty("type", "minecraft:model");
         fallbackModel.addProperty("path", NAMESPACE + ":item/shaker_3d");

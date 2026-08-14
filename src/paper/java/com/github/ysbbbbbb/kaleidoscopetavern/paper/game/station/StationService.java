@@ -498,11 +498,11 @@ public final class StationService implements Listener {
             }
             int ticks = use.ticks();
             shakerVisuals.updateMix(player, ticks);
-            // The shaker's trident pose holds the arm raised; the WHACK
-            // swing_animation sweeps it overhead and back each swing, and
-            // one swing every 4 ticks (duration 4) keeps the arm waving
-            // continuously at the source SHAKING frequency (2π/1.5 ticks).
-            if (ticks % 4 == 0) {
+            // animation "none" keeps the arm on the ITEM pose so the WHACK
+            // swing_animation branch actually plays: one 40-tick swing every
+            // 40 ticks sweeps the arm smoothly from horizontal up and back,
+            // matching the source SHAKING half-cycle tempo (2π/1.5 ticks).
+            if (ticks % 40 == 0) {
                 player.swingHand(use.hand());
             }
             if (ShakerSemantics.playsShakeSound(ticks)) {
