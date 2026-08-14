@@ -3,6 +3,7 @@ package com.github.ysbbbbbb.kaleidoscopetavern.buildtools;
 import com.github.ysbbbbbb.kaleidoscopetavern.buildtools.validation.GeneratedPackValidator;
 import com.github.ysbbbbbb.kaleidoscopetavern.buildtools.validation.PackConfigRules;
 import com.github.ysbbbbbb.kaleidoscopetavern.buildtools.validation.PlacedDrinkSemanticsValidator;
+import com.github.ysbbbbbb.kaleidoscopetavern.buildtools.validation.SourceOwnershipValidator;
 import com.github.ysbbbbbb.kaleidoscopetavern.buildtools.validation.SourceParityValidator;
 import com.github.ysbbbbbb.kaleidoscopetavern.buildtools.validation.SourceTokenValidator;
 import java.io.IOException;
@@ -22,6 +23,7 @@ public final class PackValidator {
             new PackConfigRules(root).validate(docs.items(), docs.renderItems(), docs.blocks(), docs.furniture());
             new SourceTokenValidator(root).validate();
             SourceParityValidator.Result result = SourceParityValidator.validate(root);
+            SourceOwnershipValidator.Result ownership = new SourceOwnershipValidator(root).validate();
             System.out.println("CraftEngine pack validation passed");
             System.out.println("  items: " + generated.items());
             System.out.println("  blocks: " + generated.blocks());
@@ -33,6 +35,13 @@ public final class PackValidator {
             System.out.println("  source-placeables: " + result.sourceBlocks());
             System.out.println("  source-state-properties: " + result.stateProperties());
             System.out.println("  source-block-entity-renderers: " + result.sourceRenderers());
+            System.out.println("  source-runtime-behaviors: " + ownership.runtimeBehaviors());
+            System.out.println("  source-tap-behaviors: " + ownership.tapBehaviors());
+            System.out.println("  source-ticking-block-entities: " + ownership.tickingBlockEntities());
+            System.out.println("  source-effect-behaviors: " + ownership.effectFiles());
+            System.out.println("  source-event-behaviors: " + ownership.eventFiles());
+            System.out.println("  source-entity-behaviors: " + ownership.entityFiles());
+            System.out.println("  source-block-entities: " + ownership.blockEntityFiles());
         } catch (IOException | RuntimeException error) {
             System.err.println("CraftEngine pack validation failed: " + error.getMessage());
             System.exit(1);

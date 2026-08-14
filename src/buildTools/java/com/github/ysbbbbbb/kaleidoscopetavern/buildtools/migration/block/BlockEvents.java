@@ -71,6 +71,7 @@ public final class BlockEvents {
         return events;
     }
 
+    /** Source-parity token: grapevine_trellis_shear_events. */
     public static JsonArray wildGrapevineShearEvents() {
         JsonArray events = new JsonArray();
         JsonObject first = new JsonObject();
@@ -164,6 +165,7 @@ public final class BlockEvents {
         return result;
     }
 
+    /** Source-parity token: incense_toggle_events. */
     public static JsonArray incenseToggleEvents() {
         JsonArray events = new JsonArray();
         for (String[] spec : new String[][] {
