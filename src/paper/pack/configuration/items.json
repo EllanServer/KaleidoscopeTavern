@@ -3127,6 +3127,10 @@
             "consume_seconds": 3600.0,
             "animation": "trident",
             "has_consume_particles": false
+          },
+          "minecraft:swing_animation": {
+            "type": "whack",
+            "duration": 4
           }
         }
       },
@@ -4048,6 +4052,10 @@
             "consume_seconds": 3600.0,
             "animation": "trident",
             "has_consume_particles": false
+          },
+          "minecraft:swing_animation": {
+            "type": "whack",
+            "duration": 4
           }
         }
       },

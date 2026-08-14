@@ -2902,13 +2902,19 @@ public final class PackConfigRules {
         expectedShakerConsumable.addProperty("consume_seconds", 3600.0);
         expectedShakerConsumable.addProperty("animation", "trident");
         expectedShakerConsumable.addProperty("has_consume_particles", false);
+        JsonObject expectedShakerSwing = new JsonObject();
+        expectedShakerSwing.addProperty("type", "whack");
+        expectedShakerSwing.addProperty("duration", 4);
         if (!shakerItem.get("material").getAsString().equals("paper")
                 || shakerComponents.get("minecraft:max_stack_size").getAsInt() != 1
                 || !expectedShakerConsumable.equals(shakerComponents.get("minecraft:consumable"))
                 || !expectedShakerConsumable.equals(nestedObject(shakerItem, "client_bound_data", "components")
-                        .get("minecraft:consumable"))) {
+                        .get("minecraft:consumable"))
+                || !expectedShakerSwing.equals(shakerComponents.get("minecraft:swing_animation"))
+                || !expectedShakerSwing.equals(nestedObject(shakerItem, "client_bound_data", "components")
+                        .get("minecraft:swing_animation"))) {
             throw new ValidationException(
-                    "Shaker must retain active-use timing and its trident arm pose");
+                    "Shaker must retain active-use timing, its trident arm pose and the WHACK swing loop");
         }
         JsonObject shakerModel = shakerItem.getAsJsonObject("model");
         if (!shakerModel.get("type").getAsString().equals("minecraft:select")
