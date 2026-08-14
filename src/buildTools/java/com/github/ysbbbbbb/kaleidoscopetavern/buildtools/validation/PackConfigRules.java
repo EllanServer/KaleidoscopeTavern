@@ -2464,21 +2464,67 @@ public final class PackConfigRules {
                 0.0, 0.0, 0.0, 1.0};
     }
 
+    /**
+     * Third-person: recreates ShakerAnimation.SHAKING's arm pose around the
+     * item origin, so the shaker is held above the shoulder (arm xRot =
+     * 1.375π ∓ 0.25π·sin, zRot = ∓0.05π) and raised from the idle
+     * hand by the 12-pixel arm. The 26.2 client applies the transformation
+     * after the display transform (including its 0.5 scale), which halves
+     * translations, so the 0.9-block arm is encoded as 1.8.
+     */
+    private static double[] shakerThirdPersonTransform(boolean rightHand, double wave) {
+        double phi = 1.375 * Math.PI + (rightHand ? 1 : -1) * 0.25 * Math.PI * wave;
+        return shakerHeldPoseMatrix(phi, rightHand ? -9.0 : 9.0);
+    }
+
+    private static double[] shakerHeldPoseMatrix(double phi, double zRotationDegrees) {
+        double cx = Math.cos(phi);
+        double sx = Math.sin(phi);
+        double zr = Math.toRadians(zRotationDegrees);
+        double cz = Math.cos(zr);
+        double sz = Math.sin(zr);
+        double r00 = cz, r01 = -sz * cx, r02 = sz * sx;
+        double r10 = sz, r11 = cz * cx, r12 = -cz * sx;
+        double r21 = sx, r22 = cx;
+        double raiseY = 1.8 * (1 - cx);
+        double raiseZ = -1.8 * sx;
+        double tx = 0.5 - 0.5 * (r00 + r01 + r02);
+        double ty = 0.5 + raiseY - 0.5 * (r10 + r11 + r12);
+        double tz = 0.5 + raiseZ - 0.5 * (r21 + r22);
+        return round8(new double[] {r00, r01, r02, tx,
+                r10, r11, r12, ty,
+                0.0, r21, r22, tz,
+                0.0, 0.0, 0.0, 1.0});
+    }
+
+    private static double[] round8(double[] values) {
+        double[] result = new double[values.length];
+        for (int index = 0; index < values.length; index++) {
+            result[index] = Math.round(values[index] * 1e8) / 1e8;
+        }
+        return result;
+    }
+
     private static JsonObject expectedShakerUseCycle(boolean firstPerson) {
+        return expectedShakerUseCycle(firstPerson, true);
+    }
+
+    private static JsonObject expectedShakerUseCycle(boolean firstPerson, boolean rightHand) {
         JsonArray entries = new JsonArray();
         for (int index = 0; index < SHAKER_USE_FRAMES; index++) {
             double cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES;
             double wave = Math.sin(-cycle * 1.5);
-            double rotation = firstPerson ? -15.0 : Math.toDegrees(wave * 0.25);
-            double translationY = firstPerson ? -wave * 0.15 : 0.0;
+            double[] transformation = firstPerson
+                    ? shakerXTransform(-15.0, -wave * 0.15)
+                    : shakerThirdPersonTransform(rightHand, wave);
             JsonObject entry = new JsonObject();
             entry.addProperty("threshold", Math.round(cycle * 1e6) / 1e6);
             JsonObject model = new JsonObject();
             model.addProperty("type", "minecraft:model");
             model.addProperty("path", NAMESPACE + ":item/shaker_3d");
-            JsonArray transformation = new JsonArray();
-            for (double v : shakerXTransform(rotation, translationY)) transformation.add(v);
-            model.add("transformation", transformation);
+            JsonArray array = new JsonArray();
+            for (double v : transformation) array.add(v);
+            model.add("transformation", array);
             entry.add("model", model);
             entries.add(entry);
         }
@@ -2853,13 +2899,18 @@ public final class PackConfigRules {
         firstPerson.add("when", fpWhen);
         firstPerson.add("model", expectedShakerUseCycle(true));
         useCases.add(firstPerson);
-        JsonObject thirdPerson = new JsonObject();
-        JsonArray tpWhen = new JsonArray();
-        tpWhen.add("thirdperson_lefthand");
-        tpWhen.add("thirdperson_righthand");
-        thirdPerson.add("when", tpWhen);
-        thirdPerson.add("model", expectedShakerUseCycle(false));
-        useCases.add(thirdPerson);
+        JsonObject thirdPersonRight = new JsonObject();
+        JsonArray tpRightWhen = new JsonArray();
+        tpRightWhen.add("thirdperson_righthand");
+        thirdPersonRight.add("when", tpRightWhen);
+        thirdPersonRight.add("model", expectedShakerUseCycle(false, true));
+        useCases.add(thirdPersonRight);
+        JsonObject thirdPersonLeft = new JsonObject();
+        JsonArray tpLeftWhen = new JsonArray();
+        tpLeftWhen.add("thirdperson_lefthand");
+        thirdPersonLeft.add("when", tpLeftWhen);
+        thirdPersonLeft.add("model", expectedShakerUseCycle(false, false));
+        useCases.add(thirdPersonLeft);
         expectedUseModel.add("cases", useCases);
         JsonObject fallbackModel = new JsonObject();
         fallbackModel.addProperty("type", "minecraft:model");
