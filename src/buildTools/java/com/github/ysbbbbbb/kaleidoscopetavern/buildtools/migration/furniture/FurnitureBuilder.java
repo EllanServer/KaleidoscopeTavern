@@ -163,10 +163,9 @@ public final class FurnitureBuilder {
                 JsonObject closed = furnitureElement(
                         renderItems, blockId, "closed", closedModel, "ground", "0,1,0");
                 closed.addProperty("view_range", 2.5);
-                JsonObject brightness = new JsonObject();
-                brightness.addProperty("block_light", 6);
-                brightness.addProperty("sky_light", 6);
-                closed.add("brightness", brightness.deepCopy());
+                // No fixed brightness: the source BarrelBlockEntityRender shades
+                // the tub with the block's actual light, so the display must
+                // follow the environment (dark cellar = dark barrel).
                 JsonObject body = furnitureElement(
                         renderItems, blockId, "open body", bodyModel, "ground", "0,1,0");
                 JsonObject lid = furnitureElement(
@@ -174,8 +173,6 @@ public final class FurnitureBuilder {
                 lid.addProperty("rotation", "72.5,0,0");
                 body.addProperty("view_range", 2.5);
                 lid.addProperty("view_range", 2.5);
-                body.add("brightness", brightness.deepCopy());
-                lid.add("brightness", brightness.deepCopy());
                 JsonObject open = new JsonObject();
                 JsonArray openElements = new JsonArray();
                 openElements.add(body);
