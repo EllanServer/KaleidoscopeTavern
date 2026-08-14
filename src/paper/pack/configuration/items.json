@@ -3130,7 +3130,7 @@
           },
           "minecraft:swing_animation": {
             "type": "whack",
-            "duration": 40
+            "duration": 4
           }
         }
       },
@@ -4055,7 +4055,7 @@
           },
           "minecraft:swing_animation": {
             "type": "whack",
-            "duration": 40
+            "duration": 4
           }
         }
       },
