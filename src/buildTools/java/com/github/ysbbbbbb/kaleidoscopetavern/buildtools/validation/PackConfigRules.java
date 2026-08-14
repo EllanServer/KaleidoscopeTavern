@@ -16,6 +16,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Native port of validate_pack.py's deep configuration contracts: worldgen
@@ -73,6 +75,7 @@ public final class PackConfigRules {
         validateWorldgen();
         validateFiles();
         validateIncense(items, blocks);
+        validateConfigItems(items, renderItems, blocks, furniture);
         JsonObject worldgen = readConfig("worldgen.json").getAsJsonObject("placed_features")
                 .getAsJsonObject(NAMESPACE + ":wild_grapevine");
         validateWorldgenFeature(worldgen);
@@ -1799,6 +1802,257 @@ public final class PackConfigRules {
         blockedEvent.add("functions", blockedFunctions);
         events.add(blockedEvent);
         return events;
+    }
+
+
+    private void validateConfigItems(JsonObject items, JsonObject renderItems, JsonObject blocks,
+                                     JsonObject furniture) throws IOException {
+        JsonArray grapevineBehaviors = items.getAsJsonObject(NAMESPACE + ":grapevine")
+                .getAsJsonArray("behaviors");
+        if (grapevineBehaviors.size() != 3
+                || !grapevineBehaviors.get(0).getAsJsonObject().get("type").getAsString()
+                        .equals(NAMESPACE + ":grapevine_item")
+                || !grapevineBehaviors.get(1).getAsJsonObject().get("type").getAsString()
+                        .equals("block_item")
+                || !grapevineBehaviors.get(2).getAsJsonObject().get("type").getAsString()
+                        .equals("compostable_item")) {
+            throw new ValidationException("Grapevine must run its CE trellis interaction "
+                    + "before wild placement and composting");
+        }
+        if (!grapevineBehaviors.get(1).getAsJsonObject().get("block").getAsString()
+                .equals(NAMESPACE + ":wild_grapevine")) {
+            throw new ValidationException("Grapevine's CE block-item fallback must place wild_grapevine");
+        }
+        JsonArray shakerBehaviors = items.getAsJsonObject(NAMESPACE + ":shaker")
+                .getAsJsonArray("behaviors");
+        if (shakerBehaviors.size() != 2
+                || !shakerBehaviors.get(0).getAsJsonObject().get("type").getAsString()
+                        .equals(NAMESPACE + ":shaker_item")
+                || !shakerBehaviors.get(1).getAsJsonObject().get("type").getAsString()
+                        .equals(NAMESPACE + ":sneak_place_drink")
+                || !shakerBehaviors.get(1).getAsJsonObject().get("furniture").getAsString()
+                        .equals(NAMESPACE + ":shaker")) {
+            throw new ValidationException("Shaker must keep only its portable-use callback "
+                    + "and delegate sneak placement through the generic CE furniture adapter");
+        }
+        JsonObject shakerRules = shakerBehaviors.get(1).getAsJsonObject().getAsJsonObject("rules");
+        JsonObject expectedShakerRule = new JsonObject();
+        expectedShakerRule.addProperty("rotation", "four");
+        expectedShakerRule.addProperty("alignment", "center");
+        JsonObject ground = new JsonObject();
+        ground.add("ground", expectedShakerRule);
+        if (!ground.equals(shakerRules)) {
+            throw new ValidationException("Shaker sneak-placement rule drifted");
+        }
+        String tapId = NAMESPACE + ":tap";
+        JsonObject tapItemBehavior = new JsonObject();
+        tapItemBehavior.addProperty("type", "block_item");
+        tapItemBehavior.addProperty("block", tapId);
+        if (!tapItemBehavior.equals(items.getAsJsonObject(tapId).get("behavior"))) {
+            throw new ValidationException("Tap installation must be owned by CE's native block_item behavior");
+        }
+        if (furniture.has(tapId)) {
+            throw new ValidationException("Tap must not retain a duplicate CE furniture definition");
+        }
+        JsonObject tapBlock = blocks.getAsJsonObject(tapId);
+        JsonObject tapStates = tapBlock.getAsJsonObject("states");
+        JsonObject tapProperties = tapStates.getAsJsonObject("properties");
+        if (!tapProperties.keySet().equals(Set.of("facing", "open", "triggered", "waterlogged"))) {
+            throw new ValidationException("Tap CE block properties drifted: " + tapProperties.keySet());
+        }
+        JsonObject tapBehavior = new JsonObject();
+        tapBehavior.addProperty("type", NAMESPACE + ":tap");
+        if (!tapBehavior.equals(tapBlock.get("behavior"))) {
+            throw new ValidationException("Tap must use the Tavern CE block behavior");
+        }
+        JsonObject tapAppearances = tapStates.getAsJsonObject("appearances");
+        JsonObject tapVariants = tapStates.getAsJsonObject("variants");
+        if (tapAppearances.size() != 16 || tapVariants.size() != 32) {
+            throw new ValidationException("Tap needs 4 facing x 2 open x 2 waterlogged appearances "
+                    + "and 32 complete states; found " + tapAppearances.size() + "/" + tapVariants.size());
+        }
+        Set<String> tapRenderItems = new LinkedHashSet<>();
+        for (var variantEntry : tapVariants.entrySet()) {
+            String[] props = new String[2];
+            for (String part : variantEntry.getKey().split(",")) {
+                String[] pair = part.split("=", 2);
+                if (pair[0].equals("facing")) props[0] = pair[1];
+                else if (pair[0].equals("waterlogged")) props[1] = pair[1];
+            }
+            JsonObject mapped = variantEntry.getValue().getAsJsonObject();
+            JsonObject appearance = tapAppearances.getAsJsonObject(
+                    mapped.get("appearance").getAsString());
+            String expectedCarrier = "minecraft:lightning_rod[facing=" + props[0]
+                    + ",powered=false,waterlogged=" + props[1] + "]";
+            if (!appearance.get("state").getAsString().equals(expectedCarrier)) {
+                throw new ValidationException("Tap " + variantEntry.getKey()
+                        + " carrier must preserve facing/waterlogging");
+            }
+            if (props[1].equals("true")) {
+                JsonObject expectedSettings = new JsonObject();
+                expectedSettings.addProperty("fluid_state", "water");
+                if (!expectedSettings.equals(mapped.get("settings"))) {
+                    throw new ValidationException("Tap " + variantEntry.getKey()
+                            + " must preserve CE's server-side fluid state");
+                }
+            } else if (mapped.has("settings") && !mapped.get("settings").isJsonNull()) {
+                throw new ValidationException("Tap " + variantEntry.getKey()
+                        + " must preserve CE's server-side fluid state");
+            }
+            JsonObject renderer = appearance.getAsJsonObject("entity_renderer");
+            String renderItem = renderer.get("item").getAsString();
+            tapRenderItems.add(renderItem);
+            String openValue = null;
+            for (String part : variantEntry.getKey().split(",")) {
+                String[] pair = part.split("=", 2);
+                if (pair[0].equals("open")) openValue = pair[1];
+            }
+            String expectedModel = openValue.equals("true")
+                    ? NAMESPACE + ":block/brew/tap/open" : NAMESPACE + ":block/brew/tap/close";
+            if (!renderer.get("type").getAsString().equals("item_display")
+                    || !renderItems.getAsJsonObject(renderItem).getAsJsonObject("model")
+                            .get("path").getAsString().equals(expectedModel)) {
+                throw new ValidationException("Tap " + variantEntry.getKey()
+                        + " must render its authored open/closed model");
+            }
+            JsonElement actualRotation = renderer.get("rotation");
+            String expectedRotation = switch (props[0]) {
+                case "north" -> "0,180,0";
+                case "east" -> "0,90,0";
+                case "west" -> "0,270,0";
+                default -> null;
+            };
+            if ((expectedRotation == null) ? actualRotation != null && !actualRotation.isJsonNull()
+                    : actualRotation == null || actualRotation.isJsonNull()
+                        || !actualRotation.getAsString().equals(expectedRotation)) {
+                throw new ValidationException("Tap " + variantEntry.getKey()
+                        + " north/south visual mapping drifted");
+            }
+        }
+        if (tapRenderItems.size() != 2) {
+            throw new ValidationException("Tap must reuse exactly two private render items, found "
+                    + tapRenderItems);
+        }
+        for (String facing : List.of("north", "south", "west", "east")) {
+            for (String waterlogged : List.of("false", "true")) {
+                String closedKey = "facing=" + facing + ",open=false,triggered=false,waterlogged=" + waterlogged;
+                String openKey = "facing=" + facing + ",open=true,triggered=false,waterlogged=" + waterlogged;
+                JsonObject closed = tapAppearances.getAsJsonObject(
+                        tapVariants.getAsJsonObject(closedKey).get("appearance").getAsString());
+                JsonObject opened = tapAppearances.getAsJsonObject(
+                        tapVariants.getAsJsonObject(openKey).get("appearance").getAsString());
+                if (!closed.get("state").getAsString().equals(opened.get("state").getAsString())) {
+                    throw new ValidationException("Tap open/closed collision carrier changed for "
+                            + "facing=" + facing + ",triggered=false,waterlogged=" + waterlogged);
+                }
+                for (String openValue : List.of("false", "true")) {
+                    String untriggered = "facing=" + facing + ",open=" + openValue
+                            + ",triggered=false,waterlogged=" + waterlogged;
+                    String triggered = untriggered.replace("triggered=false", "triggered=true");
+                    if (!tapVariants.get(untriggered).equals(tapVariants.get(triggered))) {
+                        throw new ValidationException("Tap triggered is a server edge latch "
+                                + "and must not change rendering");
+                    }
+                }
+            }
+        }
+        JsonObject tapSettings = tapBlock.getAsJsonObject("settings");
+        JsonArray expectedTapTags = new JsonArray();
+        expectedTapTags.add("minecraft:mineable/pickaxe");
+        if (tapSettings.get("hardness").getAsDouble() != 0.8
+                || !tapSettings.get("push_reaction").getAsString().equals("NORMAL")
+                || !expectedTapTags.equals(tapSettings.getAsJsonArray("tags"))) {
+            throw new ValidationException("Tap CE block must retain the source metal settings");
+        }
+        JsonObject tapSounds = tapSettings.getAsJsonObject("sounds");
+        for (String action : List.of("break", "step", "place", "hit", "fall")) {
+            if (!tapSounds.get(action).getAsString().equals("minecraft:block.metal." + action)) {
+                throw new ValidationException("Tap CE block must retain the source metal settings");
+            }
+        }
+        for (var variantEntry : furniture.getAsJsonObject(NAMESPACE + ":barrel")
+                .getAsJsonObject("variants").entrySet()) {
+            for (JsonElement rawHitbox : variantEntry.getValue().getAsJsonObject()
+                    .getAsJsonArray("hitboxes")) {
+                JsonObject hitbox = rawHitbox.getAsJsonObject();
+                if (!hitbox.has("can_use_item_on")
+                        || !hitbox.get("can_use_item_on").getAsBoolean()) {
+                    throw new ValidationException("Barrel " + variantEntry.getKey()
+                            + " hitboxes must allow CE furniture-item placement");
+                }
+            }
+        }
+        String tapDefaultText = readText(projectRoot.resolve("src/paper/resources/visuals/tap.yml"));
+        for (String token : List.of("water: \"water\"", "lava: \"lava\"", "honey: \"honey\"",
+                "dragon-breath: \"obsidian-tear\"",
+                "TODO: 等 Minecraft/Paper 提供原生红色或可着色的滴落液体粒子后",
+                "watermelon: \"water\"")) {
+            if (!tapDefaultText.contains(token)) {
+                throw new ValidationException("Bundled tap.yml is missing direct output " + token);
+            }
+        }
+        Path shakerTextureRoot = packAssetsRoot.resolve(
+                NAMESPACE + "/textures/font/shaker");
+        Map<String, int[]> expectedShakerSizes = new LinkedHashMap<>();
+        expectedShakerSizes.put("bar.png", new int[] {181, 18});
+        expectedShakerSizes.put("pointer.png", new int[] {11, 14});
+        for (var sizeEntry : expectedShakerSizes.entrySet()) {
+            int[] actual = pngDimensions(shakerTextureRoot.resolve(sizeEntry.getKey()));
+            if (actual[0] != sizeEntry.getValue()[0] || actual[1] != sizeEntry.getValue()[1]) {
+                throw new ValidationException("Shaker HUD " + sizeEntry.getKey()
+                        + " must preserve source pixels via even-height padding; expected "
+                        + sizeEntry.getValue()[0] + "x" + sizeEntry.getValue()[1] + ", got "
+                        + actual[0] + "x" + actual[1]);
+            }
+        }
+        validatePlaceableCoverage(blocks, furniture);
+    }
+
+    private static int[] pngDimensions(Path path) throws IOException {
+        byte[] head = Files.readAllBytes(path);
+        if (head.length < 24 || head[0] != (byte) 0x89 || head[1] != 0x50) {
+            throw new ValidationException(path + ": not a PNG file");
+        }
+        return new int[] {
+                ((head[16] & 0xFF) << 24) | ((head[17] & 0xFF) << 16)
+                        | ((head[18] & 0xFF) << 8) | (head[19] & 0xFF),
+                ((head[20] & 0xFF) << 24) | ((head[21] & 0xFF) << 16)
+                        | ((head[22] & 0xFF) << 8) | (head[23] & 0xFF)};
+    }
+
+    private void validatePlaceableCoverage(JsonObject blocks, JsonObject furniture) throws IOException {
+        Set<String> derivedCropStages = new LinkedHashSet<>();
+        for (String blockId : blocks.keySet()) {
+            if (blockId.startsWith(NAMESPACE + ":_crop/")) derivedCropStages.add(blockId);
+        }
+        Set<String> represented = new LinkedHashSet<>();
+        for (String blockId : blocks.keySet()) {
+            if (!derivedCropStages.contains(blockId) && !blockId.equals(SHARED_SOFA_ID)) {
+                represented.add(blockId);
+            }
+        }
+        for (String furnitureId : furniture.keySet()) {
+            if (!furnitureId.equals(WALL_PRESSING_TUB_ID)) represented.add(furnitureId);
+        }
+        for (String color : FURNITURE_COLORS) {
+            represented.add(NAMESPACE + ":" + color + "_sofa");
+        }
+        Set<String> sourcePlaceables = new LinkedHashSet<>();
+        String modBlocks = readText(projectRoot.resolve("src/main/java/com/github/ysbbbbbb/"
+                + "kaleidoscopetavern/init/ModBlocks.java"));
+        Pattern register = Pattern.compile("BLOCKS\\.register\\(\"([a-z0-9_]+)\"");
+        Matcher matcher = register.matcher(modBlocks);
+        while (matcher.find()) {
+            sourcePlaceables.add(NAMESPACE + ":" + matcher.group(1));
+        }
+        if (!represented.equals(sourcePlaceables)) {
+            Set<String> missing = new LinkedHashSet<>(sourcePlaceables);
+            missing.removeAll(represented);
+            Set<String> unexpected = new LinkedHashSet<>(represented);
+            unexpected.removeAll(sourcePlaceables);
+            throw new ValidationException("Source-to-CE placeable coverage drift: missing="
+                    + missing + ", unexpected=" + unexpected);
+        }
     }
 
     private static boolean hasNonNull(JsonObject object, String key) {
