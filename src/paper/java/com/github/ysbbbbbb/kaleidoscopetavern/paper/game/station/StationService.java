@@ -498,10 +498,10 @@ public final class StationService implements Listener {
             }
             int ticks = use.ticks();
             shakerVisuals.updateMix(player, ticks);
-            // animation "toot_horn" holds both arms at -85° (≈ the source
-            // SHAKING centre -112.5°); the WHACK swing_animation adds a 40-tick
+            // animation "bow" holds both arms forward at -90° (the source
+            // SHAKING direction); the WHACK swing_animation adds a 40-tick
             // raise-and-return on top every 40 ticks, so the arm waves between
-            // -85° and -169° at the source SHAKING half-cycle tempo (2π/1.5).
+            // -90° and -174° at the source SHAKING half-cycle tempo (2π/1.5).
             if (ticks % 40 == 0) {
                 player.swingHand(use.hand());
             }
