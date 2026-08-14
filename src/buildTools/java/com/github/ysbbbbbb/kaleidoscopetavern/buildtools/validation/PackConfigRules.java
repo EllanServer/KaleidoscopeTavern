@@ -2650,6 +2650,71 @@ public final class PackConfigRules {
                         + ": effectless bottle drinks must return empty_bottle after consumption");
             }
         }
+        Path shakerTsv = projectRoot.resolve("src/paper/resources/catalog/shaker.tsv");
+        Set<String> fixedCocktails = new LinkedHashSet<>();
+        for (String[] row : tsvRows(shakerTsv)) fixedCocktails.add(row[1]);
+        fixedCocktails.add(NAMESPACE + ":mystery_cocktail");
+        for (String itemId : fixedCocktails) {
+            JsonArray lore = items.getAsJsonObject(itemId).getAsJsonObject("data").getAsJsonArray("lore");
+            Set<String> expectedEffects = new LinkedHashSet<>();
+            for (String[] row : effectRows) {
+                if (row[0].equals(itemId) && row[1].equals("1")) {
+                    expectedEffects.add("effect." + row[2].replace(":", "."));
+                }
+            }
+            if (lore.isEmpty()) {
+                throw new ValidationException(itemId + ": fixed cocktail creative preview is missing real effect lore");
+            }
+            for (String effect : expectedEffects) {
+                boolean found = false;
+                for (JsonElement line : lore) {
+                    if (line.getAsString().contains(effect)) found = true;
+                }
+                if (!found) {
+                    throw new ValidationException(itemId + ": fixed cocktail creative preview is missing real effect lore");
+                }
+            }
+            for (JsonElement line : lore) {
+                if (!line.getAsString().contains("<insert:kaleidoscope_tavern_managed_lore>")) {
+                    throw new ValidationException(itemId + ": generated cocktail lore must carry the managed insertion marker");
+                }
+            }
+        }
+        Set<String> legacyAttributeKeys = Set.of("attribute.name.generic.step_height",
+                "attribute.name.player.block_interaction_range",
+                "attribute.name.player.entity_interaction_range");
+        for (JsonElement item : items.asMap().values()) {
+            JsonArray lore = nestedObject(item.getAsJsonObject(), "data").has("lore")
+                    ? item.getAsJsonObject().getAsJsonObject("data").getAsJsonArray("lore") : new JsonArray();
+            for (JsonElement line : lore) {
+                for (String key : legacyAttributeKeys) {
+                    if (line.getAsString().contains(key)) {
+                        throw new ValidationException("Drink lore still contains pre-26.2 attribute translation keys");
+                    }
+                }
+            }
+        }
+        Map<String, Set<String>> expectedAttributeLore = Map.ofEntries(
+                Map.entry(NAMESPACE + ":white_lady", Set.of("attribute.name.step_height")),
+                Map.entry(NAMESPACE + ":emerald", Set.of("attribute.name.block_interaction_range",
+                        "attribute.name.entity_interaction_range")));
+        for (var attributeEntry : expectedAttributeLore.entrySet()) {
+            JsonArray lore = items.getAsJsonObject(attributeEntry.getKey())
+                    .getAsJsonObject("data").getAsJsonArray("lore");
+            Set<String> missing = new LinkedHashSet<>();
+            for (String key : attributeEntry.getValue()) {
+                boolean found = false;
+                for (JsonElement line : lore) {
+                    if (line.getAsString().contains(key)) found = true;
+                }
+                if (!found) missing.add(key);
+            }
+            if (!missing.isEmpty()) {
+                throw new ValidationException(attributeEntry.getKey()
+                        + ": missing canonical 26.2 attribute lore keys " + missing);
+            }
+        }
+
         Set<String> cocktailIds = new LinkedHashSet<>();
         for (String[] row : tsvRows(catalogs.resolve("shaker.tsv"))) cocktailIds.add(row[1]);
         cocktailIds.add(NAMESPACE + ":mystery_cocktail");
