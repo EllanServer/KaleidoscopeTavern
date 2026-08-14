@@ -2506,23 +2506,18 @@ public final class PackConfigRules {
     }
 
     /**
-     * First-person: the bow use animation adds ItemInHandRenderer's bow
-     * hold transform (case 5: yaw ∓45°, scale 1.2 plus the static bow
-     * grip), so every frame equals D⁻¹·C⁻¹·D·U0 and the net first-person
-     * look stays identical to the 0.0.1 release (U0 = -15° tilt with
-     * ±0.15 bob, D = first-person display transform).
+     * First-person: the spyglass use animation adds no first-person case
+     * transform (ItemInHandRenderer only covers brush/bundle/spear), no
+     * customArmTransform and no zoom (a paper item is never a SpyglassItem),
+     * so every frame stays the exact v0.0.1 release set: -15° tilt plus a
+     * ±0.15-block bob (ty = 0.15·sin(1.5·t)), 16 frames, period 2π/1.5.
      */
-    private static JsonObject expectedShakerUseCycle(boolean rightHand) {
+    private static JsonObject expectedShakerUseCycle() {
         JsonArray entries = new JsonArray();
-        double[] display = shakerTrans(-0.5, -0.5, -0.5);
-        double[] bow = shakerBowHand(rightHand);
-        double[] invDisplay = shakerInv(display);
-        double[] invBow = shakerInv(bow);
         for (int index = 0; index < SHAKER_USE_FRAMES; index++) {
             double cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES;
             double ty = 0.15 * Math.sin(1.5 * cycle);
-            double[] u0 = shakerMul(shakerTrans(0, ty, 0), shakerRotX(-15));
-            double[] u = shakerMul(shakerMul(shakerMul(invDisplay, invBow), display), u0);
+            double[] u = shakerMul(shakerTrans(0, ty, 0), shakerRotX(-15));
             JsonObject entry = new JsonObject();
             entry.addProperty("threshold", Math.round(cycle * 1e6) / 1e6);
             JsonObject model = new JsonObject();
@@ -2543,84 +2538,6 @@ public final class PackConfigRules {
         JsonObject fallback = entries.get(0).getAsJsonObject().getAsJsonObject("model").deepCopy();
         range.add("fallback", fallback);
         return range;
-    }
-
-    /**
-     * Third-person: a purely client-driven use_cycle shake at the source
-     * SHAKING tempo (period 2π/1.5 ticks). Every frame is
-     * R_X(∓45°·sin(1.5·t))·R_Z(∓9°) — the source mod's right-arm swing for
-     * the right hand and its mirrored counterpart (247.5° + 45°·sin, +9°)
-     * for the left hand, expressed as the shaker's motion in hand; the bow
-     * arm base stays forward and no server swing loop is needed.
-     */
-    private static JsonObject expectedShakerUseCycleTP(boolean rightHand) {
-        JsonArray entries = new JsonArray();
-        double dir = rightHand ? 1 : -1;
-        for (int index = 0; index < SHAKER_USE_FRAMES; index++) {
-            double cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES;
-            double angle = dir * -45 * Math.sin(1.5 * cycle);
-            double[] u = shakerMul(shakerRotX(angle), shakerRotZ(dir * -9));
-            JsonObject entry = new JsonObject();
-            entry.addProperty("threshold", Math.round(cycle * 1e6) / 1e6);
-            JsonObject model = new JsonObject();
-            model.addProperty("type", "minecraft:model");
-            model.addProperty("path", NAMESPACE + ":item/shaker_3d");
-            JsonArray array = new JsonArray();
-            for (double v : u) array.add(Math.round(v * 1e8) / 1e8);
-            model.add("transformation", array);
-            entry.add("model", model);
-            entries.add(entry);
-        }
-        JsonObject range = new JsonObject();
-        range.addProperty("type", "minecraft:range_dispatch");
-        range.addProperty("property", "minecraft:use_cycle");
-        range.addProperty("period", Math.round(SHAKER_USE_PERIOD_TICKS * 1e6) / 1e6);
-        range.addProperty("scale", 1.0);
-        range.add("entries", entries);
-        JsonObject fallback = entries.get(0).getAsJsonObject().getAsJsonObject("model").deepCopy();
-        range.add("fallback", fallback);
-        return range;
-    }
-
-    /** ItemInHandRenderer's first-person bow case (case 5) static transform. */
-    private static double[] shakerBowHand(boolean rightHand) {
-        double dir = rightHand ? 1 : -1;
-        return shakerMul(shakerMul(shakerMul(shakerMul(shakerMul(
-                shakerMul(shakerRotY(-45 * dir), shakerScale(1.2)),
-                shakerTrans(0, 0, 0.04)),
-                shakerRotZ(-9.785 * dir)),
-                shakerRotY(35.3 * dir)),
-                shakerRotX(-13.935)),
-                shakerTrans(-0.2785682 * dir, 0.18344387, 0.15731531));
-    }
-
-    private static double[] shakerInv(double[] m) {
-        double[] a = m.clone();
-        double[] r = shakerIdent();
-        for (int col = 0; col < 4; col++) {
-            int p = col;
-            for (int i = col + 1; i < 4; i++) {
-                if (Math.abs(a[i * 4 + col]) > Math.abs(a[p * 4 + col])) p = i;
-            }
-            if (p != col) {
-                for (int j = 0; j < 4; j++) {
-                    double t = a[col * 4 + j]; a[col * 4 + j] = a[p * 4 + j]; a[p * 4 + j] = t;
-                    t = r[col * 4 + j]; r[col * 4 + j] = r[p * 4 + j]; r[p * 4 + j] = t;
-                }
-            }
-            double d = a[col * 4 + col];
-            for (int j = 0; j < 4; j++) { a[col * 4 + j] /= d; r[col * 4 + j] /= d; }
-            for (int i = 0; i < 4; i++) {
-                if (i == col) continue;
-                double f = a[i * 4 + col];
-                if (f == 0) continue;
-                for (int j = 0; j < 4; j++) {
-                    a[i * 4 + j] -= f * a[col * 4 + j];
-                    r[i * 4 + j] -= f * r[col * 4 + j];
-                }
-            }
-        }
-        return r;
     }
 
     private void validateDrinks(JsonObject items, JsonObject renderItems, JsonObject blocks,
@@ -2937,18 +2854,21 @@ public final class PackConfigRules {
         JsonObject shakerComponents = shakerItem.getAsJsonObject("data").getAsJsonObject("components");
         JsonObject expectedShakerConsumable = new JsonObject();
         expectedShakerConsumable.addProperty("consume_seconds", 3600.0);
-        expectedShakerConsumable.addProperty("animation", "bow");
+        expectedShakerConsumable.addProperty("animation", "spyglass");
         expectedShakerConsumable.addProperty("has_consume_particles", false);
+        JsonObject expectedShakerSwing = new JsonObject();
+        expectedShakerSwing.addProperty("type", "whack");
+        expectedShakerSwing.addProperty("duration", 4);
         if (!shakerItem.get("material").getAsString().equals("paper")
                 || shakerComponents.get("minecraft:max_stack_size").getAsInt() != 1
                 || !expectedShakerConsumable.equals(shakerComponents.get("minecraft:consumable"))
                 || !expectedShakerConsumable.equals(nestedObject(shakerItem, "client_bound_data", "components")
                         .get("minecraft:consumable"))
-                || shakerComponents.has("minecraft:swing_animation")
-                || nestedObject(shakerItem, "client_bound_data", "components")
-                        .has("minecraft:swing_animation")) {
+                || !expectedShakerSwing.equals(shakerComponents.get("minecraft:swing_animation"))
+                || !expectedShakerSwing.equals(nestedObject(shakerItem, "client_bound_data", "components")
+                        .get("minecraft:swing_animation"))) {
             throw new ValidationException(
-                    "Shaker must retain active-use timing, its v0.0.1-equivalent first-person use_cycle, the bow forward arm base and a purely client-driven use_cycle shake (no server swing loop)");
+                    "Shaker must retain active-use timing, its v0.0.1 first-person use_cycle, the spyglass -110° arm base and the WHACK wave loop at the source SHAKING tempo");
         }
         JsonObject shakerModel = shakerItem.getAsJsonObject("model");
         if (!shakerModel.get("type").getAsString().equals("minecraft:select")
@@ -2980,33 +2900,23 @@ public final class PackConfigRules {
         expectedUseModel.addProperty("type", "minecraft:select");
         expectedUseModel.addProperty("property", "display_context");
         JsonArray useCases = new JsonArray();
-        JsonObject firstPersonRight = new JsonObject();
-        JsonArray fpRightWhen = new JsonArray();
-        fpRightWhen.add("firstperson_righthand");
-        firstPersonRight.add("when", fpRightWhen);
-        firstPersonRight.add("model", expectedShakerUseCycle(true));
-        useCases.add(firstPersonRight);
-        JsonObject firstPersonLeft = new JsonObject();
-        JsonArray fpLeftWhen = new JsonArray();
-        fpLeftWhen.add("firstperson_lefthand");
-        firstPersonLeft.add("when", fpLeftWhen);
-        firstPersonLeft.add("model", expectedShakerUseCycle(false));
-        useCases.add(firstPersonLeft);
+        JsonObject firstPerson = new JsonObject();
+        JsonArray fpWhen = new JsonArray();
+        fpWhen.add("firstperson_lefthand");
+        fpWhen.add("firstperson_righthand");
+        firstPerson.add("when", fpWhen);
+        firstPerson.add("model", expectedShakerUseCycle());
+        useCases.add(firstPerson);
         JsonObject fallbackModel = new JsonObject();
         fallbackModel.addProperty("type", "minecraft:model");
         fallbackModel.addProperty("path", NAMESPACE + ":item/shaker_3d");
-        JsonObject thirdPersonRight = new JsonObject();
-        JsonArray tpRightWhen = new JsonArray();
-        tpRightWhen.add("thirdperson_righthand");
-        thirdPersonRight.add("when", tpRightWhen);
-        thirdPersonRight.add("model", expectedShakerUseCycleTP(true));
-        useCases.add(thirdPersonRight);
-        JsonObject thirdPersonLeft = new JsonObject();
-        JsonArray tpLeftWhen = new JsonArray();
-        tpLeftWhen.add("thirdperson_lefthand");
-        thirdPersonLeft.add("when", tpLeftWhen);
-        thirdPersonLeft.add("model", expectedShakerUseCycleTP(false));
-        useCases.add(thirdPersonLeft);
+        JsonObject thirdPerson = new JsonObject();
+        JsonArray tpWhen = new JsonArray();
+        tpWhen.add("thirdperson_lefthand");
+        tpWhen.add("thirdperson_righthand");
+        thirdPerson.add("when", tpWhen);
+        thirdPerson.add("model", fallbackModel.deepCopy());
+        useCases.add(thirdPerson);
         expectedUseModel.add("cases", useCases);
         expectedUseModel.add("fallback", fallbackModel);
         if (!offFalse.equals(useCondition.get("on_false"))
