@@ -2465,12 +2465,13 @@ public final class PackConfigRules {
     }
 
     /**
-     * Third-person: recreates ShakerAnimation.SHAKING's arm pose around the
-     * item origin, so the shaker is held above the shoulder (arm xRot =
-     * 1.375π ∓ 0.25π·sin, zRot = ∓0.05π) and raised from the idle
-     * hand by the 12-pixel arm. The 26.2 client applies the transformation
-     * after the display transform (including its 0.5 scale), which halves
-     * translations, so the 0.9-block arm is encoded as 1.8.
+     * Third-person: the bow consumable animation raises the arm straight
+     * overhead (ArmPose.BOW, xRot ≈ -π); the per-frame transformation then
+     * swings the shaker from that raised hand to ShakerAnimation.SHAKING's
+     * hand position (φ = 1.375π ∓ 0.25π·sin, zRot = ∓0.05π). The 26.2
+     * client applies the transformation after the display transform
+     * (including its 0.5 scale), which halves translations, so the
+     * 12-pixel arm (0.9 blocks) is encoded as 1.8.
      */
     private static double[] shakerThirdPersonTransform(boolean rightHand, double wave) {
         double phi = 1.375 * Math.PI + (rightHand ? 1 : -1) * 0.25 * Math.PI * wave;
@@ -2478,19 +2479,22 @@ public final class PackConfigRules {
     }
 
     private static double[] shakerHeldPoseMatrix(double phi, double zRotationDegrees) {
-        double cx = Math.cos(phi);
-        double sx = Math.sin(phi);
+        double armX = phi + Math.PI;
+        double cx = Math.cos(armX);
+        double sx = Math.sin(armX);
         double zr = Math.toRadians(zRotationDegrees);
         double cz = Math.cos(zr);
         double sz = Math.sin(zr);
         double r00 = cz, r01 = -sz * cx, r02 = sz * sx;
         double r10 = sz, r11 = cz * cx, r12 = -cz * sx;
         double r21 = sx, r22 = cx;
-        double raiseY = 1.8 * (1 - cx);
-        double raiseZ = -1.8 * sx;
+        double cosPhi = Math.cos(phi);
+        double sinPhi = Math.sin(phi);
+        double arcY = -1.8 * (1 + cosPhi);
+        double arcZ = -1.8 * sinPhi;
         double tx = 0.5 - 0.5 * (r00 + r01 + r02);
-        double ty = 0.5 + raiseY - 0.5 * (r10 + r11 + r12);
-        double tz = 0.5 + raiseZ - 0.5 * (r21 + r22);
+        double ty = 0.5 + arcY - 0.5 * (r10 + r11 + r12);
+        double tz = 0.5 + arcZ - 0.5 * (r21 + r22);
         return round8(new double[] {r00, r01, r02, tx,
                 r10, r11, r12, ty,
                 0.0, r21, r22, tz,
@@ -2852,7 +2856,7 @@ public final class PackConfigRules {
         JsonObject shakerComponents = shakerItem.getAsJsonObject("data").getAsJsonObject("components");
         JsonObject expectedShakerConsumable = new JsonObject();
         expectedShakerConsumable.addProperty("consume_seconds", 3600.0);
-        expectedShakerConsumable.addProperty("animation", "none");
+        expectedShakerConsumable.addProperty("animation", "bow");
         expectedShakerConsumable.addProperty("has_consume_particles", false);
         if (!shakerItem.get("material").getAsString().equals("paper")
                 || shakerComponents.get("minecraft:max_stack_size").getAsInt() != 1
