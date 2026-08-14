@@ -2853,7 +2853,7 @@ public final class PackConfigRules {
         JsonObject shakerComponents = shakerItem.getAsJsonObject("data").getAsJsonObject("components");
         JsonObject expectedShakerConsumable = new JsonObject();
         expectedShakerConsumable.addProperty("consume_seconds", 3600.0);
-        expectedShakerConsumable.addProperty("animation", "none");
+        expectedShakerConsumable.addProperty("animation", "toot_horn");
         expectedShakerConsumable.addProperty("has_consume_particles", false);
         JsonObject expectedShakerSwing = new JsonObject();
         expectedShakerSwing.addProperty("type", "whack");
@@ -2867,7 +2867,7 @@ public final class PackConfigRules {
                 || !expectedShakerSwing.equals(nestedObject(shakerItem, "client_bound_data", "components")
                         .get("minecraft:swing_animation"))) {
             throw new ValidationException(
-                    "Shaker must retain active-use timing, its v0.0.1 first-person use_cycle and the WHACK wave loop");
+                    "Shaker must retain active-use timing, its v0.0.1 first-person use_cycle, the toot_horn -85° arm base and the WHACK wave loop");
         }
         JsonObject shakerModel = shakerItem.getAsJsonObject("model");
         if (!shakerModel.get("type").getAsString().equals("minecraft:select")

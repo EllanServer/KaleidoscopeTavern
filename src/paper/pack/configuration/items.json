@@ -3125,7 +3125,7 @@
           "minecraft:max_stack_size": 1,
           "minecraft:consumable": {
             "consume_seconds": 3600.0,
-            "animation": "none",
+            "animation": "toot_horn",
             "has_consume_particles": false
           },
           "minecraft:swing_animation": {
@@ -3617,7 +3617,7 @@
         "components": {
           "minecraft:consumable": {
             "consume_seconds": 3600.0,
-            "animation": "none",
+            "animation": "toot_horn",
             "has_consume_particles": false
           },
           "minecraft:swing_animation": {

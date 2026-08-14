@@ -131,7 +131,7 @@ public final class ItemMigrationStage {
                 data.add("custom_name",data.get("item_name").deepCopy()); data.add("hide_tooltip",arr("minecraft:potion_contents"));
             }
             if (id.equals("shaker")) { components(data).addProperty("minecraft:max_stack_size",1);
-                configureConsumable(config,obj("consume_seconds",3600.0,"animation","none","has_consume_particles",false));
+                configureConsumable(config,obj("consume_seconds",3600.0,"animation","toot_horn","has_consume_particles",false));
                 JsonObject swing=obj("type","whack","duration",40); components(data).add("minecraft:swing_animation",swing.deepCopy());
                 JsonObject cbd2=config.has("client_bound_data")?config.getAsJsonObject("client_bound_data"):new JsonObject(); config.add("client_bound_data",cbd2);
                 JsonObject c2=cbd2.has("components")?cbd2.getAsJsonObject("components"):new JsonObject(); cbd2.add("components",c2); c2.add("minecraft:swing_animation",swing);
@@ -231,7 +231,7 @@ public final class ItemMigrationStage {
     private static String yaml(Object v){return GSON.toJson(String.valueOf(v));}
 
     private JsonObject shakerModel(){return obj("type","minecraft:select","property","display_context","cases",arr(obj("when",arr("gui","fixed"),"model",model("shaker"))),"fallback",obj("type","minecraft:condition","property","minecraft:using_item","on_true",obj("type","minecraft:select","property","display_context","cases",arr(obj("when",arr("firstperson_lefthand","firstperson_righthand"),"model",useCycle()),obj("when",arr("thirdperson_lefthand","thirdperson_righthand"),"model",model("shaker_3d"))),"fallback",model("shaker_3d")),"on_false",model("shaker_3d")));}
-    /** 第一人称：animation none 与 v0.0.1 完全一致（无第一人称附加变换、无 customArmTransform），保持 0.0.1 的 use_cycle：-15° 倾斜 + 0.15·sin(1.5t) 上下摆动，16 帧逐位复刻 v0.0.1 标签。 */
+    /** 第一人称：toot_horn 与 none 一样无第一人称附加变换（ItemInHandRenderer 仅 brush/bundle/spear 有 case）且无 customArmTransform，故与 v0.0.1 完全一致：use_cycle 16 帧 -15° 倾斜 + 0.15·sin(1.5t) 上下摆动逐位复刻。第三人称 toot_horn 姿势基准角 -85°（≈原模组 -112.5° 摆幅中心），WHACK 挥臂在其上叠加 ±42° 摆动，最接近原模组角度且不过顶。 */
     private JsonObject useCycle(){JsonArray entries=new JsonArray();double period=Math.PI*2/1.5;for(int i=0;i<16;i++){double cycle=period*i/16,wave=Math.sin(-cycle*1.5),ty=-wave*.15;entries.add(obj("threshold",round(cycle,6),"model",obj("type","minecraft:model","path",NAMESPACE+":item/shaker_3d","transformation",transform(-15,ty))));}return obj("type","minecraft:range_dispatch","property","use_cycle","source",round(period,6),"entries",entries,"fallback",entries.get(0).getAsJsonObject().get("model").deepCopy());}
     private static JsonArray transform(double deg,double ty){double a=Math.toRadians(deg),c=round(Math.cos(a),8),s=round(Math.sin(a),8);return arr(1.0,0.0,0.0,0.0,0.0,c,-s,round(ty,8),0.0,s,c,0.0,0.0,0.0,0.0,1.0);} private static double round(double x,int n){double p=Math.pow(10,n);return Math.rint(x*p)/p;}
 
