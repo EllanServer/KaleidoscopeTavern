@@ -23,9 +23,9 @@ import java.util.List;
  */
 public final class PressingTubVisualFactory {
     private static final String NAMESPACE = "kaleidoscope_tavern:";
-    // 一个逻辑原料堆不是每件物品一个显示实体：有界视觉池保持高数量时
-    // 刷新 packet 廉价，与 StationService 的 MAX_STATION_ITEM_VISUALS 一致。
-    private static final int MAX_STATION_ITEM_VISUALS = 16;
+    // 源 PressingTubBlockEntityRender 按 count 渲染槽内全部物品（最多 64 个），
+    // 因此视觉池上限对齐 64；差量元素池让高数量下刷新 packet 仍然廉价。
+    private static final int MAX_STATION_ITEM_VISUALS = 64;
     private static final int PRESS_CAPACITY = 1_000;
     // PressingTubBlockEntityRender's PoseStack tilt and item flattening.
     private static final double ITEM_X_DEGREES = -90;

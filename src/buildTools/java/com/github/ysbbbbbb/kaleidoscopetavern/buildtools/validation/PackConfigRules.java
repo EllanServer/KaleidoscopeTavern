@@ -530,7 +530,7 @@ public final class PackConfigRules {
         expectedWallBehaviors.add(stateBehavior);
         JsonObject visualBehavior = new JsonObject();
         visualBehavior.addProperty("type", NAMESPACE + ":station_visual_furniture");
-        visualBehavior.addProperty("max_elements", 17);
+        visualBehavior.addProperty("max_elements", 65);
         visualBehavior.addProperty("view_range", 1.25);
         expectedWallBehaviors.add(visualBehavior);
         JsonObject interactionBehavior = new JsonObject();
@@ -1414,7 +1414,7 @@ public final class PackConfigRules {
         barrelVisual.addProperty("view_range", 2.5);
         JsonObject wallTubVisual = new JsonObject();
         wallTubVisual.addProperty("type", NAMESPACE + ":station_visual_furniture");
-        wallTubVisual.addProperty("max_elements", 17);
+        wallTubVisual.addProperty("max_elements", 65);
         wallTubVisual.addProperty("view_range", 1.25);
         stationVisuals.put(NAMESPACE + ":barrel", barrelVisual);
         stationVisuals.put(WALL_PRESSING_TUB_ID, wallTubVisual);

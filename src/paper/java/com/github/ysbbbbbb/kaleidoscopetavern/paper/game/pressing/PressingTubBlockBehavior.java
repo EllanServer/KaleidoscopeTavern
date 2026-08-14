@@ -72,8 +72,9 @@ public final class PressingTubBlockBehavior extends BukkitBlockBehavior
         implements EntityBlock, PrioritizedFallOnHandler {
     public static final Key TYPE = Key.of("kaleidoscope_tavern", "pressing_tub_block");
 
-    /** 原料视觉 + 液体视觉最多占用的动态实体槽位数（与源渲染器一致）。 */
-    private static final int MAX_ELEMENTS = 17;
+    /** 原料视觉 + 液体视觉最多占用的动态实体槽位数：源 PressingTubBlockEntityRender
+     *  按 count 渲染槽内全部物品（最多 64 个），外加一个液体平面。 */
+    private static final int MAX_ELEMENTS = 65;
     private static final float VIEW_RANGE = 1.25F;
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static volatile Handler handler;

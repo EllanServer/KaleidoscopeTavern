@@ -798,8 +798,9 @@ public final class FurnitureBuilder {
         config.add("loot", loot);
         List<JsonObject> behaviors = new ArrayList<>();
         behaviors.add(obj("type", NAMESPACE + ":state_furniture"));
+        // 源 PressingTubBlockEntityRender 按 count 渲染全部原料（最多 64 个）+ 液体平面。
         behaviors.add(obj("type", NAMESPACE + ":station_visual_furniture",
-                "max_elements", 17, "view_range", 1.25));
+                "max_elements", 65, "view_range", 1.25));
         behaviors.add(obj("type", NAMESPACE + ":station_interaction_furniture"));
         config.add("behaviors", FurnitureBoxes.jsonArrayOf(behaviors));
         return Map.entry(config, 1);

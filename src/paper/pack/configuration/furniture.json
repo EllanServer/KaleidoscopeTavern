@@ -60380,7 +60380,7 @@
         },
         {
           "type": "kaleidoscope_tavern:station_visual_furniture",
-          "max_elements": 17,
+          "max_elements": 65,
           "view_range": 1.25
         },
         {
