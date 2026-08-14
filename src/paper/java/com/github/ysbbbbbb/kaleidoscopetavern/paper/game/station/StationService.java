@@ -498,14 +498,10 @@ public final class StationService implements Listener {
             }
             int ticks = use.ticks();
             shakerVisuals.updateMix(player, ticks);
-            // The shaker's trident use animation holds the arm raised
-            // (THROW_TRIDENT pose) while its WHACK swing_animation makes it
-            // sweep forward each swing; every 4 ticks (duration 4) keeps a
-            // continuous 5 Hz wave matching the source SHAKING frequency
-            // (2π/1.5 ticks).
-            if (ticks % 4 == 0) {
-                player.swingHand(use.hand());
-            }
+            // The arm wave is fully client-driven: the shaker's spear use
+            // animation plus its kinetic_weapon component make the client
+            // compute the raised arm and continuous sway every frame from
+            // the use ticks, so no per-tick packets are needed.
             if (ShakerSemantics.playsShakeSound(ticks)) {
                 float volume = 0.75F + ThreadLocalRandom.current().nextFloat() * 0.2F;
                 float pitch = 0.8F + ThreadLocalRandom.current().nextFloat() * 0.2F;

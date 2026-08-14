@@ -131,10 +131,11 @@ public final class ItemMigrationStage {
                 data.add("custom_name",data.get("item_name").deepCopy()); data.add("hide_tooltip",arr("minecraft:potion_contents"));
             }
             if (id.equals("shaker")) { components(data).addProperty("minecraft:max_stack_size",1);
-                configureConsumable(config,obj("consume_seconds",3600.0,"animation","trident","has_consume_particles",false));
-                JsonObject swing=obj("type","whack","duration",4); components(data).add("minecraft:swing_animation",swing.deepCopy());
+                configureConsumable(config,obj("consume_seconds",3600.0,"animation","spear","has_consume_particles",false));
+                JsonObject kinetic=obj("contact_cooldown_ticks",10,"delay_ticks",0,"dismount_conditions",obj("max_duration_ticks",20),"knockback_conditions",obj("max_duration_ticks",40),"damage_conditions",obj("max_duration_ticks",200),"forward_movement",0.0,"damage_multiplier",0.0);
+                components(data).add("minecraft:kinetic_weapon",kinetic.deepCopy());
                 JsonObject cbd2=config.has("client_bound_data")?config.getAsJsonObject("client_bound_data"):new JsonObject(); config.add("client_bound_data",cbd2);
-                JsonObject c2=cbd2.has("components")?cbd2.getAsJsonObject("components"):new JsonObject(); cbd2.add("components",c2); c2.add("minecraft:swing_animation",swing);
+                JsonObject c2=cbd2.has("components")?cbd2.getAsJsonObject("components"):new JsonObject(); cbd2.add("components",c2); c2.add("minecraft:kinetic_weapon",kinetic);
                 config.add("model", shakerModel()); }
             if (id.equals("molotov")) { configureConsumable(config,obj("consume_seconds",3600.0,"animation","trident","has_consume_particles",false));
                 config.add("model",obj("type","minecraft:condition","property","minecraft:using_item","on_true",model("molotov_charging"),"on_false",model("molotov"))); }

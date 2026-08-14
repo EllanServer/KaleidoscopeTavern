@@ -2810,21 +2810,32 @@ public final class PackConfigRules {
         JsonObject shakerComponents = shakerItem.getAsJsonObject("data").getAsJsonObject("components");
         JsonObject expectedShakerConsumable = new JsonObject();
         expectedShakerConsumable.addProperty("consume_seconds", 3600.0);
-        expectedShakerConsumable.addProperty("animation", "trident");
+        expectedShakerConsumable.addProperty("animation", "spear");
         expectedShakerConsumable.addProperty("has_consume_particles", false);
-        JsonObject expectedShakerSwing = new JsonObject();
-        expectedShakerSwing.addProperty("type", "whack");
-        expectedShakerSwing.addProperty("duration", 4);
+        JsonObject expectedShakerKinetic = new JsonObject();
+        expectedShakerKinetic.addProperty("contact_cooldown_ticks", 10);
+        expectedShakerKinetic.addProperty("delay_ticks", 0);
+        JsonObject dismount = new JsonObject();
+        dismount.addProperty("max_duration_ticks", 20);
+        JsonObject knockback = new JsonObject();
+        knockback.addProperty("max_duration_ticks", 40);
+        JsonObject damage = new JsonObject();
+        damage.addProperty("max_duration_ticks", 200);
+        expectedShakerKinetic.add("dismount_conditions", dismount);
+        expectedShakerKinetic.add("knockback_conditions", knockback);
+        expectedShakerKinetic.add("damage_conditions", damage);
+        expectedShakerKinetic.addProperty("forward_movement", 0.0);
+        expectedShakerKinetic.addProperty("damage_multiplier", 0.0);
         if (!shakerItem.get("material").getAsString().equals("paper")
                 || shakerComponents.get("minecraft:max_stack_size").getAsInt() != 1
                 || !expectedShakerConsumable.equals(shakerComponents.get("minecraft:consumable"))
                 || !expectedShakerConsumable.equals(nestedObject(shakerItem, "client_bound_data", "components")
                         .get("minecraft:consumable"))
-                || !expectedShakerSwing.equals(shakerComponents.get("minecraft:swing_animation"))
-                || !expectedShakerSwing.equals(nestedObject(shakerItem, "client_bound_data", "components")
-                        .get("minecraft:swing_animation"))) {
+                || !expectedShakerKinetic.equals(shakerComponents.get("minecraft:kinetic_weapon"))
+                || !expectedShakerKinetic.equals(nestedObject(shakerItem, "client_bound_data", "components")
+                        .get("minecraft:kinetic_weapon"))) {
             throw new ValidationException(
-                    "Shaker must retain active-use timing and its WHACK swing for the vanilla arm wave");
+                    "Shaker must retain active-use timing and its kinetic_weapon sway for the client-driven arm wave");
         }
         JsonObject shakerModel = shakerItem.getAsJsonObject("model");
         if (!shakerModel.get("type").getAsString().equals("minecraft:select")

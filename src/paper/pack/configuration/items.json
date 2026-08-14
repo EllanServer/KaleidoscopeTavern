@@ -3125,12 +3125,23 @@
           "minecraft:max_stack_size": 1,
           "minecraft:consumable": {
             "consume_seconds": 3600.0,
-            "animation": "trident",
+            "animation": "spear",
             "has_consume_particles": false
           },
-          "minecraft:swing_animation": {
-            "type": "whack",
-            "duration": 4
+          "minecraft:kinetic_weapon": {
+            "contact_cooldown_ticks": 10,
+            "delay_ticks": 0,
+            "dismount_conditions": {
+              "max_duration_ticks": 20
+            },
+            "knockback_conditions": {
+              "max_duration_ticks": 40
+            },
+            "damage_conditions": {
+              "max_duration_ticks": 200
+            },
+            "forward_movement": 0.0,
+            "damage_multiplier": 0.0
           }
         }
       },
@@ -3617,12 +3628,23 @@
         "components": {
           "minecraft:consumable": {
             "consume_seconds": 3600.0,
-            "animation": "trident",
+            "animation": "spear",
             "has_consume_particles": false
           },
-          "minecraft:swing_animation": {
-            "type": "whack",
-            "duration": 4
+          "minecraft:kinetic_weapon": {
+            "contact_cooldown_ticks": 10,
+            "delay_ticks": 0,
+            "dismount_conditions": {
+              "max_duration_ticks": 20
+            },
+            "knockback_conditions": {
+              "max_duration_ticks": 40
+            },
+            "damage_conditions": {
+              "max_duration_ticks": 200
+            },
+            "forward_movement": 0.0,
+            "damage_multiplier": 0.0
           }
         }
       },
