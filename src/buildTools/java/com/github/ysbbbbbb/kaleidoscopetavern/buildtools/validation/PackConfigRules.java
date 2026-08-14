@@ -76,6 +76,8 @@ public final class PackConfigRules {
         validateFiles();
         validateIncense(items, blocks);
         validateConfigItems(items, renderItems, blocks, furniture);
+        validateRemaining(items, renderItems, blocks, furniture);
+        validateDrinks(items, renderItems, blocks, furniture);
         JsonObject worldgen = readConfig("worldgen.json").getAsJsonObject("placed_features")
                 .getAsJsonObject(NAMESPACE + ":wild_grapevine");
         validateWorldgenFeature(worldgen);
@@ -2053,6 +2055,909 @@ public final class PackConfigRules {
             throw new ValidationException("Source-to-CE placeable coverage drift: missing="
                     + missing + ", unexpected=" + unexpected);
         }
+    }
+
+
+    private static final List<String> SIMPLE_BOTTLES = List.of(
+            "water_bottle", "honey_bottle", "dragon_breath_bottle",
+            "potion_bottle", "xp_bottle");
+    private static final Set<String> EXPECTED_CONSUMABLE_COCKTAILS = Set.of(
+            "signature_cocktail", "mystery_cocktail", "white_lady", "emerald",
+            "brass_heart", "godfather", "grasshopper", "screwdriver", "mojito",
+            "allium_garden", "depth_charge", "nether_special", "bloody_mary",
+            "sculk_special");
+    private static final Set<String> EXPECTED_ROTATION_16_VESSELS = new LinkedHashSet<>();
+    private static final Set<String> EXPECTED_DIRECTIONLESS_VESSELS = Set.of("molotov");
+    private static final List<String> CUSTOM_EFFECT_ICON_IDS = List.of(
+            "slightly_tipsy", "high_heels", "grass_stealth", "vision",
+            "bloody_mary", "ardent_heat", "long_reach", "tomb_raider",
+            "xp_drain", "upside_down", "zenith", "shriek_attack");
+    static {
+        EXPECTED_ROTATION_16_VESSELS.addAll(EXPECTED_CONSUMABLE_COCKTAILS);
+        EXPECTED_ROTATION_16_VESSELS.add("empty_glassware");
+        EXPECTED_ROTATION_16_VESSELS.addAll(SIMPLE_BOTTLES);
+    }
+
+    private static String vesselRotation(String itemId) {
+        String path = itemId.substring(itemId.indexOf(':') + 1);
+        if (EXPECTED_ROTATION_16_VESSELS.contains(path)) return "sixteen";
+        if (EXPECTED_DIRECTIONLESS_VESSELS.contains(path)) return "north";
+        return "four";
+    }
+
+    private void validateRemaining(JsonObject items, JsonObject renderItems, JsonObject blocks,
+                                   JsonObject furniture) throws IOException {
+        Set<String> geometryless = new LinkedHashSet<>();
+        Path generatedAssets = projectRoot.resolve("src/generated/resources/assets");
+        Path mainAssets = projectRoot.resolve("src/main/resources/assets");
+        String modBlocks = readText(projectRoot.resolve("src/main/java/com/github/ysbbbbbb/"
+                + "kaleidoscopetavern/init/ModBlocks.java"));
+        Matcher idMatcher = Pattern.compile("BLOCKS\\.register\\(\"([a-z0-9_]+)\"")
+                .matcher(modBlocks);
+        while (idMatcher.find()) {
+            String blockId = idMatcher.group(1);
+            JsonObject blockstate = assetJson(NAMESPACE + ":" + blockId, "blockstates");
+            if (blockstate == null) {
+                throw new ValidationException("Source block " + blockId + " has no blockstate");
+            }
+            Set<String> references = new LinkedHashSet<>();
+            if (blockstate.has("variants")) {
+                for (JsonElement raw : blockstate.getAsJsonObject("variants").asMap().values()) {
+                    collectModelPaths(raw, references);
+                }
+            }
+            if (blockstate.has("multipart")) {
+                for (JsonElement part : blockstate.getAsJsonArray("multipart")) {
+                    if (part.isJsonObject() && part.getAsJsonObject().has("apply")) {
+                        collectModelPaths(part.getAsJsonObject().get("apply"), references);
+                    }
+                }
+            }
+            if (!references.isEmpty()) {
+                boolean anyGeometry = false;
+                for (String model : references) {
+                    if (modelHasGeometry(model, new LinkedHashSet<>())) {
+                        anyGeometry = true;
+                        break;
+                    }
+                }
+                if (!anyGeometry) geometryless.add(blockId);
+            }
+        }
+        Set<String> expectedGeometryless = Set.of("barrel", "chalkboard", "shaker");
+        if (!geometryless.equals(expectedGeometryless)) {
+            throw new ValidationException("Source particle-only model set changed: found="
+                    + geometryless);
+        }
+        for (String blockId : expectedGeometryless) {
+            if (blockId.equals("chalkboard")) continue;
+            JsonObject definition = furniture.getAsJsonObject(NAMESPACE + ":" + blockId);
+            for (var variantEntry : definition.getAsJsonObject("variants").entrySet()) {
+                JsonObject variant = variantEntry.getValue().getAsJsonObject();
+                if (!variant.has("elements") || variant.getAsJsonArray("elements").isEmpty()) {
+                    throw new ValidationException(blockId + "/" + variantEntry.getKey()
+                            + ": particle-only source has no replacement");
+                }
+                String renderId = variant.getAsJsonArray("elements").get(0).getAsJsonObject()
+                        .get("item").getAsString();
+                String model = renderItems.getAsJsonObject(renderId).getAsJsonObject("model")
+                        .get("path").getAsString();
+                if (blockId.equals("shaker")) {
+                    if (!model.equals(NAMESPACE + ":block/mixology/shaker")) {
+                        throw new ValidationException(
+                                "Shaker CE anchor must remain the invisible source block model");
+                    }
+                    continue;
+                }
+                JsonObject parsed = assetJson(model, "models");
+                if (parsed == null || !parsed.has("elements")
+                        || parsed.getAsJsonArray("elements").isEmpty()) {
+                    throw new ValidationException(blockId + "/" + variantEntry.getKey()
+                            + ": particle-only source still maps to invisible model " + model);
+                }
+            }
+        }
+        JsonObject stepladder = furniture.getAsJsonObject(NAMESPACE + ":stepladder");
+        JsonObject stepladderVariants = stepladder.getAsJsonObject("variants");
+        if (!stepladderVariants.keySet().equals(Set.of("ground"))) {
+            throw new ValidationException("Stepladder must expose only its ground variant, found "
+                    + stepladderVariants.keySet());
+        }
+        JsonObject stepladderGround = stepladderVariants.getAsJsonObject("ground");
+        JsonArray stepladderElements = stepladderGround.getAsJsonArray("elements");
+        if (stepladderElements.size() != 2) {
+            throw new ValidationException("Stepladder must keep exactly two ItemDisplay halves");
+        }
+        for (JsonElement raw : stepladderElements) {
+            if (!raw.getAsJsonObject().get("type").getAsString().equals("item_display")) {
+                throw new ValidationException("Stepladder must keep exactly two ItemDisplay halves");
+            }
+        }
+        JsonArray stepladderHitboxes = stepladderGround.getAsJsonArray("hitboxes");
+        if (stepladderHitboxes.size() != 4) {
+            throw new ValidationException("Stepladder must use four physical shulker hitboxes");
+        }
+        Set<String> actualStepladder = new LinkedHashSet<>();
+        for (JsonElement raw : stepladderHitboxes) {
+            JsonObject h = raw.getAsJsonObject();
+            actualStepladder.add(String.join("|",
+                    h.get("position").getAsString(),
+                    h.has("scale") ? String.valueOf(h.get("scale").getAsDouble()) : "1.0",
+                    h.has("peek") ? String.valueOf(h.get("peek").getAsInt()) : "0",
+                    h.has("direction") ? h.get("direction").getAsString() : "up",
+                    String.valueOf(h.has("blocks_building") && h.get("blocks_building").getAsBoolean()),
+                    String.valueOf(h.has("invisible") && h.get("invisible").getAsBoolean())));
+        }
+        Set<String> expectedStepladder = Set.of(
+                "0,0,0|0.75|0|up|true|false",
+                "0,0.75,-0.25|0.625|25|north|false|false",
+                "-0.25,1.5,-0.25|0.4|35|up|false|false",
+                "0.25,1.5,-0.25|0.4|35|up|false|false");
+        if (!actualStepladder.equals(expectedStepladder)) {
+            throw new ValidationException("Stepladder hitboxes must retain the server-tested "
+                    + "compact layout: found=" + actualStepladder);
+        }
+        for (String blockId : List.of("trellis", "grapevine_trellis",
+                "ice_grapevine_trellis", "gold_grapevine_trellis")) {
+            String fullId = NAMESPACE + ":" + blockId;
+            JsonObject definition = blocks.getAsJsonObject(fullId);
+            JsonObject states = definition.getAsJsonObject("states");
+            JsonObject expectedAxis = new JsonObject();
+            expectedAxis.addProperty("type", "axis");
+            expectedAxis.addProperty("default", "y");
+            JsonArray axisValues = new JsonArray();
+            axisValues.add("x"); axisValues.add("y"); axisValues.add("z");
+            expectedAxis.add("values", axisValues);
+            if (!expectedAxis.equals(states.getAsJsonObject("properties").get("axis"))) {
+                throw new ValidationException(
+                        blockId + ": CE must own clicked-face placement through native axis state");
+            }
+            JsonObject appearances = states.getAsJsonObject("appearances");
+            for (var appearanceEntry : appearances.entrySet()) {
+                JsonObject appearance = appearanceEntry.getValue().getAsJsonObject();
+                if (!appearance.getAsJsonObject("entity_renderer").get("type").getAsString()
+                        .equals("item_display")) {
+                    throw new ValidationException(
+                            blockId + "/" + appearanceEntry.getKey()
+                            + " must keep its authored item-display model");
+                }
+                String state = appearance.get("state").getAsString();
+                if (!state.startsWith("minecraft:lightning_rod[")) {
+                    throw new ValidationException(blockId + "/" + appearanceEntry.getKey()
+                            + ": every trellis shape needs a colliding lightning-rod carrier");
+                }
+                if (!state.contains("powered=false") || !state.contains("waterlogged=")) {
+                    throw new ValidationException(blockId + "/" + appearanceEntry.getKey()
+                            + ": trellis carrier must remain unpowered and water-aware");
+                }
+            }
+            for (var variantEntry : states.getAsJsonObject("variants").entrySet()) {
+                String waterlogged = null;
+                for (String part : variantEntry.getKey().split(",")) {
+                    String[] pair = part.split("=", 2);
+                    if (pair[0].equals("waterlogged")) waterlogged = pair[1];
+                }
+                JsonObject appearance = appearances.getAsJsonObject(variantEntry.getValue()
+                        .getAsJsonObject().get("appearance").getAsString());
+                if (!appearance.get("state").getAsString().contains("waterlogged=" + waterlogged)) {
+                    throw new ValidationException(blockId + "/" + variantEntry.getKey()
+                            + ": carrier lost its waterlogged state");
+                }
+                JsonElement settings = variantEntry.getValue().getAsJsonObject().get("settings");
+                if (waterlogged.equals("true")) {
+                    JsonObject expectedSettings = new JsonObject();
+                    expectedSettings.addProperty("fluid_state", "water");
+                    if (!expectedSettings.equals(settings)) {
+                        throw new ValidationException(blockId + "/" + variantEntry.getKey()
+                                + ": CE fluid state does not match waterlogged");
+                    }
+                } else if (settings != null && !settings.isJsonNull()) {
+                    throw new ValidationException(blockId + "/" + variantEntry.getKey()
+                            + ": CE fluid state does not match waterlogged");
+                }
+            }
+        }
+        int collidableTrellises = 0;
+        for (String blockId : List.of("trellis", "grapevine_trellis",
+                "ice_grapevine_trellis", "gold_grapevine_trellis")) {
+            collidableTrellises += blocks.getAsJsonObject(NAMESPACE + ":" + blockId)
+                    .getAsJsonObject("states").getAsJsonObject("appearances").size();
+        }
+        if (collidableTrellises != 74) {
+            throw new ValidationException("Expected 74 dry/waterlogged trellis appearances, found "
+                    + collidableTrellises);
+        }
+        for (String blockId : List.of("trellis", "grapevine_trellis",
+                "ice_grapevine_trellis", "gold_grapevine_trellis")) {
+            JsonObject settings = blocks.getAsJsonObject(NAMESPACE + ":" + blockId)
+                    .getAsJsonObject("settings");
+            if (settings.get("hardness").getAsDouble() != 0.8
+                    || settings.get("resistance").getAsDouble() != 0.8
+                    || !settings.getAsJsonObject("sounds").get("break").getAsString()
+                            .equals("minecraft:block.wood.break")) {
+                throw new ValidationException(blockId + ": source trellis hardness must remain 0.8");
+            }
+        }
+        if (!blocks.getAsJsonObject(NAMESPACE + ":trellis").getAsJsonObject("settings")
+                .get("push_reaction").getAsString().equals("NORMAL")) {
+            throw new ValidationException("Plain trellis must retain the source default piston reaction");
+        }
+        for (String blockId : List.of("grapevine_trellis", "ice_grapevine_trellis",
+                "gold_grapevine_trellis")) {
+            JsonObject expectedBehavior = new JsonObject();
+            expectedBehavior.addProperty("type", NAMESPACE + ":trellis");
+            expectedBehavior.addProperty("spread_chance", 0.25);
+            if (!expectedBehavior.equals(blocks.getAsJsonObject(NAMESPACE + ":" + blockId)
+                    .get("behavior"))) {
+                throw new ValidationException(blockId
+                        + ": growth must have one source-compatible owner");
+            }
+        }
+        JsonObject wildBehavior = new JsonObject();
+        wildBehavior.addProperty("type", NAMESPACE + ":wild_grapevine");
+        wildBehavior.addProperty("body", NAMESPACE + ":wild_grapevine_plant");
+        wildBehavior.addProperty("direction", "down");
+        wildBehavior.addProperty("grow_speed", 0.15);
+        if (!wildBehavior.equals(blocks.getAsJsonObject(NAMESPACE + ":wild_grapevine")
+                .get("behavior"))) {
+            throw new ValidationException(
+                    "Wild grapevine must wrap CE lifecycle and shearing in one behavior");
+        }
+        JsonObject wildBodyBehavior = new JsonObject();
+        wildBodyBehavior.addProperty("type", NAMESPACE + ":wild_grapevine");
+        wildBodyBehavior.addProperty("head", NAMESPACE + ":wild_grapevine");
+        wildBodyBehavior.addProperty("direction", "down");
+        JsonObject boneMeal = new JsonObject();
+        boneMeal.addProperty("behavior", "grow");
+        boneMeal.addProperty("grow_blocks", 1);
+        wildBodyBehavior.add("bone_meal", boneMeal);
+        if (!wildBodyBehavior.equals(blocks.getAsJsonObject(NAMESPACE + ":wild_grapevine_plant")
+                .get("behavior"))) {
+            throw new ValidationException("Wild grapevine body must delegate native bone meal to its head");
+        }
+        JsonObject wildHead = blocks.getAsJsonObject(NAMESPACE + ":wild_grapevine");
+        if (wildHead.getAsJsonObject("behavior").has("max_height")) {
+            throw new ValidationException("Wild grapevine must not retain the invented 16-block growth cap");
+        }
+        JsonObject wildHeadAppearances = wildHead.getAsJsonObject("states")
+                .getAsJsonObject("appearances");
+        if (wildHeadAppearances.size() != 1) {
+            throw new ValidationException("Wild grapevine head must keep one shared authored appearance");
+        }
+        JsonElement wildHeadAppearance = wildHeadAppearances.asMap().values().iterator().next();
+        JsonElement wildBodyAppearance = blocks.getAsJsonObject(NAMESPACE + ":wild_grapevine_plant")
+                .get("state");
+        JsonObject expectedWildCarrier = new JsonObject();
+        expectedWildCarrier.addProperty("type", "cave_vines");
+        expectedWildCarrier.addProperty("id", "kaleidoscope-tavern-wild-grapevine-transparent");
+        for (JsonElement appearance : List.of(wildHeadAppearance, wildBodyAppearance)) {
+            JsonObject a = appearance.getAsJsonObject();
+            if (!expectedWildCarrier.equals(a.get("auto_state"))
+                    || a.has("state")
+                    || !a.get("transparent").getAsBoolean()
+                    || !renderItems.has(a.getAsJsonObject("entity_renderer").get("item").getAsString())) {
+                throw new ValidationException(
+                        "Wild grapevine must share CE's cave-vines auto-state carrier");
+            }
+            if (a.toString().contains("weeping_vines")) {
+                throw new ValidationException(
+                        "Wild grapevine must not reserve vanilla weeping-vine texture states");
+            }
+        }
+        for (String crop : List.of("grape_crop", "ice_grape_crop", "gold_grape_crop")) {
+            for (int point = 0; point < 6; point++) {
+                String cropId = point == 0 ? NAMESPACE + ":" + crop
+                        : NAMESPACE + ":_crop/" + crop + "/stage_" + point;
+                JsonObject appearance = blocks.getAsJsonObject(cropId).getAsJsonObject("state");
+                if (!expectedWildCarrier.equals(appearance.get("auto_state"))
+                        || appearance.has("state")
+                        || !appearance.get("transparent").getAsBoolean()
+                        || !renderItems.has(appearance.getAsJsonObject("entity_renderer")
+                                .get("item").getAsString())) {
+                    throw new ValidationException(
+                            cropId + ": hanging crop must share CE's cave-vines carrier");
+                }
+            }
+        }
+        JsonObject wildSettings = wildHead.getAsJsonObject("settings");
+        if (wildSettings.get("hardness").getAsDouble() != 0
+                || wildSettings.get("resistance").getAsDouble() != 0
+                || !wildSettings.getAsJsonObject("sounds").get("break").getAsString()
+                        .equals("minecraft:block.cave_vines.break")) {
+            throw new ValidationException(
+                    "Wild grapevine must retain instant break and cave-vine sounds");
+        }
+        JsonObject enUs = readJson(projectRoot.resolve("src/main/resources/assets/"
+                + NAMESPACE + "/lang/en_us.json"));
+        JsonObject zhCn = readJson(projectRoot.resolve("src/main/resources/assets/"
+                + NAMESPACE + "/lang/zh_cn.json"));
+        Set<String> languageKeys = enUs.keySet();
+        Set<String> chineseKeys = zhCn.keySet();
+        for (JsonElement value : zhCn.asMap().values()) {
+            if (value.isJsonPrimitive() && value.getAsString().contains("\uFFFD")) {
+                throw new ValidationException("zh_cn.json contains a Unicode replacement character");
+            }
+        }
+        for (var itemEntry : items.entrySet()) {
+            String fullItemId = itemEntry.getKey();
+            if (!fullItemId.startsWith(NAMESPACE + ":")) continue;
+            String itemId = fullItemId.substring(NAMESPACE.length() + 1);
+            JsonObject item = itemEntry.getValue().getAsJsonObject();
+            String rawName = item.has("data") && item.getAsJsonObject("data").has("item_name")
+                    ? item.getAsJsonObject("data").get("item_name").getAsString() : "";
+            Matcher langMatcher = Pattern.compile("^<!i><lang:([^>]+)>$").matcher(rawName);
+            if (!langMatcher.matches()) {
+                throw new ValidationException(fullItemId + ": malformed translatable item_name " + rawName);
+            }
+            String actualKey = langMatcher.group(1);
+            if (!languageKeys.contains(actualKey)) {
+                throw new ValidationException(fullItemId + ": missing item-name translation " + actualKey);
+            }
+            if (!chineseKeys.contains(actualKey)) {
+                throw new ValidationException(fullItemId + ": missing Chinese item-name translation " + actualKey);
+            }
+            String expectedKey;
+            if (itemId.endsWith("_sandwich_board")) {
+                expectedKey = "block." + NAMESPACE + ".sandwich_board";
+            } else if (itemId.endsWith("_painting")) {
+                expectedKey = "block." + NAMESPACE + ".painting";
+                JsonArray lore = item.getAsJsonObject("data").getAsJsonArray("lore");
+                String tooltip = "<!i><gray><lang:tooltip." + NAMESPACE + "." + itemId + ">";
+                boolean found = false;
+                for (JsonElement line : lore) {
+                    if (line.getAsString().contains(tooltip)) found = true;
+                }
+                if (!found) {
+                    throw new ValidationException(fullItemId + ": painting variant tooltip is missing");
+                }
+            } else {
+                String blockKey = "block." + NAMESPACE + "." + itemId;
+                String itemKey = "item." + NAMESPACE + "." + itemId;
+                expectedKey = languageKeys.contains(blockKey) ? blockKey : itemKey;
+            }
+            if (!actualKey.equals(expectedKey)) {
+                throw new ValidationException(fullItemId + ": expected source description id "
+                        + expectedKey + ", found " + actualKey);
+            }
+        }
+    }
+
+    private boolean modelHasGeometry(String resourceId, Set<String> seen) throws IOException {
+        if (seen.contains(resourceId)) return false;
+        JsonObject model = assetJson(resourceId, "models");
+        if (model == null) {
+            return resourceId.startsWith("minecraft:");
+        }
+        if (model.has("elements") && model.getAsJsonArray("elements").size() > 0) {
+            return true;
+        }
+        if (!model.has("parent")) return false;
+        seen.add(resourceId);
+        return modelHasGeometry(model.get("parent").getAsString(), seen);
+    }
+
+    private static void collectModelPaths(JsonElement value, Set<String> out) {
+        if (value == null || value.isJsonNull()) return;
+        if (value.isJsonArray()) {
+            for (JsonElement child : value.getAsJsonArray()) collectModelPaths(child, out);
+        } else if (value.isJsonObject()) {
+            JsonElement model = value.getAsJsonObject().get("model");
+            if (model != null && model.isJsonPrimitive()) out.add(model.getAsString());
+        }
+    }
+
+
+    private static final Set<String> EFFECTLESS_DRINKS = Set.of(NAMESPACE + ":watermelon_juice");
+    private static final int SHAKER_USE_FRAMES = 16;
+    private static final double SHAKER_USE_PERIOD_TICKS = Math.PI * 2 / 1.5;
+
+    private static double[] shakerXTransform(double rotationDegrees, double translationY) {
+        double angle = Math.toRadians(rotationDegrees);
+        double cosine = Math.round(Math.cos(angle) * 1e8) / 1e8;
+        double sine = Math.round(Math.sin(angle) * 1e8) / 1e8;
+        return new double[] {1.0, 0.0, 0.0, 0.0,
+                0.0, cosine, -sine, Math.round(translationY * 1e8) / 1e8,
+                0.0, sine, cosine, 0.0,
+                0.0, 0.0, 0.0, 1.0};
+    }
+
+    private static JsonObject expectedShakerUseCycle(boolean firstPerson) {
+        JsonArray entries = new JsonArray();
+        for (int index = 0; index < SHAKER_USE_FRAMES; index++) {
+            double cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES;
+            double wave = Math.sin(-cycle * 1.5);
+            double rotation = firstPerson ? -15.0 : Math.toDegrees(wave * 0.25);
+            double translationY = firstPerson ? -wave * 0.15 : 0.0;
+            JsonObject entry = new JsonObject();
+            entry.addProperty("threshold", Math.round(cycle * 1e6) / 1e6);
+            JsonObject model = new JsonObject();
+            model.addProperty("type", "minecraft:model");
+            model.addProperty("path", NAMESPACE + ":item/shaker_3d");
+            JsonArray transformation = new JsonArray();
+            for (double v : shakerXTransform(rotation, translationY)) transformation.add(v);
+            model.add("transformation", transformation);
+            entry.add("model", model);
+            entries.add(entry);
+        }
+        JsonObject range = new JsonObject();
+        range.addProperty("type", "minecraft:range_dispatch");
+        range.addProperty("property", "use_cycle");
+        range.addProperty("source", Math.round(SHAKER_USE_PERIOD_TICKS * 1e6) / 1e6);
+        range.add("entries", entries);
+        JsonObject fallback = entries.get(0).getAsJsonObject().getAsJsonObject("model").deepCopy();
+        range.add("fallback", fallback);
+        return range;
+    }
+
+    private void validateDrinks(JsonObject items, JsonObject renderItems, JsonObject blocks,
+                                JsonObject furniture) throws IOException {
+        Path catalogs = projectRoot.resolve("src/paper/resources/catalog");
+        List<String[]> effectRows = tsvRows(catalogs.resolve("drink-effects.tsv"));
+        if (effectRows.stream().map(row -> row[0]).distinct().count() != 37) {
+            throw new ValidationException("Expected drink effects for 37 items");
+        }
+        Set<String> effectDrinkIds = new LinkedHashSet<>();
+        for (String[] row : effectRows) effectDrinkIds.add(row[0]);
+        Set<String> unexpectedEffects = new LinkedHashSet<>(effectDrinkIds);
+        unexpectedEffects.retainAll(EFFECTLESS_DRINKS);
+        if (!unexpectedEffects.isEmpty()) {
+            throw new ValidationException(
+                    "Effectless drinks unexpectedly declare drink effects: " + unexpectedEffects);
+        }
+        Set<String> drinkIds = new LinkedHashSet<>(effectDrinkIds);
+        drinkIds.addAll(EFFECTLESS_DRINKS);
+        drinkIds.add(NAMESPACE + ":signature_cocktail");
+        JsonObject expectedConsumable = new JsonObject();
+        expectedConsumable.addProperty("consume_seconds", 1.6);
+        expectedConsumable.addProperty("animation", "drink");
+        expectedConsumable.addProperty("sound", "minecraft:entity.generic.drink");
+        expectedConsumable.addProperty("has_consume_particles", false);
+        for (String itemId : drinkIds) {
+            JsonObject item = items.getAsJsonObject(itemId);
+            List<JsonElement> itemBehaviors = behaviorsOf(item);
+            Set<String> behaviorTypes = new LinkedHashSet<>();
+            for (JsonElement behavior : itemBehaviors) {
+                behaviorTypes.add(behavior.getAsJsonObject().get("type").getAsString());
+            }
+            if (!item.get("material").getAsString().equals("potion")
+                    || !behaviorTypes.equals(Set.of(NAMESPACE + ":sneak_place_drink"))) {
+                throw new ValidationException(itemId
+                        + ": drinks must remain consumable items with CE-owned sneak placement");
+            }
+            JsonObject expectedPlacement = new JsonObject();
+            expectedPlacement.addProperty("type", NAMESPACE + ":sneak_place_drink");
+            expectedPlacement.addProperty("furniture", itemId);
+            JsonObject ground = new JsonObject();
+            JsonObject groundRule = new JsonObject();
+            groundRule.addProperty("rotation", vesselRotation(itemId));
+            groundRule.addProperty("alignment", "center");
+            ground.add("ground", groundRule);
+            expectedPlacement.add("rules", ground);
+            if (!itemBehaviors.equals(List.of(expectedPlacement))) {
+                throw new ValidationException(itemId
+                        + ": CE drink placement target/rules drifted from the released "
+                        + "vessel placement semantics");
+            }
+            JsonObject components = item.getAsJsonObject("data").getAsJsonObject("components");
+            if (components.get("minecraft:max_stack_size").getAsInt() != 16) {
+                throw new ValidationException(itemId + ": bottle/glassware stack size must remain 16");
+            }
+            if (!expectedConsumable.equals(components.get("minecraft:consumable"))
+                    || !expectedConsumable.equals(nestedObject(item, "client_bound_data", "components")
+                            .get("minecraft:consumable"))) {
+                throw new ValidationException(itemId
+                        + ": CE must own the server active-use contract and expose the same "
+                        + "drink animation component to observer clients");
+            }
+            JsonObject data = item.getAsJsonObject("data");
+            if (!data.get("custom_name").getAsString().equals(data.get("item_name").getAsString())) {
+                throw new ValidationException(itemId
+                        + ": potion drinks require custom_name because PotionItem "
+                        + "ignores item_name when deriving its hover title");
+            }
+            JsonArray hideTooltip = data.getAsJsonArray("hide_tooltip");
+            if (hideTooltip.size() != 1
+                    || !hideTooltip.get(0).getAsString().equals("minecraft:potion_contents")) {
+                throw new ValidationException(itemId
+                        + ": drinks must hide only the vanilla potion_contents tooltip");
+            }
+            JsonElement potionContents = components.get("minecraft:potion_contents");
+            if (!potionContents.isJsonObject()
+                    || !potionContents.getAsJsonObject().get("potion").getAsString()
+                            .equals("minecraft:mundane")
+                    || !new LinkedHashSet<>(potionContents.getAsJsonObject().keySet())
+                            .equals(potionContents.getAsJsonObject().has("custom_color")
+                                    ? Set.of("potion", "custom_color") : Set.of("potion"))
+                    || (potionContents.getAsJsonObject().has("custom_color")
+                        && !potionContents.getAsJsonObject().get("custom_color").isJsonPrimitive())) {
+                throw new ValidationException(itemId
+                        + ": drink potion_contents must use the effectless mundane base "
+                        + "to prevent PotionItem water-on-dirt conversion");
+            }
+        }
+        Map<String, String[][]> vanillaRoutes = Map.ofEntries(
+                Map.entry("minecraft:potion", new String[][] {
+                        {"water", "water_bottle", "bottle-placement.water"},
+                        {"potion", "potion_bottle", "bottle-placement.potion"}}),
+                Map.entry("minecraft:honey_bottle", new String[][] {
+                        {"honey", "honey_bottle", "bottle-placement.honey"}}),
+                Map.entry("minecraft:dragon_breath", new String[][] {
+                        {"dragon_breath", "dragon_breath_bottle", "bottle-placement.dragon-breath"}}),
+                Map.entry("minecraft:experience_bottle", new String[][] {
+                        {"experience", "xp_bottle", "bottle-placement.experience"}}));
+        for (var routeEntry : vanillaRoutes.entrySet()) {
+            JsonObject placements = new JsonObject();
+            for (String[] route : routeEntry.getValue()) {
+                JsonObject placement = new JsonObject();
+                placement.addProperty("furniture", NAMESPACE + ":" + route[1]);
+                JsonObject ground = new JsonObject();
+                JsonObject groundRule = new JsonObject();
+                groundRule.addProperty("rotation", vesselRotation(route[1]));
+                groundRule.addProperty("alignment", "center");
+                ground.add("ground", groundRule);
+                placement.add("rules", ground);
+                placement.addProperty("config", route[2]);
+                placements.add(route[0], placement);
+            }
+            JsonObject behavior = new JsonObject();
+            behavior.addProperty("type", NAMESPACE + ":sneak_place_vanilla_bottle");
+            behavior.add("placements", placements);
+            JsonObject expectedExtension = new JsonObject();
+            expectedExtension.add("behavior", behavior);
+            if (!expectedExtension.equals(items.getAsJsonObject(routeEntry.getKey()))) {
+                throw new ValidationException(routeEntry.getKey()
+                        + ": CE vanilla bottle placement routing drifted");
+            }
+        }
+        Set<String> publicVesselIds = new LinkedHashSet<>();
+        for (String vesselId : EXPECTED_ROTATION_16_VESSELS) {
+            publicVesselIds.add(NAMESPACE + ":" + vesselId);
+        }
+        publicVesselIds.add(NAMESPACE + ":shaker");
+        for (String itemId : publicVesselIds) {
+            if (!items.has(itemId)) continue;
+            JsonObject item = items.getAsJsonObject(itemId);
+            List<JsonElement> placementBehaviors = new ArrayList<>();
+            for (JsonElement behavior : behaviorsOf(item)) {
+                JsonObject b = behavior.getAsJsonObject();
+                if (b.has("furniture") && b.get("furniture").getAsString().equals(itemId)) {
+                    placementBehaviors.add(behavior);
+                }
+            }
+            JsonObject expectedPlacement = new JsonObject();
+            expectedPlacement.addProperty("type", NAMESPACE + ":sneak_place_drink");
+            expectedPlacement.addProperty("furniture", itemId);
+            JsonObject ground = new JsonObject();
+            JsonObject groundRule = new JsonObject();
+            groundRule.addProperty("rotation", vesselRotation(itemId));
+            groundRule.addProperty("alignment", "center");
+            ground.add("ground", groundRule);
+            expectedPlacement.add("rules", ground);
+            if (!placementBehaviors.equals(List.of(expectedPlacement))) {
+                throw new ValidationException(itemId
+                        + ": portable vessels must delegate sneak placement through "
+                        + "the generic native-CE furniture adapter");
+            }
+        }
+        for (String itemId : EFFECTLESS_DRINKS) {
+            String replacement = items.getAsJsonObject(itemId).getAsJsonObject("settings")
+                    .get("consume_replacement").getAsString();
+            if (!replacement.equals(NAMESPACE + ":empty_bottle")) {
+                throw new ValidationException(itemId
+                        + ": effectless bottle drinks must return empty_bottle after consumption");
+            }
+        }
+        Set<String> cocktailIds = new LinkedHashSet<>();
+        for (String[] row : tsvRows(catalogs.resolve("shaker.tsv"))) cocktailIds.add(row[1]);
+        cocktailIds.add(NAMESPACE + ":mystery_cocktail");
+        cocktailIds.add(NAMESPACE + ":signature_cocktail");
+        for (String itemId : drinkIds) {
+            String replacement = items.getAsJsonObject(itemId).getAsJsonObject("settings")
+                    .get("consume_replacement").getAsString();
+            String expected = cocktailIds.contains(itemId)
+                    ? NAMESPACE + ":empty_glassware" : NAMESPACE + ":empty_bottle";
+            if (!replacement.equals(expected)) {
+                throw new ValidationException(itemId + ": consume_replacement must be "
+                        + expected + ", got " + replacement);
+            }
+        }
+        JsonObject emptyGlassware = items.getAsJsonObject(NAMESPACE + ":empty_glassware");
+        if (nestedObject(emptyGlassware, "settings").has("consume_replacement")) {
+            throw new ValidationException(
+                    "empty_glassware must not return itself as a consume replacement");
+        }
+        for (String itemId : items.keySet()) {
+            if (!itemId.endsWith("_bucket")) continue;
+            JsonObject item = items.getAsJsonObject(itemId);
+            JsonObject settings = item.getAsJsonObject("settings");
+            if (!item.get("material").getAsString().equals("milk_bucket")
+                    || item.getAsJsonObject("data").getAsJsonObject("components")
+                            .get("minecraft:max_stack_size").getAsInt() != 16
+                    || !settings.get("consume_replacement").getAsString().equals("minecraft:bucket")
+                    || !settings.get("craft_remainder").getAsString().equals("minecraft:bucket")) {
+                throw new ValidationException(itemId
+                        + ": juice buckets must remain stackable drinkable items");
+            }
+        }
+        for (String grapeId : List.of("grape", "ice_grape", "gold_grape", "green_grape")) {
+            JsonObject grape = items.getAsJsonObject(NAMESPACE + ":" + grapeId);
+            JsonObject expectedFood = new JsonObject();
+            expectedFood.addProperty("nutrition", 2);
+            expectedFood.addProperty("saturation", 2.0);
+            expectedFood.addProperty("can_always_eat", true);
+            JsonObject expectedConsumableEat = new JsonObject();
+            expectedConsumableEat.addProperty("consume_seconds", 1.6);
+            expectedConsumableEat.addProperty("animation", "eat");
+            if (!grape.get("material").getAsString().equals("paper")
+                    || !expectedFood.equals(grape.getAsJsonObject("data").get("food"))
+                    || !expectedConsumableEat.equals(grape.getAsJsonObject("data")
+                            .getAsJsonObject("components").get("minecraft:consumable"))
+                    || !expectedConsumableEat.equals(nestedObject(grape, "client_bound_data", "components")
+                            .get("minecraft:consumable"))) {
+                throw new ValidationException(grapeId
+                        + ": grapes must stay non-placeable plain food");
+            }
+        }
+        Set<String> placeableMaterials = Set.of("sweet_berries", "glow_berries", "cocoa_beans",
+                "wheat_seeds", "melon_seeds", "pumpkin_seeds", "beetroot_seeds",
+                "torchflower_seeds", "pitcher_pod", "nether_wart", "bamboo", "sugar_cane",
+                "kelp", "sea_pickle", "redstone", "string", "carrot", "potato", "chorus_fruit");
+        for (var itemEntry : items.entrySet()) {
+            JsonObject item = itemEntry.getValue().getAsJsonObject();
+            if (item.has("material") && placeableMaterials.contains(item.get("material").getAsString())) {
+                throw new ValidationException(itemEntry.getKey() + ": base material "
+                        + item.get("material").getAsString()
+                        + " leaks the vanilla block-placement path");
+            }
+        }
+        JsonObject molotov = items.getAsJsonObject(NAMESPACE + ":molotov");
+        JsonObject molotovComponents = molotov.getAsJsonObject("data").getAsJsonObject("components");
+        JsonObject expectedMolotovConsumable = new JsonObject();
+        expectedMolotovConsumable.addProperty("consume_seconds", 3600.0);
+        expectedMolotovConsumable.addProperty("animation", "trident");
+        expectedMolotovConsumable.addProperty("has_consume_particles", false);
+        if (!molotov.get("material").getAsString().equals("paper")
+                || molotovComponents.get("minecraft:max_stack_size").getAsInt() != 16
+                || !expectedMolotovConsumable.equals(molotovComponents.get("minecraft:consumable"))
+                || !expectedMolotovConsumable.equals(nestedObject(molotov, "client_bound_data", "components")
+                        .get("minecraft:consumable"))) {
+            throw new ValidationException(
+                    "Molotov must retain its 72,000-tick trident charge instead of instant splash-potion use");
+        }
+        JsonObject molotovModel = molotov.getAsJsonObject("model");
+        if (!molotovModel.get("property").getAsString().equals("minecraft:using_item")
+                || !molotovModel.getAsJsonObject("on_true").get("path").getAsString()
+                        .equals(NAMESPACE + ":item/molotov_charging")) {
+            throw new ValidationException(
+                    "Molotov must swap to the charging display model while using_item is true");
+        }
+        if (assetJson(NAMESPACE + ":item/molotov_charging", "models") == null) {
+            throw new ValidationException("Missing generated molotov charging display model");
+        }
+        JsonObject shakerItem = items.getAsJsonObject(NAMESPACE + ":shaker");
+        JsonObject shakerComponents = shakerItem.getAsJsonObject("data").getAsJsonObject("components");
+        JsonObject expectedShakerConsumable = new JsonObject();
+        expectedShakerConsumable.addProperty("consume_seconds", 3600.0);
+        expectedShakerConsumable.addProperty("animation", "none");
+        expectedShakerConsumable.addProperty("has_consume_particles", false);
+        if (!shakerItem.get("material").getAsString().equals("paper")
+                || shakerComponents.get("minecraft:max_stack_size").getAsInt() != 1
+                || !expectedShakerConsumable.equals(shakerComponents.get("minecraft:consumable"))
+                || !expectedShakerConsumable.equals(nestedObject(shakerItem, "client_bound_data", "components")
+                        .get("minecraft:consumable"))) {
+            throw new ValidationException(
+                    "Shaker must retain active-use timing for its CE-native model animation");
+        }
+        JsonObject shakerModel = shakerItem.getAsJsonObject("model");
+        if (!shakerModel.get("type").getAsString().equals("minecraft:select")
+                || !shakerModel.get("property").getAsString().equals("display_context")) {
+            throw new ValidationException("Shaker must use the 2D icon only in GUI/FIXED display contexts");
+        }
+        JsonObject iconCase = shakerModel.getAsJsonArray("cases").get(0).getAsJsonObject();
+        JsonArray iconWhen = new JsonArray();
+        iconWhen.add("gui");
+        iconWhen.add("fixed");
+        JsonObject iconModel = new JsonObject();
+        iconModel.addProperty("type", "minecraft:model");
+        iconModel.addProperty("path", NAMESPACE + ":item/shaker");
+        JsonObject expectedIconCase = new JsonObject();
+        expectedIconCase.add("when", iconWhen);
+        expectedIconCase.add("model", iconModel);
+        if (shakerModel.getAsJsonArray("cases").size() != 1 || !expectedIconCase.equals(iconCase)) {
+            throw new ValidationException("Shaker must use the 2D icon only in GUI/FIXED display contexts");
+        }
+        JsonObject useCondition = shakerModel.getAsJsonObject("fallback");
+        if (!useCondition.get("type").getAsString().equals("minecraft:condition")
+                || !useCondition.get("property").getAsString().equals("minecraft:using_item")) {
+            throw new ValidationException("Shaker held motion must use 26.2 item-model transformations");
+        }
+        JsonObject offFalse = new JsonObject();
+        offFalse.addProperty("type", "minecraft:model");
+        offFalse.addProperty("path", NAMESPACE + ":item/shaker_3d");
+        JsonObject expectedUseModel = new JsonObject();
+        expectedUseModel.addProperty("type", "minecraft:select");
+        expectedUseModel.addProperty("property", "display_context");
+        JsonArray useCases = new JsonArray();
+        JsonObject firstPerson = new JsonObject();
+        JsonArray fpWhen = new JsonArray();
+        fpWhen.add("firstperson_lefthand");
+        fpWhen.add("firstperson_righthand");
+        firstPerson.add("when", fpWhen);
+        firstPerson.add("model", expectedShakerUseCycle(true));
+        useCases.add(firstPerson);
+        JsonObject thirdPerson = new JsonObject();
+        JsonArray tpWhen = new JsonArray();
+        tpWhen.add("thirdperson_lefthand");
+        tpWhen.add("thirdperson_righthand");
+        thirdPerson.add("when", tpWhen);
+        thirdPerson.add("model", expectedShakerUseCycle(false));
+        useCases.add(thirdPerson);
+        expectedUseModel.add("cases", useCases);
+        JsonObject fallbackModel = new JsonObject();
+        fallbackModel.addProperty("type", "minecraft:model");
+        fallbackModel.addProperty("path", NAMESPACE + ":item/shaker_3d");
+        expectedUseModel.add("fallback", fallbackModel);
+        if (!offFalse.equals(useCondition.get("on_false"))
+                || !expectedUseModel.equals(useCondition.get("on_true"))) {
+            throw new ValidationException("Shaker held motion must use 26.2 item-model transformations");
+        }
+        for (int index = 0; index < SHAKER_USE_FRAMES; index++) {
+            String frame = String.format("%02d", index);
+            if (assetJson(NAMESPACE + ":item/shaker_shaking/frame_" + frame, "models") != null) {
+                throw new ValidationException("Shaker must not generate legacy per-frame model files");
+            }
+        }
+        JsonObject barrel = furniture.getAsJsonObject(NAMESPACE + ":barrel");
+        JsonObject barrelVariants = barrel.getAsJsonObject("variants");
+        if (!barrelVariants.keySet().equals(Set.of("ground", "ground_closed"))) {
+            throw new ValidationException(
+                    "The source barrel must place open through CE's native ground variant");
+        }
+        JsonObject expectedBarrelHitbox = new JsonObject();
+        expectedBarrelHitbox.addProperty("type", "happy_ghast");
+        expectedBarrelHitbox.addProperty("position", "0,0,0");
+        expectedBarrelHitbox.addProperty("scale", 0.75);
+        expectedBarrelHitbox.addProperty("hard_collision", true);
+        expectedBarrelHitbox.addProperty("can_use_item_on", true);
+        expectedBarrelHitbox.addProperty("can_be_hit_by_projectile", true);
+        expectedBarrelHitbox.addProperty("blocks_building", true);
+        JsonArray barrelHitboxList = new JsonArray();
+        barrelHitboxList.add(expectedBarrelHitbox);
+        for (var variantEntry : barrelVariants.entrySet()) {
+            if (!barrelHitboxList.equals(variantEntry.getValue().getAsJsonObject()
+                    .getAsJsonArray("hitboxes"))) {
+                throw new ValidationException("The barrel must use one CE happy-ghast collider "
+                        + "with the exact 3x3x3 footprint");
+            }
+        }
+        JsonObject closedBarrel = barrelVariants.getAsJsonObject("ground_closed");
+        JsonObject openBarrel = barrelVariants.getAsJsonObject("ground");
+        JsonElement closedElement = closedBarrel.getAsJsonArray("elements").get(0);
+        JsonElement openBody = openBarrel.getAsJsonArray("elements").get(0);
+        JsonElement openLid = openBarrel.getAsJsonArray("elements").get(1);
+        List<String> barrelModels = List.of(
+                renderItems.getAsJsonObject(closedElement.getAsJsonObject().get("item").getAsString())
+                        .getAsJsonObject("model").get("path").getAsString(),
+                renderItems.getAsJsonObject(openBody.getAsJsonObject().get("item").getAsString())
+                        .getAsJsonObject("model").get("path").getAsString(),
+                renderItems.getAsJsonObject(openLid.getAsJsonObject().get("item").getAsString())
+                        .getAsJsonObject("model").get("path").getAsString());
+        if (!barrelModels.equals(List.of(NAMESPACE + ":furniture/barrel_closed",
+                NAMESPACE + ":furniture/barrel_body", NAMESPACE + ":furniture/barrel_open_lid"))) {
+            throw new ValidationException("Barrel must use the exact source entity body/lid geometry");
+        }
+        List<String> barrelTransforms = List.of(
+                closedElement.getAsJsonObject().get("translation").getAsString(),
+                openBody.getAsJsonObject().get("translation").getAsString(),
+                openLid.getAsJsonObject().get("translation").getAsString(),
+                openLid.getAsJsonObject().get("rotation").getAsString());
+        if (!barrelTransforms.equals(List.of("0,1.5,0", "0,1.5,0", "0,3,0.5", "72.5,0,0"))) {
+            throw new ValidationException("Barrel body/lid pivot no longer matches BarrelModel");
+        }
+        JsonObject stool = furniture.getAsJsonObject(NAMESPACE + ":white_bar_stool")
+                .getAsJsonObject("variants").getAsJsonObject("ground");
+        JsonObject stoolHitbox = stool.getAsJsonArray("hitboxes").get(0).getAsJsonObject();
+        if (stoolHitbox.get("height").getAsDouble() != 1.3125) {
+            throw new ValidationException("Bar-stool hitbox must retain the Forge VoxelShape height");
+        }
+        JsonArray expectedSeats = new JsonArray();
+        expectedSeats.add("0,0.3375,0 0");
+        if (!expectedSeats.equals(stoolHitbox.getAsJsonArray("seats"))) {
+            throw new ValidationException("Bar-stool seat must rest on the 15/16 cushion, not float above it");
+        }
+        String stoolRenderId = stool.getAsJsonArray("elements").get(0).getAsJsonObject()
+                .get("item").getAsString();
+        if (!renderItems.getAsJsonObject(stoolRenderId).getAsJsonObject("model").get("path")
+                .getAsString().equals(NAMESPACE + ":block/deco/bar_stool/white")) {
+            throw new ValidationException("Bar-stool furniture must keep the static source pedestal model");
+        }
+        int stoolBodyHelpers = 0;
+        for (String renderId : renderItems.keySet()) {
+            if (renderId.startsWith(NAMESPACE + ":_render/bar_stool_body/")) stoolBodyHelpers++;
+        }
+        if (stoolBodyHelpers != 16) {
+            throw new ValidationException("Every source dye color needs a dynamic bar-stool body model");
+        }
+        JsonObject stoolBodyModel = assetJson(NAMESPACE + ":furniture/bar_stool_body_base", "models");
+        if (stoolBodyModel == null || stoolBodyModel.getAsJsonArray("elements").size() != 4) {
+            throw new ValidationException("Bar-stool seat/back/arms must remain a four-cuboid dynamic body");
+        }
+        JsonObject shakerFurniture = furniture.getAsJsonObject(NAMESPACE + ":shaker")
+                .getAsJsonObject("variants").getAsJsonObject("ground");
+        JsonObject shakerAnchor = shakerFurniture.getAsJsonArray("elements").get(0).getAsJsonObject();
+        if (!renderItems.getAsJsonObject(shakerAnchor.get("item").getAsString())
+                .getAsJsonObject("model").get("path").getAsString()
+                .equals(NAMESPACE + ":block/mixology/shaker")) {
+            throw new ValidationException("Shaker CE anchor must remain the invisible source block model");
+        }
+        if (shakerAnchor.has("position")) {
+            throw new ValidationException("Shaker anchor must not expand culling bounds to hide its source model");
+        }
+        for (String part : List.of("base", "lid")) {
+            JsonObject helper = renderItems.getAsJsonObject(NAMESPACE + ":_render/shaker_" + part);
+            String expectedPath = part.equals("base") ? NAMESPACE + ":furniture/shaker_base"
+                    : NAMESPACE + ":furniture/shaker_lid";
+            if (!helper.getAsJsonObject("model").get("path").getAsString().equals(expectedPath)) {
+                throw new ValidationException("Animated shaker body/lid helper items are incomplete");
+            }
+        }
+        JsonObject shakerBase = assetJson(NAMESPACE + ":furniture/shaker_base", "models");
+        JsonObject shakerLid = assetJson(NAMESPACE + ":furniture/shaker_lid", "models");
+        if (shakerBase == null || shakerBase.getAsJsonArray("elements").size() != 2
+                || shakerLid == null || shakerLid.getAsJsonArray("elements").size() != 3) {
+            throw new ValidationException(
+                    "ShakerModel must remain split as 2 root + 3 animated lid cuboids");
+        }
+        JsonObject shakerItemModel = assetJson(NAMESPACE + ":item/shaker", "models");
+        JsonObject expectedShakerItemModel = new JsonObject();
+        expectedShakerItemModel.addProperty("parent", "minecraft:item/generated");
+        JsonObject textures = new JsonObject();
+        textures.addProperty("layer0", NAMESPACE + ":item/shaker");
+        expectedShakerItemModel.add("textures", textures);
+        if (!expectedShakerItemModel.equals(shakerItemModel)) {
+            throw new ValidationException(
+                    "Shaker inventory model must remain vanilla-compatible instead of using Forge loaders");
+        }
+    }
+
+
+    private static JsonObject nestedObject(JsonObject object, String... keys) {
+        JsonObject current = object;
+        for (String key : keys) {
+            if (current == null || !current.has(key) || current.get(key).isJsonNull()) return new JsonObject();
+            if (!current.get(key).isJsonObject()) return new JsonObject();
+            current = current.getAsJsonObject(key);
+        }
+        return current == null ? new JsonObject() : current;
+    }
+
+    private static List<JsonElement> behaviorsOf(JsonObject item) {
+        if (item.has("behaviors")) {
+            List<JsonElement> result = new ArrayList<>();
+            for (JsonElement raw : item.getAsJsonArray("behaviors")) result.add(raw);
+            return result;
+        }
+        if (item.has("behavior")) return List.of(item.get("behavior"));
+        return List.of();
+    }
+
+    private static List<String[]> tsvRows(Path path) throws IOException {
+        List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+        if (lines.isEmpty()) {
+            throw new ValidationException(path.getFileName() + " is empty");
+        }
+        int width = lines.get(0).split("\t", -1).length;
+        List<String[]> rows = new ArrayList<>();
+        for (int i = 1; i < lines.size(); i++) {
+            String line = lines.get(i);
+            if (line.isEmpty()) continue;
+            String[] row = line.split("\t", -1);
+            if (row.length != width) {
+                throw new ValidationException(path.getFileName() + " contains a malformed row");
+            }
+            rows.add(row);
+        }
+        return rows;
     }
 
     private static boolean hasNonNull(JsonObject object, String key) {
