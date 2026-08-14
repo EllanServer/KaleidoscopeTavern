@@ -2536,8 +2536,44 @@ public final class PackConfigRules {
         }
         JsonObject range = new JsonObject();
         range.addProperty("type", "minecraft:range_dispatch");
-        range.addProperty("property", "use_cycle");
-        range.addProperty("source", Math.round(SHAKER_USE_PERIOD_TICKS * 1e6) / 1e6);
+        range.addProperty("property", "minecraft:use_cycle");
+        range.addProperty("period", Math.round(SHAKER_USE_PERIOD_TICKS * 1e6) / 1e6);
+        range.addProperty("scale", 1.0);
+        range.add("entries", entries);
+        JsonObject fallback = entries.get(0).getAsJsonObject().getAsJsonObject("model").deepCopy();
+        range.add("fallback", fallback);
+        return range;
+    }
+
+    /**
+     * Third-person: a purely client-driven use_cycle shake at the source
+     * SHAKING tempo (period 2π/1.5 ticks). Every frame is
+     * R_X(-45°·sin(1.5·t))·R_Z(-9°) — the source mod's right-arm swing
+     * expressed as the shaker's motion in hand; the bow arm base stays
+     * forward and no server swing loop is needed.
+     */
+    private static JsonObject expectedShakerUseCycleTP() {
+        JsonArray entries = new JsonArray();
+        for (int index = 0; index < SHAKER_USE_FRAMES; index++) {
+            double cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES;
+            double angle = -45 * Math.sin(1.5 * cycle);
+            double[] u = shakerMul(shakerRotX(angle), shakerRotZ(-9));
+            JsonObject entry = new JsonObject();
+            entry.addProperty("threshold", Math.round(cycle * 1e6) / 1e6);
+            JsonObject model = new JsonObject();
+            model.addProperty("type", "minecraft:model");
+            model.addProperty("path", NAMESPACE + ":item/shaker_3d");
+            JsonArray array = new JsonArray();
+            for (double v : u) array.add(Math.round(v * 1e8) / 1e8);
+            model.add("transformation", array);
+            entry.add("model", model);
+            entries.add(entry);
+        }
+        JsonObject range = new JsonObject();
+        range.addProperty("type", "minecraft:range_dispatch");
+        range.addProperty("property", "minecraft:use_cycle");
+        range.addProperty("period", Math.round(SHAKER_USE_PERIOD_TICKS * 1e6) / 1e6);
+        range.addProperty("scale", 1.0);
         range.add("entries", entries);
         JsonObject fallback = entries.get(0).getAsJsonObject().getAsJsonObject("model").deepCopy();
         range.add("fallback", fallback);
@@ -2901,19 +2937,16 @@ public final class PackConfigRules {
         expectedShakerConsumable.addProperty("consume_seconds", 3600.0);
         expectedShakerConsumable.addProperty("animation", "bow");
         expectedShakerConsumable.addProperty("has_consume_particles", false);
-        JsonObject expectedShakerSwing = new JsonObject();
-        expectedShakerSwing.addProperty("type", "whack");
-        expectedShakerSwing.addProperty("duration", 4);
         if (!shakerItem.get("material").getAsString().equals("paper")
                 || shakerComponents.get("minecraft:max_stack_size").getAsInt() != 1
                 || !expectedShakerConsumable.equals(shakerComponents.get("minecraft:consumable"))
                 || !expectedShakerConsumable.equals(nestedObject(shakerItem, "client_bound_data", "components")
                         .get("minecraft:consumable"))
-                || !expectedShakerSwing.equals(shakerComponents.get("minecraft:swing_animation"))
-                || !expectedShakerSwing.equals(nestedObject(shakerItem, "client_bound_data", "components")
-                        .get("minecraft:swing_animation"))) {
+                || shakerComponents.has("minecraft:swing_animation")
+                || nestedObject(shakerItem, "client_bound_data", "components")
+                        .has("minecraft:swing_animation")) {
             throw new ValidationException(
-                    "Shaker must retain active-use timing, its v0.0.1-equivalent first-person use_cycle, the bow forward arm base and the WHACK wave loop at the source SHAKING tempo");
+                    "Shaker must retain active-use timing, its v0.0.1-equivalent first-person use_cycle, the bow forward arm base and a purely client-driven use_cycle shake (no server swing loop)");
         }
         JsonObject shakerModel = shakerItem.getAsJsonObject("model");
         if (!shakerModel.get("type").getAsString().equals("minecraft:select")
@@ -2965,7 +2998,7 @@ public final class PackConfigRules {
         tpWhen.add("thirdperson_lefthand");
         tpWhen.add("thirdperson_righthand");
         thirdPerson.add("when", tpWhen);
-        thirdPerson.add("model", fallbackModel.deepCopy());
+        thirdPerson.add("model", expectedShakerUseCycleTP());
         useCases.add(thirdPerson);
         expectedUseModel.add("cases", useCases);
         expectedUseModel.add("fallback", fallbackModel);

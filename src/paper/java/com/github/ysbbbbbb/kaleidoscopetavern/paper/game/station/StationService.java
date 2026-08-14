@@ -498,13 +498,10 @@ public final class StationService implements Listener {
             }
             int ticks = use.ticks();
             shakerVisuals.updateMix(player, ticks);
-            // animation "bow" holds both arms forward at -90° (the source
-            // SHAKING direction); the WHACK swing_animation adds a 4-tick
-            // raise-and-return every 4 ticks, so the arm waves between -90°
-            // and -165° at the source SHAKING tempo (period 2π/1.5 ticks).
-            if (ticks % 4 == 0) {
-                player.swingHand(use.hand());
-            }
+            // The third-person shake is fully client-driven: the item model's
+            // use_cycle animation (source 2π/1.5 ticks) swings the shaker in
+            // hand at the source SHAKING tempo while the bow arm base stays
+            // forward — no server swing packets, no vanilla WHACK sweep.
             if (ShakerSemantics.playsShakeSound(ticks)) {
                 float volume = 0.75F + ThreadLocalRandom.current().nextFloat() * 0.2F;
                 float pitch = 0.8F + ThreadLocalRandom.current().nextFloat() * 0.2F;
