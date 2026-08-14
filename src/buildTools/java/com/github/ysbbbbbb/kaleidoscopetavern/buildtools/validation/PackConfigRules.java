@@ -2813,7 +2813,7 @@ public final class PackConfigRules {
         expectedShakerConsumable.addProperty("animation", "spear");
         expectedShakerConsumable.addProperty("has_consume_particles", false);
         JsonObject expectedShakerSwing = new JsonObject();
-        expectedShakerSwing.addProperty("type", "stab");
+        expectedShakerSwing.addProperty("type", "whack");
         expectedShakerSwing.addProperty("duration", 4);
         if (!shakerItem.get("material").getAsString().equals("paper")
                 || shakerComponents.get("minecraft:max_stack_size").getAsInt() != 1

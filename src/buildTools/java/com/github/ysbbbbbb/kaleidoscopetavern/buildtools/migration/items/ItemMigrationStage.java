@@ -132,7 +132,7 @@ public final class ItemMigrationStage {
             }
             if (id.equals("shaker")) { components(data).addProperty("minecraft:max_stack_size",1);
                 configureConsumable(config,obj("consume_seconds",3600.0,"animation","spear","has_consume_particles",false));
-                JsonObject swing=obj("type","stab","duration",4); components(data).add("minecraft:swing_animation",swing.deepCopy());
+                JsonObject swing=obj("type","whack","duration",4); components(data).add("minecraft:swing_animation",swing.deepCopy());
                 JsonObject cbd2=config.has("client_bound_data")?config.getAsJsonObject("client_bound_data"):new JsonObject(); config.add("client_bound_data",cbd2);
                 JsonObject c2=cbd2.has("components")?cbd2.getAsJsonObject("components"):new JsonObject(); cbd2.add("components",c2); c2.add("minecraft:swing_animation",swing);
                 config.add("model", shakerModel()); }

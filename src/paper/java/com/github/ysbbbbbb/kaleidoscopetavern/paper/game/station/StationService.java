@@ -498,9 +498,10 @@ public final class StationService implements Listener {
             }
             int ticks = use.ticks();
             shakerVisuals.updateMix(player, ticks);
-            // The shaker's STAB swing_animation makes the vanilla arm thrust
-            // each swing; every 4 ticks (duration 4) keeps a continuous
-            // 5 Hz wave matching the source SHAKING frequency (2π/1.5 ticks).
+            // The shaker's WHACK swing_animation makes the vanilla arm sweep
+            // forward and recover each swing; every 4 ticks (duration 4)
+            // keeps a continuous 5 Hz up-down wave in front of the body,
+            // matching the source SHAKING frequency (2π/1.5 ticks).
             if (ticks % 4 == 0) {
                 player.swingHand(use.hand());
             }
