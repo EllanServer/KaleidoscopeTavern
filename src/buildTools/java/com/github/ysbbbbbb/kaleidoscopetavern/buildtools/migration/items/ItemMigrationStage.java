@@ -135,6 +135,13 @@ public final class ItemMigrationStage {
             }
             if (id.equals("shaker")) { components(data).addProperty("minecraft:max_stack_size",1);
                 configureConsumable(config,obj("consume_seconds",3600.0,"animation","spyglass","has_consume_particles",false));
+                JsonObject swing=obj("type","whack","duration",4);
+                components(data).add("minecraft:swing_animation",swing.deepCopy());
+                JsonObject cbd=config.has("client_bound_data")?config.getAsJsonObject("client_bound_data"):new JsonObject();
+                config.add("client_bound_data",cbd);
+                JsonObject cbdComponents=cbd.has("components")?cbd.getAsJsonObject("components"):new JsonObject();
+                cbd.add("components",cbdComponents);
+                cbdComponents.add("minecraft:swing_animation",swing.deepCopy());
                 config.add("model", shakerModel()); }
             if (id.equals("molotov")) { configureConsumable(config,obj("consume_seconds",3600.0,"animation","trident","has_consume_particles",false));
                 config.add("model",obj("type","minecraft:condition","property","minecraft:using_item","on_true",model("molotov_charging"),"on_false",model("molotov"))); }
@@ -230,22 +237,10 @@ public final class ItemMigrationStage {
         var s=new ArrayList<>(List.of("# 首次启动时复制到 plugins/KaleidoscopeTavern/recipes/shaker.yml。","# 数据目录中的副本不会被插件升级覆盖；修改后执行 /kt reload。","# 配方按书写顺序匹配；每份配方可使用 1 至 3 个 selector。","config-version: 1","","# 摇动时间进入特殊区间时使用的产物；signature 也用于普通配方未命中时。","special-results:","  mystery: "+yaml(NAMESPACE+":mystery_cocktail"),"  signature: "+yaml(NAMESPACE+":signature_cocktail"),"","recipes:"));for(var r:shaker){s.add("  - id: "+yaml(r.get(0)));s.add("    result: "+yaml(r.get(1)));s.add("    ingredients:");for(String x:r.get(2).toString().split(";"))s.add("      - "+yaml(x));} writeLines(outputRoot.resolve("src/paper/resources/recipes/barrel.yml"),b);writeLines(outputRoot.resolve("src/paper/resources/recipes/shaker.yml"),s); }
     private static String yaml(Object v){return GSON.toJson(String.valueOf(v));}
 
-    /** v0.0.1 shaker item model: GUI/FIXED uses the 2D icon. During use the
-     * native spyglass consumable pose holds the raised arm (vanilla -110°, the
-     * source SHAKING centre is -112.5°); the shaker itself waves in the hand
-     * through CraftEngine's {@code source}-keyed 16-frame use_cycle. First
-     * person keeps the exact v0.0.1 swing; third person mirrors the source
-     * SHAKING delta per hand (right -45°·sin/-9°, left +45°·sin/+9°). */
-    private JsonObject shakerModel(){return obj("type","minecraft:select","property","display_context","cases",arr(obj("when",arr("gui","fixed"),"model",model("shaker"))),"fallback",obj("type","minecraft:condition","property","minecraft:using_item","on_true",obj("type","minecraft:select","property","display_context","cases",arr(obj("when",arr("firstperson_lefthand","firstperson_righthand"),"model",shakerUseCycle(true,true)),obj("when",arr("thirdperson_righthand"),"model",shakerUseCycle(false,true)),obj("when",arr("thirdperson_lefthand"),"model",shakerUseCycle(false,false))),"fallback",model("shaker_3d")),"on_false",model("shaker_3d")));}
-    /** First person is the exact v0.0.1 16-frame use_cycle; third person
-     * rotates the held shaker in the spyglass-raised hand. {@code rightHand}
-     * selects the source SHAKING branch: right ΔxRot = -45°·sin(1.5t)/zRot
-     * -9°, left ΔxRot = +45°·sin(1.5t)/zRot +9°. */
-    private JsonObject shakerUseCycle(boolean firstPerson, boolean rightHand){JsonArray entries=new JsonArray();double period=Math.PI*2/1.5;for(int i=0;i<16;i++){double cycle=period*i/16,wave=Math.sin(-cycle*1.5);JsonObject frameModel=obj("type","minecraft:model","path",NAMESPACE+":item/shaker_3d");frameModel.add("transformation",firstPerson?shakerTransform(-15,-wave*.15):shakerSwingTransform(cycle,rightHand));entries.add(obj("threshold",round(cycle,6),"model",frameModel));}return obj("type","minecraft:range_dispatch","property","use_cycle","source",round(period,6),"entries",entries,"fallback",entries.get(0).getAsJsonObject().get("model").deepCopy());}
-    private static JsonArray shakerTransform(double rotationDeg,double translationY){double a=Math.toRadians(rotationDeg),c=round(Math.cos(a),8),s=round(Math.sin(a),8);return arr(1.0,0.0,0.0,0.0,0.0,c,-s,round(translationY,8),0.0,s,c,0.0,0.0,0.0,0.0,1.0);}
-    private static JsonArray shakerSwingTransform(double cycle, boolean rightHand){int direction=rightHand?1:-1;double xDegrees=direction*-45*Math.sin(1.5*cycle);double zDegrees=direction*-9;return composeRotXZ(xDegrees,zDegrees);}
-    private static JsonArray composeRotXZ(double xDegrees,double zDegrees){double x=Math.toRadians(xDegrees),cx=round(Math.cos(x),8),sx=round(Math.sin(x),8);double z=Math.toRadians(zDegrees),cz=round(Math.cos(z),8),sz=round(Math.sin(z),8);return arr(cz,-sz,0.0,0.0,round(cx*sz,8),round(cx*cz,8),-sx,0.0,round(sx*sz,8),round(sx*cz,8),cx,0.0,0.0,0.0,0.0,1.0);}
-    private static double round(double x,int n){double p=Math.pow(10,n);return Math.rint(x*p)/p;}
+    /** Shaker held views keep the authored static 3D cup. The mixing motion is
+     * the arm: native spyglass pose raises it to the telescope position and
+     * repeated WHACK swings wave it; the item itself does not rotate. */
+    private JsonObject shakerModel(){return obj("type","minecraft:select","property","display_context","cases",arr(obj("when",arr("gui","fixed"),"model",model("shaker"))),"fallback",model("shaker_3d"));}
 
     private void requireItemModel(String id)throws IOException {for(String base:List.of("src/generated/resources","src/main/resources"))if(Files.isRegularFile(projectRoot.resolve(base+"/assets/"+NAMESPACE+"/models/item/"+id+".json")))return;throw new FileNotFoundException("No item model for "+id);}
     private static String itemNameKey(String id,Set<String> placeable,Set<String> keys){String generic=GENERIC_NAMES.get(id);if(generic!=null){if(!keys.contains(generic))throw new IllegalArgumentException("Missing generic item-name translation "+generic);return generic;}for(String p:placeable.contains(id)?List.of("block","item"):List.of("item","block")){String key=p+"."+NAMESPACE+"."+id;if(keys.contains(key))return key;}throw new IllegalArgumentException("No item-name translation for "+NAMESPACE+":"+id);}

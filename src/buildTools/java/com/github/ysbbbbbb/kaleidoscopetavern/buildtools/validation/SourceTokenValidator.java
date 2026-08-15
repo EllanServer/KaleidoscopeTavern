@@ -524,6 +524,8 @@ public final class SourceTokenValidator {
                 "shakerVisuals.beginMix(player)",
                 "shakerVisuals.updateMix(player, ticks)",
                 "shakerVisuals.endMix(player)",
+                "player.swingHand(use.hand())",
+                "PORTABLE_SHAKER_SWING_INTERVAL_TICKS",
                 "private record PortableShakerUse(Player player, EquipmentSlot hand, int ticks)",
                 "StationInteractionFurnitureBehavior.bind(stationInteractionHandler)",
                 "StationInteractionFurnitureBehavior.unbind(stationInteractionHandler)",

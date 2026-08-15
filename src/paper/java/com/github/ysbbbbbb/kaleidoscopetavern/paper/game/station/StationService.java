@@ -88,6 +88,9 @@ public final class StationService implements Listener {
     // a bounded visual pool keeps station refresh packets cheap at high counts.
     private static final int MAX_STATION_ITEM_VISUALS = 16;
     private static final int MAX_STATION_MATERIAL_VISUALS = 4;
+    // The client renders the WHACK arm wave; the server only triggers it at
+    // the source SHAKING cadence while the spyglass use pose is active.
+    private static final int PORTABLE_SHAKER_SWING_INTERVAL_TICKS = 4;
 
     /**
      * Paper transforms plugin classes lazily when they are first resolved.
@@ -418,10 +421,10 @@ public final class StationService implements Listener {
         // The client may have predicted a short consume pose before this
         // packet listener runs, so explicitly cancel that same-hand use.
         if (items.shakerResult(shaker) != null) {
-            // Drop the consumable component so the vanilla client cannot
-            // predict a use animation for a finished shaker; legacy stacks
+            // Drop the consumable and WHACK swing components so the vanilla
+            // client cannot predict or swing a finished shaker; legacy stacks
             // created before this fix are normalized here on first use.
-            items.syncShakerConsumable(shaker);
+            items.syncShakerUseComponents(shaker);
             setHandItem(player, hand, shaker);
             EquipmentSlot activeHand = player.getActiveItemHand();
             if (player.isHandRaised() && activeHand == hand) {
@@ -512,9 +515,12 @@ public final class StationService implements Listener {
             }
             int ticks = use.ticks();
             shakerVisuals.updateMix(player, ticks);
-            // The spyglass arm pose and the mirrored per-hand use_cycle swing
-            // are entirely client-side; the server only tracks mixing time,
-            // sounds and the forced release point.
+            // The spyglass arm pose and the WHACK wave are client-rendered.
+            // The server only sends the swing trigger; the cup model stays
+            // static in the raised hand.
+            if (ticks % PORTABLE_SHAKER_SWING_INTERVAL_TICKS == 0) {
+                player.swingHand(use.hand());
+            }
             if (ShakerSemantics.playsShakeSound(ticks)) {
                 float volume = 0.75F + ThreadLocalRandom.current().nextFloat() * 0.2F;
                 float pitch = 0.8F + ThreadLocalRandom.current().nextFloat() * 0.2F;

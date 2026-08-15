@@ -5,6 +5,7 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.Effec
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.shaker.ShakerSemantics;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.Consumable;
+import io.papermc.paper.datacomponent.item.SwingAnimation;
 import io.papermc.paper.datacomponent.item.TooltipDisplay;
 import io.papermc.paper.datacomponent.item.consumable.ItemUseAnimation;
 import net.kyori.adventure.text.Component;
@@ -53,11 +54,15 @@ public final class ItemService {
             PersistentDataType.LIST.strings();
     private static final java.util.Set<String> NEUTRAL_CUSTOM_EFFECTS = java.util.Set.of(
             PREFIX + "slightly_tipsy", PREFIX + "upside_down");
-    /** Default CE shaker consumable; removed while the shaker carries a result. */
+    /** Default CE shaker use components; removed while the shaker carries a result. */
     private static final Consumable SHAKER_CONSUMABLE = Consumable.consumable()
             .consumeSeconds(3600F)
             .animation(ItemUseAnimation.SPYGLASS)
             .hasConsumeParticles(false)
+            .build();
+    private static final SwingAnimation SHAKER_SWING_ANIMATION = SwingAnimation.swingAnimation()
+            .type(SwingAnimation.Animation.WHACK)
+            .duration(4)
             .build();
     private static final Map<Integer, String> COLOR_NAMES_BY_RGB = Map.ofEntries(
             Map.entry(0x000000, "black"), Map.entry(0x0000AA, "dark_blue"),
@@ -485,17 +490,17 @@ public final class ItemService {
         putEncodedItems(data, shakerIngredientsKey, ingredients);
         putEncodedItem(data, shakerResultKey, result);
         stack.setItemMeta(meta);
-        syncShakerConsumable(stack);
+        syncShakerUseComponents(stack);
         return refreshShakerLore(stack, ingredients, result);
     }
 
     /**
-     * Keeps the CE spyglass consumable present on ordinary shakers and absent
-     * on result-bearing shakers. Removing the component stops the vanilla
-     * client from predicting a use animation for a finished shaker, which
-     * matches the Forge item's pass on right-click.
+     * Keeps the CE spyglass consumable and WHACK swing present on ordinary
+     * shakers and absent on result-bearing shakers. Removing the components
+     * stops the vanilla client from predicting a use animation for a finished
+     * shaker, which matches the Forge item's pass on right-click.
      */
-    public ItemStack syncShakerConsumable(ItemStack stack) {
+    public ItemStack syncShakerUseComponents(ItemStack stack) {
         if (stack == null || stack.isEmpty() || !PREFIX.concat("shaker").equals(id(stack))) {
             return stack;
         }
@@ -503,8 +508,12 @@ public final class ItemService {
             if (!stack.hasData(DataComponentTypes.CONSUMABLE)) {
                 stack.setData(DataComponentTypes.CONSUMABLE, SHAKER_CONSUMABLE);
             }
+            if (!stack.hasData(DataComponentTypes.SWING_ANIMATION)) {
+                stack.setData(DataComponentTypes.SWING_ANIMATION, SHAKER_SWING_ANIMATION);
+            }
         } else {
             stack.unsetData(DataComponentTypes.CONSUMABLE);
+            stack.unsetData(DataComponentTypes.SWING_ANIMATION);
         }
         return stack;
     }
