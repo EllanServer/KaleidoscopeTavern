@@ -1,0 +1,113 @@
+name: Apply barrel support orientation fix
+
+on:
+  push:
+    branches:
+      - fix/barrel-support-source-parity
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout fix branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/barrel-support-source-parity
+          fetch-depth: 0
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Mirror the asymmetric support into the CE furniture basis
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/buildTools/java/com/github/ysbbbbbb/kaleidoscopetavern/buildtools/migration/assets/AssetMigrationStage.java")
+          text = path.read_text(encoding="utf-8")
+          old = '''        // BarrelModel.open_r1 has its own -35 degree child rotation under the
+          // 75 degree open group, so its final source angle is about 40 degrees.
+          // Keep the strip in the open body's final model space. Putting it in
+          // barrel_open_lid applies the lid display's 72.5 degree rotation a
+          // second time, which makes the support nearly vertical and too tall.
+          JsonObject supportStrip = new JsonObject();
+          supportStrip.add("from", numbers(new double[] {1, 28.215627824, -1.72625203}));
+          supportStrip.add("to", numbers(new double[] {1, 30.215627824, 18.27374797}));
+          supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
+          JsonObject supportRotation = new JsonObject();
+          supportRotation.add("origin", numbers(new double[] {1, 28.215627824, -1.72625203}));
+          supportRotation.addProperty("axis", "x");
+          supportRotation.addProperty("angle", -39.998183678);
+          supportRotation.addProperty("rescale", false);
+          supportStrip.add("rotation", supportRotation);
+          '''
+          new = '''        // BarrelModel.open_r1 has its own -35 degree child rotation under the
+          // 75 degree open group, so its final source angle is about 40 degrees.
+          // CE ground-furniture zero yaw is horizontally opposite to the
+          // archived renderer's unrotated NORTH basis. The barrel body and lid
+          // hide that difference through symmetry, but this one-sided support
+          // must be mirrored around the model centre (x=8, z=8).
+          JsonObject supportStrip = new JsonObject();
+          supportStrip.add("from", numbers(new double[] {15, 28.215627824, -2.27374797}));
+          supportStrip.add("to", numbers(new double[] {15, 30.215627824, 17.72625203}));
+          supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
+          JsonObject supportRotation = new JsonObject();
+          supportRotation.add("origin", numbers(new double[] {15, 28.215627824, 17.72625203}));
+          supportRotation.addProperty("axis", "x");
+          supportRotation.addProperty("angle", 39.998183678);
+          supportRotation.addProperty("rescale", false);
+          supportStrip.add("rotation", supportRotation);
+          '''
+          if old not in text:
+              raise SystemExit("expected current support block was not found")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+
+      - name: Regenerate and validate the CraftEngine pack
+        run: ./gradlew migrateLegacyContent validatePack --stacktrace
+
+      - name: Verify the mirrored support geometry
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("src/paper/pack/resourcepack/assets/kaleidoscope_tavern/models/furniture")
+          body = json.loads((root / "barrel_body.json").read_text(encoding="utf-8"))
+          lid = json.loads((root / "barrel_open_lid.json").read_text(encoding="utf-8"))
+          assert len(body["elements"]) == 13
+          assert len(lid["elements"]) == 1
+          support = body["elements"][-1]
+          assert support["from"] == [14.99, 28.215627824, -2.27374797]
+          assert support["to"] == [15.01, 30.215627824, 17.72625203]
+          assert support["rotation"]["origin"] == [15, 28.215627824, 17.72625203]
+          assert support["rotation"]["axis"] == "x"
+          assert abs(support["rotation"]["angle"] - 39.998183678) < 1e-9
+          PY
+
+      - name: Compile and test
+        run: ./gradlew clean build --stacktrace
+
+      - name: Commit the correction and remove this one-shot workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/apply-barrel-support-orientation-fix.yml
+          git add -A
+          git commit -m "fix: mirror barrel support into furniture orientation"
+          git push origin HEAD:fix/barrel-support-source-parity
