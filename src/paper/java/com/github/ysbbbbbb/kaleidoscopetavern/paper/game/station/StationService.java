@@ -422,6 +422,11 @@ public final class StationService implements Listener {
         // The client may have predicted a short consume pose before this
         // packet listener runs, so explicitly cancel that same-hand use.
         if (items.shakerResult(shaker) != null) {
+            // Drop the consumable component so the vanilla client cannot
+            // predict a use animation for a finished shaker; legacy stacks
+            // created before this fix are normalized here on first use.
+            items.syncShakerConsumable(shaker);
+            setHandItem(player, hand, shaker);
             EquipmentSlot activeHand = player.getActiveItemHand();
             if (player.isHandRaised() && activeHand == hand) {
                 player.clearActiveItem();

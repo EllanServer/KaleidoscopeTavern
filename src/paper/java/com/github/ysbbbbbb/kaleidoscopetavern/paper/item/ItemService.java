@@ -4,7 +4,9 @@ import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.catalog.ContentCatalog.EffectSpec;
 import com.github.ysbbbbbb.kaleidoscopetavern.paper.game.shaker.ShakerSemantics;
 import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.Consumable;
 import io.papermc.paper.datacomponent.item.TooltipDisplay;
+import io.papermc.paper.datacomponent.item.consumable.ItemUseAnimation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -51,6 +53,12 @@ public final class ItemService {
             PersistentDataType.LIST.strings();
     private static final java.util.Set<String> NEUTRAL_CUSTOM_EFFECTS = java.util.Set.of(
             PREFIX + "slightly_tipsy", PREFIX + "upside_down");
+    /** Default CE shaker consumable; removed while the shaker carries a result. */
+    private static final Consumable SHAKER_CONSUMABLE = Consumable.consumable()
+            .consumeSeconds(3600F)
+            .animation(ItemUseAnimation.SPYGLASS)
+            .hasConsumeParticles(false)
+            .build();
     private static final Map<Integer, String> COLOR_NAMES_BY_RGB = Map.ofEntries(
             Map.entry(0x000000, "black"), Map.entry(0x0000AA, "dark_blue"),
             Map.entry(0x00AA00, "dark_green"), Map.entry(0x00AAAA, "dark_aqua"),
@@ -477,7 +485,28 @@ public final class ItemService {
         putEncodedItems(data, shakerIngredientsKey, ingredients);
         putEncodedItem(data, shakerResultKey, result);
         stack.setItemMeta(meta);
+        syncShakerConsumable(stack);
         return refreshShakerLore(stack, ingredients, result);
+    }
+
+    /**
+     * Keeps the CE spyglass consumable present on ordinary shakers and absent
+     * on result-bearing shakers. Removing the component stops the vanilla
+     * client from predicting a use animation for a finished shaker, which
+     * matches the Forge item's pass on right-click.
+     */
+    public ItemStack syncShakerConsumable(ItemStack stack) {
+        if (stack == null || stack.isEmpty() || !PREFIX.concat("shaker").equals(id(stack))) {
+            return stack;
+        }
+        if (shakerResult(stack) == null) {
+            if (!stack.hasData(DataComponentTypes.CONSUMABLE)) {
+                stack.setData(DataComponentTypes.CONSUMABLE, SHAKER_CONSUMABLE);
+            }
+        } else {
+            stack.unsetData(DataComponentTypes.CONSUMABLE);
+        }
+        return stack;
     }
 
     /** Mirrors ShakerItem's result/ingredient tooltip for portable state. */
