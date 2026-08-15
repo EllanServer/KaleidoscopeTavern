@@ -540,20 +540,21 @@ public final class AssetMigrationStage {
         JsonArray openElements = new JsonArray();
         openElements.add(openLid);
         // open_r1: the zero-thickness support strip connecting the body to the
-        // raised lid. The nested BarrelModel X rotations (75° and -35°) leave
-        // the strip in the same tilted plane as the lid, so it is emitted as a
-        // single x-axis rotated element around its source pivot.
+        // raised lid. It is authored in the same local space as the horizontal
+        // lid board, so the shared CE 72.5-degree entity rotation brings it to
+        // BarrelModel's final open position. Solidifying its zero-width axis
+        // keeps both faces visible from every viewing angle.
         JsonObject supportStrip = new JsonObject();
-        supportStrip.add("from", numbers(new double[] {1, 21.915700691, 1.670377649}));
-        supportStrip.add("to", numbers(new double[] {1, 23.915700691, 21.670377649}));
+        supportStrip.add("from", numbers(new double[] {1, -7.167310571, -8.372810775}));
+        supportStrip.add("to", numbers(new double[] {1, -5.167310571, 11.627189225}));
         supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
         JsonObject supportRotation = new JsonObject();
-        supportRotation.add("origin", numbers(new double[] {1, 23.915700691, 1.670377649}));
+        supportRotation.add("origin", numbers(new double[] {1, -7.167310571, 11.627189225}));
         supportRotation.addProperty("axis", "x");
-        supportRotation.addProperty("angle", -74.3891);
+        supportRotation.addProperty("angle", 33.110899989);
         supportRotation.addProperty("rescale", false);
         supportStrip.add("rotation", supportRotation);
-        openElements.add(supportStrip);
+        openElements.add(FurnitureBoxes.solidifyPlanes(supportStrip));
         openModel.add("elements", openElements);
         MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_open_lid.json"), openModel);
     }
