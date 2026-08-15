@@ -24,6 +24,10 @@
               "south",
               "west"
             ]
+          },
+          "waterlogged": {
+            "type": "boolean",
+            "default": "false"
           }
         },
         "appearances": {
@@ -311,77 +315,221 @@
           }
         },
         "variants": {
-          "connection=single,facing=north": {
+          "connection=single,facing=north,waterlogged=false": {
             "appearance": "single_north"
           },
-          "connection=single,facing=east": {
+          "connection=single,facing=north,waterlogged=true": {
+            "appearance": "single_north",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=single,facing=east,waterlogged=false": {
             "appearance": "single_east"
           },
-          "connection=single,facing=south": {
+          "connection=single,facing=east,waterlogged=true": {
+            "appearance": "single_east",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=single,facing=south,waterlogged=false": {
             "appearance": "single_south"
           },
-          "connection=single,facing=west": {
+          "connection=single,facing=south,waterlogged=true": {
+            "appearance": "single_south",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=single,facing=west,waterlogged=false": {
             "appearance": "single_west"
           },
-          "connection=left,facing=north": {
+          "connection=single,facing=west,waterlogged=true": {
+            "appearance": "single_west",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=left,facing=north,waterlogged=false": {
             "appearance": "left_north"
           },
-          "connection=left,facing=east": {
+          "connection=left,facing=north,waterlogged=true": {
+            "appearance": "left_north",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=left,facing=east,waterlogged=false": {
             "appearance": "left_east"
           },
-          "connection=left,facing=south": {
+          "connection=left,facing=east,waterlogged=true": {
+            "appearance": "left_east",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=left,facing=south,waterlogged=false": {
             "appearance": "left_south"
           },
-          "connection=left,facing=west": {
+          "connection=left,facing=south,waterlogged=true": {
+            "appearance": "left_south",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=left,facing=west,waterlogged=false": {
             "appearance": "left_west"
           },
-          "connection=left_corner,facing=north": {
+          "connection=left,facing=west,waterlogged=true": {
+            "appearance": "left_west",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=left_corner,facing=north,waterlogged=false": {
             "appearance": "left_corner_north"
           },
-          "connection=left_corner,facing=east": {
+          "connection=left_corner,facing=north,waterlogged=true": {
+            "appearance": "left_corner_north",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=left_corner,facing=east,waterlogged=false": {
             "appearance": "left_corner_east"
           },
-          "connection=left_corner,facing=south": {
+          "connection=left_corner,facing=east,waterlogged=true": {
+            "appearance": "left_corner_east",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=left_corner,facing=south,waterlogged=false": {
             "appearance": "left_corner_south"
           },
-          "connection=left_corner,facing=west": {
+          "connection=left_corner,facing=south,waterlogged=true": {
+            "appearance": "left_corner_south",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=left_corner,facing=west,waterlogged=false": {
             "appearance": "left_corner_west"
           },
-          "connection=middle,facing=north": {
+          "connection=left_corner,facing=west,waterlogged=true": {
+            "appearance": "left_corner_west",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=middle,facing=north,waterlogged=false": {
             "appearance": "middle_north"
           },
-          "connection=middle,facing=east": {
+          "connection=middle,facing=north,waterlogged=true": {
+            "appearance": "middle_north",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=middle,facing=east,waterlogged=false": {
             "appearance": "middle_east"
           },
-          "connection=middle,facing=south": {
+          "connection=middle,facing=east,waterlogged=true": {
+            "appearance": "middle_east",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=middle,facing=south,waterlogged=false": {
             "appearance": "middle_south"
           },
-          "connection=middle,facing=west": {
+          "connection=middle,facing=south,waterlogged=true": {
+            "appearance": "middle_south",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=middle,facing=west,waterlogged=false": {
             "appearance": "middle_west"
           },
-          "connection=right,facing=north": {
+          "connection=middle,facing=west,waterlogged=true": {
+            "appearance": "middle_west",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=right,facing=north,waterlogged=false": {
             "appearance": "right_north"
           },
-          "connection=right,facing=east": {
+          "connection=right,facing=north,waterlogged=true": {
+            "appearance": "right_north",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=right,facing=east,waterlogged=false": {
             "appearance": "right_east"
           },
-          "connection=right,facing=south": {
+          "connection=right,facing=east,waterlogged=true": {
+            "appearance": "right_east",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=right,facing=south,waterlogged=false": {
             "appearance": "right_south"
           },
-          "connection=right,facing=west": {
+          "connection=right,facing=south,waterlogged=true": {
+            "appearance": "right_south",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=right,facing=west,waterlogged=false": {
             "appearance": "right_west"
           },
-          "connection=right_corner,facing=north": {
+          "connection=right,facing=west,waterlogged=true": {
+            "appearance": "right_west",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=right_corner,facing=north,waterlogged=false": {
             "appearance": "right_corner_north"
           },
-          "connection=right_corner,facing=east": {
+          "connection=right_corner,facing=north,waterlogged=true": {
+            "appearance": "right_corner_north",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=right_corner,facing=east,waterlogged=false": {
             "appearance": "right_corner_east"
           },
-          "connection=right_corner,facing=south": {
+          "connection=right_corner,facing=east,waterlogged=true": {
+            "appearance": "right_corner_east",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=right_corner,facing=south,waterlogged=false": {
             "appearance": "right_corner_south"
           },
-          "connection=right_corner,facing=west": {
+          "connection=right_corner,facing=south,waterlogged=true": {
+            "appearance": "right_corner_south",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "connection=right_corner,facing=west,waterlogged=false": {
             "appearance": "right_corner_west"
+          },
+          "connection=right_corner,facing=west,waterlogged=true": {
+            "appearance": "right_corner_west",
+            "settings": {
+              "fluid_state": "water"
+            }
           }
         }
       },
@@ -402,7 +550,7 @@
           "fall": "minecraft:block.wool.fall"
         },
         "tags": [
-          "minecraft:mineable/axe"
+          "minecraft:mineable/pickaxe"
         ],
         "map_color": 27,
         "instrument": "guitar",
@@ -1018,6 +1166,10 @@
             "default": 0,
             "range": "0~3"
           },
+          "waterlogged": {
+            "type": "boolean",
+            "default": "false"
+          },
           "table_axis": {
             "type": "axis",
             "default": "x",
@@ -1100,29 +1252,77 @@
           }
         },
         "variants": {
-          "position=0,table_axis=x": {
+          "position=0,table_axis=x,waterlogged=false": {
             "appearance": "appearance_0"
           },
-          "position=1,table_axis=x": {
+          "position=0,table_axis=x,waterlogged=true": {
+            "appearance": "appearance_0",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "position=1,table_axis=x,waterlogged=false": {
             "appearance": "appearance_1"
           },
-          "position=2,table_axis=x": {
+          "position=1,table_axis=x,waterlogged=true": {
+            "appearance": "appearance_1",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "position=2,table_axis=x,waterlogged=false": {
             "appearance": "appearance_2"
           },
-          "position=3,table_axis=x": {
+          "position=2,table_axis=x,waterlogged=true": {
+            "appearance": "appearance_2",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "position=3,table_axis=x,waterlogged=false": {
             "appearance": "appearance_3"
           },
-          "position=0,table_axis=z": {
+          "position=3,table_axis=x,waterlogged=true": {
+            "appearance": "appearance_3",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "position=0,table_axis=z,waterlogged=false": {
             "appearance": "appearance_0"
           },
-          "position=1,table_axis=z": {
+          "position=0,table_axis=z,waterlogged=true": {
+            "appearance": "appearance_0",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "position=1,table_axis=z,waterlogged=false": {
             "appearance": "appearance_4"
           },
-          "position=2,table_axis=z": {
+          "position=1,table_axis=z,waterlogged=true": {
+            "appearance": "appearance_4",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "position=2,table_axis=z,waterlogged=false": {
             "appearance": "appearance_5"
           },
-          "position=3,table_axis=z": {
+          "position=2,table_axis=z,waterlogged=true": {
+            "appearance": "appearance_5",
+            "settings": {
+              "fluid_state": "water"
+            }
+          },
+          "position=3,table_axis=z,waterlogged=false": {
             "appearance": "appearance_6"
+          },
+          "position=3,table_axis=z,waterlogged=true": {
+            "appearance": "appearance_6",
+            "settings": {
+              "fluid_state": "water"
+            }
           }
         }
       },
@@ -4907,7 +5107,9 @@
           "hit": "minecraft:block.cave_vines.hit",
           "fall": "minecraft:block.cave_vines.fall"
         },
-        "tags": []
+        "tags": [
+          "minecraft:climbable"
+        ]
       },
       "behavior": {
         "type": "kaleidoscope_tavern:wild_grapevine",
@@ -5026,7 +5228,9 @@
           "hit": "minecraft:block.cave_vines.hit",
           "fall": "minecraft:block.cave_vines.fall"
         },
-        "tags": []
+        "tags": [
+          "minecraft:climbable"
+        ]
       },
       "behavior": {
         "type": "kaleidoscope_tavern:wild_grapevine",
@@ -5394,6 +5598,11 @@
         "tags": [
           "minecraft:mineable/axe"
         ],
+        "map_color": 13,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
         "item": "kaleidoscope_tavern:trellis"
       },
       "behavior": {
@@ -6048,8 +6257,14 @@
           "fall": "minecraft:block.wood.fall"
         },
         "tags": [
+          "minecraft:climbable",
           "minecraft:mineable/axe"
-        ]
+        ],
+        "map_color": 13,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20
       },
       "behavior": {
         "type": "kaleidoscope_tavern:trellis",
@@ -6665,9 +6880,12 @@
           "hit": "minecraft:block.wood.hit",
           "fall": "minecraft:block.wood.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": [],
+        "map_color": 13,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20
       },
       "behavior": {
         "type": "kaleidoscope_tavern:trellis",
@@ -7283,9 +7501,12 @@
           "hit": "minecraft:block.wood.hit",
           "fall": "minecraft:block.wood.fall"
         },
-        "tags": [
-          "minecraft:mineable/axe"
-        ]
+        "tags": [],
+        "map_color": 13,
+        "instrument": "guitar",
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20
       },
       "behavior": {
         "type": "kaleidoscope_tavern:trellis",
@@ -8183,7 +8404,7 @@
       "settings": {
         "hardness": 0.8,
         "resistance": 0.8,
-        "push_reaction": "BLOCK",
+        "push_reaction": "NORMAL",
         "is_redstone_conductor": false,
         "is_suffocating": false,
         "is_view_blocking": false,
@@ -9830,6 +10051,10 @@
         "destroy_stages": {
           "template": "internal:destroy_stages"
         },
+        "map_color": 13,
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
         "item": "kaleidoscope_tavern:cellar_cabinet"
       },
       "behaviors": [
@@ -10271,6 +10496,10 @@
         "destroy_stages": {
           "template": "internal:destroy_stages"
         },
+        "map_color": 13,
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
         "item": "kaleidoscope_tavern:tilted_rack"
       },
       "behavior": {
@@ -10632,6 +10861,10 @@
         "destroy_stages": {
           "template": "internal:destroy_stages"
         },
+        "map_color": 13,
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
         "item": "kaleidoscope_tavern:circular_rack",
         "luminance": 14
       },
@@ -11031,6 +11264,10 @@
         "destroy_stages": {
           "template": "internal:destroy_stages"
         },
+        "map_color": 13,
+        "burnable": true,
+        "burn_chance": 5,
+        "fire_spread_chance": 20,
         "item": "kaleidoscope_tavern:holder"
       },
       "behavior": {

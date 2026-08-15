@@ -121,6 +121,9 @@ public final class ItemMigrationStage {
                     "model", obj("type","minecraft:model","path",NAMESPACE + ":item/" + id));
             JsonObject data = config.getAsJsonObject("data");
             if (isSofa(id)) data.addProperty("dyed_color", SOFA_RGB.get(id.substring(0,id.length()-5)));
+            if (id.startsWith("string_lights_")) {
+                data.add("equippable", obj("slot", "chest"));
+            }
             var behaviors = new ArrayList<JsonObject>(); boolean sneakVessel = SMALL_FURNITURE.contains(id);
             if (BOTTLE_AND_GLASS.contains(id) || id.endsWith("_bucket")) components(data).addProperty("minecraft:max_stack_size",16);
             if (isDrink(id, drinkIds)) {
@@ -131,7 +134,7 @@ public final class ItemMigrationStage {
                 data.add("custom_name",data.get("item_name").deepCopy()); data.add("hide_tooltip",arr("minecraft:potion_contents"));
             }
             if (id.equals("shaker")) { components(data).addProperty("minecraft:max_stack_size",1);
-                configureConsumable(config,obj("consume_seconds",3600.0,"animation","spyglass","has_consume_particles",false));
+                configureConsumable(config,obj("consume_seconds",3600.0,"animation","none","has_consume_particles",false));
                 config.add("model", shakerModel()); }
             if (id.equals("molotov")) { configureConsumable(config,obj("consume_seconds",3600.0,"animation","trident","has_consume_particles",false));
                 config.add("model",obj("type","minecraft:condition","property","minecraft:using_item","on_true",model("molotov_charging"),"on_false",model("molotov"))); }
@@ -164,7 +167,7 @@ public final class ItemMigrationStage {
             if(id.equals("grapevine")) settings(config).addProperty("fuel_time",200);
             if(id.endsWith("_bucket")) { settings(config).addProperty("consume_replacement","minecraft:bucket"); settings(config).addProperty("craft_remainder","minecraft:bucket"); }
             if(CONSUMABLE_COCKTAILS.contains(id)) settings(config).addProperty("consume_replacement",NAMESPACE+":empty_glassware");
-            else if(isDrink(id,drinkIds)) settings(config).addProperty("consume_replacement",NAMESPACE+":empty_bottle");
+            else if(isDrink(id,drinkIds)) { settings(config).addProperty("consume_replacement",NAMESPACE+":empty_bottle"); settings(config).addProperty("craft_remainder",NAMESPACE+":empty_bottle"); }
             items.add(NAMESPACE+":"+id,config);
         }
         for(var vanilla:VANILLA_PLACEMENTS.entrySet()) { JsonObject ps=new JsonObject();
@@ -227,17 +230,14 @@ public final class ItemMigrationStage {
         var s=new ArrayList<>(List.of("# 首次启动时复制到 plugins/KaleidoscopeTavern/recipes/shaker.yml。","# 数据目录中的副本不会被插件升级覆盖；修改后执行 /kt reload。","# 配方按书写顺序匹配；每份配方可使用 1 至 3 个 selector。","config-version: 1","","# 摇动时间进入特殊区间时使用的产物；signature 也用于普通配方未命中时。","special-results:","  mystery: "+yaml(NAMESPACE+":mystery_cocktail"),"  signature: "+yaml(NAMESPACE+":signature_cocktail"),"","recipes:"));for(var r:shaker){s.add("  - id: "+yaml(r.get(0)));s.add("    result: "+yaml(r.get(1)));s.add("    ingredients:");for(String x:r.get(2).toString().split(";"))s.add("      - "+yaml(x));} writeLines(outputRoot.resolve("src/paper/resources/recipes/barrel.yml"),b);writeLines(outputRoot.resolve("src/paper/resources/recipes/shaker.yml"),s); }
     private static String yaml(Object v){return GSON.toJson(String.valueOf(v));}
 
-    private JsonObject shakerModel(){return obj("type","minecraft:select","property","display_context","cases",arr(obj("when",arr("gui","fixed"),"model",model("shaker"))),"fallback",obj("type","minecraft:condition","property","minecraft:using_item","on_true",obj("type","minecraft:select","property","display_context","cases",arr(obj("when",arr("firstperson_lefthand","firstperson_righthand"),"model",useCycle()),obj("when",arr("thirdperson_righthand"),"model",useCycleTP(true)),obj("when",arr("thirdperson_lefthand"),"model",useCycleTP(false))),"fallback",model("shaker_3d")),"on_false",model("shaker_3d")));}
-    /** 第三人称完全交给客户端：spyglass 动画让手臂保持举臂姿势（-110°，≈原模组 -112.5°中心），雪克杯在手里由 use_cycle 本地循环摆动（remaining % 2π/1.5，模组速度），左右手镜像（右 -45°·sin(1.5t)/-9°，左 +45°·sin/+9°）；无 swing_animation、无服务端挥动包。第一人称：spyglass 无 case 变换、无 customArmTransform、不变焦，use_cycle 16 帧 -15°+0.15·sin(1.5t) 与 v0.0.1 逐位一致（period/scale 格式）。 */
-    private JsonObject useCycle(){JsonArray entries=new JsonArray();double period=Math.PI*2/1.5;for(int i=0;i<16;i++){double cycle=period*i/16,wave=Math.sin(-cycle*1.5),ty=-wave*.15;entries.add(obj("threshold",round(cycle,6),"model",obj("type","minecraft:model","path",NAMESPACE+":item/shaker_3d","transformation",transform(-15,ty))));}return obj("type","minecraft:range_dispatch","property","minecraft:use_cycle","period",round(period,6),"scale",1.0,"entries",entries,"fallback",entries.get(0).getAsJsonObject().get("model").deepCopy());}
-    /** 第三人称 use_cycle：右手 ΔxRot = -45°·sin(1.5t)、zRot -9°；左手镜像反相（源 SHAKING else 分支 +45°·sin、+9°）。 */
-    private JsonObject useCycleTP(boolean right){JsonArray entries=new JsonArray();double period=Math.PI*2/1.5,dir=right?1:-1;for(int i=0;i<16;i++){double cycle=period*i/16,angle=dir*-45*Math.sin(1.5*cycle);entries.add(obj("threshold",round(cycle,6),"model",obj("type","minecraft:model","path",NAMESPACE+":item/shaker_3d","transformation",arr16(mul4(rotX(angle),rotZ(dir*-9))))));}return obj("type","minecraft:range_dispatch","property","minecraft:use_cycle","period",round(period,6),"scale",1.0,"entries",entries,"fallback",entries.get(0).getAsJsonObject().get("model").deepCopy());}
-    private static double[] ident(){double[] m=new double[16];for(int i=0;i<16;i++)m[i]=i%5==0?1:0;return m;}
-    private static double[] rotX(double deg){double r=Math.toRadians(deg),c=Math.cos(r),s=Math.sin(r);double[] m=ident();m[5]=c;m[6]=-s;m[9]=s;m[10]=c;return m;}
-    private static double[] rotZ(double deg){double r=Math.toRadians(deg),c=Math.cos(r),s=Math.sin(r);double[] m=ident();m[0]=c;m[1]=-s;m[4]=s;m[5]=c;return m;}
-    private static double[] mul4(double[] a,double[] b){double[] r=new double[16];for(int i=0;i<4;i++)for(int j=0;j<4;j++){double v=0;for(int k=0;k<4;k++)v+=a[i*4+k]*b[k*4+j];r[i*4+j]=v;}return r;}
-    private static JsonArray arr16(double[] m){JsonArray a=new JsonArray();for(int i=0;i<16;i++)a.add(round(m[i],8));return a;}
-    private static JsonArray transform(double deg,double ty){double a=Math.toRadians(deg),c=round(Math.cos(a),8),s=round(Math.sin(a),8);return arr(1.0,0.0,0.0,0.0,0.0,c,-s,round(ty,8),0.0,s,c,0.0,0.0,0.0,0.0,1.0);}
+    /** v0.0.1 shaker item model: GUI/FIXED uses the 2D icon; held views use the
+     * original 16-frame use_cycle with CraftEngine's {@code source} key and a
+     * single shared first/third-person case pair. The v0.0.1 release shipped
+     * this exact configuration and resource-pack shaker_3d geometry. */
+    private JsonObject shakerModel(){return obj("type","minecraft:select","property","display_context","cases",arr(obj("when",arr("gui","fixed"),"model",model("shaker"))),"fallback",obj("type","minecraft:condition","property","minecraft:using_item","on_true",obj("type","minecraft:select","property","display_context","cases",arr(obj("when",arr("firstperson_lefthand","firstperson_righthand"),"model",shakerUseCycle(true)),obj("when",arr("thirdperson_lefthand","thirdperson_righthand"),"model",shakerUseCycle(false))),"fallback",model("shaker_3d")),"on_false",model("shaker_3d")));}
+    /** Exact port of v0.0.1 tools/migrate_legacy.py shaker_use_cycle_model. */
+    private JsonObject shakerUseCycle(boolean firstPerson){JsonArray entries=new JsonArray();double period=Math.PI*2/1.5;for(int i=0;i<16;i++){double cycle=period*i/16,wave=Math.sin(-cycle*1.5),rotation=firstPerson?-15:Math.toDegrees(wave*.25),ty=firstPerson?-wave*.15:0;entries.add(obj("threshold",round(cycle,6),"model",obj("type","minecraft:model","path",NAMESPACE+":item/shaker_3d","transformation",shakerTransform(rotation,ty))));}return obj("type","minecraft:range_dispatch","property","use_cycle","source",round(period,6),"entries",entries,"fallback",entries.get(0).getAsJsonObject().get("model").deepCopy());}
+    private static JsonArray shakerTransform(double rotationDeg,double translationY){double a=Math.toRadians(rotationDeg),c=round(Math.cos(a),8),s=round(Math.sin(a),8);return arr(1.0,0.0,0.0,0.0,0.0,c,-s,round(translationY,8),0.0,s,c,0.0,0.0,0.0,0.0,1.0);}
     private static double round(double x,int n){double p=Math.pow(10,n);return Math.rint(x*p)/p;}
 
     private void requireItemModel(String id)throws IOException {for(String base:List.of("src/generated/resources","src/main/resources"))if(Files.isRegularFile(projectRoot.resolve(base+"/assets/"+NAMESPACE+"/models/item/"+id+".json")))return;throw new FileNotFoundException("No item model for "+id);}

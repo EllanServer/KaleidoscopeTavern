@@ -105,7 +105,8 @@ final class OrdinaryBlockGenerator {
             if (TRELLIS_BLOCKS.contains(blockId)) {
                 propertyValues.put("axis", List.of("x", "y", "z"));
             }
-            if (BlockBehaviors.FURNITURE_STYLE_BLOCKS.contains(blockId)) {
+            if (BlockBehaviors.FURNITURE_STYLE_BLOCKS.contains(blockId)
+                    && !blockId.equals("table")) {
                 propertyValues.remove("waterlogged");
             }
             String[] carrier = BlockBehaviors.carrierType(blockId);
@@ -126,16 +127,11 @@ final class OrdinaryBlockGenerator {
                 if (blockId.equals("table") && variantProperties.containsKey("axis")) {
                     variantProperties.put("table_axis", variantProperties.remove("axis"));
                 }
-                if (BlockBehaviors.FURNITURE_STYLE_BLOCKS.contains(blockId)) {
+                if (blockId.equals("table")) {
+                    variantKey = sortedVariantKey(variantProperties);
+                } else if (BlockBehaviors.FURNITURE_STYLE_BLOCKS.contains(blockId)) {
                     variantProperties.remove("waterlogged");
-                    List<String> sorted = new ArrayList<>(variantProperties.keySet());
-                    sorted.sort(String::compareTo);
-                    StringBuilder rebuilt = new StringBuilder();
-                    for (String name : sorted) {
-                        if (rebuilt.length() > 0) rebuilt.append(',');
-                        rebuilt.append(name).append('=').append(variantProperties.get(name));
-                    }
-                    variantKey = rebuilt.toString();
+                    variantKey = sortedVariantKey(variantProperties);
                 }
                 BlockStateVariants.Model model = BlockStateVariants.normalizeModelEntry(rawModel);
                 if (blockId.equals("table")) {
@@ -341,8 +337,15 @@ final class OrdinaryBlockGenerator {
                 appearance.addProperty("state", SOFA_CARRIER_STATE);
                 appearance.add("entity_renderer", rendererConfig);
                 appearances.add(appearanceName, appearance);
-                variants.add("connection=" + connection + ",facing=" + facing,
-                        obj("appearance", appearanceName));
+                for (String waterlogged : List.of("false", "true")) {
+                    JsonObject mappedVariant = obj("appearance", appearanceName);
+                    if (waterlogged.equals("true")) {
+                        mappedVariant.add("settings",
+                                obj("fluid_state", "water"));
+                    }
+                    variants.add("connection=" + connection + ",facing=" + facing
+                            + ",waterlogged=" + waterlogged, mappedVariant);
+                }
             }
         }
         JsonObject states = new JsonObject();
@@ -351,6 +354,8 @@ final class OrdinaryBlockGenerator {
                 "connection", List.of("single", "left", "left_corner", "middle", "right", "right_corner")));
         properties.add("facing", BlockStateVariants.propertyDefinition(
                 "facing", List.of("north", "east", "south", "west")));
+        properties.add("waterlogged", BlockStateVariants.propertyDefinition(
+                "waterlogged", List.of("false", "true")));
         states.add("properties", properties);
         states.add("appearances", appearances);
         states.add("variants", variants);
@@ -358,7 +363,7 @@ final class OrdinaryBlockGenerator {
         config.add("states", states);
         config.add("settings", BlockBehaviors.sofaSettings(null));
         config.add("behaviors", BlockBehaviors.behaviorFor(
-                SHARED_SOFA_BLOCK, Set.of("connection", "facing"), null));
+                SHARED_SOFA_BLOCK, Set.of("connection", "facing", "waterlogged"), null));
         return config;
     }
 
@@ -392,6 +397,18 @@ final class OrdinaryBlockGenerator {
         }
         return properties;
     }
+
+    private static String sortedVariantKey(LinkedHashMap<String, String> properties) {
+        List<String> sorted = new ArrayList<>(properties.keySet());
+        sorted.sort(String::compareTo);
+        StringBuilder rebuilt = new StringBuilder();
+        for (String name : sorted) {
+            if (rebuilt.length() > 0) rebuilt.append(',');
+            rebuilt.append(name).append('=').append(properties.get(name));
+        }
+        return rebuilt.toString();
+    }
+
 
     private static String sha1(String input) {
         try {

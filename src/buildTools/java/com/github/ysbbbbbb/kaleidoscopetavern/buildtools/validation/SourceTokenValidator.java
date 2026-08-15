@@ -603,10 +603,12 @@ public final class SourceTokenValidator {
                 "rotation = tiltRotation(facing, yRotation, zRotation)",
                 "case NORTH -> 0", "case EAST -> 90",
                 "case SOUTH -> -180", "case WEST -> -90",
-                "DisplayVisual.of("},
-                "PressingTubVisualFactory wall transform missing");
-        addStale(GAME + "pressing/PressingTubVisualFactory.java", new String[] {"facingYaw("},
-                "Tilted contents must not split source facing into entity yaw");
+                "DisplayVisual.of(",
+                "stableRandom(seed, index, 4) * count / 10.0F"},
+                "PressingTubVisualFactory wall transform or count-coupled yaw missing");
+        addStale(GAME + "pressing/PressingTubVisualFactory.java", new String[] {
+                "facingYaw(", "stableRandom(seed, index, 4) * 6.4F"},
+                "Tilted contents must not split source facing into entity yaw, and yaw must keep Forge count/10F coupling");
         addRequired(GAME + "station/StationInteractionFurnitureBehavior.java", new String[] {
                 "extends FurnitureBehaviorTemplate",
                 "FurnitureBehaviors.register(Key.of(TYPE",

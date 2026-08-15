@@ -90,6 +90,7 @@ public final class PackConfigRules {
         }
         validateMaterialExamples(furniture);
         validateTable(items, renderItems, blocks, furniture);
+        validateBlockSettingsParity(blocks);
         validateBoardAndPendant(furniture);
         validatePressingTub(furniture);
         validatePaintings(items, furniture);
@@ -372,6 +373,10 @@ public final class PackConfigRules {
         position.addProperty("default", 0);
         position.addProperty("range", "0~3");
         expectedProperties.add("position", position);
+        JsonObject waterlogged = new JsonObject();
+        waterlogged.addProperty("type", "boolean");
+        waterlogged.addProperty("default", "false");
+        expectedProperties.add("waterlogged", waterlogged);
         if (!expectedProperties.equals(tableStates.getAsJsonObject("properties"))) {
             throw new ValidationException("Furniture-style table state properties drifted");
         }
@@ -387,23 +392,28 @@ public final class PackConfigRules {
         Set<String> expectedTableKeys = new LinkedHashSet<>();
         for (String axis : List.of("x", "z")) {
             for (int positionValue = 0; positionValue < 4; positionValue++) {
-                expectedTableKeys.add("position=" + positionValue + ",table_axis=" + axis);
+                for (String waterloggedValue : List.of("false", "true")) {
+                    expectedTableKeys.add("position=" + positionValue + ",table_axis=" + axis
+                            + ",waterlogged=" + waterloggedValue);
+                }
             }
         }
         if (!tableVariants.keySet().equals(expectedTableKeys)) {
-            throw new ValidationException("Table must expose exactly eight axis/endpoint states");
+            throw new ValidationException("Table must expose exactly sixteen water-aware states");
         }
         Map<String, Set<String>> tableRenderIds = new LinkedHashMap<>();
         JsonObject tableAppearances = tableStates.getAsJsonObject("appearances");
         for (var variantEntry : tableVariants.entrySet()) {
-            String[] props = new String[2];
+            String[] props = new String[3];
             for (String part : variantEntry.getKey().split(",")) {
                 String[] pair = part.split("=", 2);
                 if (pair[0].equals("table_axis")) props[0] = pair[1];
                 else if (pair[0].equals("position")) props[1] = pair[1];
+                else if (pair[0].equals("waterlogged")) props[2] = pair[1];
             }
             String axis = props[0];
             String positionValue = props[1];
+            String waterloggedValue = props[2];
             JsonObject appearance = tableAppearances.getAsJsonObject(
                     variantEntry.getValue().getAsJsonObject().get("appearance").getAsString());
             if (!appearance.get("state").getAsString().equals("minecraft:barrier")
@@ -421,8 +431,12 @@ public final class PackConfigRules {
                     .get("path").getAsString().equals(expectedModel)) {
                 throw new ValidationException("table/" + variantEntry.getKey() + ": source model drifted");
             }
-            if (!variantEntry.getValue().equals(obj("appearance",
-                    variantEntry.getValue().getAsJsonObject().get("appearance").getAsString()))) {
+            JsonObject expectedMappedVariant = obj("appearance",
+                    variantEntry.getValue().getAsJsonObject().get("appearance").getAsString());
+            if (waterloggedValue.equals("true")) {
+                expectedMappedVariant.add("settings", obj("fluid_state", "water"));
+            }
+            if (!variantEntry.getValue().equals(expectedMappedVariant)) {
                 throw new ValidationException("table/" + variantEntry.getKey() + ": unexpected state settings");
             }
         }
@@ -438,6 +452,69 @@ public final class PackConfigRules {
         }
         if (furniture.has(tableId)) {
             throw new ValidationException("Block-backed table must not retain a furniture definition");
+        }
+    }
+
+    /** Closed-world checks for the source block settings restored on CE custom blocks. */
+    private static void validateBlockSettingsParity(JsonObject blocks) {
+        JsonObject pressingTub = blocks.getAsJsonObject(NAMESPACE + ":pressing_tub")
+                .getAsJsonObject("settings");
+        if (!pressingTub.get("push_reaction").getAsString().equals("NORMAL")) {
+            throw new ValidationException(
+                    "Pressing tub must retain the source default piston reaction");
+        }
+
+        JsonArray sofaTags = blocks.getAsJsonObject(SHARED_SOFA_ID)
+                .getAsJsonObject("settings").getAsJsonArray("tags");
+        JsonArray expectedSofaTags = new JsonArray();
+        expectedSofaTags.add("minecraft:mineable/pickaxe");
+        if (!expectedSofaTags.equals(sofaTags)) {
+            throw new ValidationException("Shared sofa must retain the source pickaxe mining tag");
+        }
+
+        for (String blockId : List.of("wild_grapevine", "wild_grapevine_plant")) {
+            JsonArray tags = blocks.getAsJsonObject(NAMESPACE + ":" + blockId)
+                    .getAsJsonObject("settings").getAsJsonArray("tags");
+            JsonArray expected = new JsonArray();
+            expected.add("minecraft:climbable");
+            if (!expected.equals(tags)) {
+                throw new ValidationException(blockId + ": source climbable tag drifted");
+            }
+        }
+
+        for (String blockId : List.of("trellis", "grapevine_trellis",
+                "ice_grapevine_trellis", "gold_grapevine_trellis")) {
+            JsonObject settings = blocks.getAsJsonObject(NAMESPACE + ":" + blockId)
+                    .getAsJsonObject("settings");
+            JsonArray expectedTags = new JsonArray();
+            if (blockId.equals("grapevine_trellis")) {
+                expectedTags.add("minecraft:climbable");
+                expectedTags.add("minecraft:mineable/axe");
+            } else if (blockId.equals("trellis")) {
+                expectedTags.add("minecraft:mineable/axe");
+            }
+            if (!expectedTags.equals(settings.getAsJsonArray("tags"))) {
+                throw new ValidationException(blockId + ": source mining/climbing tags drifted");
+            }
+            if (!settings.get("burnable").getAsBoolean()
+                    || settings.get("burn_chance").getAsInt() != 5
+                    || settings.get("fire_spread_chance").getAsInt() != 20
+                    || settings.get("map_color").getAsInt() != 13
+                    || !settings.get("instrument").getAsString().equals("guitar")) {
+                throw new ValidationException(blockId + ": source wood burnability drifted");
+            }
+        }
+
+        for (String blockId : List.of("cellar_cabinet", "tilted_rack",
+                "circular_rack", "holder")) {
+            JsonObject settings = blocks.getAsJsonObject(NAMESPACE + ":" + blockId)
+                    .getAsJsonObject("settings");
+            if (!settings.get("burnable").getAsBoolean()
+                    || settings.get("burn_chance").getAsInt() != 5
+                    || settings.get("fire_spread_chance").getAsInt() != 20
+                    || settings.get("map_color").getAsInt() != 13) {
+                throw new ValidationException(blockId + ": source wood burnability drifted");
+            }
         }
     }
 
@@ -619,31 +696,41 @@ public final class PackConfigRules {
         facingValues.add("west");
         facing.add("values", facingValues);
         expectedSofaProperties.add("facing", facing);
+        JsonObject sofaWaterlogged = new JsonObject();
+        sofaWaterlogged.addProperty("type", "boolean");
+        sofaWaterlogged.addProperty("default", "false");
+        expectedSofaProperties.add("waterlogged", sofaWaterlogged);
         if (!expectedSofaProperties.equals(sharedStates.getAsJsonObject("properties"))) {
             throw new ValidationException("Shared sofa state product drifted");
         }
         Set<String> expectedSharedKeys = new LinkedHashSet<>();
         for (String connectionName : SOFA_CONNECTIONS) {
             for (String facingName : List.of("north", "east", "south", "west")) {
-                expectedSharedKeys.add("connection=" + connectionName + ",facing=" + facingName);
+                for (String waterloggedValue : List.of("false", "true")) {
+                    expectedSharedKeys.add("connection=" + connectionName + ",facing=" + facingName
+                            + ",waterlogged=" + waterloggedValue);
+                }
             }
         }
         JsonObject sharedVariants = sharedStates.getAsJsonObject("variants");
         if (!sharedVariants.keySet().equals(expectedSharedKeys)) {
-            throw new ValidationException("Shared sofa must expose exactly 24 active states");
+            throw new ValidationException("Shared sofa must expose exactly 48 water-aware states");
         }
         Map<String, Set<String>> tintRenderIds = new LinkedHashMap<>();
         JsonObject sharedAppearances = sharedStates.getAsJsonObject("appearances");
         for (var variantEntry : sharedVariants.entrySet()) {
             String connectionName = null;
             String facingName = null;
+            String waterloggedValue = null;
             for (String part : variantEntry.getKey().split(",")) {
                 String[] pair = part.split("=", 2);
                 if (pair[0].equals("connection")) connectionName = pair[1];
                 else if (pair[0].equals("facing")) facingName = pair[1];
+                else if (pair[0].equals("waterlogged")) waterloggedValue = pair[1];
             }
+            JsonObject mappedVariant = variantEntry.getValue().getAsJsonObject();
             JsonObject appearance = sharedAppearances.getAsJsonObject(
-                    variantEntry.getValue().getAsJsonObject().get("appearance").getAsString());
+                    mappedVariant.get("appearance").getAsString());
             if (!appearance.get("state").getAsString().equals("minecraft:barrier")) {
                 throw new ValidationException("Shared sofa/" + variantEntry.getKey() + ": carrier drifted");
             }
@@ -657,6 +744,15 @@ public final class PackConfigRules {
             }
             if (!renderer.get("tint_source").getAsString().equals("minecraft:dyed_color")) {
                 throw new ValidationException("Shared sofa/" + variantEntry.getKey() + ": tint source missing");
+            }
+            JsonObject expectedSofaMappedVariant = obj("appearance",
+                    mappedVariant.get("appearance").getAsString());
+            if ("true".equals(waterloggedValue)) {
+                expectedSofaMappedVariant.add("settings", obj("fluid_state", "water"));
+            }
+            if (!expectedSofaMappedVariant.equals(mappedVariant)) {
+                throw new ValidationException("Shared sofa/" + variantEntry.getKey()
+                        + ": CE waterlogged state settings drifted");
             }
             String renderId = renderer.get("item").getAsString();
             tintRenderIds.computeIfAbsent(connectionName, k -> new LinkedHashSet<>()).add(renderId);
@@ -729,8 +825,8 @@ public final class PackConfigRules {
                 throw new ValidationException(sofaName + ": obsolete block/furniture definition was restored");
             }
         }
-        if (sharedVariants.size() != 24) {
-            throw new ValidationException("Sofa family must use exactly 24 shared states, found "
+        if (sharedVariants.size() != 48) {
+            throw new ValidationException("Sofa family must use exactly 48 water-aware shared states, found "
                     + sharedVariants.size());
         }
     }
@@ -2454,126 +2550,55 @@ public final class PackConfigRules {
     private static final int SHAKER_USE_FRAMES = 16;
     private static final double SHAKER_USE_PERIOD_TICKS = Math.PI * 2 / 1.5;
 
-    private static double[] shakerIdent() {
-        double[] m = new double[16];
-        for (int i = 0; i < 16; i++) m[i] = i % 5 == 0 ? 1 : 0;
-        return m;
-    }
-
-    private static double[] shakerTrans(double x, double y, double z) {
-        double[] m = shakerIdent();
-        m[3] = x; m[7] = y; m[11] = z;
-        return m;
-    }
-
-    private static double[] shakerScale(double s) {
-        double[] m = shakerIdent();
-        m[0] = s; m[5] = s; m[10] = s;
-        return m;
-    }
-
-    private static double[] shakerRotX(double deg) {
-        double r = Math.toRadians(deg), c = Math.cos(r), s = Math.sin(r);
-        double[] m = shakerIdent();
-        m[5] = c; m[6] = -s; m[9] = s; m[10] = c;
-        return m;
-    }
-
-    private static double[] shakerRotY(double deg) {
-        double r = Math.toRadians(deg), c = Math.cos(r), s = Math.sin(r);
-        double[] m = shakerIdent();
-        m[0] = c; m[2] = s; m[8] = -s; m[10] = c;
-        return m;
-    }
-
-    private static double[] shakerRotZ(double deg) {
-        double r = Math.toRadians(deg), c = Math.cos(r), s = Math.sin(r);
-        double[] m = shakerIdent();
-        m[0] = c; m[1] = -s; m[4] = s; m[5] = c;
-        return m;
-    }
-
-    private static double[] shakerMul(double[] a, double[] b) {
-        double[] r = new double[16];
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                double v = 0;
-                for (int k = 0; k < 4; k++) v += a[i * 4 + k] * b[k * 4 + j];
-                r[i * 4 + j] = v;
-            }
-        }
-        return r;
-    }
-
-    /**
-     * Third-person: a fully client-driven use_cycle shake at the source
-     * SHAKING tempo (period 2π/1.5 ticks) on the spyglass -110° arm base.
-     * Every frame is R_X(∓45°·sin(1.5·t))·R_Z(∓9°) — the source mod's
-     * right-arm swing and its mirrored left-arm counterpart, expressed as
-     * the shaker's motion in hand. No server swing packets are used.
-     */
-    private static JsonObject expectedShakerUseCycleTP(boolean rightHand) {
+    /** Exact v0.0.1 shaker use-cycle model: one shared first/third-person
+     * algorithm, 16 frames, CraftEngine's {@code source} key, and the original
+     * small X-axis shake (third person uses sin(-t·1.5)·0.25 degrees). */
+    private static JsonObject expectedShakerUseCycleV001(boolean firstPerson) {
         JsonArray entries = new JsonArray();
-        double dir = rightHand ? 1 : -1;
         for (int index = 0; index < SHAKER_USE_FRAMES; index++) {
             double cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES;
-            double angle = dir * -45 * Math.sin(1.5 * cycle);
-            double[] u = shakerMul(shakerRotX(angle), shakerRotZ(dir * -9));
+            double wave = Math.sin(-cycle * 1.5);
+            double rotation = firstPerson ? -15 : Math.toDegrees(wave * 0.25);
+            double translationY = firstPerson ? -wave * 0.15 : 0;
             JsonObject entry = new JsonObject();
-            entry.addProperty("threshold", Math.round(cycle * 1e6) / 1e6);
+            entry.addProperty("threshold", round6(cycle));
             JsonObject model = new JsonObject();
             model.addProperty("type", "minecraft:model");
             model.addProperty("path", NAMESPACE + ":item/shaker_3d");
-            JsonArray array = new JsonArray();
-            for (double v : u) array.add(Math.round(v * 1e8) / 1e8);
-            model.add("transformation", array);
+            model.add("transformation", shakerTransformV001(rotation, translationY));
             entry.add("model", model);
             entries.add(entry);
         }
         JsonObject range = new JsonObject();
         range.addProperty("type", "minecraft:range_dispatch");
-        range.addProperty("property", "minecraft:use_cycle");
-        range.addProperty("period", Math.round(SHAKER_USE_PERIOD_TICKS * 1e6) / 1e6);
-        range.addProperty("scale", 1.0);
+        range.addProperty("property", "use_cycle");
+        range.addProperty("source", round6(SHAKER_USE_PERIOD_TICKS));
         range.add("entries", entries);
-        JsonObject fallback = entries.get(0).getAsJsonObject().getAsJsonObject("model").deepCopy();
-        range.add("fallback", fallback);
+        range.add("fallback", entries.get(0).getAsJsonObject().getAsJsonObject("model").deepCopy());
         return range;
     }
 
-    /**
-     * First-person: the spyglass use animation adds no first-person case
-     * transform (ItemInHandRenderer only covers brush/bundle/spear), no
-     * customArmTransform and no zoom (a paper item is never a SpyglassItem),
-     * so every frame stays the exact v0.0.1 release set: -15° tilt plus a
-     * ±0.15-block bob (ty = 0.15·sin(1.5·t)), 16 frames, period 2π/1.5.
-     */
-    private static JsonObject expectedShakerUseCycle() {
-        JsonArray entries = new JsonArray();
-        for (int index = 0; index < SHAKER_USE_FRAMES; index++) {
-            double cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES;
-            double ty = 0.15 * Math.sin(1.5 * cycle);
-            double[] u = shakerMul(shakerTrans(0, ty, 0), shakerRotX(-15));
-            JsonObject entry = new JsonObject();
-            entry.addProperty("threshold", Math.round(cycle * 1e6) / 1e6);
-            JsonObject model = new JsonObject();
-            model.addProperty("type", "minecraft:model");
-            model.addProperty("path", NAMESPACE + ":item/shaker_3d");
-            JsonArray array = new JsonArray();
-            for (double v : u) array.add(Math.round(v * 1e8) / 1e8);
-            model.add("transformation", array);
-            entry.add("model", model);
-            entries.add(entry);
+    private static JsonArray shakerTransformV001(double rotationDegrees, double translationY) {
+        double angle = Math.toRadians(rotationDegrees);
+        double cosine = round8(Math.cos(angle));
+        double sine = round8(Math.sin(angle));
+        JsonArray matrix = new JsonArray();
+        for (double value : new double[] {
+                1, 0, 0, 0,
+                0, cosine, -sine, round8(translationY),
+                0, sine, cosine, 0,
+                0, 0, 0, 1}) {
+            matrix.add(value);
         }
-        JsonObject range = new JsonObject();
-        range.addProperty("type", "minecraft:range_dispatch");
-        range.addProperty("property", "minecraft:use_cycle");
-        range.addProperty("period", Math.round(SHAKER_USE_PERIOD_TICKS * 1e6) / 1e6);
-        range.addProperty("scale", 1.0);
-        range.add("entries", entries);
-        JsonObject fallback = entries.get(0).getAsJsonObject().getAsJsonObject("model").deepCopy();
-        range.add("fallback", fallback);
-        return range;
+        return matrix;
+    }
+
+    private static double round6(double value) {
+        return Math.rint(value * 1e6) / 1e6;
+    }
+
+    private static double round8(double value) {
+        return Math.rint(value * 1e8) / 1e8;
     }
 
     private void validateDrinks(JsonObject items, JsonObject renderItems, JsonObject blocks,
@@ -2804,13 +2829,19 @@ public final class PackConfigRules {
         cocktailIds.add(NAMESPACE + ":mystery_cocktail");
         cocktailIds.add(NAMESPACE + ":signature_cocktail");
         for (String itemId : drinkIds) {
-            String replacement = items.getAsJsonObject(itemId).getAsJsonObject("settings")
-                    .get("consume_replacement").getAsString();
+            JsonObject settings = items.getAsJsonObject(itemId).getAsJsonObject("settings");
+            String replacement = settings.get("consume_replacement").getAsString();
             String expected = cocktailIds.contains(itemId)
                     ? NAMESPACE + ":empty_glassware" : NAMESPACE + ":empty_bottle";
             if (!replacement.equals(expected)) {
                 throw new ValidationException(itemId + ": consume_replacement must be "
                         + expected + ", got " + replacement);
+            }
+            if (expected.equals(NAMESPACE + ":empty_bottle")
+                    && !(NAMESPACE + ":empty_bottle").equals(
+                            settings.get("craft_remainder").getAsString())) {
+                throw new ValidationException(itemId
+                        + ": drink crafting must return empty_bottle like DrinkBlockItem");
             }
         }
         JsonObject emptyGlassware = items.getAsJsonObject(NAMESPACE + ":empty_glassware");
@@ -2890,7 +2921,7 @@ public final class PackConfigRules {
         JsonObject shakerComponents = shakerItem.getAsJsonObject("data").getAsJsonObject("components");
         JsonObject expectedShakerConsumable = new JsonObject();
         expectedShakerConsumable.addProperty("consume_seconds", 3600.0);
-        expectedShakerConsumable.addProperty("animation", "spyglass");
+        expectedShakerConsumable.addProperty("animation", "none");
         expectedShakerConsumable.addProperty("has_consume_particles", false);
         if (!shakerItem.get("material").getAsString().equals("paper")
                 || shakerComponents.get("minecraft:max_stack_size").getAsInt() != 1
@@ -2901,7 +2932,7 @@ public final class PackConfigRules {
                 || nestedObject(shakerItem, "client_bound_data", "components")
                         .has("minecraft:swing_animation")) {
             throw new ValidationException(
-                    "Shaker must retain active-use timing, its v0.0.1 first-person use_cycle, the spyglass -110° arm base and a fully client-driven use_cycle shake (no swing packets)");
+                    "Shaker must retain the v0.0.1 item material: animation none plus the original 16-frame use_cycle model");
         }
         JsonObject shakerModel = shakerItem.getAsJsonObject("model");
         if (!shakerModel.get("type").getAsString().equals("minecraft:select")
@@ -2938,23 +2969,18 @@ public final class PackConfigRules {
         fpWhen.add("firstperson_lefthand");
         fpWhen.add("firstperson_righthand");
         firstPerson.add("when", fpWhen);
-        firstPerson.add("model", expectedShakerUseCycle());
+        firstPerson.add("model", expectedShakerUseCycleV001(true));
         useCases.add(firstPerson);
         JsonObject fallbackModel = new JsonObject();
         fallbackModel.addProperty("type", "minecraft:model");
         fallbackModel.addProperty("path", NAMESPACE + ":item/shaker_3d");
-        JsonObject thirdPersonRight = new JsonObject();
-        JsonArray tpRightWhen = new JsonArray();
-        tpRightWhen.add("thirdperson_righthand");
-        thirdPersonRight.add("when", tpRightWhen);
-        thirdPersonRight.add("model", expectedShakerUseCycleTP(true));
-        useCases.add(thirdPersonRight);
-        JsonObject thirdPersonLeft = new JsonObject();
-        JsonArray tpLeftWhen = new JsonArray();
-        tpLeftWhen.add("thirdperson_lefthand");
-        thirdPersonLeft.add("when", tpLeftWhen);
-        thirdPersonLeft.add("model", expectedShakerUseCycleTP(false));
-        useCases.add(thirdPersonLeft);
+        JsonObject thirdPerson = new JsonObject();
+        JsonArray tpWhen = new JsonArray();
+        tpWhen.add("thirdperson_lefthand");
+        tpWhen.add("thirdperson_righthand");
+        thirdPerson.add("when", tpWhen);
+        thirdPerson.add("model", expectedShakerUseCycleV001(false));
+        useCases.add(thirdPerson);
         expectedUseModel.add("cases", useCases);
         expectedUseModel.add("fallback", fallbackModel);
         if (!offFalse.equals(useCondition.get("on_false"))
@@ -3162,6 +3188,13 @@ public final class PackConfigRules {
             expectedSettings.addProperty("item", fullId);
             if (!expectedSettings.equals(lights.get("settings"))) {
                 throw new ValidationException(fullId + ": chain furniture settings drifted");
+            }
+            JsonObject itemData = items.getAsJsonObject(fullId).getAsJsonObject("data");
+            JsonObject expectedEquippable = new JsonObject();
+            expectedEquippable.addProperty("slot", "chest");
+            if (!expectedEquippable.equals(itemData.get("equippable"))) {
+                throw new ValidationException(fullId
+                        + ": source chest equipment slot must be CE equippable data");
             }
             JsonObject variants = lights.getAsJsonObject("variants");
             if (!variants.keySet().equals(Set.of("wall"))) {

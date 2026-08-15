@@ -49,6 +49,14 @@ public final class BlockBehaviors {
     public static final Set<String> BARRIER_STYLE_BLOCKS = Set.copyOf(
             difference(FURNITURE_STYLE_BLOCKS, SHAPED_RACK_BLOCKS));
     public static final Set<String> STURDY_BLOCKS = Set.of("trellis");
+    public static final Set<String> CLIMBABLE_BLOCKS = Set.of(
+            "wild_grapevine", "wild_grapevine_plant", "grapevine_trellis");
+    public static final Set<String> NON_AXE_TRELLISES = Set.of(
+            "ice_grapevine_trellis", "gold_grapevine_trellis");
+    public static final Set<String> WOODEN_STORAGE_BLOCKS = Set.of(
+            "cellar_cabinet", "tilted_rack", "circular_rack", "holder");
+    public static final Set<String> WOODEN_TRELLISES = Set.of(
+            "trellis", "grapevine_trellis", "ice_grapevine_trellis", "gold_grapevine_trellis");
     public static final List<String> SOFA_CONNECT_IDS = List.of(NAMESPACE + ":" + SHARED_SOFA_BLOCK);
     public static final Set<String> SOFA_COLORS = Set.of(
             "white", "orange", "magenta", "light_blue", "yellow", "lime",
@@ -565,12 +573,12 @@ public final class BlockBehaviors {
         return null;
     }
 
-    /** Sofa block settings: block_settings("white_sofa", false) with an axe tag override. */
+    /** Sofa block settings: block_settings("white_sofa", false) with the source pickaxe tag. */
     public static JsonObject sofaSettings(String publicItem) {
         JsonObject settings = blockSettings("white_sofa", false);
-        JsonArray axe = new JsonArray();
-        axe.add("minecraft:mineable/axe");
-        settings.add("tags", axe);
+        JsonArray tags = new JsonArray();
+        tags.add("minecraft:mineable/pickaxe");
+        settings.add("tags", tags);
         if (publicItem != null) settings.addProperty("item", publicItem);
         return settings;
     }
@@ -607,8 +615,8 @@ public final class BlockBehaviors {
         JsonObject settings = new JsonObject();
         settings.addProperty("hardness", hardness);
         settings.addProperty("resistance", resistance);
-        settings.addProperty("push_reaction", blockId.equals("pressing_tub") ? "BLOCK"
-                : (sturdy || blockId.equals("tap")) ? "NORMAL" : "DESTROY");
+        settings.addProperty("push_reaction",
+                (sturdy || blockId.equals("tap")) ? "NORMAL" : "DESTROY");
         settings.addProperty("is_redstone_conductor", false);
         settings.addProperty("is_suffocating", false);
         settings.addProperty("is_view_blocking", false);
@@ -616,10 +624,14 @@ public final class BlockBehaviors {
         settings.addProperty("propagate_skylight", true);
         settings.add("sounds", sounds);
         JsonArray tags = new JsonArray();
+        if (CLIMBABLE_BLOCKS.contains(blockId)) {
+            tags.add("minecraft:climbable");
+        }
         if (blockId.equals("tap") || isSofa
                 || Set.of("tilted_rack", "circular_rack", "holder").contains(blockId)) {
             tags.add("minecraft:mineable/pickaxe");
-        } else if (!isWildVine && !isCrop && !INCENSE_BLOCKS.contains(blockId)) {
+        } else if (!isWildVine && !isCrop && !INCENSE_BLOCKS.contains(blockId)
+                && !NON_AXE_TRELLISES.contains(blockId)) {
             tags.add("minecraft:mineable/axe");
         }
         settings.add("tags", tags);
@@ -627,6 +639,13 @@ public final class BlockBehaviors {
             settings.add("destroy_stages", obj("template", "internal:destroy_stages"));
         }
         if (blockId.equals("chalkboard") || blockId.equals("pressing_tub")) {
+            combustible(settings, 13, "guitar");
+        }
+        if (WOODEN_STORAGE_BLOCKS.contains(blockId)) {
+            settings.addProperty("map_color", 13);
+            burnable(settings);
+        }
+        if (WOODEN_TRELLISES.contains(blockId)) {
             combustible(settings, 13, "guitar");
         }
         if (isSofa) {
@@ -646,6 +665,10 @@ public final class BlockBehaviors {
     private static void combustible(JsonObject target, int color, String instrument) {
         target.addProperty("map_color", color);
         target.addProperty("instrument", instrument);
+        burnable(target);
+    }
+
+    private static void burnable(JsonObject target) {
         target.addProperty("burnable", true);
         target.addProperty("burn_chance", 5);
         target.addProperty("fire_spread_chance", 20);

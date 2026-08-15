@@ -27,8 +27,9 @@ effect-hud:
   gui-half-width: 240
 
 gameplay:
-  # true 保留旧模组的可选无限熔岩行为；默认有限，成功抽取后清空源炼药锅。
-  infinite-lava-from-tap: false
+  # 与 Forge 版 GeneralConfig.InfiniteLavaFromTap 的默认值一致：默认无限。
+  # 设为 false 后熔岩龙头变为有限，成功抽取后会消耗源炼药锅。
+  infinite-lava-from-tap: true
 
 # 藤架传播的四季限制（由 CustomCrops 的世界季节驱动）。
 # 悬挂葡萄作为 CustomCrops 作物，其季节、温室和自然生长规则只配置在

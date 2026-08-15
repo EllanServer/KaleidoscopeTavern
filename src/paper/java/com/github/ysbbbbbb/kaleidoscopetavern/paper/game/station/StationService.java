@@ -498,10 +498,10 @@ public final class StationService implements Listener {
             }
             int ticks = use.ticks();
             shakerVisuals.updateMix(player, ticks);
-            // The whole third-person shake is client-driven: the spyglass
-            // animation holds the arm raised (-110°) and the item model's
-            // use_cycle clock (remaining % 2π/1.5) swings the shaker in hand
-            // at the source SHAKING tempo — no swing packets at all.
+            // The held shake is client-driven by the v0.0.1 item model:
+            // consumable animation is none and the 16-frame use_cycle clock
+            // (remaining % 2π/1.5) moves the shaker in hand without server
+            // swing packets.
             if (ShakerSemantics.playsShakeSound(ticks)) {
                 float volume = 0.75F + ThreadLocalRandom.current().nextFloat() * 0.2F;
                 float pitch = 0.8F + ThreadLocalRandom.current().nextFloat() * 0.2F;

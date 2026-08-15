@@ -67,10 +67,10 @@ public final class PressingTubVisualFactory {
                         ? -0.15F : 0.15F + stableRandom(seed, index, 2) * 0.0625F;
                 float y = index / 4 * 0.03125F
                         + stableRandom(seed, index, 3) * 0.05F;
-                // 与物品数量无关的稳定旋转：6.4F 是 count=64 时的最大范围，
-                // 压榨成功只改变 count/press_amount，不再让所有已有物品旋转变化，
-                // 否则每次压榨都会触发整组 metadata 差量重发。
-                float yRotation = stableRandom(seed, index, 4) * 6.4F;
+                // 源 PressingTubBlockEntityRender 的 yaw 幅度与当前堆叠数量耦合：
+                // yRot = stableRandom(seed, i, 4) * count / 10F。保留这一语义，
+                // 压榨改变数量时已有葡萄的 yaw 也会像 Forge 版一样重新分布。
+                float yRotation = stableRandom(seed, index, 4) * count / 10.0F;
                 float zRotation = stableRandom(seed, index, 5) * 360F;
                 double displayX;
                 double displayY;

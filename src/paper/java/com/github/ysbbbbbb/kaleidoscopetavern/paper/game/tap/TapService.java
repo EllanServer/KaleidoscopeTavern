@@ -60,7 +60,7 @@ public final class TapService implements TapBlockBehavior.Handler {
         this.items = items;
         this.appearances = Objects.requireNonNull(appearances, "appearances");
         this.infiniteLavaFromTap = plugin.getConfig()
-                .getBoolean("gameplay.infinite-lava-from-tap", false);
+                .getBoolean("gameplay.infinite-lava-from-tap", true);
         this.lavaCauldronLevels = new LavaCauldronLevelStore(plugin);
     }
 

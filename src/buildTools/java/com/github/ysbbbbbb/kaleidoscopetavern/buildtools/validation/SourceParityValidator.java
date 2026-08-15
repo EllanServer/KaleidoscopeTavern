@@ -37,7 +37,7 @@ public final class SourceParityValidator {
             Map.entry("tilt", "ground/wall pressing-tub placement variants"),
             Map.entry("triggered", "CE TapBlockBehavior redstone edge latch"),
             Map.entry("type", "CE trellis state variants"),
-            Map.entry("waterlogged", "CE chalkboard/tap/trellis state plus water-preserving glowing string-light furniture"),
+            Map.entry("waterlogged", "CE chalkboard/table/sofa/tap/trellis/pressing-tub state plus water-preserving glowing string-light furniture"),
             Map.entry("waxed", "CE trellis state variants plus blocks.json wax events"));
 
     private static final Map<String, Evidence> RENDERER_COVERAGE = rendererCoverage();
