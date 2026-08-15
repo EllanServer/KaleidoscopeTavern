@@ -22,36 +22,21 @@ class BarrelSupportModelTest {
                 StandardCharsets.UTF_8);
         String lid = Files.readString(MODEL_ROOT.resolve("barrel_open_lid.json"),
                 StandardCharsets.UTF_8);
+        String compactBody = body.replaceAll("\\s+", "");
 
         assertEquals(13, occurrences(body, "\"from\""),
                 "open body must contain twelve body elements plus open_r1");
         assertEquals(1, occurrences(lid, "\"from\""),
                 "open lid display must contain only open_r2");
 
-        assertTrue(body.contains("""
-              \"from\": [
-                14.99,
-                28.215627824,
-                -2.27374797
-              ],
-              \"to\": [
-                15.01,
-                30.215627824,
-                17.72625203
-              ],
-              """), "open_r1 must be mirrored to the correct side of the CE furniture");
-        assertTrue(body.contains("""
-              \"rotation\": {
-                \"origin\": [
-                  15,
-                  28.215627824,
-                  17.72625203
-                ],
-                \"axis\": \"x\",
-                \"angle\": 39.998183678,
-                \"rescale\": false
-              }
-              """), "open_r1 must preserve the source combined 75° - 35° tilt");
+        assertTrue(compactBody.contains(
+                        "\"from\":[14.99,28.215627824,-2.27374797],"
+                                + "\"to\":[15.01,30.215627824,17.72625203]"),
+                "open_r1 must be mirrored to the correct side of the CE furniture");
+        assertTrue(compactBody.contains(
+                        "\"rotation\":{\"origin\":[15,28.215627824,17.72625203],"
+                                + "\"axis\":\"x\",\"angle\":39.998183678,\"rescale\":false}"),
+                "open_r1 must preserve the source combined 75° - 35° tilt");
     }
 
     private static int occurrences(String text, String token) {
