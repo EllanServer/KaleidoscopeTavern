@@ -88,6 +88,10 @@ public final class StationService implements Listener {
     // a bounded visual pool keeps station refresh packets cheap at high counts.
     private static final int MAX_STATION_ITEM_VISUALS = 16;
     private static final int MAX_STATION_MATERIAL_VISUALS = 4;
+    // Two-phase portable shaker pose: wave the hand through the source's
+    // "released too early to mix" window, then raise the native spyglass use.
+    private static final int PORTABLE_SHAKER_WAVE_TICKS = 19;
+    private static final int PORTABLE_SHAKER_SWING_INTERVAL_TICKS = 4;
 
     /**
      * Paper transforms plugin classes lazily when they are first resolved.
@@ -413,17 +417,24 @@ public final class StationService implements Listener {
         if (!items.id(shaker).equals(SHAKER)) {
             return InteractionResult.PASS;
         }
-        // The long consumable component exposes the native CE using_item /
-        // use_cycle model clock. Always suppress vanilla consumption; only a
-        // complete configured recipe (or the source-compatible three-item
-        // fallback) starts explicitly below.
+        // A shaker that already contains a result must not enter the native
+        // consumable use state at all, exactly like the Forge item's pass.
+        // The client may have predicted a short consume pose before this
+        // packet listener runs, so explicitly cancel that same-hand use.
         if (items.shakerResult(shaker) != null) {
+            EquipmentSlot activeHand = player.getActiveItemHand();
+            if (player.isHandRaised() && activeHand == hand) {
+                player.clearActiveItem();
+            }
             return InteractionResult.SUCCESS_AND_CANCEL;
         }
         List<ItemStack> ingredients = items.shakerIngredients(shaker);
         if (!canMixShaker(ingredients)) {
             player.sendActionBar(net.kyori.adventure.text.Component.translatable(
                     "message.kaleidoscope_tavern.shaker.amount_too_low"));
+            return InteractionResult.SUCCESS_AND_CANCEL;
+        }
+        if (portableShakers.containsKey(player.getUniqueId())) {
             return InteractionResult.SUCCESS_AND_CANCEL;
         }
 
@@ -435,11 +446,9 @@ public final class StationService implements Listener {
                 return;
             }
             portableShakers.put(
-                    player.getUniqueId(), new PortableShakerUse(player, hand, 0));
+                    player.getUniqueId(), new PortableShakerUse(player, hand, 0, false));
             ensurePortableShakerTask();
             shakerVisuals.beginMix(player);
-            player.startUsingItem(hand);
-            player.setActiveItemRemainingTime(72_000);
         });
         return InteractionResult.SUCCESS_AND_CANCEL;
     }
@@ -490,18 +499,34 @@ public final class StationService implements Listener {
             Map.Entry<UUID, PortableShakerUse> entry = iterator.next();
             PortableShakerUse use = entry.getValue();
             Player player = use.player();
-            if (!player.isOnline()
-                    || !player.isHandRaised() || !items.id(handItem(player, use.hand())).equals(SHAKER)) {
+            ItemStack current = handItem(player, use.hand());
+            boolean holdingMixableShaker = player.isOnline()
+                    && items.id(current).equals(SHAKER)
+                    && items.shakerResult(current) == null
+                    && canMixShaker(items.shakerIngredients(current));
+            // During the wave phase no item is being used, so a raised hand
+            // can only mean the player started another native use action.
+            boolean foreignUse = !use.raised() && player.isHandRaised();
+            if (!holdingMixableShaker || foreignUse) {
                 iterator.remove();
                 shakerVisuals.endMix(player);
                 continue;
             }
             int ticks = use.ticks();
+            boolean raised = use.raised();
+            if (!raised && ticks >= PORTABLE_SHAKER_WAVE_TICKS) {
+                // Second phase: switch from waving the hand to the native
+                // spyglass consumable pose; the item model's use_cycle keeps
+                // shaking the cup in the raised hand without swing packets.
+                player.startUsingItem(use.hand());
+                player.setActiveItemRemainingTime(72_000);
+                raised = player.isHandRaised();
+            }
+            if (!raised && ticks % PORTABLE_SHAKER_SWING_INTERVAL_TICKS == 0) {
+                // First phase: wave the hand before the telescope raise.
+                player.swingHand(use.hand());
+            }
             shakerVisuals.updateMix(player, ticks);
-            // The held shake is client-driven: the spyglass consumable pose
-            // keeps the arm raised and the mirrored per-hand 16-frame
-            // use_cycle clock (remaining % 2π/1.5) swings the shaker in hand
-            // without server swing packets.
             if (ShakerSemantics.playsShakeSound(ticks)) {
                 float volume = 0.75F + ThreadLocalRandom.current().nextFloat() * 0.2F;
                 float pitch = 0.8F + ThreadLocalRandom.current().nextFloat() * 0.2F;
@@ -514,7 +539,8 @@ public final class StationService implements Listener {
                 player.clearActiveItem();
                 finishPortableShaker(player, use.hand(), ticks);
             } else {
-                entry.setValue(new PortableShakerUse(player, use.hand(), ticks + 1));
+                entry.setValue(new PortableShakerUse(
+                        player, use.hand(), ticks + 1, raised));
             }
         }
         stopPortableShakerTaskIfIdle();
@@ -1281,8 +1307,7 @@ public final class StationService implements Listener {
                 : player.getInventory().getItemInMainHand();
     }
 
-    private record PortableShakerUse(Player player, EquipmentSlot hand, int ticks) {
-    }
+    private record PortableShakerUse(Player player, EquipmentSlot hand, int ticks, boolean raised) {}
 
     private static void setHandItem(Player player, EquipmentSlot hand, ItemStack stack) {
         if (hand == EquipmentSlot.OFF_HAND) {
