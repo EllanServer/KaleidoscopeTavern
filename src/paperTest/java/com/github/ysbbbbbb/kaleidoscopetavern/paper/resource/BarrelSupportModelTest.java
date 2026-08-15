@@ -30,13 +30,13 @@ class BarrelSupportModelTest {
                 "open lid display must contain only open_r2");
 
         assertTrue(compactBody.contains(
-                        "\"from\":[14.99,28.215627824,-2.27374797],"
-                                + "\"to\":[15.01,30.215627824,17.72625203]"),
-                "open_r1 must be mirrored to the correct side of the CE furniture");
+                        "\"from\":[14.99,28.215627824,-1.72625203],"
+                                + "\"to\":[15.01,30.215627824,18.27374797]"),
+                "open_r1 must move to the right side without flipping front-back");
         assertTrue(compactBody.contains(
-                        "\"rotation\":{\"origin\":[15,28.215627824,17.72625203],"
-                                + "\"axis\":\"x\",\"angle\":39.998183678,\"rescale\":false}"),
-                "open_r1 must preserve the source combined 75° - 35° tilt");
+                        "\"rotation\":{\"origin\":[15,28.215627824,-1.72625203],"
+                                + "\"axis\":\"x\",\"angle\":-39.998183678,\"rescale\":false}"),
+                "open_r1 must preserve the source combined tilt direction and magnitude");
     }
 
     private static int occurrences(String text, String token) {

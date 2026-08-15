@@ -521,19 +521,19 @@ public final class AssetMigrationStage {
         textures.addProperty("particle", "minecraft:block/barrel_side");
         base.add("textures", textures);
         // BarrelModel.open_r1 has its own -35 degree child rotation under the
-// 75 degree open group, so its final source angle is about 40 degrees.
+// 75 degree open group, so its final source angle is about -40 degrees.
 // CE ground-furniture zero yaw is horizontally opposite to the
 // archived renderer's unrotated NORTH basis. The barrel body and lid
 // hide that difference through symmetry, but this one-sided support
-// must be mirrored around the model centre (x=8, z=8).
+// only moves laterally from x=1 to x=15; the authored z direction and rotation pivot stay unchanged.
 JsonObject supportStrip = new JsonObject();
-supportStrip.add("from", numbers(new double[] {15, 28.215627824, -2.27374797}));
-supportStrip.add("to", numbers(new double[] {15, 30.215627824, 17.72625203}));
+supportStrip.add("from", numbers(new double[] {15, 28.215627824, -1.72625203}));
+supportStrip.add("to", numbers(new double[] {15, 30.215627824, 18.27374797}));
 supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
 JsonObject supportRotation = new JsonObject();
-supportRotation.add("origin", numbers(new double[] {15, 28.215627824, 17.72625203}));
+supportRotation.add("origin", numbers(new double[] {15, 28.215627824, -1.72625203}));
 supportRotation.addProperty("axis", "x");
-supportRotation.addProperty("angle", 39.998183678);
+supportRotation.addProperty("angle", -39.998183678);
 supportRotation.addProperty("rescale", false);
 supportStrip.add("rotation", supportRotation);
 
