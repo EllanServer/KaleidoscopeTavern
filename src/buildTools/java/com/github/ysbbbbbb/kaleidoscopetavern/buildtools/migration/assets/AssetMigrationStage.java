@@ -541,17 +541,18 @@ public final class AssetMigrationStage {
         openElements.add(openLid);
         // open_r1: the zero-thickness support strip connecting the body to the
         // raised lid. It is authored in the same local space as the horizontal
-        // lid board, so the shared CE 72.5-degree entity rotation brings it to
-        // BarrelModel's final open position. Solidifying its zero-width axis
-        // keeps both faces visible from every viewing angle.
+        // lid board, mirrored onto the right side and front-back swapped to
+        // match BarrelModel, then the shared CE 72.5-degree entity rotation
+        // brings it to its final open position. Solidifying its zero-width
+        // axis keeps both faces visible from every viewing angle.
         JsonObject supportStrip = new JsonObject();
-        supportStrip.add("from", numbers(new double[] {1, -7.167310571, -8.372810775}));
-        supportStrip.add("to", numbers(new double[] {1, -5.167310571, 11.627189225}));
+        supportStrip.add("from", numbers(new double[] {15, 2.906025685, -4.566102476}));
+        supportStrip.add("to", numbers(new double[] {15, 4.906025685, 15.433897524}));
         supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
         JsonObject supportRotation = new JsonObject();
-        supportRotation.add("origin", numbers(new double[] {1, -7.167310571, 11.627189225}));
+        supportRotation.add("origin", numbers(new double[] {15, 4.906025685, 15.433897524}));
         supportRotation.addProperty("axis", "x");
-        supportRotation.addProperty("angle", 33.110899989);
+        supportRotation.addProperty("angle", 1.8891);
         supportRotation.addProperty("rescale", false);
         supportStrip.add("rotation", supportRotation);
         openElements.add(FurnitureBoxes.solidifyPlanes(supportStrip));
