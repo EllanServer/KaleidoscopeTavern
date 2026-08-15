@@ -1,0 +1,121 @@
+name: Apply barrel support source-parity fix
+
+on:
+  push:
+    branches:
+      - fix/barrel-support-source-parity
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout fix branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/barrel-support-source-parity
+          fetch-depth: 0
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Restore the source BarrelModel support transform
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/buildTools/java/com/github/ysbbbbbb/kaleidoscopetavern/buildtools/migration/assets/AssetMigrationStage.java")
+          text = path.read_text(encoding="utf-8")
+          start_marker = "        JsonObject bodyModel = base.deepCopy();\n"
+          end_marker = "        MigrationDataIO.writeJson(modelsRoot().resolve(\"furniture/barrel_open_lid.json\"), openModel);\n"
+          start = text.index(start_marker)
+          end = text.index(end_marker, start) + len(end_marker)
+          replacement = '''        // BarrelModel.open_r1 has its own -35 degree child rotation under the
+          // 75 degree open group, so its final source angle is about 40 degrees.
+          // Keep the strip in the open body's final model space. Putting it in
+          // barrel_open_lid applies the lid display's 72.5 degree rotation a
+          // second time, which makes the support nearly vertical and too tall.
+          JsonObject supportStrip = new JsonObject();
+          supportStrip.add("from", numbers(new double[] {1, 28.215627824, -1.72625203}));
+          supportStrip.add("to", numbers(new double[] {1, 30.215627824, 18.27374797}));
+          supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
+          JsonObject supportRotation = new JsonObject();
+          supportRotation.add("origin", numbers(new double[] {1, 28.215627824, -1.72625203}));
+          supportRotation.addProperty("axis", "x");
+          supportRotation.addProperty("angle", -39.998183678);
+          supportRotation.addProperty("rescale", false);
+          supportStrip.add("rotation", supportRotation);
+
+          JsonObject bodyModel = base.deepCopy();
+          JsonArray openBodyElements = bodyElements.deepCopy();
+          openBodyElements.add(FurnitureBoxes.solidifyPlanes(supportStrip));
+          bodyModel.add("elements", openBodyElements);
+          MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_body.json"), bodyModel);
+          JsonObject closed = base.deepCopy();
+          JsonArray closedElements = bodyElements.deepCopy();
+          closedElements.add(closedLid);
+          closed.add("elements", closedElements);
+          MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_closed.json"), closed);
+          JsonObject openLid = new JsonObject();
+          JsonArray from = new JsonArray();
+          from.add(0); from.add(8); from.add(-8);
+          openLid.add("from", from);
+          JsonArray to = new JsonArray();
+          to.add(16); to.add(10); to.add(8);
+          openLid.add("to", to);
+          openLid.add("faces", closedLid.get("faces").deepCopy());
+          JsonObject openModel = base.deepCopy();
+          JsonArray openElements = new JsonArray();
+          openElements.add(openLid);
+          openModel.add("elements", openElements);
+          MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_open_lid.json"), openModel);
+          '''
+          path.write_text(text[:start] + replacement + text[end:], encoding="utf-8")
+          PY
+
+      - name: Regenerate and validate the CraftEngine pack
+        run: ./gradlew migrateLegacyContent validatePack --stacktrace
+
+      - name: Verify support geometry
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("src/paper/pack/resourcepack/assets/kaleidoscope_tavern/models/furniture")
+          body = json.loads((root / "barrel_body.json").read_text(encoding="utf-8"))
+          lid = json.loads((root / "barrel_open_lid.json").read_text(encoding="utf-8"))
+          assert len(body["elements"]) == 13, "open body must contain the 12 body boxes plus open_r1"
+          assert len(lid["elements"]) == 1, "open lid model must contain only open_r2"
+          support = body["elements"][-1]
+          assert support["from"][0] == 0.99 and support["to"][0] == 1.01
+          assert support["rotation"]["axis"] == "x"
+          assert abs(support["rotation"]["angle"] + 39.998183678) < 1e-9
+          assert support["rotation"]["origin"] == [1, 28.215627824, -1.72625203]
+          PY
+
+      - name: Compile and test
+        run: ./gradlew clean build --stacktrace
+
+      - name: Commit the fix and remove this one-shot workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/apply-barrel-support-fix.yml
+          git add -A
+          git commit -m "fix: restore source-accurate barrel lid support"
+          git push origin HEAD:fix/barrel-support-source-parity
