@@ -88,10 +88,6 @@ public final class StationService implements Listener {
     // a bounded visual pool keeps station refresh packets cheap at high counts.
     private static final int MAX_STATION_ITEM_VISUALS = 16;
     private static final int MAX_STATION_MATERIAL_VISUALS = 4;
-    // Two-phase portable shaker pose: one hand swing, then immediately raise
-    // into the native spyglass use whose use_cycle loops until the shake ends.
-    private static final int PORTABLE_SHAKER_WAVE_TICKS = 1;
-    private static final int PORTABLE_SHAKER_SWING_INTERVAL_TICKS = 4;
 
     /**
      * Paper transforms plugin classes lazily when they are first resolved.
@@ -451,9 +447,13 @@ public final class StationService implements Listener {
                 return;
             }
             portableShakers.put(
-                    player.getUniqueId(), new PortableShakerUse(player, hand, 0, false));
+                    player.getUniqueId(), new PortableShakerUse(player, hand, 0));
             ensurePortableShakerTask();
             shakerVisuals.beginMix(player);
+            // The spyglass arm pose and the 16-frame use_cycle shake are both
+            // client-driven; the server only enters the native use state.
+            player.startUsingItem(hand);
+            player.setActiveItemRemainingTime(72_000);
         });
         return InteractionResult.SUCCESS_AND_CANCEL;
     }
@@ -504,34 +504,17 @@ public final class StationService implements Listener {
             Map.Entry<UUID, PortableShakerUse> entry = iterator.next();
             PortableShakerUse use = entry.getValue();
             Player player = use.player();
-            ItemStack current = handItem(player, use.hand());
-            boolean holdingMixableShaker = player.isOnline()
-                    && items.id(current).equals(SHAKER)
-                    && items.shakerResult(current) == null
-                    && canMixShaker(items.shakerIngredients(current));
-            // During the wave phase no item is being used, so a raised hand
-            // can only mean the player started another native use action.
-            boolean foreignUse = !use.raised() && player.isHandRaised();
-            if (!holdingMixableShaker || foreignUse) {
+            if (!player.isOnline()
+                    || !player.isHandRaised() || !items.id(handItem(player, use.hand())).equals(SHAKER)) {
                 iterator.remove();
                 shakerVisuals.endMix(player);
                 continue;
             }
             int ticks = use.ticks();
-            boolean raised = use.raised();
-            if (!raised && ticks >= PORTABLE_SHAKER_WAVE_TICKS) {
-                // Second phase: switch from waving the hand to the native
-                // spyglass consumable pose; the item model's use_cycle keeps
-                // shaking the cup in the raised hand without swing packets.
-                player.startUsingItem(use.hand());
-                player.setActiveItemRemainingTime(72_000);
-                raised = player.isHandRaised();
-            }
-            if (!raised && ticks % PORTABLE_SHAKER_SWING_INTERVAL_TICKS == 0) {
-                // First phase: wave the hand before the telescope raise.
-                player.swingHand(use.hand());
-            }
             shakerVisuals.updateMix(player, ticks);
+            // The spyglass arm pose and the mirrored per-hand use_cycle swing
+            // are entirely client-side; the server only tracks mixing time,
+            // sounds and the forced release point.
             if (ShakerSemantics.playsShakeSound(ticks)) {
                 float volume = 0.75F + ThreadLocalRandom.current().nextFloat() * 0.2F;
                 float pitch = 0.8F + ThreadLocalRandom.current().nextFloat() * 0.2F;
@@ -544,8 +527,7 @@ public final class StationService implements Listener {
                 player.clearActiveItem();
                 finishPortableShaker(player, use.hand(), ticks);
             } else {
-                entry.setValue(new PortableShakerUse(
-                        player, use.hand(), ticks + 1, raised));
+                entry.setValue(new PortableShakerUse(player, use.hand(), ticks + 1));
             }
         }
         stopPortableShakerTaskIfIdle();
@@ -1312,7 +1294,8 @@ public final class StationService implements Listener {
                 : player.getInventory().getItemInMainHand();
     }
 
-    private record PortableShakerUse(Player player, EquipmentSlot hand, int ticks, boolean raised) {}
+    private record PortableShakerUse(Player player, EquipmentSlot hand, int ticks) {
+    }
 
     private static void setHandItem(Player player, EquipmentSlot hand, ItemStack stack) {
         if (hand == EquipmentSlot.OFF_HAND) {
