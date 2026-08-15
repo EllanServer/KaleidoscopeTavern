@@ -539,6 +539,21 @@ public final class AssetMigrationStage {
         JsonObject openModel = base.deepCopy();
         JsonArray openElements = new JsonArray();
         openElements.add(openLid);
+        // open_r1: the zero-thickness support strip connecting the body to the
+        // raised lid. The nested BarrelModel X rotations (75° and -35°) leave
+        // the strip in the same tilted plane as the lid, so it is emitted as a
+        // single x-axis rotated element around its source pivot.
+        JsonObject supportStrip = new JsonObject();
+        supportStrip.add("from", numbers(new double[] {1, 21.915700691, 1.670377649}));
+        supportStrip.add("to", numbers(new double[] {1, 23.915700691, 21.670377649}));
+        supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
+        JsonObject supportRotation = new JsonObject();
+        supportRotation.add("origin", numbers(new double[] {1, 23.915700691, 1.670377649}));
+        supportRotation.addProperty("axis", "x");
+        supportRotation.addProperty("angle", -74.3891);
+        supportRotation.addProperty("rescale", false);
+        supportStrip.add("rotation", supportRotation);
+        openElements.add(supportStrip);
         openModel.add("elements", openElements);
         MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_open_lid.json"), openModel);
     }
