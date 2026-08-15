@@ -3180,7 +3180,7 @@
             "has_consume_particles": false
           },
           "minecraft:swing_animation": {
-            "type": "whack",
+            "type": "none",
             "duration": 4
           }
         }
@@ -3662,7 +3662,7 @@
             "has_consume_particles": false
           },
           "minecraft:swing_animation": {
-            "type": "whack",
+            "type": "none",
             "duration": 4
           }
         }

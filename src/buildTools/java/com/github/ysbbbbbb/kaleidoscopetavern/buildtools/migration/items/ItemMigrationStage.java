@@ -135,7 +135,7 @@ public final class ItemMigrationStage {
             }
             if (id.equals("shaker")) { components(data).addProperty("minecraft:max_stack_size",1);
                 configureConsumable(config,obj("consume_seconds",3600.0,"animation","spyglass","has_consume_particles",false));
-                JsonObject swing=obj("type","whack","duration",4);
+                JsonObject swing=obj("type","none","duration",4);
                 components(data).add("minecraft:swing_animation",swing.deepCopy());
                 JsonObject cbd=config.has("client_bound_data")?config.getAsJsonObject("client_bound_data"):new JsonObject();
                 config.add("client_bound_data",cbd);
@@ -239,8 +239,9 @@ public final class ItemMigrationStage {
 
     /** First-person keeps the v0.0.1 16-frame use_cycle bob while using; all
      * third-person views keep the authored static 3D cup. The mixing motion
-     * there is the arm: native spyglass pose raises it and repeated WHACK
-     * swings wave it, so the item itself does not rotate. */
+     * there is the arm: native spyglass pose raises it and swing triggers
+     * wave it, so the item itself does not rotate. The swing animation type
+     * stays NONE so those triggers do not whack the first-person hand. */
     private JsonObject shakerModel(){return obj("type","minecraft:select","property","display_context","cases",arr(obj("when",arr("gui","fixed"),"model",model("shaker"))),"fallback",obj("type","minecraft:condition","property","minecraft:using_item","on_true",obj("type","minecraft:select","property","display_context","cases",arr(obj("when",arr("firstperson_lefthand","firstperson_righthand"),"model",shakerUseCycle())),"fallback",model("shaker_3d")),"on_false",model("shaker_3d")));}
     /** Exact port of v0.0.1 tools/migrate_legacy.py shaker_use_cycle_model. */
     private JsonObject shakerUseCycle(){JsonArray entries=new JsonArray();double period=Math.PI*2/1.5;for(int i=0;i<16;i++){double cycle=period*i/16,wave=Math.sin(-cycle*1.5),ty=-wave*.15;entries.add(obj("threshold",round(cycle,6),"model",obj("type","minecraft:model","path",NAMESPACE+":item/shaker_3d","transformation",shakerTransform(-15,ty))));}return obj("type","minecraft:range_dispatch","property","use_cycle","source",round(period,6),"entries",entries,"fallback",entries.get(0).getAsJsonObject().get("model").deepCopy());}

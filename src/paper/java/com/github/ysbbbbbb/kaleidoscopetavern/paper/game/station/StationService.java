@@ -88,8 +88,8 @@ public final class StationService implements Listener {
     // a bounded visual pool keeps station refresh packets cheap at high counts.
     private static final int MAX_STATION_ITEM_VISUALS = 16;
     private static final int MAX_STATION_MATERIAL_VISUALS = 4;
-    // The client renders the WHACK arm wave; the server only triggers it at
-    // the source SHAKING cadence while the spyglass use pose is active.
+    // Swing triggers drive the third-person arm wave while the swing
+    // animation type stays NONE, so the first-person hand is not whacked.
     private static final int PORTABLE_SHAKER_SWING_INTERVAL_TICKS = 4;
 
     /**
@@ -421,9 +421,9 @@ public final class StationService implements Listener {
         // The client may have predicted a short consume pose before this
         // packet listener runs, so explicitly cancel that same-hand use.
         if (items.shakerResult(shaker) != null) {
-            // Drop the consumable and WHACK swing components so the vanilla
-            // client cannot predict or swing a finished shaker; legacy stacks
-            // created before this fix are normalized here on first use.
+            // Drop the consumable and swing animation components so the
+            // vanilla client cannot predict or swing a finished shaker;
+            // legacy stacks are normalized here on first use.
             items.syncShakerUseComponents(shaker);
             setHandItem(player, hand, shaker);
             EquipmentSlot activeHand = player.getActiveItemHand();
@@ -515,9 +515,9 @@ public final class StationService implements Listener {
             }
             int ticks = use.ticks();
             shakerVisuals.updateMix(player, ticks);
-            // The spyglass arm pose and the WHACK wave are client-rendered.
-            // The server only sends the swing trigger; the cup model stays
-            // static in the raised hand.
+            // The spyglass pose, third-person arm wave and first-person
+            // use_cycle are client-rendered. The server only sends swing
+            // triggers; the NONE swing style keeps the cup and hand steady.
             if (ticks % PORTABLE_SHAKER_SWING_INTERVAL_TICKS == 0) {
                 player.swingHand(use.hand());
             }

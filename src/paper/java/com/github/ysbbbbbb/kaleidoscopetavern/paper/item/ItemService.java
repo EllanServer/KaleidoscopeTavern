@@ -61,7 +61,7 @@ public final class ItemService {
             .hasConsumeParticles(false)
             .build();
     private static final SwingAnimation SHAKER_SWING_ANIMATION = SwingAnimation.swingAnimation()
-            .type(SwingAnimation.Animation.WHACK)
+            .type(SwingAnimation.Animation.NONE)
             .duration(4)
             .build();
     private static final Map<Integer, String> COLOR_NAMES_BY_RGB = Map.ofEntries(
@@ -495,10 +495,10 @@ public final class ItemService {
     }
 
     /**
-     * Keeps the CE spyglass consumable and WHACK swing present on ordinary
-     * shakers and absent on result-bearing shakers. Removing the components
-     * stops the vanilla client from predicting a use animation for a finished
-     * shaker, which matches the Forge item's pass on right-click.
+     * Keeps the CE spyglass consumable and swing animation present on
+     * ordinary shakers and absent on result-bearing shakers. Removing the
+     * components stops the vanilla client from predicting a use animation for
+     * a finished shaker, which matches the Forge item's pass on right-click.
      */
     public ItemStack syncShakerUseComponents(ItemStack stack) {
         if (stack == null || stack.isEmpty() || !PREFIX.concat("shaker").equals(id(stack))) {

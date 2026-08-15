@@ -2921,7 +2921,7 @@ public final class PackConfigRules {
         expectedShakerConsumable.addProperty("animation", "spyglass");
         expectedShakerConsumable.addProperty("has_consume_particles", false);
         JsonObject expectedShakerSwing = new JsonObject();
-        expectedShakerSwing.addProperty("type", "whack");
+        expectedShakerSwing.addProperty("type", "none");
         expectedShakerSwing.addProperty("duration", 4);
         if (!shakerItem.get("material").getAsString().equals("paper")
                 || shakerComponents.get("minecraft:max_stack_size").getAsInt() != 1
@@ -2932,7 +2932,7 @@ public final class PackConfigRules {
                 || !expectedShakerSwing.equals(nestedObject(shakerItem, "client_bound_data", "components")
                         .get("minecraft:swing_animation"))) {
             throw new ValidationException(
-                    "Shaker must use the spyglass pose with a 4-tick WHACK swing and a static held cup");
+                    "Shaker must use the spyglass pose with NONE swing style, 4-tick triggers and a static held cup");
         }
         JsonObject shakerModel = shakerItem.getAsJsonObject("model");
         if (!shakerModel.get("type").getAsString().equals("minecraft:select")
