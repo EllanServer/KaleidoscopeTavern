@@ -3025,7 +3025,7 @@ public final class PackConfigRules {
                 openBody.getAsJsonObject().get("translation").getAsString(),
                 openLid.getAsJsonObject().get("translation").getAsString(),
                 openLid.getAsJsonObject().get("rotation").getAsString());
-        if (!barrelTransforms.equals(List.of("0,1.5,0", "0,1.5,0", "0,3.8225,0.3131", "72.5,0,0"))) {
+        if (!barrelTransforms.equals(List.of("0,1.5,0", "0,1.5,0", "0,2.995967,0.440265", "72.501658,0,0"))) {
             throw new ValidationException("Barrel body/lid pivot no longer matches BarrelModel");
         }
         JsonObject stool = furniture.getAsJsonObject(NAMESPACE + ":white_bar_stool")

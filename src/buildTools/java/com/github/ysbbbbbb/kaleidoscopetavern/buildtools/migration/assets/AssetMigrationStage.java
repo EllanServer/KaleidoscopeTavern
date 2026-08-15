@@ -525,13 +525,13 @@ public final class AssetMigrationStage {
 // CE ground-furniture zero yaw is horizontally opposite to the
 // archived renderer's unrotated NORTH basis. The barrel body and lid
 // hide that difference through symmetry, but this one-sided support
-// only moves laterally from x=1 to x=15; the authored z direction and rotation pivot stay unchanged.
+// stays on the source x=1 side; the gap is closed by the exact open_r2 transform.
 JsonObject supportStrip = new JsonObject();
-supportStrip.add("from", numbers(new double[] {15, 28.215627824, -1.72625203}));
-supportStrip.add("to", numbers(new double[] {15, 30.215627824, 18.27374797}));
+supportStrip.add("from", numbers(new double[] {1, 28.215627824, -1.72625203}));
+supportStrip.add("to", numbers(new double[] {1, 30.215627824, 18.27374797}));
 supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
 JsonObject supportRotation = new JsonObject();
-supportRotation.add("origin", numbers(new double[] {15, 28.215627824, -1.72625203}));
+supportRotation.add("origin", numbers(new double[] {1, 28.215627824, -1.72625203}));
 supportRotation.addProperty("axis", "x");
 supportRotation.addProperty("angle", -39.998183678);
 supportRotation.addProperty("rescale", false);

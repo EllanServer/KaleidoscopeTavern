@@ -169,8 +169,8 @@ public final class FurnitureBuilder {
                 JsonObject body = furnitureElement(
                         renderItems, blockId, "open body", bodyModel, "ground", "0,1,0");
                 JsonObject lid = furnitureElement(
-                        renderItems, blockId, "open lid", lidModel, "ground", "0,3.3225,0.3131");
-                lid.addProperty("rotation", "72.5,0,0");
+                        renderItems, blockId, "open lid", lidModel, "ground", "0,2.495967497,0.440264912");
+                lid.addProperty("rotation", "72.501658,0,0");
                 body.addProperty("view_range", 2.5);
                 lid.addProperty("view_range", 2.5);
                 JsonObject open = new JsonObject();

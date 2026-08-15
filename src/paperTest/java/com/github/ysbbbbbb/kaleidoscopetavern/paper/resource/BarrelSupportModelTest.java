@@ -30,11 +30,11 @@ class BarrelSupportModelTest {
                 "open lid display must contain only open_r2");
 
         assertTrue(compactBody.contains(
-                        "\"from\":[14.99,28.215627824,-1.72625203],"
-                                + "\"to\":[15.01,30.215627824,18.27374797]"),
-                "open_r1 must move to the right side without flipping front-back");
+                        "\"from\":[0.99,28.215627824,-1.72625203],"
+                                + "\"to\":[1.01,30.215627824,18.27374797]"),
+                "open_r1 must stay on the source x=1 side while the lid transform closes the gap");
         assertTrue(compactBody.contains(
-                        "\"rotation\":{\"origin\":[15,28.215627824,-1.72625203],"
+                        "\"rotation\":{\"origin\":[1,28.215627824,-1.72625203],"
                                 + "\"axis\":\"x\",\"angle\":-39.998183678,\"rescale\":false}"),
                 "open_r1 must preserve the source combined tilt direction and magnitude");
     }
