@@ -520,44 +520,45 @@ public final class AssetMigrationStage {
         textures.addProperty("barrel", NAMESPACE + ":entity/brew/barrel");
         textures.addProperty("particle", "minecraft:block/barrel_side");
         base.add("textures", textures);
-        JsonObject bodyModel = base.deepCopy();
-        bodyModel.add("elements", bodyElements);
-        MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_body.json"), bodyModel);
-        JsonObject closed = base.deepCopy();
-        JsonArray closedElements = bodyElements.deepCopy();
-        closedElements.add(closedLid);
-        closed.add("elements", closedElements);
-        MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_closed.json"), closed);
-        JsonObject openLid = new JsonObject();
-        JsonArray from = new JsonArray();
-        from.add(0); from.add(8); from.add(-8);
-        openLid.add("from", from);
-        JsonArray to = new JsonArray();
-        to.add(16); to.add(10); to.add(8);
-        openLid.add("to", to);
-        openLid.add("faces", closedLid.get("faces").deepCopy());
-        JsonObject openModel = base.deepCopy();
-        JsonArray openElements = new JsonArray();
-        openElements.add(openLid);
-        // open_r1: the zero-thickness support strip connecting the body to the
-        // raised lid. It is authored in the same local space as the horizontal
-        // lid board, mirrored onto the right side and front-back swapped to
-        // match BarrelModel, then the shared CE 72.5-degree entity rotation
-        // brings it to its final open position. Solidifying its zero-width
-        // axis keeps both faces visible from every viewing angle.
-        JsonObject supportStrip = new JsonObject();
-        supportStrip.add("from", numbers(new double[] {15, 2.906025685, -4.566102476}));
-        supportStrip.add("to", numbers(new double[] {15, 4.906025685, 15.433897524}));
-        supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
-        JsonObject supportRotation = new JsonObject();
-        supportRotation.add("origin", numbers(new double[] {15, 4.906025685, 15.433897524}));
-        supportRotation.addProperty("axis", "x");
-        supportRotation.addProperty("angle", 1.8891);
-        supportRotation.addProperty("rescale", false);
-        supportStrip.add("rotation", supportRotation);
-        openElements.add(FurnitureBoxes.solidifyPlanes(supportStrip));
-        openModel.add("elements", openElements);
-        MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_open_lid.json"), openModel);
+        // BarrelModel.open_r1 has its own -35 degree child rotation under the
+// 75 degree open group, so its final source angle is about 40 degrees.
+// Keep the strip in the open body's final model space. Putting it in
+// barrel_open_lid applies the lid display's 72.5 degree rotation a
+// second time, which makes the support nearly vertical and too tall.
+JsonObject supportStrip = new JsonObject();
+supportStrip.add("from", numbers(new double[] {1, 28.215627824, -1.72625203}));
+supportStrip.add("to", numbers(new double[] {1, 30.215627824, 18.27374797}));
+supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
+JsonObject supportRotation = new JsonObject();
+supportRotation.add("origin", numbers(new double[] {1, 28.215627824, -1.72625203}));
+supportRotation.addProperty("axis", "x");
+supportRotation.addProperty("angle", -39.998183678);
+supportRotation.addProperty("rescale", false);
+supportStrip.add("rotation", supportRotation);
+
+JsonObject bodyModel = base.deepCopy();
+JsonArray openBodyElements = bodyElements.deepCopy();
+openBodyElements.add(FurnitureBoxes.solidifyPlanes(supportStrip));
+bodyModel.add("elements", openBodyElements);
+MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_body.json"), bodyModel);
+JsonObject closed = base.deepCopy();
+JsonArray closedElements = bodyElements.deepCopy();
+closedElements.add(closedLid);
+closed.add("elements", closedElements);
+MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_closed.json"), closed);
+JsonObject openLid = new JsonObject();
+JsonArray from = new JsonArray();
+from.add(0); from.add(8); from.add(-8);
+openLid.add("from", from);
+JsonArray to = new JsonArray();
+to.add(16); to.add(10); to.add(8);
+openLid.add("to", to);
+openLid.add("faces", closedLid.get("faces").deepCopy());
+JsonObject openModel = base.deepCopy();
+JsonArray openElements = new JsonArray();
+openElements.add(openLid);
+openModel.add("elements", openElements);
+MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_open_lid.json"), openModel);
     }
 
     public void createPressingFluidModels() throws IOException {
