@@ -2548,6 +2548,55 @@ public final class PackConfigRules {
 
     private static final Set<String> EFFECTLESS_DRINKS = Set.of(NAMESPACE + ":watermelon_juice");
     private static final int SHAKER_USE_FRAMES = 16;
+    private static final double SHAKER_USE_PERIOD_TICKS = Math.PI * 2 / 1.5;
+
+    /** Exact v0.0.1 first-person shaker use-cycle: 16 frames, CraftEngine's
+     * {@code source} key, -15° X rotation and sin(-t·1.5)·0.15 vertical bob. */
+    private static JsonObject expectedShakerFirstPersonCycleV001() {
+        JsonArray entries = new JsonArray();
+        for (int index = 0; index < SHAKER_USE_FRAMES; index++) {
+            double cycle = SHAKER_USE_PERIOD_TICKS * index / SHAKER_USE_FRAMES;
+            double wave = Math.sin(-cycle * 1.5);
+            JsonObject entry = new JsonObject();
+            entry.addProperty("threshold", round6(cycle));
+            JsonObject model = new JsonObject();
+            model.addProperty("type", "minecraft:model");
+            model.addProperty("path", NAMESPACE + ":item/shaker_3d");
+            model.add("transformation", shakerTransformV001(-15, -wave * 0.15));
+            entry.add("model", model);
+            entries.add(entry);
+        }
+        JsonObject range = new JsonObject();
+        range.addProperty("type", "minecraft:range_dispatch");
+        range.addProperty("property", "use_cycle");
+        range.addProperty("source", round6(SHAKER_USE_PERIOD_TICKS));
+        range.add("entries", entries);
+        range.add("fallback", entries.get(0).getAsJsonObject().getAsJsonObject("model").deepCopy());
+        return range;
+    }
+
+    private static JsonArray shakerTransformV001(double rotationDegrees, double translationY) {
+        double angle = Math.toRadians(rotationDegrees);
+        double cosine = round8(Math.cos(angle));
+        double sine = round8(Math.sin(angle));
+        JsonArray matrix = new JsonArray();
+        for (double value : new double[] {
+                1, 0, 0, 0,
+                0, cosine, -sine, round8(translationY),
+                0, sine, cosine, 0,
+                0, 0, 0, 1}) {
+            matrix.add(value);
+        }
+        return matrix;
+    }
+
+    private static double round6(double value) {
+        return Math.rint(value * 1e6) / 1e6;
+    }
+
+    private static double round8(double value) {
+        return Math.rint(value * 1e8) / 1e8;
+    }
 
     private void validateDrinks(JsonObject items, JsonObject renderItems, JsonObject blocks,
                                 JsonObject furniture) throws IOException {
@@ -2900,14 +2949,31 @@ public final class PackConfigRules {
         JsonObject expectedIconCase = new JsonObject();
         expectedIconCase.add("when", iconWhen);
         expectedIconCase.add("model", iconModel);
-        JsonObject heldModel = new JsonObject();
-        heldModel.addProperty("type", "minecraft:model");
-        heldModel.addProperty("path", NAMESPACE + ":item/shaker_3d");
+        JsonObject staticHeldModel = new JsonObject();
+        staticHeldModel.addProperty("type", "minecraft:model");
+        staticHeldModel.addProperty("path", NAMESPACE + ":item/shaker_3d");
+        JsonObject useCondition = shakerModel.getAsJsonObject("fallback");
+        JsonObject expectedUseModel = new JsonObject();
+        expectedUseModel.addProperty("type", "minecraft:select");
+        expectedUseModel.addProperty("property", "display_context");
+        JsonArray useCases = new JsonArray();
+        JsonObject firstPerson = new JsonObject();
+        JsonArray firstPersonWhen = new JsonArray();
+        firstPersonWhen.add("firstperson_lefthand");
+        firstPersonWhen.add("firstperson_righthand");
+        firstPerson.add("when", firstPersonWhen);
+        firstPerson.add("model", expectedShakerFirstPersonCycleV001());
+        useCases.add(firstPerson);
+        expectedUseModel.add("cases", useCases);
+        expectedUseModel.add("fallback", staticHeldModel);
         if (shakerModel.getAsJsonArray("cases").size() != 1
                 || !expectedIconCase.equals(iconCase)
-                || !heldModel.equals(shakerModel.get("fallback"))) {
+                || !useCondition.get("type").getAsString().equals("minecraft:condition")
+                || !useCondition.get("property").getAsString().equals("minecraft:using_item")
+                || !staticHeldModel.equals(useCondition.get("on_false"))
+                || !expectedUseModel.equals(useCondition.get("on_true"))) {
             throw new ValidationException(
-                    "Shaker held views must keep the static shaker_3d cup and let the arm swing");
+                    "Shaker first person must use the v0.0.1 use_cycle while third person stays static");
         }
         for (int index = 0; index < SHAKER_USE_FRAMES; index++) {
             String frame = String.format("%02d", index);
