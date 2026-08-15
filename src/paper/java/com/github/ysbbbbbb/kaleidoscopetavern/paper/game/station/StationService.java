@@ -88,9 +88,9 @@ public final class StationService implements Listener {
     // a bounded visual pool keeps station refresh packets cheap at high counts.
     private static final int MAX_STATION_ITEM_VISUALS = 16;
     private static final int MAX_STATION_MATERIAL_VISUALS = 4;
-    // Two-phase portable shaker pose: wave the hand through the source's
-    // "released too early to mix" window, then raise the native spyglass use.
-    private static final int PORTABLE_SHAKER_WAVE_TICKS = 19;
+    // Two-phase portable shaker pose: one hand swing, then immediately raise
+    // into the native spyglass use whose use_cycle loops until the shake ends.
+    private static final int PORTABLE_SHAKER_WAVE_TICKS = 1;
     private static final int PORTABLE_SHAKER_SWING_INTERVAL_TICKS = 4;
 
     /**
