@@ -520,46 +520,48 @@ public final class AssetMigrationStage {
         textures.addProperty("barrel", NAMESPACE + ":entity/brew/barrel");
         textures.addProperty("particle", "minecraft:block/barrel_side");
         base.add("textures", textures);
-        // BarrelModel.open_r1 has its own -35 degree child rotation under the
-// 75 degree open group, so its final source angle is about -40 degrees.
-// CE ground-furniture zero yaw is horizontally opposite to the
-// archived renderer's unrotated NORTH basis. The barrel body and lid
-// hide that difference through symmetry, but this one-sided support
-// stays on the source x=1 side; the gap is closed by the exact open_r2 transform.
-JsonObject supportStrip = new JsonObject();
-supportStrip.add("from", numbers(new double[] {1, 28.215627824, -1.72625203}));
-supportStrip.add("to", numbers(new double[] {1, 30.215627824, 18.27374797}));
-supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
-JsonObject supportRotation = new JsonObject();
-supportRotation.add("origin", numbers(new double[] {1, 28.215627824, -1.72625203}));
-supportRotation.addProperty("axis", "x");
-supportRotation.addProperty("angle", -39.998183678);
-supportRotation.addProperty("rescale", false);
-supportStrip.add("rotation", supportRotation);
+        // BarrelModel.open_r1 is the zero-thickness support strip. It carries a
+        // -0.6109 rad child rotation under the 1.309 rad open group, so its
+        // combined source tilt is 1.309 - 0.6109 rad = 39.998183678 degrees, and
+        // entityBarrelBox's (-x, -1 - y, z - 1) mapping flips that to a negative
+        // model-space angle. The same mapping keeps the strip on the source side
+        // (local x = -8 + 7 = -1 becomes model x = 1) and makes the local y = -2
+        // corner the rotation pivot. Solidifying the zero-width axis keeps both
+        // faces visible from every angle.
+        JsonObject supportStrip = new JsonObject();
+        supportStrip.add("from", numbers(new double[] {1, 28.215627824, -1.72625203}));
+        supportStrip.add("to", numbers(new double[] {1, 30.215627824, 18.27374797}));
+        supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
+        JsonObject supportRotation = new JsonObject();
+        supportRotation.add("origin", numbers(new double[] {1, 28.215627824, -1.72625203}));
+        supportRotation.addProperty("axis", "x");
+        supportRotation.addProperty("angle", -39.998183678);
+        supportRotation.addProperty("rescale", false);
+        supportStrip.add("rotation", supportRotation);
 
-JsonObject bodyModel = base.deepCopy();
-JsonArray openBodyElements = bodyElements.deepCopy();
-openBodyElements.add(FurnitureBoxes.solidifyPlanes(supportStrip));
-bodyModel.add("elements", openBodyElements);
-MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_body.json"), bodyModel);
-JsonObject closed = base.deepCopy();
-JsonArray closedElements = bodyElements.deepCopy();
-closedElements.add(closedLid);
-closed.add("elements", closedElements);
-MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_closed.json"), closed);
-JsonObject openLid = new JsonObject();
-JsonArray from = new JsonArray();
-from.add(0); from.add(8); from.add(-8);
-openLid.add("from", from);
-JsonArray to = new JsonArray();
-to.add(16); to.add(10); to.add(8);
-openLid.add("to", to);
-openLid.add("faces", closedLid.get("faces").deepCopy());
-JsonObject openModel = base.deepCopy();
-JsonArray openElements = new JsonArray();
-openElements.add(openLid);
-openModel.add("elements", openElements);
-MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_open_lid.json"), openModel);
+        JsonObject bodyModel = base.deepCopy();
+        JsonArray openBodyElements = bodyElements.deepCopy();
+        openBodyElements.add(FurnitureBoxes.solidifyPlanes(supportStrip));
+        bodyModel.add("elements", openBodyElements);
+        MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_body.json"), bodyModel);
+        JsonObject closed = base.deepCopy();
+        JsonArray closedElements = bodyElements.deepCopy();
+        closedElements.add(closedLid);
+        closed.add("elements", closedElements);
+        MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_closed.json"), closed);
+        JsonObject openLid = new JsonObject();
+        JsonArray from = new JsonArray();
+        from.add(0); from.add(8); from.add(-8);
+        openLid.add("from", from);
+        JsonArray to = new JsonArray();
+        to.add(16); to.add(10); to.add(8);
+        openLid.add("to", to);
+        openLid.add("faces", closedLid.get("faces").deepCopy());
+        JsonObject openModel = base.deepCopy();
+        JsonArray openElements = new JsonArray();
+        openElements.add(openLid);
+        openModel.add("elements", openElements);
+        MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_open_lid.json"), openModel);
     }
 
     public void createPressingFluidModels() throws IOException {

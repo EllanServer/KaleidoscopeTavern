@@ -57,10 +57,6 @@ ASSET_EDITS = [
         'supportRotation.add("origin", numbers(new double[] {15, 28.215627824, -1.72625203}));',
         'supportRotation.add("origin", numbers(new double[] {1, 28.215627824, -1.72625203}));',
     ),
-    (
-        "// only moves laterally from x=1 to x=15; the authored z direction and rotation pivot stay unchanged.",
-        "// stays on the source x=1 side; the gap is closed by the exact open_r2 transform.",
-    ),
 ]
 
 FURNITURE_EDITS = [
