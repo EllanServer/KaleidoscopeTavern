@@ -520,8 +520,29 @@ public final class AssetMigrationStage {
         textures.addProperty("barrel", NAMESPACE + ":entity/brew/barrel");
         textures.addProperty("particle", "minecraft:block/barrel_side");
         base.add("textures", textures);
+        // BarrelModel.open_r1 is the zero-thickness support strip. It carries a
+        // -0.6109 rad child rotation under the 1.309 rad open group, so its
+        // combined source tilt is 1.309 - 0.6109 rad = 39.998183678 degrees, and
+        // entityBarrelBox's (-x, -1 - y, z - 1) mapping flips that to a negative
+        // model-space angle. The same mapping keeps the strip on the source side
+        // (local x = -8 + 7 = -1 becomes model x = 1) and makes the local y = -2
+        // corner the rotation pivot. Solidifying the zero-width axis keeps both
+        // faces visible from every angle.
+        JsonObject supportStrip = new JsonObject();
+        supportStrip.add("from", numbers(new double[] {1, 28.215627824, -1.72625203}));
+        supportStrip.add("to", numbers(new double[] {1, 30.215627824, 18.27374797}));
+        supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
+        JsonObject supportRotation = new JsonObject();
+        supportRotation.add("origin", numbers(new double[] {1, 28.215627824, -1.72625203}));
+        supportRotation.addProperty("axis", "x");
+        supportRotation.addProperty("angle", -39.998183678);
+        supportRotation.addProperty("rescale", false);
+        supportStrip.add("rotation", supportRotation);
+
         JsonObject bodyModel = base.deepCopy();
-        bodyModel.add("elements", bodyElements);
+        JsonArray openBodyElements = bodyElements.deepCopy();
+        openBodyElements.add(FurnitureBoxes.solidifyPlanes(supportStrip));
+        bodyModel.add("elements", openBodyElements);
         MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_body.json"), bodyModel);
         JsonObject closed = base.deepCopy();
         JsonArray closedElements = bodyElements.deepCopy();
@@ -539,23 +560,6 @@ public final class AssetMigrationStage {
         JsonObject openModel = base.deepCopy();
         JsonArray openElements = new JsonArray();
         openElements.add(openLid);
-        // open_r1: the zero-thickness support strip connecting the body to the
-        // raised lid. It is authored in the same local space as the horizontal
-        // lid board, mirrored onto the right side and front-back swapped to
-        // match BarrelModel, then the shared CE 72.5-degree entity rotation
-        // brings it to its final open position. Solidifying its zero-width
-        // axis keeps both faces visible from every viewing angle.
-        JsonObject supportStrip = new JsonObject();
-        supportStrip.add("from", numbers(new double[] {15, 2.906025685, -4.566102476}));
-        supportStrip.add("to", numbers(new double[] {15, 4.906025685, 15.433897524}));
-        supportStrip.add("faces", FurnitureBoxes.entityUvFaces(106, 114, 0, 2, 20));
-        JsonObject supportRotation = new JsonObject();
-        supportRotation.add("origin", numbers(new double[] {15, 4.906025685, 15.433897524}));
-        supportRotation.addProperty("axis", "x");
-        supportRotation.addProperty("angle", 1.8891);
-        supportRotation.addProperty("rescale", false);
-        supportStrip.add("rotation", supportRotation);
-        openElements.add(FurnitureBoxes.solidifyPlanes(supportStrip));
         openModel.add("elements", openElements);
         MigrationDataIO.writeJson(modelsRoot().resolve("furniture/barrel_open_lid.json"), openModel);
     }

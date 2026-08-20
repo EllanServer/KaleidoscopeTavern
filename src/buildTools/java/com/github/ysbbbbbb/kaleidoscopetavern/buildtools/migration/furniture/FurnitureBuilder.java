@@ -168,9 +168,16 @@ public final class FurnitureBuilder {
                 // follow the environment (dark cellar = dark barrel).
                 JsonObject body = furnitureElement(
                         renderItems, blockId, "open body", bodyModel, "ground", "0,1,0");
+                // BarrelModel.open_r2 rides the 1.309 rad open group with its own
+                // 0.5672 rad child rotation, so the CE display angle is
+                // 180 - (1.309 + 0.5672) rad = 72.501658 degrees. Composing the
+                // same parent/child matrices puts the lid at y = 2.995967 and
+                // z = 0.440265 once furnitureElement adds the ground anchor's 0.5
+                // base offset. The earlier approximate "0,3.8225,0.3131" sat
+                // 0.8265 blocks too high, which is what left the visible gap.
                 JsonObject lid = furnitureElement(
-                        renderItems, blockId, "open lid", lidModel, "ground", "0,3.3225,0.3131");
-                lid.addProperty("rotation", "72.5,0,0");
+                        renderItems, blockId, "open lid", lidModel, "ground", "0,2.495967497,0.440264912");
+                lid.addProperty("rotation", "72.501658,0,0");
                 body.addProperty("view_range", 2.5);
                 lid.addProperty("view_range", 2.5);
                 JsonObject open = new JsonObject();
